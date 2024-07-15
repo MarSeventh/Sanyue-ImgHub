@@ -64,7 +64,7 @@ methods: {
         console.log(file)
         const formData = new FormData()
         formData.append('file', file.file)
-        return axios.post('https://imgbed.sanyue.site/api/upload', formData)
+        return axios.post('https://imgbed.sanyue.site/upload', formData)
     },
     handlePreview(file) {
         window.open(file.url, '_blank')
