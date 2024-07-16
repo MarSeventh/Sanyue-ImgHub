@@ -86,7 +86,7 @@ methods: {
             this.fileList.push({
                 uid: file.uid,
                 name: file.name,
-                url: process.env.SITE_URL + response.data[0].src
+                url: process.env.VUE_APP_SITE_URL + response.data[0].src
             })
             this.$message({
                 type: 'success',
