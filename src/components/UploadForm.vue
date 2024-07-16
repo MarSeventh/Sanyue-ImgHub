@@ -60,18 +60,7 @@ export default {
 name: 'UploadForm',
 data() {
     return {
-        fileList: [
-            {
-                uid: 1,
-                name: 'image.png',
-                url: 'https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg'
-            },
-            {
-                uid: 2,
-                name: 'video.mp4',
-                url: 'https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg'
-            }
-        ],
+        fileList: [],
         uploading: false,
         file: null
     }
