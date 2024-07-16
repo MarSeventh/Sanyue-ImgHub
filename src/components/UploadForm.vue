@@ -32,7 +32,7 @@
                             >
                         </img>
                         <div class="upload-list-item-content">
-                            <div class="upload-list-item-name">{{ file.name }}</div>
+                            <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
                             <div class="upload-list-item-url">
                                 <el-link :underline="false" :href="file.url" target="_blank">
                                     <el-text class="upload-list-item-url-text" truncated>{{ file.url }}</el-text>
@@ -86,7 +86,7 @@ methods: {
             this.fileList.push({
                 uid: file.uid,
                 name: file.name,
-                url: 'https://imgbed.sanyue.site' + response.data[0].src
+                url: process.env.SITE_URL + response.data[0].src
             })
             this.$message({
                 type: 'success',
@@ -100,7 +100,7 @@ methods: {
         }
     },
     handleExceed(files) {
-        this.$message.warning(`当前限制选择 10 个文件，本次选择了 ${files.length} 个文件`)
+        this.$message.warning(`上传文件列表最多 10 个文件，请先删除已上传文件`)
     },
     handleError(err) {
         this.$message.error(this.file.name + '上传失败')
@@ -171,6 +171,7 @@ methods: {
 .upload-list-item-name {
     font-size: small;
     font-weight: bold;
+    width: 28vw;
 }
 .upload-list-item-content {
     display: flex;
@@ -193,7 +194,7 @@ methods: {
     padding: 20px;
     background: none;
 }
-/deep/ .el-upload-dragger {
+:deep(.el-upload-dragger)  {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -206,15 +207,15 @@ methods: {
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
 }
-/deep/ .el-upload-dragger:hover {
+:deep(.el-upload-dragger:hover) {
     opacity: 0.8;
     box-shadow: 0 0 10px 5px #409EFF;
 }
-/deep/ .el-upload-dragger.is-dragover {
+:deep(.el-upload-dragger.is-dragover) {
     opacity: 0.8;
     box-shadow: 0 0 10px 5px #409EFF;
 }
-.is-uploading /deep/ .el-upload-dragger{
+.is-uploading :deep(.el-upload-dragger){
     animation: breathe 3s infinite;
 }
 .el-upload__text {

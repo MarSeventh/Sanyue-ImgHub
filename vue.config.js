@@ -3,7 +3,7 @@ module.exports = defineConfig({
   devServer: {
     proxy: {
       '/api': {
-        target: 'https://imgbed.sanyue.site',
+        target: process.env.SITE_URL,
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''
