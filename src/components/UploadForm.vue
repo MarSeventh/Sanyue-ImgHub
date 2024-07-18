@@ -265,9 +265,11 @@ methods: {
 .el-upload__text {
     font-weight: bold;
     font-size: medium;
+    user-select: none;
 }
 .el-upload__tip {
     font-size: small;
     color: antiquewhite;
+    user-select: none;
 }
 </style>

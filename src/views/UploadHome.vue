@@ -4,18 +4,21 @@
             <a href="https://sanyue.site">
                 <img class="logo" alt="Sanyue logo" src="../assets/logo.png"/>
             </a> 
-            <h1>Sanyue ImgHub</h1>
+            <h1><a class="main-title" href="https://sanyue.site" target="_blank">Sanyue</a> ImgHub</h1>
         </div>
         <UploadForm class="upload"/>
+        <Footer/>
     </div>
 </template>
 
 <script>
 import UploadForm from '@/components/UploadForm.vue'
+import Footer from '@/components/Footer.vue'
 export default {
     name: 'UploadHome',
     components: {
-        UploadForm
+        UploadForm,
+        Footer
     }
 }
 </script>
@@ -29,6 +32,13 @@ export default {
     position: relative;
     bottom: 20px;
     color: blanchedalmond;
+    user-select: none;
+    text-decoration: none;
+}
+.main-title {
+    background: linear-gradient(to right, rgb(239, 250, 195), #f3a060);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 .logo {
     height: 80px;
