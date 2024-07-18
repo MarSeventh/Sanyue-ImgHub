@@ -102,7 +102,7 @@ methods: {
         const formData = new FormData()
         formData.append('file', file.file)
         axios({
-            url: '/api/upload',
+            url: '/upload',
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {

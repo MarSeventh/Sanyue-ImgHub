@@ -4,9 +4,9 @@
 
 [cf-pages/Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)项目的一个新前端，实现了**上传图片预览**，**多文件上传**，**拖拽上传**等功能。
 
-![](https://alist.sanyue.site/d/imgbed/202407161134238.png)
+![](https://alist.sanyue.site/d/imgbed/202407182037148.png)
 
-![](https://alist.sanyue.site/d/imgbed/202407161135159.png)
+![](https://alist.sanyue.site/d/imgbed/202407182037249.png)
 
 ## Features
 
