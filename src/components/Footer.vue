@@ -1,6 +1,6 @@
 <template>
     <div class="page-footer">
-        <p>© 2024 <a class="footer-name" href="https://sanyue.site" target="_blank">SanyueQi</a> designed for you!</p>
+        <p>© 2024 Designed By <a class="footer-name" href="https://sanyue.site" target="_blank">SanyueQi</a> for You!</p>
     </div>
 </template>
 

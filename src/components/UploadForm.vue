@@ -26,6 +26,23 @@
         <el-card class="upload-list-card" v-if="fileList.length">
             <div class="upload-list-container">
                 <el-scrollbar>
+                    <div class="upload-list-dashboard">
+                        <el-text class="upload-list-dashboard-title">
+                            <el-icon><List /></el-icon>{{ uploadingCount }}
+                            <el-icon><Checked /></el-icon>{{ uploadSuccessCount }}
+                            <el-icon><Failed /></el-icon>{{ uploadErrorCount }}
+                        </el-text>
+                        <div class="upload-list-dashboard-action">
+                            <el-button-group>
+                                <el-tooltip content="整体复制" placement="top">
+                                    <el-button type="primary" round @click="copyAll" alt="整体复制"><el-icon><Grid /></el-icon></el-button>
+                                </el-tooltip>
+                                <el-tooltip content="清空列表" placement="top">
+                                    <el-button type="primary" round @click="fileList = []"><el-icon><CircleClose /></el-icon></el-button>
+                                </el-tooltip>
+                            </el-button-group>
+                        </div>
+                    </div>
                     <div class="upload-list-item" v-for="file in fileList" :key="file.name" :span="8">
                         <img
                             style="width: 10vw; border-radius: 12px;"
@@ -45,10 +62,10 @@
                             </div>
                         </div>
                         <div class="upload-list-item-action">
-                                <el-button type="primary" round size="small" class="upload-list-item-action-button" @click="handleCopy(file)">
+                                <el-button type="primary" circle size="medium" class="upload-list-item-action-button" @click="handleCopy(file)">
                                     <el-icon><Link /></el-icon>
                                 </el-button>
-                                <el-button type="danger" round size="small" class="upload-list-item-action-button" @click="handleRemove(file)">
+                                <el-button type="danger" circle size="medium" class="upload-list-item-action-button" @click="handleRemove(file)">
                                     <el-icon><Delete /></el-icon>
                                 </el-button>
                         </div>
@@ -66,8 +83,18 @@ name: 'UploadForm',
 data() {
     return {
         fileList: [],
-        uploading: false,
-        file: null
+        uploading: false
+    }
+},
+computed: {
+    uploadSuccessCount() {
+        return this.fileList.filter(item => item.status === 'done' || item.status === 'success').length
+    },
+    uploadErrorCount() {
+        return this.fileList.filter(item => item.status === 'exception').length
+    },
+    uploadingCount() {
+        return this.fileList.filter(item => item.status === 'uploading').length
     }
 },
 methods: {
@@ -75,12 +102,12 @@ methods: {
         const formData = new FormData()
         formData.append('file', file.file)
         axios({
-            url: '/upload',
+            url: '/api/upload',
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {
                 const percentCompleted = Math.round((progressEvent.loaded / progressEvent.total) * 100)
-                file.onProgress({ percent: percentCompleted })
+                file.onProgress({ percent: percentCompleted, file: file.file })
             }
         }).then(res => {
             file.onSuccess(res)
@@ -122,10 +149,10 @@ methods: {
     handleExceed(files) {
         this.$message.warning(`上传文件列表最多 10 个文件，请先删除已上传文件`)
     },
-    handleError(err) {
-        this.$message.error(this.file.name + '上传失败')
+    handleError(err, file) {
+        this.$message.error(file.name + '上传失败')
         this.uploading = false
-        this.fileList.find(item => item.uid === this.file.uid).status = 'exception'
+        this.fileList.find(item => item.uid === file.uid).status = 'exception'
     },
     handleCopy(file) {
         const status = this.fileList.find(item => item.uid === file.uid).status
@@ -148,7 +175,6 @@ methods: {
             this.$message.error('上传文件大小不能超过 5MB!')
         } else {
             this.uploading = true
-            this.file = file
             const fileUrl = URL.createObjectURL(file)
             this.fileList.push({
                 uid: file.uid,
@@ -161,7 +187,19 @@ methods: {
         return isLt5M
     },
     handleProgress(event) {
-        this.fileList.find(item => item.uid === this.file.uid).progreess = event.percent
+        this.fileList.find(item => item.uid === event.file.uid).progreess = event.percent
+    },
+    copyAll() {
+        const urls = this.fileList.map(item => {
+            if (item.status === 'done' || item.status === 'success') {
+                return item.url
+            }
+        }).join('\n')
+        navigator.clipboard.writeText(urls)
+        this.$message({
+            type: 'success',
+            message: '整体复制成功'
+        })
     }
 }
 }
@@ -271,5 +309,15 @@ methods: {
     font-size: small;
     color: antiquewhite;
     user-select: none;
+}
+.upload-list-dashboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+.upload-list-dashboard-title {
+    font-size: medium;
+    font-weight: bold;
 }
 </style>
