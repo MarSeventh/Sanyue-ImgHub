@@ -4,13 +4,14 @@
 
 [cf-pages/Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)项目的一个新前端，实现了**上传图片预览**，**多文件上传**，**拖拽上传**等功能。
 
-![](https://alist.sanyue.site/d/imgbed/202407182037148.png)
+![](https://alist.sanyue.site/d/imgbed/202407182157169.png)
 
-![](https://alist.sanyue.site/d/imgbed/202407182037249.png)
+![](https://alist.sanyue.site/d/imgbed/202407182157130.png)
 
 ## Features
 
 - 前端开源（可自行修改、打包使用）
+- 流畅丝滑的过渡动画~
 - 上传文件实现呼吸灯效果
 - 上传显示实时上传进度
 - 支持整体复制和单独复制（整体复制即将所有链接通过换行串联起来后复制）
