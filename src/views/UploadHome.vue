@@ -29,8 +29,8 @@ export default {
     justify-content: center;
     align-items: center;
     padding: 15px;
-    position: relative;
-    bottom: 20px;
+    position: fixed;
+    top: 5vh;
     color: blanchedalmond;
     user-select: none;
     text-decoration: none;
@@ -57,7 +57,7 @@ export default {
     height: 100vh;
 }
 .upload {
-    position: relative;
-    bottom: 30px;
+    position: fixed;
+    top: 20vh;
 }
 </style>

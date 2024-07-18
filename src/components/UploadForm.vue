@@ -2,7 +2,7 @@
     <div class="upload-form">
         <el-upload
             class="upload-card"
-            :class="{'is-uploading': uploading}"
+            :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length}"
             drag
             :http-request="uploadFile"
             multiple
@@ -23,56 +23,58 @@
                 <div class="el-upload__tip">支持多文件上传（每次最多10个），支持图片和视频，文件大小不超过5MB</div>
             </template>
         </el-upload>
-        <el-card class="upload-list-card" v-if="fileList.length">
-            <div class="upload-list-container">
-                <el-scrollbar>
-                    <div class="upload-list-dashboard">
-                        <el-text class="upload-list-dashboard-title">
-                            <el-icon><List /></el-icon>{{ uploadingCount }}
-                            <el-icon><Checked /></el-icon>{{ uploadSuccessCount }}
-                            <el-icon><Failed /></el-icon>{{ uploadErrorCount }}
-                        </el-text>
-                        <div class="upload-list-dashboard-action">
-                            <el-button-group>
-                                <el-tooltip content="整体复制" placement="top">
-                                    <el-button type="primary" round @click="copyAll" alt="整体复制"><el-icon><Grid /></el-icon></el-button>
-                                </el-tooltip>
-                                <el-tooltip content="清空列表" placement="top">
-                                    <el-button type="primary" round @click="fileList = []"><el-icon><CircleClose /></el-icon></el-button>
-                                </el-tooltip>
-                            </el-button-group>
-                        </div>
-                    </div>
-                    <div class="upload-list-item" v-for="file in fileList" :key="file.name" :span="8">
-                        <img
-                            style="width: 10vw; border-radius: 12px;"
-                            :src="file.url"
-                            @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
-                            >
-                        </img>
-                        <div class="upload-list-item-content">
-                            <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
-                            <div class="upload-list-item-url" v-if="file.status==='done'">
-                                <el-link :underline="false" :href="file.url" target="_blank">
-                                    <el-text class="upload-list-item-url-text" truncated>{{ file.url }}</el-text>
-                                </el-link>
-                            </div>
-                            <div class="upload-list-item-progress" v-else>
-                                <el-progress :percentage="file.progreess" :status="file.status" :show-text="false"/>
+        <Transition name="upload-list-trans">
+            <el-card class="upload-list-card" v-if="fileList.length">
+                <div class="upload-list-container">
+                    <el-scrollbar>
+                        <div class="upload-list-dashboard">
+                            <el-text class="upload-list-dashboard-title">
+                                <el-icon><List /></el-icon>{{ uploadingCount }}
+                                <el-icon><Checked /></el-icon>{{ uploadSuccessCount }}
+                                <el-icon><Failed /></el-icon>{{ uploadErrorCount }}
+                            </el-text>
+                            <div class="upload-list-dashboard-action">
+                                <el-button-group>
+                                    <el-tooltip content="整体复制" placement="top">
+                                        <el-button type="primary" round @click="copyAll" alt="整体复制"><el-icon><Grid /></el-icon></el-button>
+                                    </el-tooltip>
+                                    <el-tooltip content="清空列表" placement="top">
+                                        <el-button type="primary" round @click="fileList = []"><el-icon><CircleClose /></el-icon></el-button>
+                                    </el-tooltip>
+                                </el-button-group>
                             </div>
                         </div>
-                        <div class="upload-list-item-action">
-                                <el-button type="primary" circle size="medium" class="upload-list-item-action-button" @click="handleCopy(file)">
-                                    <el-icon><Link /></el-icon>
-                                </el-button>
-                                <el-button type="danger" circle size="medium" class="upload-list-item-action-button" @click="handleRemove(file)">
-                                    <el-icon><Delete /></el-icon>
-                                </el-button>
+                        <div class="upload-list-item" v-for="file in fileList" :key="file.name" :span="8">
+                            <img
+                                style="width: 10vw; border-radius: 12px;"
+                                :src="file.url"
+                                @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
+                                >
+                            </img>
+                            <div class="upload-list-item-content">
+                                <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
+                                <div class="upload-list-item-url" v-if="file.status==='done'">
+                                    <el-link :underline="false" :href="file.url" target="_blank">
+                                        <el-text class="upload-list-item-url-text" truncated>{{ file.url }}</el-text>
+                                    </el-link>
+                                </div>
+                                <div class="upload-list-item-progress" v-else>
+                                    <el-progress :percentage="file.progreess" :status="file.status" :show-text="false"/>
+                                </div>
+                            </div>
+                            <div class="upload-list-item-action">
+                                    <el-button type="primary" circle size="medium" class="upload-list-item-action-button" @click="handleCopy(file)">
+                                        <el-icon><Link /></el-icon>
+                                    </el-button>
+                                    <el-button type="danger" circle size="medium" class="upload-list-item-action-button" @click="handleRemove(file)">
+                                        <el-icon><Delete /></el-icon>
+                                    </el-button>
+                            </div>
                         </div>
-                    </div>
-                </el-scrollbar>
-            </div>
-        </el-card>
+                    </el-scrollbar>
+                </div>
+            </el-card>
+        </Transition>
     </div>
 </template>
 
@@ -220,9 +222,16 @@ methods: {
     justify-content: center;
     align-items: center;
 }
+.upload-list-trans-enter-active .upload-list-trans-leave-active {
+    transition: all 3s ease;
+}
+.upload-list-trans-enter, .upload-list-trans-leave-to {
+    opacity: 0;
+    transform: translateY(20vh);
+}
 .upload-list-card {
     width: 55vw;
-    height: 30vh;
+    height: 35vh;
     margin-top: 10px;
     display: flex;
     flex-direction: column;
@@ -235,7 +244,7 @@ methods: {
 }
 .upload-list-container {
     width: 55vw;
-    height: 30vh;
+    height: 35vh;
 }
 .upload-list-item {
     display: flex;
@@ -276,12 +285,15 @@ methods: {
     padding: 20px;
     background: none;
 }
+.upload-card-busy :deep(.el-upload-dragger) {
+    height: 25vh;
+}
 :deep(.el-upload-dragger)  {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 30vh;
+    height: 50vh;
     border-radius: 15px;
     border: 3px dashed #409EFF;
     opacity: 0.7;
