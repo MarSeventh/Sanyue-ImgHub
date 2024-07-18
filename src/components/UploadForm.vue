@@ -10,12 +10,13 @@
             :on-exceed="handleExceed"
             :on-error="handleError"
             :before-upload="beforeUpload"
+            :on-progress="handleProgress"
             :file-list="fileList"
             :show-file-list="false"
             :limit="10"
             accept="image/*, video/*">
             <el-icon class="el-icon--upload">
-                <CameraFilled />
+                <CameraFilled color="blanchedalmond"/>
             </el-icon>
             <div class="el-upload__text">拖拽 或 <em>点击上传</em></div>
             <template #tip>
@@ -29,14 +30,18 @@
                         <img
                             style="width: 10vw; border-radius: 12px;"
                             :src="file.url"
+                            @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
                             >
                         </img>
                         <div class="upload-list-item-content">
                             <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
-                            <div class="upload-list-item-url">
+                            <div class="upload-list-item-url" v-if="file.status==='done'">
                                 <el-link :underline="false" :href="file.url" target="_blank">
                                     <el-text class="upload-list-item-url-text" truncated>{{ file.url }}</el-text>
                                 </el-link>
+                            </div>
+                            <div class="upload-list-item-progress" v-else>
+                                <el-progress :percentage="file.progreess" :status="file.status" :show-text="false"/>
                             </div>
                         </div>
                         <div class="upload-list-item-action">
@@ -69,7 +74,21 @@ methods: {
     uploadFile(file) {
         const formData = new FormData()
         formData.append('file', file.file)
-        return axios.post('/upload', formData)
+        axios({
+            url: '/upload',
+            method: 'post',
+            data: formData,
+            onUploadProgress: (progressEvent) => {
+                const percentCompleted = Math.round((progressEvent.loaded / progressEvent.total) * 100)
+                file.onProgress({ percent: percentCompleted })
+            }
+        }).then(res => {
+            file.onSuccess(res)
+        }).catch(err => {
+            file.onError(err)
+        }).finally(() => {
+            this.uploading = false
+        })
     },
     handlePreview(file) {
         window.open(file.url, '_blank')
@@ -83,18 +102,19 @@ methods: {
     },
     handleSuccess(response, file) {
         try {       
-            this.fileList.push({
-                uid: file.uid,
-                name: file.name,
-                url: process.env.VUE_APP_SITE_URL + response.data[0].src
-            })
+            this.fileList.find(item => item.uid === file.uid).url = process.env.VUE_APP_SITE_URL + response.data[0].src
+            this.fileList.find(item => item.uid === file.uid).progreess = 100
+            this.fileList.find(item => item.uid === file.uid).status = 'success'
             this.$message({
                 type: 'success',
                 message: file.name + '上传成功'
             })
+            setTimeout(() => {
+                this.fileList.find(item => item.uid === file.uid).status = 'done'
+            }, 3000)
         } catch (error) {
             this.$message.error(file.name + '上传失败')
-            this.fileList = this.fileList.filter(item => item.uid !== file.uid)
+            this.fileList.find(item => item.uid === file.uid).status = 'exception'
         } finally {
             this.uploading = false
         }
@@ -105,8 +125,17 @@ methods: {
     handleError(err) {
         this.$message.error(this.file.name + '上传失败')
         this.uploading = false
+        this.fileList.find(item => item.uid === this.file.uid).status = 'exception'
     },
     handleCopy(file) {
+        const status = this.fileList.find(item => item.uid === file.uid).status
+        if (status !== 'done' && status !== 'success') {
+            this.$message({
+                type: 'warning',
+                message: '文件未上传成功，无法复制链接'
+            })
+            return
+        }
         navigator.clipboard.writeText(file.url)
         this.$message({
             type: 'success',
@@ -120,8 +149,19 @@ methods: {
         } else {
             this.uploading = true
             this.file = file
+            const fileUrl = URL.createObjectURL(file)
+            this.fileList.push({
+                uid: file.uid,
+                name: file.name,
+                url: fileUrl,
+                status: 'uploading',
+                progreess: 0
+            })
         }
         return isLt5M
+    },
+    handleProgress(event) {
+        this.fileList.find(item => item.uid === this.file.uid).progreess = event.percent
     }
 }
 }
@@ -179,6 +219,10 @@ methods: {
     margin-left: 10px;
 }
 .upload-list-item-url-text {
+    width: 28vw;
+}
+.upload-list-item-progress {
+    margin-top: 3px;
     width: 28vw;
 }
 .upload-list-item-action {

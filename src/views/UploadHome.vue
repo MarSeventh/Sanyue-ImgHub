@@ -2,7 +2,7 @@
     <div class="upload-home">
         <div class="header">
             <a href="https://sanyue.site">
-                <img class="logo" alt="Vue logo" src="../assets/logo.png"/>
+                <img class="logo" alt="Sanyue logo" src="../assets/logo.png"/>
             </a> 
             <h1>Sanyue ImgHub</h1>
         </div>
