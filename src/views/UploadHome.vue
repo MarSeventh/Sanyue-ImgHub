@@ -38,7 +38,8 @@ export default {
 .main-title {
     background: linear-gradient(to right, rgb(239, 250, 195), #f3a060);
     background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-decoration: none;
 }
 .logo {
     height: 80px;
