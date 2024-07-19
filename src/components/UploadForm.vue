@@ -128,8 +128,9 @@ methods: {
         })
     },
     handleSuccess(response, file) {
-        try {       
-            this.fileList.find(item => item.uid === file.uid).url = process.env.VUE_APP_SITE_URL + response.data[0].src
+        try {     
+            const rootUrl = `${window.location.protocol}//${window.location.host}`
+            this.fileList.find(item => item.uid === file.uid).url = rootUrl + response.data[0].src
             this.fileList.find(item => item.uid === file.uid).progreess = 100
             this.fileList.find(item => item.uid === file.uid).status = 'success'
             this.$message({

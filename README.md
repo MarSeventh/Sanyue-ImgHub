@@ -18,11 +18,17 @@
 
 ## Deployment
 
-如果要在原项目基础上部署新前端，只需要三步：
+如果要在**原项目基础上部署新前端**，并且具有定制化需求，只需要三步（**前提是你需要有基本的`git`、`nodejs`等工具的使用能力**）：
 
 1. 将该项目拉到本地，`npm install`，修改环境变量`.env`中的`VUE_APP_SITE_URL`为你自己图床的URL
-2. `npm run build`，进入打包好的`/dist`目录，将里面的所有内容复制到`telegraph-image`项目的根目录（如果你还想保留原来的前端，请将原来的`index.html`重命名为`index-bk.html`）
+2. 进行DIY，然后`npm run build`，进入打包好的`/dist`目录，将里面的所有内容复制到`telegraph-image`项目的根目录（如果你还想保留原来的前端，请将原来的`index.html`重命名为`index-bk.html`）
 3. 将修改好的`telegraph-image`项目部署上去即可，具体方法参照原项目
+
+如果你需要**开箱即用**的完整项目，我将修改好的项目保存在[MarSeventh/CloudFlare-ImgBed](https://github.com/MarSeventh/CloudFlare-ImgBed)仓库中，你可以遵循以下步骤使用：
+
+1. fork上述仓库
+2. 按照原项目部署流程在CF上部署上述项目
+3. 所有环境变量按照原项目填写即可（注意如果要完全迁移，原来的KV数据库一定要保留！！！）
 
 **一天手搓出来的前端，后续还会继续完善，有bug欢迎提出。**
 
