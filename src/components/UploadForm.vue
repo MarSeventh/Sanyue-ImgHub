@@ -4,23 +4,21 @@
             class="upload-card"
             :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length}"
             drag
-            :http-request="uploadFile"
             multiple
+            :http-request="uploadFile"
             :onSuccess="handleSuccess"
-            :on-exceed="handleExceed"
             :on-error="handleError"
             :before-upload="beforeUpload"
             :on-progress="handleProgress"
             :file-list="fileList"
             :show-file-list="false"
-            :limit="10"
             accept="image/*, video/*">
             <el-icon class="el-icon--upload">
                 <CameraFilled color="blanchedalmond"/>
             </el-icon>
             <div class="el-upload__text">拖拽 或 <em>点击上传</em></div>
             <template #tip>
-                <div class="el-upload__tip">支持多文件上传（每次最多10个），支持图片和视频，文件大小不超过5MB</div>
+                <div class="el-upload__tip">支持多文件上传，支持图片和视频，文件大小不超过5MB</div>
             </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
@@ -28,7 +26,7 @@
                 <el-scrollbar>
                     <div class="upload-list-dashboard">
                         <el-text class="upload-list-dashboard-title">
-                            <el-icon><List /></el-icon>{{ uploadingCount }}
+                            <el-icon><List /></el-icon>{{ uploadingCount + waitingCount }}
                             <el-icon><Checked /></el-icon>{{ uploadSuccessCount }}
                             <el-icon><Failed /></el-icon>{{ uploadErrorCount }}
                         </el-text>
@@ -38,7 +36,7 @@
                                     <el-button type="primary" round @click="copyAll" alt="整体复制"><el-icon><Grid /></el-icon></el-button>
                                 </el-tooltip>
                                 <el-tooltip content="清空列表" placement="top">
-                                    <el-button type="primary" round @click="fileList = []"><el-icon><CircleClose /></el-icon></el-button>
+                                    <el-button type="primary" round @click="clearFileList"><el-icon><CircleClose /></el-icon></el-button>
                                 </el-tooltip>
                             </el-button-group>
                         </div>
@@ -62,10 +60,10 @@
                             </div>
                         </div>
                         <div class="upload-list-item-action">
-                                <el-button type="primary" circle size="medium" class="upload-list-item-action-button" @click="handleCopy(file)">
+                                <el-button type="primary" circle class="upload-list-item-action-button" @click="handleCopy(file)">
                                     <el-icon><Link /></el-icon>
                                 </el-button>
-                                <el-button type="danger" circle size="medium" class="upload-list-item-action-button" @click="handleRemove(file)">
+                                <el-button type="danger" circle class="upload-list-item-action-button" @click="handleRemove(file)">
                                     <el-icon><Delete /></el-icon>
                                 </el-button>
                         </div>
@@ -78,12 +76,15 @@
 
 <script>
 import axios from 'axios'
+
 export default {
 name: 'UploadForm',
 data() {
     return {
         fileList: [],
-        uploading: false
+        uploading: false,
+        maxUploading: 10,
+        waitingList: []
     }
 },
 computed: {
@@ -95,10 +96,20 @@ computed: {
     },
     uploadingCount() {
         return this.fileList.filter(item => item.status === 'uploading').length
+    },
+    waitingCount() {
+        return this.waitingList.length
     }
 },
 methods: {
     uploadFile(file) {
+        if (this.uploadingCount > this.maxUploading) {
+            this.waitingList.push(file)
+            this.fileList.find(item => item.uid === file.file.uid).status = 'waiting'
+            return
+        } else {
+            this.fileList.find(item => item.uid === file.file.uid).status = 'uploading'
+        }
         const formData = new FormData()
         formData.append('file', file.file)
         axios({
@@ -116,9 +127,6 @@ methods: {
         }).finally(() => {
             this.uploading = false
         })
-    },
-    handlePreview(file) {
-        window.open(file.url, '_blank')
     },
     handleRemove(file) {
         this.fileList = this.fileList.filter(item => item.uid !== file.uid)
@@ -145,15 +153,20 @@ methods: {
             this.fileList.find(item => item.uid === file.uid).status = 'exception'
         } finally {
             this.uploading = false
+            if (this.waitingList.length) {
+                const file = this.waitingList.shift()
+                this.uploadFile(file)
+            }
         }
-    },
-    handleExceed(files) {
-        this.$message.warning(`上传文件列表最多 10 个文件，请先删除已上传文件`)
     },
     handleError(err, file) {
         this.$message.error(file.name + '上传失败')
         this.uploading = false
         this.fileList.find(item => item.uid === file.uid).status = 'exception'
+        if (this.waitingList.length) {
+            const file = this.waitingList.shift()
+            this.uploadFile(file)
+        }
     },
     handleCopy(file) {
         const status = this.fileList.find(item => item.uid === file.uid).status
@@ -174,6 +187,7 @@ methods: {
         const isLt5M = file.size / 1024 / 1024 < 5
         if (!isLt5M) {
             this.$message.error('上传文件大小不能超过 5MB!')
+            return false
         } else {
             this.uploading = true
             const fileUrl = URL.createObjectURL(file)
@@ -184,8 +198,8 @@ methods: {
                 status: 'uploading',
                 progreess: 0
             })
-        }
-        return isLt5M
+            return true
+    }
     },
     handleProgress(event) {
         this.fileList.find(item => item.uid === event.file.uid).progreess = event.percent
@@ -200,6 +214,13 @@ methods: {
         this.$message({
             type: 'success',
             message: '整体复制成功'
+        })
+    },
+    clearFileList() {
+        this.fileList = []
+        this.$message({
+            type: 'info',
+            message: '列表已清空'
         })
     }
 }
