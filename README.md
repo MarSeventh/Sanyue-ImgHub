@@ -4,7 +4,7 @@
 
 [cf-pages/Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)项目的一个新前端，实现了**登录鉴权**、**上传图片预览**，**多文件上传**，**拖拽上传**，**整体复制**等功能。
 
-![image-20240721114014418](https://alist.sanyue.site/d/imgbed/202407211140068.png)
+![](https://alist.sanyue.site/d/imgbed/202407211140068.png)
 
 ![](https://alist.sanyue.site/d/imgbed/202407182157169.png)
 
@@ -40,6 +40,7 @@
 
 1. 增加粘贴图片上传功能
 2. 增加markdown、html等格式链接复制功能
+3. 上传页面增加管理页面跳转按钮
 
 ## TIPS
 
