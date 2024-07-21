@@ -1,5 +1,10 @@
 <template>
     <div class="upload-home">
+        <div class="toolbar">
+            <el-button class="toolbar-button" size="large" type="primary" @click="handleManage" circle>
+                <el-icon size="large"><Tools /></el-icon>
+            </el-button>
+        </div>
         <div class="header">
             <a href="https://sanyue.site">
                 <img class="logo" alt="Sanyue logo" src="../assets/logo.png"/>
@@ -19,11 +24,29 @@ export default {
     components: {
         UploadForm,
         Footer
+    },
+    methods: {
+        handleManage() {
+            window.location.href = '/admin'
+        }
     }
 }
 </script>
 
 <style scoped>
+.toolbar {
+    position: fixed;
+    bottom: 8vh;
+    right: 1.5vw;
+}
+.toolbar-button {
+    border: none;
+    transition: all 0.3s ease;
+}
+.toolbar-button:hover {
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+}
 .header {
     display: flex;
     justify-content: center;
