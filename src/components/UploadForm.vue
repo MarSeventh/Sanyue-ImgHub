@@ -114,7 +114,7 @@ methods: {
         const formData = new FormData()
         formData.append('file', file.file)
         axios({
-            url: '/upload' + '?authcode=' + cookies.get('authCode'),
+            url: '/upload' + '?authCode=' + cookies.get('authCode'),
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {
