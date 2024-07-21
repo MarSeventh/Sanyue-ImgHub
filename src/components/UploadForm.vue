@@ -76,6 +76,7 @@
 
 <script>
 import axios from 'axios'
+import cookies from 'vue-cookies'
 
 export default {
 name: 'UploadForm',
@@ -113,7 +114,7 @@ methods: {
         const formData = new FormData()
         formData.append('file', file.file)
         axios({
-            url: '/upload',
+            url: '/upload' + '?authcode=' + cookies.get('authCode'),
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {
@@ -123,7 +124,14 @@ methods: {
         }).then(res => {
             file.onSuccess(res)
         }).catch(err => {
-            file.onError(err)
+            if (err.response && err.response.status === 401) {
+                this.waitingList = []
+                this.fileList = []
+                this.$message.error('认证状态错误！')
+                this.$router.push('/login')
+            } else {
+                file.onError(err)
+            }
         }).finally(() => {
             this.uploading = false
         })

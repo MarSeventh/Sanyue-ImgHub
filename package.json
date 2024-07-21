@@ -13,6 +13,7 @@
     "element-plus": "^2.7.7",
     "http-proxy-middleware": "^3.0.0",
     "vue": "^3.2.13",
+    "vue-cookies": "^1.8.4",
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0"
   },

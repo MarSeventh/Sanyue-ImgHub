@@ -2,7 +2,9 @@
 
 ## Introduction
 
-[cf-pages/Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)项目的一个新前端，实现了**上传图片预览**，**多文件上传**，**拖拽上传**，**整体复制**等功能。
+[cf-pages/Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)项目的一个新前端，实现了**登录鉴权**、**上传图片预览**，**多文件上传**，**拖拽上传**，**整体复制**等功能。
+
+![image-20240721114014418](https://alist.sanyue.site/d/imgbed/202407211140068.png)
 
 ![](https://alist.sanyue.site/d/imgbed/202407182157169.png)
 
@@ -17,6 +19,8 @@
 - 上传显示实时上传进度
 - 支持整体复制和单独复制（整体复制即将所有链接通过换行串联起来后复制）
 - 上传后图片无需手动点击，可直接展示在管理页面中
+- 支持Web和API上传认证（感谢[hl128k](https://github.com/hl128k)）
+- 支持访问域名限制（感谢[hl128k](https://github.com/hl128k)）
 
 ## Deployment
 
