@@ -80,6 +80,13 @@ import cookies from 'vue-cookies'
 
 export default {
 name: 'UploadForm',
+props: {
+    selectedUrlForm: {
+        type: String,
+        default: 'url',
+        required: false
+    }
+},
 data() {
     return {
         fileList: [],
@@ -185,7 +192,15 @@ methods: {
             })
             return
         }
-        navigator.clipboard.writeText(file.url)
+        if (this.selectedUrlForm === 'url') {
+            navigator.clipboard.writeText(file.url)
+        } else if (this.selectedUrlForm === 'md') {
+            navigator.clipboard.writeText(`![${file.name}](${file.url})`)
+        } else if (this.selectedUrlForm === 'html') {
+            navigator.clipboard.writeText(`<img src="${file.url}" alt="${file.name}">`)
+        } else {
+            navigator.clipboard.writeText(file.url)
+        }
         this.$message({
             type: 'success',
             message: '复制成功'
@@ -213,12 +228,35 @@ methods: {
         this.fileList.find(item => item.uid === event.file.uid).progreess = event.percent
     },
     copyAll() {
-        const urls = this.fileList.map(item => {
-            if (item.status === 'done' || item.status === 'success') {
-                return item.url
-            }
-        }).join('\n')
-        navigator.clipboard.writeText(urls)
+        if (this.selectedUrlForm === 'url') {
+            const urls = this.fileList.map(item => {
+                if (item.status === 'done' || item.status === 'success') {
+                    return item.url
+                }
+            }).join('\n')
+            navigator.clipboard.writeText(urls)
+        } else if (this.selectedUrlForm === 'md') {
+            const urls = this.fileList.map(item => {
+                if (item.status === 'done' || item.status === 'success') {
+                    return `![${item.name}](${item.url})`
+                }
+            }).join('\n')
+            navigator.clipboard.writeText(urls)
+        } else if (this.selectedUrlForm === 'html') {
+            const urls = this.fileList.map(item => {
+                if (item.status === 'done' || item.status === 'success') {
+                    return `<img src="${item.url}" alt="${item.name}">`
+                }
+            }).join('\n')
+            navigator.clipboard.writeText(urls)
+        } else {
+            const urls = this.fileList.map(item => {
+                if (item.status === 'done' || item.status === 'success') {
+                    return item.url
+                }
+            }).join('\n')
+            navigator.clipboard.writeText(urls)
+        }
         this.$message({
             type: 'success',
             message: '整体复制成功'

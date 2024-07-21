@@ -1,9 +1,16 @@
 <template>
     <div class="upload-home">
         <div class="toolbar">
-            <el-button class="toolbar-button" size="large" type="primary" @click="handleManage" circle>
-                <el-icon size="large"><Tools /></el-icon>
-            </el-button>
+            <el-tooltip content="链接格式" placement="left">
+                <el-button class="toolbar-button" size="large" type="success" @click="openUrlDialog" circle>
+                    <el-icon size="large"><Connection /></el-icon>
+                </el-button>
+            </el-tooltip>
+            <el-tooltip content="管理" placement="left">
+                <el-button class="toolbar-button" size="large" type="primary" @click="handleManage" circle>
+                    <el-icon size="large"><Tools /></el-icon>
+                </el-button>
+            </el-tooltip>
         </div>
         <div class="header">
             <a href="https://sanyue.site">
@@ -11,16 +18,33 @@
             </a> 
             <h1><a class="main-title" href="https://sanyue.site" target="_blank">Sanyue</a> ImgHub</h1>
         </div>
-        <UploadForm class="upload"/>
+        <UploadForm :selectedUrlForm="selectedUrlForm" class="upload"/>
         <Footer/>
+        <el-dialog title="选择复制链接格式" v-model="showUrlDialog" width="40%" :show-close="false">
+            <el-radio-group v-model="selectedUrlForm">
+                <el-radio value="url">原始链接</el-radio>
+                <el-radio value="md">MarkDown</el-radio>
+                <el-radio value="html">HTML</el-radio>
+            </el-radio-group>
+            <div class="dialog-action">
+                <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
 <script>
 import UploadForm from '@/components/UploadForm.vue'
 import Footer from '@/components/Footer.vue'
+import { ref } from 'vue'
 export default {
     name: 'UploadHome',
+    data() {
+        return {
+            selectedUrlForm: ref('url'),
+            showUrlDialog: false
+        }
+    },
     components: {
         UploadForm,
         Footer
@@ -28,6 +52,9 @@ export default {
     methods: {
         handleManage() {
             window.location.href = '/admin'
+        },
+        openUrlDialog() {
+            this.showUrlDialog = true
         }
     }
 }
@@ -38,14 +65,31 @@ export default {
     position: fixed;
     bottom: 8vh;
     right: 1.5vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 100;
 }
 .toolbar-button {
     border: none;
     transition: all 0.3s ease;
+    margin-bottom: 10px;
+    margin-left: 0;
 }
 .toolbar-button:hover {
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
     transform: translateY(-3px);
+}
+:deep(.el-dialog) {
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
+}
+.dialog-action {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
 }
 .header {
     display: flex;
