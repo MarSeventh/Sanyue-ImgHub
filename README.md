@@ -2,13 +2,15 @@
 
 ## Introduction
 
-[cf-pages/Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)项目的一个新前端，实现了**登录鉴权**、**上传图片预览**，**多文件上传**，**拖拽上传**，**整体复制**、**多格式复制**等功能。
+[cf-pages/Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)项目的一个新前端，实现了**登录鉴权**、**上传图片预览**、**一键切换上传方式**（**拖拽上传**、**粘贴上传**）、**多文件上传**、**整体复制**、**多格式复制**等功能。
 
 ![](https://alist.sanyue.site/d/imgbed/202407211140068.png)
 
-![](https://alist.sanyue.site/d/imgbed/202407182157169.png)
+![](https://alist.sanyue.site/d/imgbed/202407221043832.png)
 
-![](https://alist.sanyue.site/d/imgbed/202407182157130.png)
+![](https://alist.sanyue.site/d/imgbed/202407221044182.png)
+
+![image-20240722104418816](https://alist.sanyue.site/d/imgbed/202407221048648.png)
 
 ## Features
 
@@ -22,6 +24,7 @@
 - 上传后图片无需手动点击，可直接展示在管理页面中
 - 支持Web和API上传认证（感谢[hl128k](https://github.com/hl128k)）
 - 支持访问域名限制（感谢[hl128k](https://github.com/hl128k)）
+- 支持一键切换上传方式（拖拽点击、粘贴）
 
 ## Deployment
 
@@ -39,7 +42,7 @@
 
 ## TODO
 
-1. 增加粘贴图片上传功能
+1. ~~增加粘贴图片上传功能（2024.7.22已完成）~~
 2. ~~增加markdown、html等格式链接复制功能（2024.7.21已完成）~~
 3. ~~上传页面增加管理页面跳转按钮（2024.7.21已完成）~~
 

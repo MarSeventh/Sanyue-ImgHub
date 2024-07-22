@@ -1,12 +1,17 @@
 <template>
     <div class="upload-home">
         <div class="toolbar">
+            <el-tooltip content="上传方式" placement="left">
+                <el-button class="toolbar-button" size="large" type="info" @click="changeUploadMethod" circle>
+                    <el-icon size="large"><Refresh /></el-icon>
+                </el-button>
+            </el-tooltip>
             <el-tooltip content="链接格式" placement="left">
                 <el-button class="toolbar-button" size="large" type="success" @click="openUrlDialog" circle>
                     <el-icon size="large"><Connection /></el-icon>
                 </el-button>
             </el-tooltip>
-            <el-tooltip content="管理" placement="left">
+            <el-tooltip content="管理页面" placement="left">
                 <el-button class="toolbar-button" size="large" type="primary" @click="handleManage" circle>
                     <el-icon size="large"><Tools /></el-icon>
                 </el-button>
@@ -18,7 +23,7 @@
             </a> 
             <h1><a class="main-title" href="https://sanyue.site" target="_blank">Sanyue</a> ImgHub</h1>
         </div>
-        <UploadForm :selectedUrlForm="selectedUrlForm" class="upload"/>
+        <UploadForm :selectedUrlForm="selectedUrlForm" :uploadMethod="uploadMethod" class="upload"/>
         <Footer/>
         <el-dialog title="选择复制链接格式" v-model="showUrlDialog" width="40%" :show-close="false">
             <el-radio-group v-model="selectedUrlForm">
@@ -42,6 +47,7 @@ export default {
     data() {
         return {
             selectedUrlForm: ref('url'),
+            uploadMethod: ref('drag'),
             showUrlDialog: false
         }
     },
@@ -55,6 +61,9 @@ export default {
         },
         openUrlDialog() {
             this.showUrlDialog = true
+        },
+        changeUploadMethod() {
+            this.uploadMethod = this.uploadMethod === 'drag' ? 'paste' : 'drag'
         }
     }
 }

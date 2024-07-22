@@ -1,8 +1,8 @@
 <template>
-    <div class="upload-form">
+    <div class="upload-form" @paste.native="handlePaste">
         <el-upload
             class="upload-card"
-            :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length}"
+            :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length, 'paste-mode': uploadMethod === 'paste'}"
             drag
             multiple
             :http-request="uploadFile"
@@ -12,11 +12,14 @@
             :on-progress="handleProgress"
             :file-list="fileList"
             :show-file-list="false"
-            accept="image/*, video/*">
+            accept="image/*, video/*"
+            >
             <el-icon class="el-icon--upload">
-                <CameraFilled color="blanchedalmond"/>
+                <CameraFilled v-if="uploadMethod === 'drag'" color="blanchedalmond"/>
+                <CopyDocument v-else color="blanchedalmond"/>
             </el-icon>
-            <div class="el-upload__text">拖拽 或 <em>点击上传</em></div>
+            <div class="el-upload__text" v-if="uploadMethod === 'drag'">拖拽 或 <em>点击上传</em></div>
+            <div class="el-upload__text" v-else>复制 <em>粘贴</em> 上传</div>
             <template #tip>
                 <div class="el-upload__tip">支持多文件上传，支持图片和视频，文件大小不超过5MB</div>
             </template>
@@ -85,6 +88,11 @@ props: {
         type: String,
         default: 'url',
         required: false
+    }, 
+    uploadMethod: {
+        type: String,
+        default: 'drag',
+        required: false
     }
 },
 data() {
@@ -129,7 +137,7 @@ methods: {
                 file.onProgress({ percent: percentCompleted, file: file.file })
             }
         }).then(res => {
-            file.onSuccess(res)
+            file.onSuccess(res, file.file)
         }).catch(err => {
             if (err.response && err.response.status === 401) {
                 this.waitingList = []
@@ -137,7 +145,7 @@ methods: {
                 this.$message.error('认证状态错误！')
                 this.$router.push('/login')
             } else {
-                file.onError(err)
+                file.onError(err, file.file)
             }
         }).finally(() => {
             this.uploading = false
@@ -268,6 +276,34 @@ methods: {
             type: 'info',
             message: '列表已清空'
         })
+    },
+    handlePaste(event) {
+        if (this.uploadMethod !== 'paste') {
+            return
+        }
+        const items = event.clipboardData.items
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].kind === 'file') {
+                const file = items[i].getAsFile()
+                // 判断文件类型是否为图片或视频
+                if (file.type.includes('image') || file.type.includes('video')) {
+                    file.uid = Date.now() + i
+                    file.file = file
+                    console.log(file)
+                    if (this.beforeUpload(file)) {
+                        this.uploadFile({ file: file, 
+                            onProgress: (evt) => this.handleProgress(evt), 
+                            onSuccess: (response, file) => this.handleSuccess(response, file), 
+                            onError: (error, file) => this.handleError(error, file) })
+                    }
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: '粘贴板中的文件不是图片或视频'
+                    })
+                }
+            }
+        }
     }
 }
 }
@@ -352,6 +388,9 @@ methods: {
 }
 .upload-card-busy :deep(.el-upload-dragger) {
     height: 25vh;
+}
+.paste-mode :deep(.el-upload) {
+    pointer-events: none;
 }
 :deep(.el-upload-dragger)  {
     display: flex;
