@@ -148,7 +148,9 @@ methods: {
                 file.onError(err, file.file)
             }
         }).finally(() => {
-            this.uploading = false
+            if (this.uploadingCount + this.waitingCount === 0) {
+                this.uploading = false
+            }
         })
     },
     handleRemove(file) {
@@ -175,7 +177,9 @@ methods: {
             this.$message.error(file.name + '上传失败')
             this.fileList.find(item => item.uid === file.uid).status = 'exception'
         } finally {
-            this.uploading = false
+            if (this.uploadingCount + this.waitingCount === 0) {
+                this.uploading = false
+            }
             if (this.waitingList.length) {
                 const file = this.waitingList.shift()
                 this.uploadFile(file)
@@ -184,11 +188,13 @@ methods: {
     },
     handleError(err, file) {
         this.$message.error(file.name + '上传失败')
-        this.uploading = false
         this.fileList.find(item => item.uid === file.uid).status = 'exception'
         if (this.waitingList.length) {
             const file = this.waitingList.shift()
             this.uploadFile(file)
+        }
+        if (this.uploadingCount + this.waitingCount === 0) {
+            this.uploading = false
         }
     },
     handleCopy(file) {
