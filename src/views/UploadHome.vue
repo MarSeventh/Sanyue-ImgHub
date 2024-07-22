@@ -18,10 +18,10 @@
             </el-tooltip>
         </div>
         <div class="header">
-            <a href="https://sanyue.site">
+            <a href="https://github.com/MarSeventh/CloudFlare-ImgBed">
                 <img class="logo" alt="Sanyue logo" src="../assets/logo.png"/>
             </a> 
-            <h1><a class="main-title" href="https://sanyue.site" target="_blank">Sanyue</a> ImgHub</h1>
+            <h1><a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">Sanyue</a> ImgHub</h1>
         </div>
         <UploadForm :selectedUrlForm="selectedUrlForm" :uploadMethod="uploadMethod" class="upload"/>
         <Footer/>
