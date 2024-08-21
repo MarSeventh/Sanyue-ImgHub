@@ -16,6 +16,11 @@
                     <el-icon size="large"><Tools /></el-icon>
                 </el-button>
             </el-tooltip>
+            <el-tooltip content="退出登录" placement="left">
+                <el-button class="toolbar-button" size="large" type="danger" @click="handleLogout" circle>
+                    <el-icon size="large"><Close /></el-icon>
+                </el-button>
+            </el-tooltip>
         </div>
         <div class="header">
             <a href="https://github.com/MarSeventh/CloudFlare-ImgBed">
@@ -30,6 +35,7 @@
                 <el-radio value="url">原始链接</el-radio>
                 <el-radio value="md">MarkDown</el-radio>
                 <el-radio value="html">HTML</el-radio>
+                <el-radio value="ubb">BBCode</el-radio>
             </el-radio-group>
             <div class="dialog-action">
                 <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
@@ -42,6 +48,8 @@
 import UploadForm from '@/components/UploadForm.vue'
 import Footer from '@/components/Footer.vue'
 import { ref } from 'vue'
+import cookies from 'vue-cookies'
+
 export default {
     name: 'UploadHome',
     data() {
@@ -64,6 +72,11 @@ export default {
         },
         changeUploadMethod() {
             this.uploadMethod = this.uploadMethod === 'drag' ? 'paste' : 'drag'
+        },
+        handleLogout() {
+            cookies.remove('authCode')
+            this.$router.push('/login')
+            this.$message.success('已退出登录~')
         }
     }
 }

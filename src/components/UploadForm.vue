@@ -45,18 +45,33 @@
                         </div>
                     </div>
                     <div class="upload-list-item" v-for="file in fileList" :key="file.name" :span="8">
-                        <img
-                            style="width: 10vw; border-radius: 12px;"
-                            :src="file.url"
-                            @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
-                            >
-                        </img>
+                        <a :href="file.url" target="_blank">
+                            <img
+                                style="width: 10vw; border-radius: 12px;"
+                                :src="file.url"
+                                @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
+                                >
+                            </img>
+                        </a>
                         <div class="upload-list-item-content">
                             <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
                             <div class="upload-list-item-url" v-if="file.status==='done'">
-                                <el-link :underline="false" :href="file.url" target="_blank">
-                                    <el-text class="upload-list-item-url-text" truncated>{{ file.url }}</el-text>
-                                </el-link>
+                                <div class="upload-list-item-url-row">
+                                    <el-input v-model="file.finalURL" size="small" readonly @focus="selectAllText">
+                                        <template #prepend>URL:</template>
+                                    </el-input>
+                                    <el-input v-model="file.mdURL" size="small" readonly @focus="selectAllText">
+                                        <template #prepend>MarkDown:</template>
+                                    </el-input>
+                                </div>
+                                <div class="upload-list-item-url-row">
+                                    <el-input v-model="file.htmlURL" size="small" readonly @focus="selectAllText">
+                                        <template #prepend>HTML:</template>
+                                    </el-input>
+                                    <el-input v-model="file.ubbURL" size="small" readonly @focus="selectAllText">
+                                        <template #prepend>BBCode:</template>
+                                    </el-input>
+                                </div>
                             </div>
                             <div class="upload-list-item-progress" v-else>
                                 <el-progress :percentage="file.progreess" :status="file.status" :show-text="false"/>
@@ -164,6 +179,10 @@ methods: {
         try {     
             const rootUrl = `${window.location.protocol}//${window.location.host}`
             this.fileList.find(item => item.uid === file.uid).url = rootUrl + response.data[0].src
+            this.fileList.find(item => item.uid === file.uid).finalURL = rootUrl + response.data[0].src
+            this.fileList.find(item => item.uid === file.uid).mdURL = `![${file.name}](${rootUrl + response.data[0].src})`
+            this.fileList.find(item => item.uid === file.uid).htmlURL = `<img src="${rootUrl + response.data[0].src}" alt="${file.name}" width=100% />`
+            this.fileList.find(item => item.uid === file.uid).ubbURL = `[img]${rootUrl + response.data[0].src}[/img]`
             this.fileList.find(item => item.uid === file.uid).progreess = 100
             this.fileList.find(item => item.uid === file.uid).status = 'success'
             this.$message({
@@ -172,7 +191,7 @@ methods: {
             })
             setTimeout(() => {
                 this.fileList.find(item => item.uid === file.uid).status = 'done'
-            }, 3000)
+            }, 1000)
         } catch (error) {
             this.$message.error(file.name + '上传失败')
             this.fileList.find(item => item.uid === file.uid).status = 'exception'
@@ -207,13 +226,15 @@ methods: {
             return
         }
         if (this.selectedUrlForm === 'url') {
-            navigator.clipboard.writeText(file.url)
+            navigator.clipboard.writeText(file.finalURL)
         } else if (this.selectedUrlForm === 'md') {
-            navigator.clipboard.writeText(`![${file.name}](${file.url})`)
+            navigator.clipboard.writeText(file.mdURL)
         } else if (this.selectedUrlForm === 'html') {
-            navigator.clipboard.writeText(`<img src="${file.url}" alt="${file.name}">`)
+            navigator.clipboard.writeText(file.htmlURL)
+        } else if (this.selectedUrlForm === 'ubb') {
+            navigator.clipboard.writeText(file.ubbURL)
         } else {
-            navigator.clipboard.writeText(file.url)
+            navigator.clipboard.writeText(file.finalURL)
         }
         this.$message({
             type: 'success',
@@ -232,6 +253,10 @@ methods: {
                 uid: file.uid,
                 name: file.name,
                 url: fileUrl,
+                finalURL: '',
+                mdURL: '',
+                htmlURL: '',
+                ubbURL: '',
                 status: 'uploading',
                 progreess: 0
             })
@@ -245,28 +270,35 @@ methods: {
         if (this.selectedUrlForm === 'url') {
             const urls = this.fileList.map(item => {
                 if (item.status === 'done' || item.status === 'success') {
-                    return item.url
+                    return item.finalURL
                 }
             }).join('\n')
             navigator.clipboard.writeText(urls)
         } else if (this.selectedUrlForm === 'md') {
             const urls = this.fileList.map(item => {
                 if (item.status === 'done' || item.status === 'success') {
-                    return `![${item.name}](${item.url})`
+                    return item.mdURL
                 }
             }).join('\n')
             navigator.clipboard.writeText(urls)
         } else if (this.selectedUrlForm === 'html') {
             const urls = this.fileList.map(item => {
                 if (item.status === 'done' || item.status === 'success') {
-                    return `<img src="${item.url}" alt="${item.name}">`
+                    return item.htmlURL
+                }
+            }).join('\n')
+            navigator.clipboard.writeText(urls)
+        } else if (this.selectedUrlForm === 'ubb') {
+            const urls = this.fileList.map(item => {
+                if (item.status === 'done' || item.status === 'success') {
+                    return item.ubbURL
                 }
             }).join('\n')
             navigator.clipboard.writeText(urls)
         } else {
             const urls = this.fileList.map(item => {
                 if (item.status === 'done' || item.status === 'success') {
-                    return item.url
+                    return item.finalURL
                 }
             }).join('\n')
             navigator.clipboard.writeText(urls)
@@ -310,6 +342,9 @@ methods: {
                 }
             }
         }
+    },
+    selectAllText(event) {
+        event.target.select()
     }
 }
 }
@@ -366,6 +401,7 @@ methods: {
     font-size: small;
     font-weight: bold;
     width: 28vw;
+    margin-bottom: 5px;
 }
 .upload-list-item-content {
     display: flex;
@@ -374,6 +410,11 @@ methods: {
 }
 .upload-list-item-url-text {
     width: 28vw;
+}
+.upload-list-item-url-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 .upload-list-item-progress {
     margin-top: 3px;

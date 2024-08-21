@@ -18,20 +18,36 @@
 
 <script>
 import cookies from 'vue-cookies'
+import axios from 'axios'
+
 export default {
     data() {
         return {
-            password: ''
+            password: '',
+            writtenPass: ''
         }
     },
     methods: {
         login() {
             // set authCode to Cookie, expires in 2 weeks
             if (this.password === '') {
-                this.password = 'unset'
+                this.writtenPass = 'unset'
+            } else {
+                this.writtenPass = this.password
             }
-            cookies.set('authCode', this.password, '14d')
-            this.$router.push('/')
+            axios.post('/login', {
+                authCode: this.password
+            }).then(res => {
+                if (res.status !== 200) {
+                    this.$message.error('登录失败，请检查认证码是否正确~')
+                    return
+                }
+                cookies.set('authCode', this.writtenPass, '14d')
+                this.$router.push('/')
+                this.$message.success('登录成功~')
+            }).catch(err => {
+                this.$message.error('登录失败，请检查认证码是否正确~')
+            })
         }
     }
 }
