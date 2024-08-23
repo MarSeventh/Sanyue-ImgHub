@@ -327,7 +327,6 @@ methods: {
                 if (file.type.includes('image') || file.type.includes('video')) {
                     file.uid = Date.now() + i
                     file.file = file
-                    console.log(file)
                     if (this.beforeUpload(file)) {
                         this.uploadFile({ file: file, 
                             onProgress: (evt) => this.handleProgress(evt), 
@@ -340,6 +339,47 @@ methods: {
                         message: '粘贴板中的文件不是图片或视频'
                     })
                 }
+            } else if (items[i].kind === 'string') {
+                items[i].getAsString((text) => {
+                    const urlPattern = /^(https?:\/\/[^\s$.?#].[^\s]*)$/;
+                    if (urlPattern.test(text)) {
+                        fetch('/api/fetchRes', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ url: text })
+                        }).then(response => {
+                            const contentType = response.headers.get('content-type');
+                            if (response.status == 200 && (contentType.includes('image') || contentType.includes('video'))) {
+                                return response.blob();
+                            } else {
+                                throw new Error('URL地址的内容不是图片或视频');
+                            }
+                        })
+                        .then(blob => {
+                            //获取图片名
+                            const fileName = text.split('/').pop();
+                            const file = new File([blob], fileName, { type: blob.type });
+                            file.uid = Date.now() + i;
+                            file.file = file;
+                            if (this.beforeUpload(file)) {
+                                this.uploadFile({
+                                    file: file,
+                                    onProgress: (evt) => this.handleProgress(evt),
+                                    onSuccess: (response, file) => this.handleSuccess(response, file),
+                                    onError: (error, file) => this.handleError(error, file)
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            this.$message({
+                                type: 'warning',
+                                message: '粘贴板中的URL地址的内容不是图片或视频'
+                            });
+                        });
+                    }
+                });
             }
         }
     },
@@ -483,4 +523,4 @@ methods: {
     font-size: medium;
     font-weight: bold;
 }
-</style>
+</style>import { split } from 'core-js/fn/symbol'
