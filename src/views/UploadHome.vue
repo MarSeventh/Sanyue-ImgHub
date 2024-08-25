@@ -69,7 +69,7 @@ export default {
             if (this.userConfig?.uploadBkImg === 'bing') {
                 imgUrl = `url(${this.bingWallPapers[this.bingWallPaperIndex]?.url})`
             } else {
-                imgUrl = this.userConfig?.uploadBkImg.length > 0
+                imgUrl = this.userConfig?.uploadBkImg?.length > 0
                             ? `url(${this.userConfig.uploadBkImg[this.customWallPaperIndex]})` :
                             'url(https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg)'
             }
@@ -84,7 +84,7 @@ export default {
             setInterval(() => {
                 this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
             }, 3000)
-        } else if (this.userConfig?.uploadBkImg.length > 1) {
+        } else if (this.userConfig?.uploadBkImg?.length > 1) {
             setInterval(() => {
                 this.customWallPaperIndex = (this.customWallPaperIndex + 1) % this.userConfig.uploadBkImg.length
             }, 3000)
