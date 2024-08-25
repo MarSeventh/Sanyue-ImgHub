@@ -1,5 +1,5 @@
 <template>
-    <div class="login">
+    <div class="login" :style="backgroundImg">
         <div class="login-container">
             <h1>Login</h1>
             <el-input 
@@ -19,12 +19,43 @@
 <script>
 import cookies from 'vue-cookies'
 import axios from 'axios'
+import { mapGetters } from 'vuex'
 
 export default {
     data() {
         return {
             password: '',
-            writtenPass: ''
+            writtenPass: '',
+            bingWallPaperIndex: 0,
+            customWallPaperIndex: 0
+        }
+    },
+    computed: {
+        ...mapGetters(['userConfig', 'bingWallPapers']),
+        backgroundImg() {
+            let imgUrl = ''
+            if (this.userConfig?.loginBkImg === 'bing') {
+                imgUrl = `url(${this.bingWallPapers[this.bingWallPaperIndex]?.url})`
+            } else {
+                imgUrl = this.userConfig?.loginBkImg.length > 0
+                            ? `url(${this.userConfig.loginBkImg[this.customWallPaperIndex]})` :
+                            'url(https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg)'
+            }
+            return {
+                backgroundImage: imgUrl
+            }
+        }
+    },
+    mounted() {
+        if (this.userConfig?.loginBkImg === 'bing') {
+            this.$store.dispatch('fetchBingWallPapers')
+            setInterval(() => {
+                this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
+            }, 3000)
+        } else if (this.userConfig?.loginBkImg.length > 1) {
+            setInterval(() => {
+                this.customWallPaperIndex = (this.customWallPaperIndex + 1) % this.userConfig.loginBkImg.length
+            }, 3000)
         }
     },
     methods: {
@@ -59,7 +90,7 @@ export default {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-image: url('https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg');
+    transition: background-image 1s ease-in-out;
     background-size: cover;
     background-attachment: fixed;
 }

@@ -11,6 +11,10 @@ const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }
-
-app.use(store).use(router).use(ElementPlus).mount('#app')
+store.dispatch('fetchUserConfig').then(() => {
+    app.use(store).use(router).use(ElementPlus).mount('#app');
+}).catch(error => {
+    console.error('Failed to load user configuration:', error);
+    app.use(store).use(router).use(ElementPlus).mount('#app');
+})
 

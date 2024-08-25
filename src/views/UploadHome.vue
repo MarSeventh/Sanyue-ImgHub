@@ -1,5 +1,5 @@
 <template>
-    <div class="upload-home">
+    <div class="upload-home" :style="backgroundImg">
         <div class="toolbar">
             <el-tooltip content="上传方式" placement="left">
                 <el-button class="toolbar-button" size="large" type="info" @click="changeUploadMethod" circle>
@@ -49,6 +49,7 @@ import UploadForm from '@/components/UploadForm.vue'
 import Footer from '@/components/Footer.vue'
 import { ref } from 'vue'
 import cookies from 'vue-cookies'
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'UploadHome',
@@ -56,7 +57,37 @@ export default {
         return {
             selectedUrlForm: ref('url'),
             uploadMethod: ref('drag'),
-            showUrlDialog: false
+            showUrlDialog: false,
+            bingWallPaperIndex: 0,
+            customWallPaperIndex: 0
+        }
+    },
+    computed: {
+        ...mapGetters(['userConfig', 'bingWallPapers']),
+        backgroundImg() {
+            let imgUrl = ''
+            if (this.userConfig?.uploadBkImg === 'bing') {
+                imgUrl = `url(${this.bingWallPapers[this.bingWallPaperIndex]?.url})`
+            } else {
+                imgUrl = this.userConfig?.uploadBkImg.length > 0
+                            ? `url(${this.userConfig.uploadBkImg[this.customWallPaperIndex]})` :
+                            'url(https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg)'
+            }
+            return {
+                backgroundImage: imgUrl
+            }
+        }
+    },
+    mounted() {
+        if (this.userConfig?.uploadBkImg === 'bing') {
+            this.$store.dispatch('fetchBingWallPapers')
+            setInterval(() => {
+                this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
+            }, 3000)
+        } else if (this.userConfig?.uploadBkImg.length > 1) {
+            setInterval(() => {
+                this.customWallPaperIndex = (this.customWallPaperIndex + 1) % this.userConfig.uploadBkImg.length
+            }, 3000)
         }
     },
     components: {
@@ -140,7 +171,7 @@ export default {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-image: url('https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg');
+    transition: background-image 1s ease-in-out;
     background-size: cover;
     background-attachment: fixed;
     height: 100vh;
