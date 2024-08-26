@@ -1,5 +1,7 @@
 <template>
-    <div class="login" :style="backgroundImg">
+    <div class="login">
+        <img id="bg1" class="background-image1" alt="Background Image"/>
+        <img id="bg2" class="background-image2" alt="Background Image"/>
         <div class="login-container">
             <h1>Login</h1>
             <el-input 
@@ -31,31 +33,56 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers']),
-        backgroundImg() {
-            let imgUrl = ''
-            if (this.userConfig?.loginBkImg === 'bing') {
-                imgUrl = `url(${this.bingWallPapers[this.bingWallPaperIndex]?.url})`
-            } else {
-                imgUrl = this.userConfig?.loginBkImg?.length > 0
-                            ? `url(${this.userConfig.loginBkImg[this.customWallPaperIndex]})` :
-                            'url(https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg)'
-            }
-            return {
-                backgroundImage: imgUrl
-            }
-        }
+        ...mapGetters(['userConfig', 'bingWallPapers'])
     },
     mounted() {
+        const bg1 = document.getElementById('bg1')
+        const bg2 = document.getElementById('bg2')
         if (this.userConfig?.loginBkImg === 'bing') {
+            //bing壁纸轮播
             this.$store.dispatch('fetchBingWallPapers')
+            bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
+            bg1.onload = () => {
+                bg1.style.opacity = 1
+            }
             setInterval(() => {
+                let curBg = bg1.style.opacity != 0 ? bg1 : bg2
+                let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
+                curBg.style.opacity = 0
                 this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
+                nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
+                nextBg.onload = () => {
+                    nextBg.style.opacity = 1
+                }
             }, 3000)
-        } else if (this.userConfig?.loginBkImg?.length > 1) {
+        } else if (this.userConfig?.loginBkImg instanceof Array && this.userConfig?.loginBkImg?.length > 1) {
+            //自定义壁纸组轮播
+            bg1.src = this.userConfig.loginBkImg[this.customWallPaperIndex]
+            bg1.onload = () => {
+                bg1.style.opacity = 1
+            }
             setInterval(() => {
+                let curBg = bg1.style.opacity != 0 ? bg1 : bg2
+                let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
+                curBg.style.opacity = 0
                 this.customWallPaperIndex = (this.customWallPaperIndex + 1) % this.userConfig.loginBkImg.length
+                nextBg.src = this.userConfig.loginBkImg[this.customWallPaperIndex]
+                nextBg.onload = () => {
+                    nextBg.style.opacity = 1
+                }
             }, 3000)
+        } else if (this.userConfig?.loginBkImg instanceof Array && this.userConfig?.loginBkImg?.length == 1) {
+            //单张自定义壁纸
+            bg1.src = this.userConfig.loginBkImg[0]
+            bg1.onload = () => {
+                bg1.style.opacity = 1
+            }
+        } else {
+            //默认壁纸
+            bg1.src = 'https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg'
+            bg1.onload = () => {
+                bg1.style.opacity = 1
+            }
         }
     },
     methods: {
@@ -117,5 +144,25 @@ export default {
 }
 .submit {
     margin-top: 10px;
+}
+.background-image1 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0;
+    transition: all 1s ease-in-out;
+}
+.background-image2 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0;
+    transition: all 1s ease-in-out;
 }
 </style>
