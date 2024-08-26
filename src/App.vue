@@ -2,6 +2,32 @@
   <router-view/>
 </template>
 
+<script>
+import { mapGetters } from 'vuex'
+
+export default {
+  computed: {
+    ...mapGetters(['userConfig'])
+  },
+  mounted() {
+    this.setSiteTitle(),
+    this.setSiteIcon()
+  },
+  methods: {
+    setSiteTitle() {
+      document.title = this.userConfig?.siteTitle || 'Sanyue ImgHub'
+    },
+    setSiteIcon() {
+      const link = document.createElement('link')
+      link.rel = 'icon'
+      link.href = this.userConfig?.siteIcon || '/logo.png'
+      document.head.appendChild(link)
+      console.log(this.userConfig?.siteIcon)
+    }
+  }
+}
+</script>
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
