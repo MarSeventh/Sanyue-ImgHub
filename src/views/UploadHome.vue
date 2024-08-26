@@ -26,9 +26,9 @@
         </div>
         <div class="header">
             <a href="https://github.com/MarSeventh/CloudFlare-ImgBed">
-                <img class="logo" alt="Sanyue logo" src="../assets/logo.png"/>
+                <img class="logo" alt="Sanyue logo" :src="logoUrl"/>
             </a> 
-            <h1><a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">Sanyue</a> ImgHub</h1>
+            <h1><a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a> ImgHub</h1>
         </div>
         <UploadForm :selectedUrlForm="selectedUrlForm" :uploadMethod="uploadMethod" class="upload"/>
         <Footer/>
@@ -65,28 +65,37 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers'])
+        ...mapGetters(['userConfig', 'bingWallPapers']),
+        ownerName() {
+            console.log(this.userConfig)
+            return this.userConfig?.ownerName || 'Sanyue'
+        },
+        logoUrl() {
+            return this.userConfig?.logoUrl || require('../assets/logo.png')
+        }
     },
     mounted() {
         const bg1 = document.getElementById('bg1')
         const bg2 = document.getElementById('bg2')
         if (this.userConfig?.uploadBkImg === 'bing') {
             //bing壁纸轮播
-            this.$store.dispatch('fetchBingWallPapers')
-            bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-            bg1.onload = () => {
-                bg1.style.opacity = 1
-            }
-            setInterval(() => {
-                let curBg = bg1.style.opacity != 0 ? bg1 : bg2
-                let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
-                curBg.style.opacity = 0
-                this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
-                nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-                nextBg.onload = () => {
-                    nextBg.style.opacity = 1
+            this.$store.dispatch('fetchBingWallPapers').then(() => {
+                bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
+                bg1.onload = () => {
+                    bg1.style.opacity = 1
                 }
-            }, 3000)
+                setInterval(() => {
+                    //如果bing壁纸组为空，跳过
+                    let curBg = bg1.style.opacity != 0 ? bg1 : bg2
+                    let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
+                    curBg.style.opacity = 0
+                    this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
+                    nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
+                    nextBg.onload = () => {
+                        nextBg.style.opacity = 1
+                    }
+                }, 3000)
+            })
         } else if (this.userConfig?.uploadBkImg instanceof Array && this.userConfig?.uploadBkImg?.length > 1) {
             //自定义壁纸组轮播
             bg1.src = this.userConfig.uploadBkImg[this.customWallPaperIndex]

@@ -40,21 +40,22 @@ export default {
         const bg2 = document.getElementById('bg2')
         if (this.userConfig?.loginBkImg === 'bing') {
             //bing壁纸轮播
-            this.$store.dispatch('fetchBingWallPapers')
-            bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-            bg1.onload = () => {
-                bg1.style.opacity = 1
-            }
-            setInterval(() => {
-                let curBg = bg1.style.opacity != 0 ? bg1 : bg2
-                let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
-                curBg.style.opacity = 0
-                this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
-                nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-                nextBg.onload = () => {
-                    nextBg.style.opacity = 1
+            this.$store.dispatch('fetchBingWallPapers').then(() => {
+                bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
+                bg1.onload = () => {
+                    bg1.style.opacity = 1
                 }
-            }, 3000)
+                setInterval(() => {
+                    let curBg = bg1.style.opacity != 0 ? bg1 : bg2
+                    let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
+                    curBg.style.opacity = 0
+                    this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
+                    nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
+                    nextBg.onload = () => {
+                        nextBg.style.opacity = 1
+                    }
+                }, 3000)
+            })
         } else if (this.userConfig?.loginBkImg instanceof Array && this.userConfig?.loginBkImg?.length > 1) {
             //自定义壁纸组轮播
             bg1.src = this.userConfig.loginBkImg[this.customWallPaperIndex]
