@@ -22,7 +22,6 @@ export default {
       link.rel = 'icon'
       link.href = this.userConfig?.siteIcon || '/logo.png'
       document.head.appendChild(link)
-      console.log(this.userConfig?.siteIcon)
     }
   }
 }
