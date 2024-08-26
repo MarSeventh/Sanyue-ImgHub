@@ -261,7 +261,7 @@ methods: {
                 progreess: 0
             })
             return true
-    }
+        }
     },
     handleProgress(event) {
         this.fileList.find(item => item.uid === event.file.uid).progreess = event.percent

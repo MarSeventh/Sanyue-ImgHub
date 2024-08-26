@@ -67,7 +67,6 @@ export default {
     computed: {
         ...mapGetters(['userConfig', 'bingWallPapers']),
         ownerName() {
-            console.log(this.userConfig)
             return this.userConfig?.ownerName || 'Sanyue'
         },
         logoUrl() {
