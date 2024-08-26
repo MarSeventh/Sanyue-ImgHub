@@ -21,7 +21,7 @@
             <div class="el-upload__text" v-if="uploadMethod === 'drag'">拖拽 或 <em>点击上传</em></div>
             <div class="el-upload__text" v-else>复制 <em>粘贴</em> 上传</div>
             <template #tip>
-                <div class="el-upload__tip">支持多文件上传，支持图片和视频，文件大小不超过5MB</div>
+                <div class="el-upload__tip">支持多文件上传，支持图片和视频 <br/>（图片>5MB会自动压缩，暂不支持>5MB的视频）</div>
             </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
@@ -95,6 +95,7 @@
 <script>
 import axios from 'axios'
 import cookies from 'vue-cookies'
+import * as imageConversion from 'image-conversion'
 
 export default {
 name: 'UploadForm',
@@ -242,26 +243,54 @@ methods: {
         })
     },
     beforeUpload(file) {
-        const isLt5M = file.size / 1024 / 1024 < 5
-        if (!isLt5M) {
-            this.$message.error('上传文件大小不能超过 5MB!')
-            return false
-        } else {
-            this.uploading = true
-            const fileUrl = URL.createObjectURL(file)
-            this.fileList.push({
-                uid: file.uid,
-                name: file.name,
-                url: fileUrl,
-                finalURL: '',
-                mdURL: '',
-                htmlURL: '',
-                ubbURL: '',
-                status: 'uploading',
-                progreess: 0
-            })
-            return true
-        }
+        return new Promise((resolve, reject) => {
+            const isLt5M = file.size / 1024 / 1024 < 5
+            if (!isLt5M) {
+                    //尝试压缩图片
+                    if (file.type.includes('image')) {
+                    imageConversion.compressAccurately(file, 4096).then((res) => {
+                        this.uploading = true
+                        //将res包装成新的file
+                        const newFile = new File([res], file.name, { type: res.type })
+                        newFile.uid = file.uid
+                        const fileUrl = URL.createObjectURL(newFile)
+                        this.fileList.push({
+                            uid: file.uid,
+                            name: file.name,
+                            url: fileUrl,
+                            finalURL: '',
+                            mdURL: '',
+                            htmlURL: '',
+                            ubbURL: '',
+                            status: 'uploading',
+                            progreess: 0
+                        })
+                        resolve(newFile)
+                    }).catch((err) => {
+                        this.$message.error(file.name + '文件过大且压缩失败，无法上传!')
+                        reject(err)
+                    })
+                } else {
+                    this.$message.error(file.name + '文件过大，无法上传!')
+                    reject('文件过大')
+                }
+            } else {
+                this.uploading = true
+                const fileUrl = URL.createObjectURL(file)
+                this.fileList.push({
+                    uid: file.uid,
+                    name: file.name,
+                    url: fileUrl,
+                    finalURL: '',
+                    mdURL: '',
+                    htmlURL: '',
+                    ubbURL: '',
+                    status: 'uploading',
+                    progreess: 0
+                })
+                resolve(file)
+            }
+        })
     },
     handleProgress(event) {
         this.fileList.find(item => item.uid === event.file.uid).progreess = event.percent
@@ -327,11 +356,19 @@ methods: {
                 if (file.type.includes('image') || file.type.includes('video')) {
                     file.uid = Date.now() + i
                     file.file = file
-                    if (this.beforeUpload(file)) {
-                        this.uploadFile({ file: file, 
-                            onProgress: (evt) => this.handleProgress(evt), 
-                            onSuccess: (response, file) => this.handleSuccess(response, file), 
-                            onError: (error, file) => this.handleError(error, file) })
+                    //接收beforeUpload的Promise对象
+                    const checkResult = this.beforeUpload(file)
+                    if (checkResult instanceof Promise) {
+                        checkResult.then((newFile) => {
+                            if (newFile instanceof File) {
+                                this.uploadFile({ file: newFile, 
+                                    onProgress: (evt) => this.handleProgress(evt), 
+                                    onSuccess: (response, file) => this.handleSuccess(response, file), 
+                                    onError: (error, file) => this.handleError(error, file) })
+                            }
+                        }).catch((err) => {
+                            console.log(err)
+                        })
                     }
                 } else {
                     this.$message({
@@ -363,12 +400,18 @@ methods: {
                             const file = new File([blob], fileName, { type: blob.type });
                             file.uid = Date.now() + i;
                             file.file = file;
-                            if (this.beforeUpload(file)) {
-                                this.uploadFile({
-                                    file: file,
-                                    onProgress: (evt) => this.handleProgress(evt),
-                                    onSuccess: (response, file) => this.handleSuccess(response, file),
-                                    onError: (error, file) => this.handleError(error, file)
+                            //接收beforeUpload的Promise对象
+                            const checkResult = this.beforeUpload(file);
+                            if (checkResult instanceof Promise) {
+                                checkResult.then((newFile) => {
+                                    if (newFile instanceof File) {
+                                        this.uploadFile({ file: newFile, 
+                                            onProgress: (evt) => this.handleProgress(evt), 
+                                            onSuccess: (response, file) => this.handleSuccess(response, file), 
+                                            onError: (error, file) => this.handleError(error, file) });
+                                    }
+                                }).catch((err) => {
+                                    console.log(err);
                                 });
                             }
                         })
