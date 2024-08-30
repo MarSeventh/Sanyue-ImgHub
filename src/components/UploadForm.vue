@@ -359,13 +359,7 @@ methods: {
         if (this.uploadMethod !== 'paste') {
             return
         }
-        
-        console.log('粘贴事件触发', event.clipboardData);
         const items = event.clipboardData.items;
-        if (items.length === 0) {
-            console.log('粘贴板无数据');
-            return;
-        }
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file') {
                 const file = items[i].getAsFile()
