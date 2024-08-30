@@ -16,7 +16,9 @@
     "vue": "^3.2.13",
     "vue-cookies": "^1.8.4",
     "vue-router": "^4.0.3",
-    "vuex": "^4.0.0"
+    "vuex": "^4.0.0",
+    "@cloudflare/pages-plugin-sentry": "^1.1.3",
+    "@sentry/tracing": "^7.114.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~5.0.0",

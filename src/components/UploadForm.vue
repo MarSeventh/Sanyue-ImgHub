@@ -1,5 +1,5 @@
 <template>
-    <div class="upload-form" @paste.native="handlePaste">
+    <div class="upload-form" @paste.native="handlePaste" >
         <el-upload
             class="upload-card"
             :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length, 'paste-mode': uploadMethod === 'paste'}"
@@ -19,12 +19,14 @@
                 <CopyDocument v-else color="blanchedalmond"/>
             </el-icon>
             <div class="el-upload__text" v-if="uploadMethod === 'drag'">拖拽 或 <em>点击上传</em></div>
-            <div class="el-upload__text" v-else>复制 <em>粘贴</em> 上传</div>
+            <div class="el-upload__text" v-else>复制 <em>粘贴Ctrl-V</em> 上传</div>
+         
             <template #tip>
                 <div class="el-upload__tip">支持多文件上传，支持图片和视频 <br/>（图片>5MB会自动压缩，暂不支持>5MB的视频）</div>
             </template>
         </el-upload>
-        <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
+        
+      <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
             <div class="upload-list-container" :class="{'upload-list-busy': fileList.length}">
                 <el-scrollbar>
                     <div class="upload-list-dashboard">
@@ -133,6 +135,10 @@ computed: {
         return this.waitingList.length
     }
 },
+watch: {
+      },
+mounted() {
+        },
 methods: {
     uploadFile(file) {
         if (this.uploadingCount > this.maxUploading) {
@@ -353,7 +359,13 @@ methods: {
         if (this.uploadMethod !== 'paste') {
             return
         }
-        const items = event.clipboardData.items
+        
+        console.log('粘贴事件触发', event.clipboardData);
+        const items = event.clipboardData.items;
+        if (items.length === 0) {
+            console.log('粘贴板无数据');
+            return;
+        }
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file') {
                 const file = items[i].getAsFile()
@@ -431,6 +443,29 @@ methods: {
             }
         }
     },
+   
+    addPasteOverlay() {
+            const overlay = document.createElement('div');
+            overlay.className = 'paste-overlay';
+            overlay.addEventListener('click', this.triggerPaste);
+            this.$el.appendChild(overlay);
+        },
+        removePasteOverlay() {
+            const overlay = this.$el.querySelector('.paste-overlay');
+            if (overlay) {
+                overlay.removeEventListener('click', this.triggerPaste);
+                this.$el.removeChild(overlay);
+            }
+        },
+     updatePointerEvents() {
+            if (this.uploadMethod === 'paste') {
+                document.querySelector('.paste-overlay').style.pointerEvents = 'auto';
+                document.querySelector('.el-upload-dragger').style.pointerEvents = 'none';
+            } else {
+                document.querySelector('.paste-overlay').style.pointerEvents = 'none';
+                document.querySelector('.el-upload-dragger').style.pointerEvents = 'auto';
+            }
+     },
     selectAllText(event) {
         event.target.select()
     }
@@ -452,6 +487,7 @@ methods: {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    position: relative; /* Ensure the overlay is positioned relative to this element */
 }
 .upload-list-card {
     width: 55vw;
@@ -527,6 +563,12 @@ methods: {
 .paste-mode :deep(.el-upload) {
     pointer-events: none;
 }
+.paste-mode :deep(.el-upload-dragger) {
+    pointer-events: none;
+}
+.paste-mode :deep(.el-upload-dragger:hover) {
+    pointer-events: auto;
+}
 :deep(.el-upload-dragger)  {
     display: flex;
     flex-direction: column;
@@ -539,6 +581,7 @@ methods: {
     background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
+    z-index: 1; /* 确保 z-index 低于 .paste-overlay */
 }
 :deep(.el-upload-dragger:hover) {
     opacity: 0.8;

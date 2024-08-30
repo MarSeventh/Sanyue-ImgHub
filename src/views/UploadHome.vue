@@ -67,7 +67,7 @@ export default {
     computed: {
         ...mapGetters(['userConfig', 'bingWallPapers']),
         ownerName() {
-            return this.userConfig?.ownerName || 'Sanyue'
+            return this.userConfig?.ownerName || 'CloudFlare'
         },
         logoUrl() {
             return this.userConfig?.logoUrl || require('../assets/logo.png')
@@ -93,7 +93,7 @@ export default {
                     nextBg.onload = () => {
                         nextBg.style.opacity = 1
                     }
-                }, 3000)
+                }, 20000)
             })
         } else if (this.userConfig?.uploadBkImg instanceof Array && this.userConfig?.uploadBkImg?.length > 1) {
             //自定义壁纸组轮播
@@ -110,7 +110,7 @@ export default {
                 nextBg.onload = () => {
                     nextBg.style.opacity = 1
                 }
-            }, 3000)
+            }, 20000)
         } else if (this.userConfig?.uploadBkImg instanceof Array && this.userConfig?.uploadBkImg.length == 1) {
             //单张自定义壁纸
             bg1.src = this.userConfig.uploadBkImg[0]
@@ -131,7 +131,7 @@ export default {
     },
     methods: {
         handleManage() {
-            window.location.href = '/admin'
+            window.location.href = '/admin-imgtc'
         },
         openUrlDialog() {
             this.showUrlDialog = true

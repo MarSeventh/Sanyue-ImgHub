@@ -1,5 +1,7 @@
 # sanyue_imghub
 
+- 合并了前后端，pages部署时需要指定安装命令 npm install && npm run build ; 并设置部署目录 /dist
+
 ## Introduction
 
 [cf-pages/Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)项目的一个新前端，实现了**登录鉴权**、**上传图片预览**、**一键切换上传方式**（**拖拽上传**、**粘贴上传**）、**多文件上传**、**整体复制**、**多格式复制**等功能。
