@@ -1,6 +1,8 @@
 # sanyue_imghub
 
 - 合并了前后端，pages部署时需要指定安装命令 npm install && npm run build ; 并设置部署目录 /dist
+- ![image](https://github.com/user-attachments/assets/26d9faba-393f-4edc-a9e2-26d71b834874)
+
 
 ## Introduction
 
