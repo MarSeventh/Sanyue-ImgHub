@@ -221,6 +221,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
+    object-fit: cover;
     z-index: -1;
     opacity: 0;
     transition: all 1s ease-in-out;
@@ -231,6 +232,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
+    object-fit: cover;
     z-index: -1;
     opacity: 0;
     transition: all 1s ease-in-out;
