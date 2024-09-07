@@ -21,7 +21,7 @@
             <div class="el-upload__text" v-if="uploadMethod === 'drag'">拖拽 或 <em>点击上传</em></div>
             <div class="el-upload__text" v-else>复制 <em>粘贴</em> 上传</div>
             <template #tip>
-                <div class="el-upload__tip">支持多文件上传，支持图片和视频</div>
+                <div class="el-upload__tip">支持多文件上传，支持图片和视频，不超过20MB</div>
             </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
@@ -46,12 +46,22 @@
                     </div>
                     <div class="upload-list-item" v-for="file in fileList" :key="file.name" :span="8">
                         <a :href="file.url" target="_blank">
+                            <!-- 判断文件类型是否为图片 -->
                             <img
+                                v-if="isImage(file.name)"
                                 style="width: 10vw; border-radius: 12px;"
                                 :src="file.url"
                                 @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
-                                >
-                            </img>
+                            />
+                            <!-- 判断文件类型是否为视频 -->
+                            <video
+                                v-else-if="isVideo(file.name)"
+                                style="width: 10vw; border-radius: 12px;"
+                                controls
+                            >
+                                <source :src="file.url" type="video/mp4" />
+                                Your browser does not support the video tag.
+                            </video>
                         </a>
                         <div class="upload-list-item-content">
                             <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
@@ -244,8 +254,8 @@ methods: {
     },
     beforeUpload(file) {
         return new Promise((resolve, reject) => {
-            const isLt5M = file.size / 1024 / 1024 < 20
-            if (!isLt5M) {
+            const isLt20M = file.size / 1024 / 1024 < 20
+            if (!isLt20M) {
                     //尝试压缩图片
                     if (file.type.includes('image')) {
                     imageConversion.compressAccurately(file, 4096).then((res) => {
@@ -433,6 +443,18 @@ methods: {
     },
     selectAllText(event) {
         event.target.select()
+    },
+    // 判断是否为图片类型
+    isImage(fileName) {
+      const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+      const extension = fileName.split('.').pop().toLowerCase();
+      return imageExtensions.includes(extension);
+    },
+    // 判断是否为视频类型
+    isVideo(fileName) {
+      const videoExtensions = ['mp4', 'webm', 'ogg', 'mkv'];
+      const extension = fileName.split('.').pop().toLowerCase();
+      return videoExtensions.includes(extension);
     }
 }
 }
