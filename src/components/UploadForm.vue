@@ -21,7 +21,7 @@
             <div class="el-upload__text" v-if="uploadMethod === 'drag'">拖拽 或 <em>点击上传</em></div>
             <div class="el-upload__text" v-else>复制 <em>粘贴</em> 上传</div>
             <template #tip>
-                <div class="el-upload__tip">支持多文件上传，支持图片和视频 <br/>（图片>5MB会自动压缩，暂不支持>5MB的视频）</div>
+                <div class="el-upload__tip">支持多文件上传，支持图片和视频</div>
             </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
