@@ -244,13 +244,13 @@ methods: {
     },
     beforeUpload(file) {
         return new Promise((resolve, reject) => {
-            const isLt5M = file.size / 1024 / 1024 < 5
+            const isLt5M = file.size / 1024 / 1024 < 20
             if (!isLt5M) {
                     //尝试压缩图片
                     if (file.type.includes('image')) {
                     imageConversion.compressAccurately(file, 4096).then((res) => {
-                        //如果压缩后仍大于5MB，则不上传
-                        if (res.size / 1024 / 1024 > 5) {
+                        //如果压缩后仍大于20MB，则不上传
+                        if (res.size / 1024 / 1024 > 20) {
                             this.$message.error(file.name + '压缩后文件过大，无法上传!')
                             reject('文件过大')
                         }
