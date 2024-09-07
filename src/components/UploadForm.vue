@@ -46,22 +46,22 @@
                     </div>
                     <div class="upload-list-item" v-for="file in fileList" :key="file.name" :span="8">
                         <a :href="file.url" target="_blank">
-                            <!-- 判断文件类型是否为图片 -->
-                            <img
-                                v-if="isImage(file.name)"
-                                style="width: 10vw; border-radius: 12px;"
-                                :src="file.url"
-                                @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
-                            />
                             <!-- 判断文件类型是否为视频 -->
                             <video
-                                v-else-if="isVideo(file.name)"
+                                v-if="isVideo(file.name)"
                                 style="width: 10vw; border-radius: 12px;"
                                 controls
                             >
                                 <source :src="file.url" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
+                            <!-- 判断文件类型是否为图片 -->
+                            <img
+                                v-else
+                                style="width: 10vw; border-radius: 12px;"
+                                :src="file.url"
+                                @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
+                            />
                         </a>
                         <div class="upload-list-item-content">
                             <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
