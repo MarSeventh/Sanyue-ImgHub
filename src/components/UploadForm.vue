@@ -254,42 +254,38 @@ methods: {
     },
     beforeUpload(file) {
         return new Promise((resolve, reject) => {
+            const isLt5M = file.size / 1024 / 1024 < 5
             const isLt20M = file.size / 1024 / 1024 < 20
-            if (!isLt20M) {
-                    //尝试压缩图片
-                    if (file.type.includes('image')) {
-                    imageConversion.compressAccurately(file, 4096).then((res) => {
-                        //如果压缩后仍大于20MB，则不上传
-                        if (res.size / 1024 / 1024 > 20) {
-                            this.$message.error(file.name + '压缩后文件过大，无法上传!')
-                            reject('文件过大')
-                        }
-                        this.uploading = true
-                        //将res包装成新的file
-                        const newFile = new File([res], file.name, { type: res.type })
-                        newFile.uid = file.uid
-                        const fileUrl = URL.createObjectURL(newFile)
-                        this.fileList.push({
-                            uid: file.uid,
-                            name: file.name,
-                            url: fileUrl,
-                            finalURL: '',
-                            mdURL: '',
-                            htmlURL: '',
-                            ubbURL: '',
-                            status: 'uploading',
-                            progreess: 0
-                        })
-                        resolve(newFile)
-                    }).catch((err) => {
-                        this.$message.error(file.name + '文件过大且压缩失败，无法上传!')
-                        reject(err)
+            if (!isLt5M && isLt20M && file.type.includes('image')) {
+                //尝试压缩图片
+                imageConversion.compressAccurately(file, 4096).then((res) => {
+                    //如果压缩后仍大于20MB，则不上传
+                    if (res.size / 1024 / 1024 > 20) {
+                        this.$message.error(file.name + '压缩后文件过大，无法上传!')
+                        reject('文件过大')
+                    }
+                    this.uploading = true
+                    //将res包装成新的file
+                    const newFile = new File([res], file.name, { type: res.type })
+                    newFile.uid = file.uid
+                    const fileUrl = URL.createObjectURL(newFile)
+                    this.fileList.push({
+                        uid: file.uid,
+                        name: file.name,
+                        url: fileUrl,
+                        finalURL: '',
+                        mdURL: '',
+                        htmlURL: '',
+                        ubbURL: '',
+                        status: 'uploading',
+                        progreess: 0
                     })
-                } else {
-                    this.$message.error(file.name + '文件过大，无法上传!')
-                    reject('文件过大')
-                }
-            } else {
+                    resolve(newFile)
+                }).catch((err) => {
+                    this.$message.error(file.name + '文件过大且压缩失败，无法上传!')
+                    reject(err)
+                })
+            } else if (isLt20M) {
                 this.uploading = true
                 const fileUrl = URL.createObjectURL(file)
                 this.fileList.push({
@@ -304,6 +300,9 @@ methods: {
                     progreess: 0
                 })
                 resolve(file)
+            } else {
+                this.$message.error(file.name + '文件过大，无法上传!')
+                reject('文件过大')
             }
         })
     },
