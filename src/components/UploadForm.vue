@@ -411,7 +411,8 @@ methods: {
                         })
                         .then(blob => {
                             //获取图片名
-                            const fileName = text.split('/').pop();
+                            // const fileName = text.split('/').pop();
+                            const fileName = 'pastedFile' + Date.now() + i;
                             const file = new File([blob], fileName, { type: blob.type });
                             file.uid = Date.now() + i;
                             file.file = file;
