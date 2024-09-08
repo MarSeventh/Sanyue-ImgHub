@@ -412,7 +412,13 @@ methods: {
                         .then(blob => {
                             //获取图片名
                             // const fileName = text.split('/').pop();
-                            const fileName = 'pastedFile' + Date.now() + i;
+                            // 获取文件后缀
+                            let extension = text.split('.').pop();
+                            // 判断后缀是否有效
+                            if (!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'mp4', 'webm', 'ogg', 'mkv'].includes(extension)) {
+                                extension = 'jpeg'; // 默认为jpeg
+                            }
+                            const fileName = 'PastedFile' + Date.now() + i + '.' + extension;
                             const file = new File([blob], fileName, { type: blob.type });
                             file.uid = Date.now() + i;
                             file.file = file;
@@ -594,4 +600,4 @@ methods: {
     font-size: medium;
     font-weight: bold;
 }
-</style>import { split } from 'core-js/fn/symbol'
+</style>
