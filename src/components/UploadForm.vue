@@ -256,7 +256,7 @@ methods: {
         return new Promise((resolve, reject) => {
             const isLt5M = file.size / 1024 / 1024 < 5
             const isLt20M = file.size / 1024 / 1024 < 20
-            if (!isLt5M && isLt20M && file.type.includes('image')) {
+            if (!isLt5M && file.type.includes('image')) {
                 //尝试压缩图片
                 imageConversion.compressAccurately(file, 4096).then((res) => {
                     //如果压缩后仍大于20MB，则不上传
