@@ -1,3 +1,5 @@
+# 提示：2024-9-7 https://telegra.ph 老板被抓，站点关闭上传通道，白嫖的资源只会越来越少。瞎折腾了
+
 # sanyue_imghub
 
 - 合并了前后端，pages部署时需要指定安装命令 npm install && npm run build ; 并设置部署目录 /dist
