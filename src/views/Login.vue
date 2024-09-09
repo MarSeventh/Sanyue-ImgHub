@@ -13,7 +13,7 @@
                 @keyup.enter.native="login"
                 >
             </el-input>
-            <el-button class="submit" type="primary" @click="login">submit</el-button>
+            <el-button class="submit" type="primary" @click="login">登录</el-button>
         </div>
     </div>
 </template>
