@@ -33,7 +33,10 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers'])
+        ...mapGetters(['userConfig', 'bingWallPapers']),
+        bkInterval() {
+            return this.userConfig?.bkInterval || 3000
+        }
     },
     mounted() {
         const bg1 = document.getElementById('bg1')
@@ -54,7 +57,7 @@ export default {
                     nextBg.onload = () => {
                         nextBg.style.opacity = 1
                     }
-                }, 3000)
+                }, this.bkInterval)
             })
         } else if (this.userConfig?.loginBkImg instanceof Array && this.userConfig?.loginBkImg?.length > 1) {
             //自定义壁纸组轮播
@@ -71,7 +74,7 @@ export default {
                 nextBg.onload = () => {
                     nextBg.style.opacity = 1
                 }
-            }, 3000)
+            }, this.bkInterval)
         } else if (this.userConfig?.loginBkImg instanceof Array && this.userConfig?.loginBkImg?.length == 1) {
             //单张自定义壁纸
             bg1.src = this.userConfig.loginBkImg[0]

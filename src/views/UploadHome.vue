@@ -71,6 +71,9 @@ export default {
         },
         logoUrl() {
             return this.userConfig?.logoUrl || require('../assets/logo.png')
+        },
+        bkInterval() {
+            return this.userConfig?.bkInterval || 3000
         }
     },
     mounted() {
@@ -93,7 +96,7 @@ export default {
                     nextBg.onload = () => {
                         nextBg.style.opacity = 1
                     }
-                }, 3000)
+                }, this.bkInterval)
             })
         } else if (this.userConfig?.uploadBkImg instanceof Array && this.userConfig?.uploadBkImg?.length > 1) {
             //自定义壁纸组轮播
@@ -110,7 +113,7 @@ export default {
                 nextBg.onload = () => {
                     nextBg.style.opacity = 1
                 }
-            }, 3000)
+            }, this.bkInterval)
         } else if (this.userConfig?.uploadBkImg instanceof Array && this.userConfig?.uploadBkImg.length == 1) {
             //单张自定义壁纸
             bg1.src = this.userConfig.uploadBkImg[0]
