@@ -137,7 +137,7 @@ export default {
     },
     methods: {
         handleManage() {
-            window.location.href = '/admin'
+            this.$router.push('/admin')
         },
         openUrlDialog() {
             this.showUrlDialog = true
