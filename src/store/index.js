@@ -1,13 +1,16 @@
 import { createStore } from 'vuex'
+import createPersistedState from 'vuex-persistedstate';
 
 export default createStore({
   state: {
     userConfig: null,
-    bingWallPapers: []
+    bingWallPapers: [],
+    credentials: null
   },
   getters: {
     userConfig: state => state.userConfig,
-    bingWallPapers: state => state.bingWallPapers
+    bingWallPapers: state => state.bingWallPapers,
+    credentials: state => state.credentials
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -15,6 +18,9 @@ export default createStore({
     },
     setBingWallPapers(state, bingWallPapers) {
       state.bingWallPapers = bingWallPapers;
+    },
+    setCredentials(state, credentials) {
+      state.credentials = credentials;
     }
   },
   actions: {
@@ -54,5 +60,6 @@ export default createStore({
     }
   },
   modules: {
-  }
+  },
+  plugins: [createPersistedState()]
 })

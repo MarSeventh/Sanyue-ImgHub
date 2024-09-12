@@ -20,7 +20,8 @@
     "vue": "^3.2.13",
     "vue-cookies": "^1.8.4",
     "vue-router": "^4.4.3",
-    "vuex": "^4.1.0"
+    "vuex": "^4.1.0",
+    "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~5.0.0",

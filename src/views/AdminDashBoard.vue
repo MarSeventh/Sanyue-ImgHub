@@ -65,6 +65,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
 data() {
     return {
@@ -80,6 +82,7 @@ data() {
     };
 },
 computed: {
+    ...mapGetters(['credentials']),
     filteredTableData() {
         return this.tableData.filter(data => !this.search || data.name.toLowerCase().includes(this.search.toLowerCase()));
     },
@@ -114,13 +117,36 @@ methods: {
     refreshDashboard() {
         location.reload();
     },
+    async fetchWithAuth(url, options = {}) {
+        // 开发环境, url 前面加上 /api
+        // url = `/api${url}`;
+        if (this.credentials) {
+            // 设置 Authorization 头
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Basic ${this.credentials}`
+            };
+            // 确保包含凭据，如 cookies
+            options.credentials = 'include'; 
+        }
+
+        const response = await fetch(url, options);
+
+        if (response.status === 401) {
+            // Redirect to the login page if a 401 Unauthorized is returned
+            this.$router.push('/adminLogin'); 
+            throw new Error('Unauthorized');
+        }
+
+        return response;
+    },
     handleDelete(index, key) {
         this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
         }).then(() => {
-        fetch(`./api/manage/delete/${key}`, { method: 'GET', credentials: 'include' })
+        this.fetchWithAuth(`/api/manage/delete/${key}`, { method: 'GET' })
             .then(response => {
             if (response.ok) {
                 const fileIndex = this.tableData.findIndex(file => file.name === key);
@@ -144,7 +170,7 @@ methods: {
         cancelButtonText: '取消',
         type: 'warning'
         }).then(() => {
-        const promises = this.selectedFiles.map(file => fetch(`./api/manage/delete/${file.name}`, { method: 'GET', credentials: 'include' }));
+        const promises = this.selectedFiles.map(file => this.fetchWithAuth(`/api/manage/delete/${file.name}`, { method: 'GET' }));
 
         Promise.all(promises)
             .then(results => {
@@ -221,15 +247,15 @@ methods: {
     }
 },
 mounted() {
-    fetch("/api/manage/check", { method: 'GET', credentials: 'include' })
+    this.fetchWithAuth("/api/manage/check", { method: 'GET' })
         .then(response => response.text())
         .then(result => {
         if(result == "true"){
             this.showLogoutButton=true;
             // 在 check 成功后再执行 list 的 fetch 请求
-            return fetch("/api/manage/list", { method: 'GET', credentials: 'include' });
+            return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
         } else if(result=="Not using basic auth."){
-            return fetch("/api/manage/list", { method: 'GET', credentials: 'include' });
+            return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
         }
         else{
             // window.location.reload();

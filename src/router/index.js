@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import cookies from 'vue-cookies'
+import store from '../store'
 
 const routes = [
   {
@@ -26,7 +27,22 @@ const routes = [
     path: '/admin',
     name: 'admin',
     component: () => import('../views/AdminDashBoard.vue'),
-  }
+    beforeEnter: (to, from, next) => {
+      // 从store中获取凭据
+      const credentials = store.getters.credentials
+      if (credentials === null && to.name !== 'adminLogin') {
+        ElMessage.error('请先登录！')
+        next({ name: 'adminLogin' })
+      } else {
+        next()
+      }
+    }
+  },
+  {
+    path: '/adminLogin',
+    name: 'adminLogin',
+    component: () => import('../views/AdminLogin.vue'),
+  },
 ]
 
 const router = createRouter({
