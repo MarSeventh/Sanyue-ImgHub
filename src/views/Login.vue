@@ -36,6 +36,9 @@ export default {
         ...mapGetters(['userConfig', 'bingWallPapers']),
         bkInterval() {
             return this.userConfig?.bkInterval || 3000
+        },
+        bkOpacity() {
+            return this.userConfig?.bkOpacity || 1
         }
     },
     mounted() {
@@ -46,7 +49,7 @@ export default {
             this.$store.dispatch('fetchBingWallPapers').then(() => {
                 bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
                 bg1.onload = () => {
-                    bg1.style.opacity = 1
+                    bg1.style.opacity = this.bkOpacity
                 }
                 setInterval(() => {
                     let curBg = bg1.style.opacity != 0 ? bg1 : bg2
@@ -55,7 +58,7 @@ export default {
                     this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
                     nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
                     nextBg.onload = () => {
-                        nextBg.style.opacity = 1
+                        nextBg.style.opacity = this.bkOpacity
                     }
                 }, this.bkInterval)
             })
@@ -63,7 +66,7 @@ export default {
             //自定义壁纸组轮播
             bg1.src = this.userConfig.loginBkImg[this.customWallPaperIndex]
             bg1.onload = () => {
-                bg1.style.opacity = 1
+                bg1.style.opacity = this.bkOpacity
             }
             setInterval(() => {
                 let curBg = bg1.style.opacity != 0 ? bg1 : bg2
@@ -72,20 +75,20 @@ export default {
                 this.customWallPaperIndex = (this.customWallPaperIndex + 1) % this.userConfig.loginBkImg.length
                 nextBg.src = this.userConfig.loginBkImg[this.customWallPaperIndex]
                 nextBg.onload = () => {
-                    nextBg.style.opacity = 1
+                    nextBg.style.opacity = this.bkOpacity
                 }
             }, this.bkInterval)
         } else if (this.userConfig?.loginBkImg instanceof Array && this.userConfig?.loginBkImg?.length == 1) {
             //单张自定义壁纸
             bg1.src = this.userConfig.loginBkImg[0]
             bg1.onload = () => {
-                bg1.style.opacity = 1
+                bg1.style.opacity = this.bkOpacity
             }
         } else {
             //默认壁纸
             bg1.src = 'https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg'
             bg1.onload = () => {
-                bg1.style.opacity = 1
+                bg1.style.opacity = this.bkOpacity
             }
         }
     },
