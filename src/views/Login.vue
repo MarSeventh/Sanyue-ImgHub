@@ -141,6 +141,11 @@ export default {
     backdrop-filter: blur(8px);
     transition: all 0.3s ease;
 }
+@media (max-width: 768px) {
+    .login-container {
+        width: 80vw;
+    }
+}
 .login-container:hover {
     box-shadow: 0 0 12px 4px rgba(0, 0, 0, 0.24);
     transform: translateY(-5px);
@@ -148,6 +153,11 @@ export default {
 .password-input {
     margin-bottom: 15px;
     width: 30vw;
+}
+@media (max-width: 768px) {
+    .password-input {
+        width: 70vw;
+    }
 }
 .submit {
     margin-top: 10px;

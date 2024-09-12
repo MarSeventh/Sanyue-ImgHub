@@ -498,6 +498,14 @@ methods: {
     width: 55vw;
     height: 7vh;
 }
+@media (max-width: 768px) {
+    .upload-list-card {
+        width: 70vw;
+    }
+    .upload-list-container {
+        width: 70vw;
+    }
+}
 .upload-list-card.upload-list-busy {
     height: 35vh;
 }
@@ -536,6 +544,20 @@ methods: {
     margin-top: 3px;
     width: 28vw;
 }
+@media (max-width: 768px) {
+    .upload-list-item-name {
+        width: 32vw;
+    }
+    .upload-list-item-content {
+        margin-left: 5px;
+    }
+    .upload-list-item-url-text {
+        width: 32vw;
+    }
+    .upload-list-item-progress {
+        width: 32vw;
+    }
+}
 .upload-list-item-action {
     display: flex;
     flex-direction: column;
@@ -548,6 +570,11 @@ methods: {
     width: 55vw;
     padding: 20px;
     background: none;
+}
+@media (max-width: 768px) {
+    .upload-card {
+        width: 70vw;
+    }
 }
 .upload-card-busy :deep(.el-upload-dragger) {
     height: 25vh;
