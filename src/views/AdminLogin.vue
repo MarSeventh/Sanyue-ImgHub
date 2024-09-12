@@ -97,8 +97,18 @@ export default {
     align-items: center;
     width: 35vw;
 }
+@media (max-width: 768px) {
+    .input-container {
+        width: 75vw;
+    }
+}
 .input-name {
     width: 12vw;
+}
+@media (max-width: 768px) {
+    .input-name {
+        width: 28vw;
+    }
 }
 .submit {
     margin-top: 10px;
