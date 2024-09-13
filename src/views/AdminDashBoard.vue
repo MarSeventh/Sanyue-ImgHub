@@ -45,7 +45,7 @@
                 <el-card class="img-card">
                     <el-checkbox v-model="item.selected"></el-checkbox>
                     <video v-if="item.metadata?.FileType?.includes('video')" :src="'/file/' + item.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else :preview-teleported="true" :src="'/file/' + item.name" :preview-src-list="previewSrcList" fit="cover" lazy class="image-preview"></el-image>
+                    <el-image v-else :preview-teleported="true" :src="'/file/' + item.name" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
                     <div class="image-overlay">
                     <div class="overlay-buttons">
                         <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">复制地址</el-button>
@@ -90,16 +90,19 @@ computed: {
         const sortedData = this.sortData(this.filteredTableData);
         const start = (this.currentPage - 1) * this.pageSize;
         const end = start + this.pageSize;
-        return sortedData.slice(start, end);
+        let data = sortedData.slice(start, end);
+        // 增加previewSrcList属性，用于预览图片
+        const fullList = data.filter(file => !file.metadata?.FileType?.includes('video')).map(file => `/file/${file.name}`);
+        data.forEach(file => {
+            if (!file.metadata?.FileType?.includes('video')) {
+                // 重新排序，索引大于等于当前索引的元素在前，否则在后
+                file.previewSrcList = fullList.slice(fullList.indexOf(`/file/${file.name}`)).concat(fullList.slice(0, fullList.indexOf(`/file/${file.name}`)));
+            }
+        });
+        return data;
     },
     sortIcon() {
         return this.sortOption === 'dateDesc' ? 'sort-amount-down' : 'sort-alpha-up';
-    },
-    previewSrcList() {
-        // 过滤掉视频文件，保留非视频文件的路径
-        return this.paginatedTableData
-        .filter(file => !file.metadata?.FileType?.includes('video')) // 过滤出非视频文件
-        .map(file => `/file/${file.name}`); // 返回文件路径数组
     }
 },
 watch: {
