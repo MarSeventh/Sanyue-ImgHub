@@ -24,8 +24,8 @@ const routes = [
     component: () => import('../views/Login.vue')
   },
   {
-    path: '/admin',
-    name: 'admin',
+    path: '/dashboard',
+    name: 'dashboard',
     component: () => import('../views/AdminDashBoard.vue'),
     beforeEnter: (to, from, next) => {
       // 从store中获取凭据

@@ -50,7 +50,7 @@ export default {
                 } else if (response.status === 200) {
                     // 认证成功，存储认证信息，跳转到管理页面
                     this.$store.commit('setCredentials', credentials);
-                    this.$router.push('/admin');
+                    this.$router.push('/dashboard');
                 } else {
                     this.$message.error('用户名或密码错误');
                 }

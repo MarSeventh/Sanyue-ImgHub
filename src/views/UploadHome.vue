@@ -137,7 +137,7 @@ export default {
     },
     methods: {
         handleManage() {
-            this.$router.push('/admin')
+            this.$router.push('/dashboard')
         },
         openUrlDialog() {
             this.showUrlDialog = true
