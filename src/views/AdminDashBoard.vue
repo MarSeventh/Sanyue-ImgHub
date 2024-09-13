@@ -84,7 +84,7 @@ data() {
 computed: {
     ...mapGetters(['credentials']),
     filteredTableData() {
-        return this.tableData.filter(data => !this.search || data.name.toLowerCase().includes(this.search.toLowerCase()));
+        return this.tableData.filter(data => !this.search || data.name.toLowerCase().includes(this.search.toLowerCase()) || data.metadata?.FileName?.toLowerCase().includes(this.search.toLowerCase()));
     },
     paginatedTableData() {
         const sortedData = this.sortData(this.filteredTableData);
