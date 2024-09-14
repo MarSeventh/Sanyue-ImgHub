@@ -60,7 +60,7 @@
                                 v-else
                                 style="width: 10vw; border-radius: 12px;"
                                 :src="file.url"
-                                @error="file.url = 'https://imgbed.sanyue.site/file/b6a4a65b4edba4377492e.png'"
+                                @error="file.url = require('@/assets/404.png')"
                             />
                         </a>
                         <div class="upload-list-item-content">

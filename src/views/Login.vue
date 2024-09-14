@@ -86,7 +86,7 @@ export default {
             }
         } else {
             //默认壁纸
-            bg1.src = 'https://imgbed.sanyue.site/file/0dbd5add3605a0b2e8994.jpg'
+            bg1.src = require('@/assets/background.jpg')
             bg1.onload = () => {
                 bg1.style.opacity = this.bkOpacity
             }

@@ -43,6 +43,16 @@ const routes = [
     name: 'adminLogin',
     component: () => import('../views/AdminLogin.vue'),
   },
+  {
+    path: '/blockimg',
+    name: 'blockimg',
+    component: () => import('../views/BlockImage.vue'),
+  },
+  {
+    path: '/whiteliston',
+    name: 'whiteliston',
+    component: () => import('../views/WhiteListOn.vue'),
+  },
 ]
 
 const router = createRouter({
