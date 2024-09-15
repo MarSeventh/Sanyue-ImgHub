@@ -32,3 +32,39 @@ jobs:
       with:
         name: dist
         path: "./dist"
+
+    # 获取提交信息和当前日期
+    - name: Get Commit Info
+      id: get_commit_info
+      run: |
+        echo "commit_sha=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+        echo "release_date=$(date +"%Y-%m-%d")" >> $GITHUB_ENV
+
+    # 创建 Release
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v1.0.${{ github.run_number }}  # 使用工作流运行次数作为版本号
+        release_name: "Release v1.0.${{ github.run_number }} - ${{ env.release_date }}"  # 包含版本号和日期的名称
+        body: |
+          ### Release Notes
+          - **Commit SHA**: ${{ env.commit_sha }}
+          - **Commit Message**: ${{ env.commit_message }}
+          - **Release Date**: ${{ env.release_date }}
+        draft: false
+        prerelease: false
+
+    # 上传构建产物到 Release
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist
+        asset_name: dist-v1.0.${{ github.run_number }}.zip  # 动态生成上传文件名称
+        asset_content_type: application/zip
