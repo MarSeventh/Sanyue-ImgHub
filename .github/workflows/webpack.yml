@@ -41,6 +41,11 @@ jobs:
         echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
         echo "release_date=$(date +"%Y-%m-%d")" >> $GITHUB_ENV
 
+    # 将 dist 文件夹打包成 zip
+    - name: Zip dist folder
+      run: |
+        zip -r dist-v1.0.${{ github.run_number }}.zip ./dist
+
     # 创建 Release
     - name: Create GitHub Release
       id: create_release
