@@ -393,6 +393,7 @@ methods: {
             } else if (items[i].kind === 'string') {
                 items[i].getAsString((text) => {
                     const urlPattern = /^(https?:\/\/[^\s$.?#].[^\s]*)$/;
+                    let fileName = '';
                     if (urlPattern.test(text)) {
                         fetch('/api/fetchRes', {
                             method: 'POST',
@@ -403,21 +404,45 @@ methods: {
                         }).then(response => {
                             const contentType = response.headers.get('content-type');
                             if (response.status == 200 && (contentType.includes('image') || contentType.includes('video'))) {
+                                // 提取文件名
+                                const disposition = response.headers.get('Content-Disposition');
+                                if (disposition) {
+                                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                                    const filenameStarRegex = /filename\*\s*=\s*UTF-8''([^;\n]*)/; // 处理 filename*
+
+                                    let matches = filenameRegex.exec(disposition);
+                                    if (matches != null && matches[1]) {
+                                        fileName = matches[1].replace(/['"]/g, '');
+                                        // 尝试解码
+                                        try {
+                                            fileName = decodeURIComponent(fileName);
+                                        } catch (e) {
+                                            fileName = '';
+                                        }
+                                    } 
+                                    if (fileName === '') {
+                                        matches = filenameStarRegex.exec(disposition); // 尝试匹配 filename*
+                                        if (matches != null && matches[1]) {
+                                        fileName = decodeURIComponent(matches[1]);
+                                        }
+                                    }
+                                }
+                                // 未提取到文件名，使用默认文件名
+                                if (fileName === '') {
+                                    // 获取文件后缀
+                                    let extension = text.split('.').pop();
+                                    // 判断后缀是否有效
+                                    if (!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'mp4', 'webm', 'ogg', 'mkv'].includes(extension)) {
+                                        extension = 'jpeg'; // 默认为jpeg
+                                    }
+                                    fileName = 'PastedFile' + Date.now() + i + '.' + extension;
+                                }
                                 return response.blob();
                             } else {
                                 throw new Error('URL地址的内容不是图片或视频');
                             }
                         })
                         .then(blob => {
-                            //获取图片名
-                            // const fileName = text.split('/').pop();
-                            // 获取文件后缀
-                            let extension = text.split('.').pop();
-                            // 判断后缀是否有效
-                            if (!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'mp4', 'webm', 'ogg', 'mkv'].includes(extension)) {
-                                extension = 'jpeg'; // 默认为jpeg
-                            }
-                            const fileName = 'PastedFile' + Date.now() + i + '.' + extension;
                             const file = new File([blob], fileName, { type: blob.type });
                             file.uid = Date.now() + i;
                             file.file = file;
