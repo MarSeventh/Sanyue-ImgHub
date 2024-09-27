@@ -613,6 +613,7 @@ methods: {
     }
     .upload-list-item-url-row {
         width: 42vw;
+        flex-direction: column;
     }
     .upload-list-item-progress {
         width: 32vw;
