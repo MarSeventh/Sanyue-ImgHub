@@ -34,10 +34,27 @@
                         <div class="upload-list-dashboard-action">
                             <el-button-group>
                                 <el-tooltip content="整体复制" placement="top">
-                                    <el-button type="primary" round @click="copyAll" alt="整体复制"><el-icon><Grid /></el-icon></el-button>
+                                    <el-button type="primary" round @click="copyAll" alt="整体复制">
+                                        <font-awesome-icon icon="copy" />
+                                    </el-button>
+                                </el-tooltip>
+                                <el-tooltip content="失败重试" placement="top">
+                                    <el-button type="primary" @click="retryError">
+                                        <font-awesome-icon icon="redo" />
+                                    </el-button>
                                 </el-tooltip>
                                 <el-tooltip content="清空列表" placement="top">
-                                    <el-button type="primary" round @click="clearFileList"><el-icon><CircleClose /></el-icon></el-button>
+                                    <el-dropdown trigger="click">
+                                        <el-button type="primary" round>
+                                            <font-awesome-icon icon="trash-alt" />
+                                        </el-button>
+                                        <template v-slot:dropdown>
+                                            <el-dropdown-menu slot="dropdown">
+                                                <el-dropdown-item @click="clearFileList">清空全部</el-dropdown-item>
+                                                <el-dropdown-item @click="clearSuccessList">清空已上传</el-dropdown-item>
+                                            </el-dropdown-menu>
+                                        </template>
+                                    </el-dropdown>
                                 </el-tooltip>
                             </el-button-group>
                         </div>
@@ -121,8 +138,9 @@ data() {
     return {
         fileList: [],
         uploading: false,
-        maxUploading: 10,
+        maxUploading: 6,
         waitingList: [],
+        exceptionList: [],
         listScrolled: false,
         fileListLength: 0
     }
@@ -168,6 +186,10 @@ beforeDestroy() {
 },
 methods: {
     uploadFile(file) {
+        // 如果fileList中不存在该文件，说明已被删除，直接返回
+        if (!this.fileList.find(item => item.uid === file.file.uid)) {
+            return
+        }
         if (this.uploadingCount > this.maxUploading) {
             this.waitingList.push(file)
             this.fileList.find(item => item.uid === file.file.uid).status = 'waiting'
@@ -194,6 +216,7 @@ methods: {
                 this.$message.error('认证状态错误！')
                 this.$router.push('/login')
             } else {
+                this.exceptionList.push(file)
                 file.onError(err, file.file)
             }
         }).finally(() => {
@@ -375,11 +398,32 @@ methods: {
         })
     },
     clearFileList() {
-        this.fileList = []
-        this.$message({
-            type: 'info',
-            message: '列表已清空'
-        })
+        if (this.fileList.length > 0) {
+            this.fileList = []
+            this.$message({
+                type: 'success',
+                message: '文件列表已清空'
+            })
+        } else {
+            this.$message({
+                type: 'info',
+                message: '文件列表为空'
+            })
+        }
+    },
+    clearSuccessList() {
+        if (this.uploadSuccessCount > 0) {
+            this.fileList = this.fileList.filter(item => item.status !== 'done' && item.status !== 'success')
+            this.$message({
+                type: 'success',
+                message: '成功上传文件已清空'
+            })
+        } else {
+            this.$message({
+                type: 'info',
+                message: '成功上传文件为空'
+            })
+        }
     },
     handlePaste(event) {
         const items = event.clipboardData.items
@@ -523,6 +567,23 @@ methods: {
     },
     handleScroll(event) {
         this.listScrolled = event.scrollTop > 0 && this.fileList.length > 0
+    },
+    retryError() {
+        if (this.exceptionList.length > 0) {
+            this.exceptionList.forEach(file => {
+                console.log(file)
+                this.uploadFile({ file: file.file, 
+                    onProgress: (evt) => this.handleProgress(evt), 
+                    onSuccess: (response, file) => this.handleSuccess(response, file), 
+                    onError: (error, file) => this.handleError(error, file) });
+            });
+            this.exceptionList = []
+        } else {
+            this.$message({
+                type: 'info',
+                message: '无上传失败文件'
+            })
+        }
     }
 }
 }
@@ -680,7 +741,8 @@ methods: {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
+    height: 7vh;
+    padding: 0 20px;
     position: sticky;
     top: 0;
     z-index: 1;
