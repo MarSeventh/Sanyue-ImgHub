@@ -24,8 +24,8 @@
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
             <div class="upload-list-container" :class="{'upload-list-busy': fileList.length}">
-                <el-scrollbar>
-                    <div class="upload-list-dashboard">
+                <el-scrollbar @scroll="handleScroll" ref="scrollContainer">
+                    <div class="upload-list-dashboard" :class="{ 'list-scrolled': listScrolled }">
                         <el-text class="upload-list-dashboard-title">
                             <el-icon><List /></el-icon>{{ uploadingCount + waitingCount }}
                             <el-icon><Checked /></el-icon>{{ uploadSuccessCount }}
@@ -48,7 +48,10 @@
                             <video
                                 v-if="isVideo(file.name)"
                                 style="width: 10vw; border-radius: 12px;"
-                                controls
+                                autoplay
+                                muted
+                                playsinline
+                                loop
                             >
                                 <source :src="file.url" type="video/mp4" />
                                 Your browser does not support the video tag.
@@ -104,6 +107,7 @@
 import axios from 'axios'
 import cookies from 'vue-cookies'
 import * as imageConversion from 'image-conversion'
+import { ref } from 'vue'
 
 export default {
 name: 'UploadForm',
@@ -119,7 +123,22 @@ data() {
         fileList: [],
         uploading: false,
         maxUploading: 10,
-        waitingList: []
+        waitingList: [],
+        listScrolled: false,
+        fileListLength: 0
+    }
+},
+watch: {
+    fileList: {
+        handler() {
+            if (this.fileList.length > this.fileListLength) {
+                this.$nextTick(() => {
+                    this.$refs.scrollContainer.setScrollTop(this.$refs.scrollContainer.wrapRef.scrollHeight)
+                })
+            }
+            this.fileListLength = this.fileList.length
+        },
+        deep: true
     }
 },
 computed: {
@@ -496,6 +515,9 @@ methods: {
       const videoExtensions = ['mp4', 'webm', 'ogg', 'mkv'];
       const extension = fileName.split('.').pop().toLowerCase();
       return videoExtensions.includes(extension);
+    },
+    handleScroll(event) {
+        this.listScrolled = event.scrollTop > 0 && this.fileList.length > 0
     }
 }
 }
@@ -525,7 +547,6 @@ methods: {
     align-items: center;
     justify-content: center;
     border-radius: 15px;
-    opacity: 0.8;
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid #327ecc50;
@@ -655,6 +676,15 @@ methods: {
     justify-content: space-between;
     align-items: center;
     padding: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+.upload-list-dashboard.list-scrolled {
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 .upload-list-dashboard-title {
     font-size: medium;
