@@ -1,8 +1,8 @@
 <template>
-    <div class="upload-form" @paste.native="handlePaste">
+    <div class="upload-form">
         <el-upload
             class="upload-card"
-            :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length, 'paste-mode': uploadMethod === 'paste'}"
+            :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length}"
             drag
             multiple
             :http-request="uploadFile"
@@ -14,12 +14,10 @@
             :show-file-list="false"
             accept="image/*, video/*"
             >
-            <el-icon class="el-icon--upload">
-                <CameraFilled v-if="uploadMethod === 'drag'" color="blanchedalmond"/>
-                <CopyDocument v-else color="blanchedalmond"/>
+            <el-icon class="el-icon--upload" :size="100">
+                <CameraFilled color="blanchedalmond"/>
             </el-icon>
-            <div class="el-upload__text" v-if="uploadMethod === 'drag'">拖拽 或 <em>点击上传</em></div>
-            <div class="el-upload__text" v-else>复制 <em>粘贴</em> 上传</div>
+            <div class="el-upload__text"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
             <template #tip>
                 <div class="el-upload__tip">支持多文件上传，支持图片和视频，不超过20MB</div>
             </template>
@@ -114,11 +112,6 @@ props: {
         type: String,
         default: 'url',
         required: false
-    }, 
-    uploadMethod: {
-        type: String,
-        default: 'drag',
-        required: false
     }
 },
 data() {
@@ -142,6 +135,12 @@ computed: {
     waitingCount() {
         return this.waitingList.length
     }
+},
+mounted() {
+    document.addEventListener('paste', this.handlePaste)
+},
+beforeDestroy() {
+    document.removeEventListener('paste', this.handlePaste)
 },
 methods: {
     uploadFile(file) {
@@ -359,9 +358,6 @@ methods: {
         })
     },
     handlePaste(event) {
-        if (this.uploadMethod !== 'paste') {
-            return
-        }
         const items = event.clipboardData.items
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file') {
@@ -423,7 +419,7 @@ methods: {
                                     if (fileName === '') {
                                         matches = filenameStarRegex.exec(disposition); // 尝试匹配 filename*
                                         if (matches != null && matches[1]) {
-                                        fileName = decodeURIComponent(matches[1]);
+                                            fileName = decodeURIComponent(matches[1]);
                                         }
                                     }
                                 }
@@ -473,7 +469,21 @@ methods: {
         }
     },
     selectAllText(event) {
-        event.target.select()
+        event.target.select();
+        // 复制到剪贴板
+        navigator.clipboard.writeText(event.target.value)
+            .then(() => {
+                this.$message({
+                    type: 'success',
+                    message: '复制成功'
+                });
+            })
+            .catch(() => {
+                this.$message({
+                    type: 'error',
+                    message: '复制失败'
+                });
+            });
     },
     // 判断是否为图片类型
     isImage(fileName) {
@@ -518,6 +528,8 @@ methods: {
     opacity: 0.8;
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
+    border: 1px solid #327ecc50;
+    box-shadow: 1px 2px 5px 1px #327ecc8c;
 }
 .upload-list-container {
     width: 55vw;
@@ -604,9 +616,6 @@ methods: {
 .upload-card-busy :deep(.el-upload-dragger) {
     height: 25vh;
 }
-.paste-mode :deep(.el-upload) {
-    pointer-events: none;
-}
 :deep(.el-upload-dragger)  {
     display: flex;
     flex-direction: column;
@@ -637,7 +646,7 @@ methods: {
     user-select: none;
 }
 .el-upload__tip {
-    font-size: small;
+    font-size: medium;
     color: antiquewhite;
     user-select: none;
 }

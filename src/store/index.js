@@ -5,12 +5,14 @@ export default createStore({
   state: {
     userConfig: null,
     bingWallPapers: [],
-    credentials: null
+    credentials: null,
+    uploadCopyUrlForm: ''
   },
   getters: {
     userConfig: state => state.userConfig,
     bingWallPapers: state => state.bingWallPapers,
-    credentials: state => state.credentials
+    credentials: state => state.credentials,
+    uploadCopyUrlForm: state => state.uploadCopyUrlForm
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -21,6 +23,9 @@ export default createStore({
     },
     setCredentials(state, credentials) {
       state.credentials = credentials;
+    },
+    setUploadCopyUrlForm(state, uploadCopyUrlForm) {
+      state.uploadCopyUrlForm = uploadCopyUrlForm;
     }
   },
   actions: {

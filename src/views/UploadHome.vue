@@ -3,24 +3,19 @@
         <img id="bg1" class="background-image1" alt="Background Image"/>
         <img id="bg2" class="background-image2" alt="Background Image"/>
         <div class="toolbar">
-            <el-tooltip content="上传方式" placement="left">
-                <el-button class="toolbar-button" size="large" type="info" @click="changeUploadMethod" circle>
-                    <el-icon size="large"><Refresh /></el-icon>
-                </el-button>
-            </el-tooltip>
             <el-tooltip content="链接格式" placement="left">
-                <el-button class="toolbar-button" size="large" type="success" @click="openUrlDialog" circle>
-                    <el-icon size="large"><Connection /></el-icon>
+                <el-button class="toolbar-button" size="large" @click="openUrlDialog" circle>
+                    <font-awesome-icon icon="link" class="link-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
             <el-tooltip content="管理页面" placement="left">
-                <el-button class="toolbar-button" size="large" type="primary" @click="handleManage" circle>
-                    <el-icon size="large"><Tools /></el-icon>
+                <el-button class="toolbar-button" size="large" @click="handleManage" circle>
+                    <font-awesome-icon icon="cog" class="config-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
             <el-tooltip content="退出登录" placement="left">
-                <el-button class="toolbar-button" size="large" type="danger" @click="handleLogout" circle>
-                    <el-icon size="large"><Close /></el-icon>
+                <el-button class="toolbar-button" size="large" @click="handleLogout" circle>
+                    <font-awesome-icon icon="sign-out-alt" class="sign-out-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
         </div>
@@ -28,12 +23,12 @@
             <a href="https://github.com/MarSeventh/CloudFlare-ImgBed">
                 <img class="logo" alt="Sanyue logo" :src="logoUrl"/>
             </a> 
-            <h1><a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a> ImgHub</h1>
+            <h1 class="title"><a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a> ImgHub</h1>
         </div>
-        <UploadForm :selectedUrlForm="selectedUrlForm" :uploadMethod="uploadMethod" class="upload"/>
+        <UploadForm :selectedUrlForm="selectedUrlForm" class="upload"/>
         <Footer/>
         <el-dialog title="选择复制链接格式" v-model="showUrlDialog" width="40%" :show-close="false">
-            <el-radio-group v-model="selectedUrlForm">
+            <el-radio-group v-model="selectedUrlForm" @change="changeUrlForm">
                 <el-radio value="url">原始链接</el-radio>
                 <el-radio value="md">MarkDown</el-radio>
                 <el-radio value="html">HTML</el-radio>
@@ -57,15 +52,14 @@ export default {
     name: 'UploadHome',
     data() {
         return {
-            selectedUrlForm: ref('url'),
-            uploadMethod: ref('drag'),
+            selectedUrlForm: ref(''),
             showUrlDialog: false,
             bingWallPaperIndex: 0,
             customWallPaperIndex: 0
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers']),
+        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
         },
@@ -130,6 +124,8 @@ export default {
                 bg1.style.opacity = this.bkOpacity
             }
         }
+        // 读取用户选择的链接格式
+        this.selectedUrlForm = this.uploadCopyUrlForm || 'url'
     },
     components: {
         UploadForm,
@@ -142,19 +138,89 @@ export default {
         openUrlDialog() {
             this.showUrlDialog = true
         },
-        changeUploadMethod() {
-            this.uploadMethod = this.uploadMethod === 'drag' ? 'paste' : 'drag'
-        },
         handleLogout() {
             cookies.remove('authCode')
             this.$router.push('/login')
             this.$message.success('已退出登录~')
+        },
+        changeUrlForm() {
+            this.$store.commit('setUploadCopyUrlForm', this.selectedUrlForm)
         }
     }
 }
 </script>
 
 <style scoped>
+/* 定义顺时针和逆时针旋转动画 */
+.rotate {
+    animation: spin 2s ease-in-out; /* 动画时长为2秒，执行一次 */
+}
+
+/* 关键帧：先顺时针旋转，再逆时针旋转 */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg); /* 初始位置 */
+    }
+    50% {
+        transform: rotate(360deg); /* 顺时针旋转一圈 */
+    }
+    100% {
+        transform: rotate(0deg); /* 逆时针旋转回到初始位置 */
+    }
+}
+
+
+/* 关键帧：旋转抖动 */
+@keyframes rotate-shake {
+    0% {
+        transform: rotate(0deg); /* 初始位置 */
+    }
+    25% {
+        transform: rotate(10deg); /* 顺时针旋转5度 */
+    }
+    50% {
+        transform: rotate(0deg); /* 回到初始位置 */
+    }
+    75% {
+        transform: rotate(-10deg); /* 逆时针旋转5度 */
+    }
+    100% {
+        transform: rotate(0deg); /* 回到初始位置 */
+    }
+}
+
+/* 关键帧：左右抖动 */
+@keyframes shake {
+    0% {
+        transform: translateX(0); /* 初始位置 */
+    }
+    25% {
+        transform: translateX(5px); /* 左移5px */
+    }
+    50% {
+        transform: translateX(0); /* 回到初始位置 */
+    }
+    75% {
+        transform: translateX(5px); /* 右移5px */
+    }
+    100% {
+        transform: translateX(0); /* 回到初始位置 */
+    }
+}
+
+/* 非移动端时的图标动画样式 */
+@media (min-width: 768px) {
+    .config-icon:hover {
+        animation: spin 2s ease-in-out;
+    }
+    .link-icon:hover {
+        animation: rotate-shake 0.5s ease-in-out;
+    }
+    .sign-out-icon:hover {
+        animation: shake 0.8s ease-in-out;
+    }
+}
+
 .toolbar {
     position: fixed;
     bottom: 8vh;
@@ -169,10 +235,16 @@ export default {
     transition: all 0.3s ease;
     margin-bottom: 10px;
     margin-left: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    color: #327ECC;
 }
-.toolbar-button:hover {
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-    transform: translateY(-3px);
+@media (min-width: 768px) {
+    .toolbar-button:hover {
+        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
+        background-color: rgba(255, 255, 255, 0.9);
+    }
 }
 :deep(.el-dialog) {
     border-radius: 12px;
@@ -203,9 +275,14 @@ export default {
     text-decoration: none;
 }
 .logo {
-    height: 80px;
-    width: 80px;
+    height: 90px;
+    width: 90px;
     margin-right: 5px;
+}
+.title {
+    font-size: 2em;
+    font-weight: 700;
+    font-family: 'Noto Sans SC', sans-serif;
 }
 .upload-home {
     display: flex;

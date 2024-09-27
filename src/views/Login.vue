@@ -153,7 +153,14 @@ export default {
 .password-input {
     margin-bottom: 15px;
     width: 30vw;
+    height: 40px;
 }
+.password-input:deep(.el-input__wrapper) {
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: none;
+}
+
 @media (max-width: 768px) {
     .password-input {
         width: 70vw;

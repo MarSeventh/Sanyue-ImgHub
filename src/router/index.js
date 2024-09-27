@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import cookies from 'vue-cookies'
 import store from '../store'
+import axios from 'axios'
 
 const routes = [
   {
@@ -9,10 +10,22 @@ const routes = [
     name: 'home',
     component: () => import('../views/UploadHome.vue'),
     beforeEnter: (to, from, next) => {
-      const authCode = cookies.get('authCode')
+      let authCode = cookies.get('authCode');
       if (authCode === null && to.name !== 'login') {
-        ElMessage.error('请先认证！')
-        next({ name: 'login' })
+        // 尝试未设置密码的情况
+        axios.post('/login', {
+            authCode: 'unset'
+        }).then(res => {
+            if (res.status !== 200) {
+                throw new Error('认证失败！')
+            }
+            cookies.set('authCode', 'unset', '14d')
+            authCode = 'unset'
+            next()
+        }).catch(err => {
+            ElMessage.error('请先认证！')
+            next({ name: 'login' })
+        })
       } else {
         next()
       }

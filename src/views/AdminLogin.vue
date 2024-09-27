@@ -7,6 +7,7 @@
                 <el-input
                     v-model="username"
                     placeholder="请输入用户名"
+                    class="username-input"
                 ></el-input>
             </div>
             <div class="input-container">
@@ -14,6 +15,7 @@
                 <el-input 
                     v-model="password" 
                     placeholder="请输入密码" 
+                    class="password-input"
                     type="password" 
                     show-password
                     @keyup.enter.native="login"
@@ -112,5 +114,21 @@ export default {
 }
 .submit {
     margin-top: 10px;
+}
+.password-input {
+    height: 40px;
+}
+.password-input:deep(.el-input__wrapper) {
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: none;
+}
+.username-input {
+    height: 40px;
+}
+.username-input:deep(.el-input__wrapper) {
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: none;
 }
 </style>
