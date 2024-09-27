@@ -68,19 +68,19 @@
                             <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
                             <div class="upload-list-item-url" v-if="file.status==='done'">
                                 <div class="upload-list-item-url-row">
-                                    <el-input v-model="file.finalURL" size="small" readonly @focus="selectAllText">
-                                        <template #prepend>URL:</template>
+                                    <el-input v-model="file.finalURL" readonly @focus="selectAllText" :size="urlSize">
+                                        <template #prepend>URL</template>
                                     </el-input>
-                                    <el-input v-model="file.mdURL" size="small" readonly @focus="selectAllText">
-                                        <template #prepend>MarkDown:</template>
+                                    <el-input v-model="file.mdURL" readonly @focus="selectAllText" :size="urlSize">
+                                        <template #prepend>MarkDown</template>
                                     </el-input>
                                 </div>
                                 <div class="upload-list-item-url-row">
-                                    <el-input v-model="file.htmlURL" size="small" readonly @focus="selectAllText">
-                                        <template #prepend>HTML:</template>
+                                    <el-input v-model="file.htmlURL" readonly @focus="selectAllText" :size="urlSize">
+                                        <template #prepend>HTML</template>
                                     </el-input>
-                                    <el-input v-model="file.ubbURL" size="small" readonly @focus="selectAllText">
-                                        <template #prepend>BBCode:</template>
+                                    <el-input v-model="file.ubbURL" readonly @focus="selectAllText" :size="urlSize">
+                                        <template #prepend>BBCode</template>
                                     </el-input>
                                 </div>
                             </div>
@@ -107,7 +107,6 @@
 import axios from 'axios'
 import cookies from 'vue-cookies'
 import * as imageConversion from 'image-conversion'
-import { ref } from 'vue'
 
 export default {
 name: 'UploadForm',
@@ -153,6 +152,10 @@ computed: {
     },
     waitingCount() {
         return this.waitingList.length
+    },
+    urlSize() {
+        // 移动端为small
+        return window.innerWidth < 768 ? 'small' : 'default'
     }
 },
 mounted() {
@@ -580,7 +583,7 @@ methods: {
     border-radius: 15px;
 }
 .upload-list-item-name {
-    font-size: small;
+    font-size: medium;
     font-weight: bold;
     width: 28vw;
     margin-bottom: 5px;
@@ -590,13 +593,11 @@ methods: {
     flex-direction: column;
     margin-left: 10px;
 }
-.upload-list-item-url-text {
-    width: 28vw;
-}
 .upload-list-item-url-row {
     display: flex;
     flex-direction: row;
     align-items: center;
+    width: 38vw;
 }
 .upload-list-item-progress {
     margin-top: 3px;
@@ -605,12 +606,13 @@ methods: {
 @media (max-width: 768px) {
     .upload-list-item-name {
         width: 32vw;
+        font-size: small;
     }
     .upload-list-item-content {
-        margin-left: 5px;
+        margin-left: 2px;
     }
-    .upload-list-item-url-text {
-        width: 32vw;
+    .upload-list-item-url-row {
+        width: 42vw;
     }
     .upload-list-item-progress {
         width: 32vw;
