@@ -132,7 +132,9 @@ watch: {
         handler() {
             if (this.fileList.length > this.fileListLength) {
                 this.$nextTick(() => {
-                    this.$refs.scrollContainer.setScrollTop(this.$refs.scrollContainer.wrapRef.scrollHeight)
+                    setTimeout(() => {
+                        this.$refs.scrollContainer.setScrollTop(this.$refs.scrollContainer.wrapRef.scrollHeight)
+                    }, 100)
                 })
             }
             this.fileListLength = this.fileList.length
@@ -686,7 +688,7 @@ methods: {
     transition: all 0.3s ease;
 }
 .upload-list-dashboard.list-scrolled {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.7);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 .upload-list-dashboard-title {
