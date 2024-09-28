@@ -34,7 +34,10 @@
                     <font-awesome-icon icon="user-cog" class="header-icon" @click="handleGoToAdmin"></font-awesome-icon>
                 </el-tooltip>
                 <el-tooltip content="返回上传页" placement="bottom">
-                    <font-awesome-icon icon="home" class="header-icon" @click="handleLogout"></font-awesome-icon>
+                    <font-awesome-icon icon="home" class="header-icon" @click="handleGoUpload"></font-awesome-icon>
+                </el-tooltip>
+                <el-tooltip content="退出登录" placement="bottom">
+                    <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                 </el-tooltip>
                 </div>
             </div>
@@ -137,6 +140,7 @@ methods: {
 
         if (response.status === 401) {
             // Redirect to the login page if a 401 Unauthorized is returned
+            this.$message.error('认证状态错误，请重新登录');
             this.$router.push('/adminLogin'); 
             throw new Error('Unauthorized');
         }
@@ -209,7 +213,7 @@ methods: {
         document.body.removeChild(textarea);
         this.$message.success('批量复制链接成功~');
     },
-    handleLogout() {
+    handleGoUpload() {
         this.$router.push('/');
     },
     handleGoToAdmin() {
@@ -247,35 +251,41 @@ methods: {
             // IE/Edge
             videoElement.msRequestFullscreen();
         }
+    },
+    handleLogout() {
+        this.$store.commit('setCredentials', null);
+        this.$router.push('/adminLogin');
     }
 },
 mounted() {
     this.fetchWithAuth("/api/manage/check", { method: 'GET' })
         .then(response => response.text())
         .then(result => {
-        if(result == "true"){
-            this.showLogoutButton=true;
-            // 在 check 成功后再执行 list 的 fetch 请求
-            return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
-        } else if(result=="Not using basic auth."){
-            return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
-        }
-        else{
-            // window.location.reload();
-            return Promise.reject();
-        }
+            if(result == "true"){
+                this.showLogoutButton=true;
+                // 在 check 成功后再执行 list 的 fetch 请求
+                return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
+            } else if(result=="Not using basic auth."){
+                return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
+            } else{
+                throw new Error('Unauthorized');
+            }
         })
         .then(response => response.json())
         .then(result => {
-        this.tableData = result.map(file => ({ ...file, selected: false }));
-        this.updateStats();
-        const savedSortOption = localStorage.getItem('sortOption');
-        if (savedSortOption) {
-            this.sortOption = savedSortOption;
-        }
-        this.sortData(this.tableData);
+            this.tableData = result.map(file => ({ ...file, selected: false }));
+            this.updateStats();
+            const savedSortOption = localStorage.getItem('sortOption');
+            if (savedSortOption) {
+                this.sortOption = savedSortOption;
+            }
+            this.sortData(this.tableData);
         })
-        .catch(() => this.$message.error('同步数据时出错，请检查网络连接'));
+        .catch((err) => {
+            if (err.message !== 'Unauthorized') {
+                this.$message.error('同步数据时出错，请检查网络连接');
+            }
+        });
     }
 };
 </script>
