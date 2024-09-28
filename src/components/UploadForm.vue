@@ -535,10 +535,16 @@ methods: {
                                         }
                                     }
                                 }
+                                // 尝试从URL中提取文件名
+                                if (fileName === '') {
+                                    const url = new URL(text);
+                                    fileName = url.pathname.split('/').pop();
+                                }
                                 // 未提取到文件名，使用默认文件名
                                 if (fileName === '') {
                                     // 获取文件后缀
-                                    let extension = text.split('.').pop();
+                                    const url = new URL(text);
+                                    let extension = url.pathname.split('.').pop();
                                     // 判断后缀是否有效
                                     if (!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'mp4', 'webm', 'ogg', 'mkv'].includes(extension)) {
                                         extension = 'jpeg'; // 默认为jpeg
