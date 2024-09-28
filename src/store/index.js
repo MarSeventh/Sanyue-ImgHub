@@ -6,13 +6,20 @@ export default createStore({
     userConfig: null,
     bingWallPapers: [],
     credentials: null,
-    uploadCopyUrlForm: ''
+    uploadCopyUrlForm: '',
+    compressConfig: {
+      customerCompress: true,
+      compressQuality: 4,
+      compressBar: 5,
+      serverCompress: true,
+    },
   },
   getters: {
     userConfig: state => state.userConfig,
     bingWallPapers: state => state.bingWallPapers,
     credentials: state => state.credentials,
-    uploadCopyUrlForm: state => state.uploadCopyUrlForm
+    uploadCopyUrlForm: state => state.uploadCopyUrlForm,
+    compressConfig: state => state.compressConfig,
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -26,6 +33,9 @@ export default createStore({
     },
     setUploadCopyUrlForm(state, uploadCopyUrlForm) {
       state.uploadCopyUrlForm = uploadCopyUrlForm;
+    },
+    setCompressConfig(state, { key, value }) {
+      state.compressConfig[key] = value;
     }
   },
   actions: {

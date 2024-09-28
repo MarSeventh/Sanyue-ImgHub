@@ -19,7 +19,7 @@
             </el-icon>
             <div class="el-upload__text"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
             <template #tip>
-                <div class="el-upload__tip">支持多文件上传，支持图片和视频，不超过20MB</div>
+                <div class="el-upload__tip">支持多文件上传，支持图片和视频，不超过50MB</div>
             </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
@@ -132,6 +132,26 @@ props: {
         type: String,
         default: 'url',
         required: false
+    },
+    customerCompress: {
+        type: Boolean,
+        default: true,
+        required: false
+    },
+    compressQuality: {
+        type: Number,
+        default: 4,
+        required: false
+    },
+    compressBar: {
+        type: Number,
+        default: 5,
+        required: false
+    },
+    serverCompress: {
+        type: Boolean,
+        default: true,
+        required: false
     }
 },
 data() {
@@ -142,7 +162,8 @@ data() {
         waitingList: [],
         exceptionList: [],
         listScrolled: false,
-        fileListLength: 0
+        fileListLength: 0,
+        uploadCount: 0
     }
 },
 watch: {
@@ -199,8 +220,10 @@ methods: {
         }
         const formData = new FormData()
         formData.append('file', file.file)
+        // 判断是否需要服务端压缩
+        const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
         axios({
-            url: '/upload' + '?authCode=' + cookies.get('authCode'),
+            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress,
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {
@@ -300,39 +323,11 @@ methods: {
     },
     beforeUpload(file) {
         return new Promise((resolve, reject) => {
-            const isLt5M = file.size / 1024 / 1024 < 5
-            const isLt20M = file.size / 1024 / 1024 < 20
-            if (!isLt5M && file.type.includes('image')) {
-                //尝试压缩图片
-                imageConversion.compressAccurately(file, 4096).then((res) => {
-                    //如果压缩后仍大于20MB，则不上传
-                    if (res.size / 1024 / 1024 > 20) {
-                        this.$message.error(file.name + '压缩后文件过大，无法上传!')
-                        reject('文件过大')
-                    }
-                    this.uploading = true
-                    //将res包装成新的file
-                    const newFile = new File([res], file.name, { type: res.type })
-                    newFile.uid = file.uid
-                    const fileUrl = URL.createObjectURL(newFile)
-                    this.fileList.push({
-                        uid: file.uid,
-                        name: file.name,
-                        url: fileUrl,
-                        finalURL: '',
-                        mdURL: '',
-                        htmlURL: '',
-                        ubbURL: '',
-                        status: 'uploading',
-                        progreess: 0
-                    })
-                    resolve(newFile)
-                }).catch((err) => {
-                    this.$message.error(file.name + '文件过大且压缩失败，无法上传!')
-                    reject(err)
-                })
-            } else if (isLt20M) {
-                this.uploading = true
+            // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值；或文件大小大于50MB
+            const needCustomCompress = file.type.includes('image') && (this.customerCompress && file.size / 1024 / 1024 > this.compressBar || file.size / 1024 / 1024 > 50)
+            const isLt50M = file.size / 1024 / 1024 < 50
+
+            const pushFileToQueue = (file, serverCompress) => {
                 const fileUrl = URL.createObjectURL(file)
                 this.fileList.push({
                     uid: file.uid,
@@ -343,9 +338,58 @@ methods: {
                     htmlURL: '',
                     ubbURL: '',
                     status: 'uploading',
-                    progreess: 0
+                    progreess: 0,
+                    serverCompress: serverCompress
                 })
                 resolve(file)
+            }
+
+            if (needCustomCompress) {
+                //尝试压缩图片
+                imageConversion.compressAccurately(file, 1024 * this.compressQuality).then((res) => {
+                    //如果压缩后大于50MB，则不上传
+                    if (res.size / 1024 / 1024 > 50) {
+                        this.$message.error(file.name + '压缩后文件过大，无法上传!')
+                        reject('文件过大')
+                    }
+                    this.uploading = true
+                    //将res包装成新的file
+                    const newFile = new File([res], file.name, { type: res.type })
+                    newFile.uid = file.uid
+                    
+                    const myUploadCount = this.uploadCount++
+
+                    //开启服务端压缩条件：1.开启服务端压缩 2.文件大小小于10MB
+                    const needServerCompress = this.serverCompress && newFile.size / 1024 / 1024 < 10
+
+                    if (myUploadCount === 0) {
+                        pushFileToQueue(newFile, needServerCompress)
+                    } else {
+                        setTimeout(() => {
+                            pushFileToQueue(newFile, needServerCompress)
+                            this.uploadCount--
+                        }, 300 * myUploadCount)
+                    }
+                }).catch((err) => {
+                    this.$message.error(file.name + '压缩失败，无法上传!')
+                    reject(err)
+                })
+            } else if (isLt50M) {
+                this.uploading = true
+                
+                const myUploadCount = this.uploadCount++
+
+                // 开启服务端压缩条件：1.开启服务端压缩 2.如果为图片，则文件大小小于10MB，否则不限制大小
+                const needServerCompress = this.serverCompress && (file.type.includes('image') ? file.size / 1024 / 1024 < 10 : true)
+
+                if (myUploadCount === 0) {
+                    pushFileToQueue(file, needServerCompress)
+                } else {
+                    setTimeout(() => {
+                        pushFileToQueue(file, needServerCompress)
+                        this.uploadCount--
+                    }, 300 * myUploadCount)
+                }
             } else {
                 this.$message.error(file.name + '文件过大，无法上传!')
                 reject('文件过大')
@@ -742,7 +786,7 @@ methods: {
     justify-content: space-between;
     align-items: center;
     height: 7vh;
-    padding: 0 20px;
+    padding: 0 15px;
     position: sticky;
     top: 0;
     z-index: 1;
