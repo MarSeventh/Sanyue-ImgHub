@@ -63,7 +63,7 @@
                     />
                 </el-form-item>
                 <el-form-item label="压缩阈值" v-if="customerCompress">
-                    <el-slider v-model="compressBar" :min="1" :max="50" show-input/>
+                    <el-slider v-model="compressBar" :min="1" :max="20" show-input/>
                 </el-form-item>
                 <el-form-item label="压缩后大小" v-if="customerCompress">
                     <el-slider v-model="compressQuality" :min="1" :max="compressBar" show-input/>
@@ -82,8 +82,8 @@
                     <br/>*Tips: 
                     <br/>1.本设置仅针对图片文件，单位为MB
                     <br/>2.客户端压缩指上传前压缩，服务端压缩指Telegram端压缩
-                    <br/>3.若图片大小>10MB，或压缩后图片大小>10MB，服务端压缩将自动失效！
-                    <br/>4.若图片大小>50MB，将自动进行客户端压缩！
+                    <br/>3.若图片大小>10MB，或压缩后图片大小>10MB，服务端压缩将自动失效
+                    <br/>4.若图片大小>20MB，将自动进行客户端压缩
                 </p>
                 <div class="dialog-action">
                     <el-button type="primary" @click="showCompressDialog = false">确定</el-button>

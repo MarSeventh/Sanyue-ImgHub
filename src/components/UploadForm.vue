@@ -19,7 +19,7 @@
             </el-icon>
             <div class="el-upload__text"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
             <template #tip>
-                <div class="el-upload__tip">支持多文件上传，支持图片和视频，不超过50MB</div>
+                <div class="el-upload__tip">支持多文件上传，支持图片和视频，不超过20MB</div>
             </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
@@ -85,18 +85,18 @@
                             <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
                             <div class="upload-list-item-url" v-if="file.status==='done'">
                                 <div class="upload-list-item-url-row">
-                                    <el-input v-model="file.finalURL" readonly @focus="selectAllText" :size="urlSize">
+                                    <el-input v-model="file.finalURL" readonly @click="selectAllText" :size="urlSize">
                                         <template #prepend>URL</template>
                                     </el-input>
-                                    <el-input v-model="file.mdURL" readonly @focus="selectAllText" :size="urlSize">
+                                    <el-input v-model="file.mdURL" readonly @click="selectAllText" :size="urlSize">
                                         <template #prepend>MarkDown</template>
                                     </el-input>
                                 </div>
                                 <div class="upload-list-item-url-row">
-                                    <el-input v-model="file.htmlURL" readonly @focus="selectAllText" :size="urlSize">
+                                    <el-input v-model="file.htmlURL" readonly @click="selectAllText" :size="urlSize">
                                         <template #prepend>HTML</template>
                                     </el-input>
-                                    <el-input v-model="file.ubbURL" readonly @focus="selectAllText" :size="urlSize">
+                                    <el-input v-model="file.ubbURL" readonly @click="selectAllText" :size="urlSize">
                                         <template #prepend>BBCode</template>
                                     </el-input>
                                 </div>
@@ -202,7 +202,7 @@ computed: {
 mounted() {
     document.addEventListener('paste', this.handlePaste)
 },
-beforeDestroy() {
+beforeUnmount() {
     document.removeEventListener('paste', this.handlePaste)
 },
 methods: {
@@ -323,9 +323,9 @@ methods: {
     },
     beforeUpload(file) {
         return new Promise((resolve, reject) => {
-            // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值；或文件大小大于50MB
-            const needCustomCompress = file.type.includes('image') && (this.customerCompress && file.size / 1024 / 1024 > this.compressBar || file.size / 1024 / 1024 > 50)
-            const isLt50M = file.size / 1024 / 1024 < 50
+            // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值；或文件大小大于20MB
+            const needCustomCompress = file.type.includes('image') && (this.customerCompress && file.size / 1024 / 1024 > this.compressBar || file.size / 1024 / 1024 > 20)
+            const isLt20M = file.size / 1024 / 1024 < 20
 
             const pushFileToQueue = (file, serverCompress) => {
                 const fileUrl = URL.createObjectURL(file)
@@ -347,8 +347,8 @@ methods: {
             if (needCustomCompress) {
                 //尝试压缩图片
                 imageConversion.compressAccurately(file, 1024 * this.compressQuality).then((res) => {
-                    //如果压缩后大于50MB，则不上传
-                    if (res.size / 1024 / 1024 > 50) {
+                    //如果压缩后大于20MB，则不上传
+                    if (res.size / 1024 / 1024 > 20) {
                         this.$message.error(file.name + '压缩后文件过大，无法上传!')
                         reject('文件过大')
                     }
@@ -374,7 +374,7 @@ methods: {
                     this.$message.error(file.name + '压缩失败，无法上传!')
                     reject(err)
                 })
-            } else if (isLt50M) {
+            } else if (isLt20M) {
                 this.uploading = true
                 
                 const myUploadCount = this.uploadCount++
@@ -470,6 +470,10 @@ methods: {
         }
     },
     handlePaste(event) {
+        // 当粘贴位置是文本框时，不执行该操作
+        if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+            return
+        }
         const items = event.clipboardData.items
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file') {
@@ -587,7 +591,6 @@ methods: {
         }
     },
     selectAllText(event) {
-        event.target.select();
         // 复制到剪贴板
         navigator.clipboard.writeText(event.target.value)
             .then(() => {
