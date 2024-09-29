@@ -423,7 +423,7 @@ methods: {
         this.$router.push('/');
     },
     handleGoToAdmin() {
-        this.$router.push('/userConfig');
+        this.$router.push('/customerConfig');
     },
     handleCopy(index, key) {
         const text = `${document.location.origin}/file/${key}`;
@@ -799,5 +799,9 @@ mounted() {
 :deep(.description-item) {
     word-break: break-all;
     word-wrap: break-word;
+}
+
+:focus-visible {
+    outline: none;
 }
 </style>

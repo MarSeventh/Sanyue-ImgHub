@@ -29,7 +29,7 @@
 import { mapGetters } from 'vuex';
 
 export default {
-    name: 'UserConfig',
+    name: 'CustomerConfig',
     data() {
         return {
             tableData: [],

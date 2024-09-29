@@ -68,9 +68,9 @@ const routes = [
     }
   },
   {
-    path: '/userConfig',
-    name: 'userConfig',
-    component: () => import('../views/UserConfig.vue'),
+    path: '/customerConfig',
+    name: 'customerConfig',
+    component: () => import('../views/CustomerConfig.vue'),
     beforeEnter: (to, from, next) => {
       // 从store中获取凭据
       const credentials = store.getters.credentials
