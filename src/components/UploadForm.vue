@@ -33,17 +33,17 @@
                         </el-text>
                         <div class="upload-list-dashboard-action">
                             <el-button-group>
-                                <el-tooltip content="整体复制" placement="top">
+                                <el-tooltip :disabled="disableTooltip" content="整体复制" placement="top">
                                     <el-button type="primary" round @click="copyAll" alt="整体复制">
                                         <font-awesome-icon icon="copy" />
                                     </el-button>
                                 </el-tooltip>
-                                <el-tooltip content="失败重试" placement="top">
+                                <el-tooltip :disabled="disableTooltip" content="失败重试" placement="top">
                                     <el-button type="primary" @click="retryError">
                                         <font-awesome-icon icon="redo" />
                                     </el-button>
                                 </el-tooltip>
-                                <el-tooltip content="清空列表" placement="top" style="border: none;">
+                                <el-tooltip :disabled="disableTooltip" content="清空列表" placement="top" style="border: none;">
                                     <el-dropdown>
                                         <el-button type="primary" round style="outline: none; border-right: none;">
                                             <font-awesome-icon icon="trash-alt" />
@@ -197,6 +197,9 @@ computed: {
     urlSize() {
         // 移动端为small
         return window.innerWidth < 768 ? 'small' : 'default'
+    },
+    disableTooltip() {
+        return window.innerWidth < 768
     }
 },
 mounted() {

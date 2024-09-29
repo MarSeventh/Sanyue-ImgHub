@@ -3,22 +3,22 @@
         <img id="bg1" class="background-image1" alt="Background Image"/>
         <img id="bg2" class="background-image2" alt="Background Image"/>
         <div class="toolbar">
-            <el-tooltip content="压缩设置" placement="left">
+            <el-tooltip :disabled="disableTooltip" content="压缩设置" placement="left">
                 <el-button class="toolbar-button" size="large" @click="openCompressDialog" circle>
                     <font-awesome-icon icon="file-archive" class="compress-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
-            <el-tooltip content="链接格式" placement="left">
+            <el-tooltip :disabled="disableTooltip" content="链接格式" placement="left">
                 <el-button class="toolbar-button" size="large" @click="openUrlDialog" circle>
                     <font-awesome-icon icon="link" class="link-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
-            <el-tooltip content="管理页面" placement="left">
+            <el-tooltip :disabled="disableTooltip" content="管理页面" placement="left">
                 <el-button class="toolbar-button" size="large" @click="handleManage" circle>
                     <font-awesome-icon icon="cog" class="config-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
-            <el-tooltip content="退出登录" placement="left">
+            <el-tooltip :disabled="disableTooltip" content="退出登录" placement="left">
                 <el-button class="toolbar-button" size="large" @click="handleLogout" circle>
                     <font-awesome-icon icon="sign-out-alt" class="sign-out-icon" size="lg"/>
                 </el-button>
@@ -145,6 +145,9 @@ export default {
         },
         dialogWidth() {
             return window.innerWidth > 768 ? '40%' : '80%'
+        },
+        disableTooltip() {
+            return window.innerWidth < 768
         }
     },
     mounted() {

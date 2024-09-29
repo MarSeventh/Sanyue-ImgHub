@@ -4,13 +4,13 @@
             <div class="header-content">
                 <span class="title">用户管理</span>
                 <div class="header-action">
-                    <el-tooltip content="返回主管理页" placement="bottom">
+                    <el-tooltip :disabled="disableTooltip" content="返回主管理页" placement="bottom">
                         <font-awesome-icon icon="home" class="header-icon" @click="handleGoHome"></font-awesome-icon>
                     </el-tooltip>
-                    <el-tooltip content="返回上传页" placement="bottom">
+                    <el-tooltip :disabled="disableTooltip" content="返回上传页" placement="bottom">
                         <font-awesome-icon icon="upload" class="header-icon" @click="handleGoUpload"></font-awesome-icon>
                     </el-tooltip>
-                    <el-tooltip content="退出登录" placement="bottom">
+                    <el-tooltip :disabled="disableTooltip" content="退出登录" placement="bottom">
                         <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                     </el-tooltip>
                 </div>
@@ -37,7 +37,10 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['credentials'])
+        ...mapGetters(['credentials']),
+        disableTooltip() {
+            return window.innerWidth < 768;
+        }
     },
     methods: {
         async fetchWithAuth(url, options = {}) {

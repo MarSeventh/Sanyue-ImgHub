@@ -11,7 +11,7 @@
                     <font-awesome-icon icon="database" class="fa-database"></font-awesome-icon> 记录总数量: {{ Number }}
                 </span>
                 <div class="actions">
-                <el-tooltip content="排序" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" content="排序" placement="bottom">
                     <el-dropdown @command="sort" :hide-on-click="false">
                         <span class="el-dropdown-link">
                             <font-awesome-icon :icon="sortIcon" class="header-icon"></font-awesome-icon>
@@ -24,19 +24,19 @@
                         </template>
                     </el-dropdown>
                 </el-tooltip>
-                <el-tooltip content="批量复制" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" content="批量复制" placement="bottom">
                     <font-awesome-icon icon="link" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }" @click="handleBatchCopy"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip content="批量删除" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" content="批量删除" placement="bottom">
                     <font-awesome-icon icon="trash-alt" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }" @click="handleBatchDelete"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip content="用户管理" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" content="用户管理" placement="bottom">
                     <font-awesome-icon icon="user-cog" class="header-icon" @click="handleGoToAdmin"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip content="返回上传页" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" content="返回上传页" placement="bottom">
                     <font-awesome-icon icon="upload" class="header-icon" @click="handleGoUpload"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip content="退出登录" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" content="退出登录" placement="bottom">
                     <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                 </el-tooltip>
                 </div>
@@ -51,22 +51,22 @@
                     <el-image v-else :preview-teleported="true" :src="'/file/' + item.name" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
                     <div class="image-overlay">
                         <div class="overlay-buttons">
-                            <el-tooltip content="复制链接" placement="top">
+                            <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
                                 <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">
                                     <font-awesome-icon icon="copy"></font-awesome-icon>
                                 </el-button>
                             </el-tooltip>
-                            <el-tooltip content="下载" placement="top">
+                            <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
                                 <el-button size="mini" type="primary" @click.stop="handleDownload(item.name)">
                                     <font-awesome-icon icon="download"></font-awesome-icon>
                                 </el-button>
                             </el-tooltip>
-                            <el-tooltip content="详情" placement="top">
+                            <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
                                 <el-button size="mini" type="primary" @click.stop="openDetailDialog(index, item.name)">
                                     <font-awesome-icon icon="info"></font-awesome-icon>
                                 </el-button>
                             </el-tooltip>
-                            <el-tooltip content="删除" placement="top">
+                            <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
                                 <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
                                     <font-awesome-icon icon="trash-alt"></font-awesome-icon>
                                 </el-button>
@@ -208,6 +208,9 @@ computed: {
     },
     tablePreviewSpan() {
         return window.innerWidth > 768 ? 2 : 1;
+    },
+    disableTooltip() {
+        return window.innerWidth < 768;
     }
 },
 watch: {
