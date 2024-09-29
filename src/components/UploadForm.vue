@@ -43,9 +43,9 @@
                                         <font-awesome-icon icon="redo" />
                                     </el-button>
                                 </el-tooltip>
-                                <el-tooltip content="清空列表" placement="top">
-                                    <el-dropdown trigger="click">
-                                        <el-button type="primary" round>
+                                <el-tooltip content="清空列表" placement="top" style="border: none;">
+                                    <el-dropdown>
+                                        <el-button type="primary" round style="outline: none; border-right: none;">
                                             <font-awesome-icon icon="trash-alt" />
                                         </el-button>
                                         <template v-slot:dropdown>
@@ -624,7 +624,6 @@ methods: {
     retryError() {
         if (this.exceptionList.length > 0) {
             this.exceptionList.forEach(file => {
-                console.log(file)
                 this.uploadFile({ file: file.file, 
                     onProgress: (evt) => this.handleProgress(evt), 
                     onSuccess: (response, file) => this.handleSuccess(response, file), 

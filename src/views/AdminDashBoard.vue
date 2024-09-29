@@ -30,11 +30,11 @@
                 <el-tooltip content="批量删除" placement="bottom">
                     <font-awesome-icon icon="trash-alt" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }" @click="handleBatchDelete"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip content="黑白名单管理" placement="bottom">
+                <el-tooltip content="用户管理" placement="bottom">
                     <font-awesome-icon icon="user-cog" class="header-icon" @click="handleGoToAdmin"></font-awesome-icon>
                 </el-tooltip>
                 <el-tooltip content="返回上传页" placement="bottom">
-                    <font-awesome-icon icon="home" class="header-icon" @click="handleGoUpload"></font-awesome-icon>
+                    <font-awesome-icon icon="upload" class="header-icon" @click="handleGoUpload"></font-awesome-icon>
                 </el-tooltip>
                 <el-tooltip content="退出登录" placement="bottom">
                     <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
@@ -50,10 +50,28 @@
                     <video v-if="item.metadata?.FileType?.includes('video')" :src="'/file/' + item.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
                     <el-image v-else :preview-teleported="true" :src="'/file/' + item.name" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
                     <div class="image-overlay">
-                    <div class="overlay-buttons">
-                        <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">复制地址</el-button>
-                        <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">删除</el-button>
-                    </div>
+                        <div class="overlay-buttons">
+                            <el-tooltip content="复制链接" placement="top">
+                                <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">
+                                    <font-awesome-icon icon="copy"></font-awesome-icon>
+                                </el-button>
+                            </el-tooltip>
+                            <el-tooltip content="下载" placement="top">
+                                <el-button size="mini" type="primary" @click.stop="handleDownload(item.name)">
+                                    <font-awesome-icon icon="download"></font-awesome-icon>
+                                </el-button>
+                            </el-tooltip>
+                            <el-tooltip content="详情" placement="top">
+                                <el-button size="mini" type="primary" @click.stop="openDetailDialog(index, item.name)">
+                                    <font-awesome-icon icon="info"></font-awesome-icon>
+                                </el-button>
+                            </el-tooltip>
+                            <el-tooltip content="删除" placement="top">
+                                <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
+                                    <font-awesome-icon icon="trash-alt"></font-awesome-icon>
+                                </el-button>
+                            </el-tooltip>
+                        </div>
                     </div>
                     <div class="file-info">{{ item.metadata?.FileName || item.name }}</div>
                 </el-card>
@@ -64,6 +82,60 @@
             </div>
             </el-main>
         </el-container>
+        <el-dialog title="文件详情" v-model="showdetailDialog" :width="dialogWidth" center>
+            <el-descriptions direction="vertical" border :column="2">
+                <template #extra>
+                    <div class="detail-actions">
+                        <el-button type="primary" @click="handleDownload(detailFile?.name)" round size="small">
+                            <font-awesome-icon icon="download" style="margin-right: 3px;"></font-awesome-icon> 下载
+                        </el-button>
+                        <el-button type="primary" @click="handleBlock(detailFile?.name)" round size="small">
+                            <font-awesome-icon icon="ban" style="margin-right: 3px;"></font-awesome-icon> 黑名单
+                        </el-button>
+                        <el-button type="primary" @click="handleWhite(detailFile?.name)" round size="small">
+                            <font-awesome-icon icon="user-plus" style="margin-right: 3px;"></font-awesome-icon> 白名单
+                        </el-button>
+                        <el-button type="danger" @click="handleDetailDelete(detailFile?.name)" round size="small">
+                            <font-awesome-icon icon="trash-alt" style="margin-right: 3px;"></font-awesome-icon> 删除
+                        </el-button>
+                    </div> 
+                </template>
+                <el-descriptions-item 
+                    label="文件预览"
+                    :rowspan="2"
+                    :width="300"
+                    align="center"
+                    >
+                    <video v-if="detailFile?.metadata?.FileType?.includes('video')" :src="'/file/' + detailFile?.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                    <el-image v-else :src="'/file/' + detailFile?.name" fit="cover" lazy class="image-preview"></el-image>
+                </el-descriptions-item>
+                <el-descriptions-item label="文件名">{{ detailFile?.metadata?.FileName || detailFile?.name }}</el-descriptions-item>
+                <el-descriptions-item label="访问状态">{{ accessType }}</el-descriptions-item>
+                <el-descriptions-item label="上传时间">{{ new Date(detailFile?.metadata?.TimeStamp).toLocaleString() || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="上传IP">{{ detailFile?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="上传渠道">{{ detailFile?.metadata?.Channel || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="文件类型">{{ detailFile?.metadata?.FileType || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="审查结果">{{ detailFile?.metadata?.Label || '无' }}</el-descriptions-item>
+            </el-descriptions>
+            <el-divider></el-divider>
+            <el-tabs  v-model="activeUrlTab" @tab-click="handleTabClick">
+                <el-tab-pane label="原始链接" name="originUrl">
+                    <el-input v-model="allUrl.originUrl" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="Markdown" name="mdUrl">
+                    <el-input v-model="allUrl.mdUrl" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="HTML" name="htmlUrl">
+                    <el-input v-model="allUrl.htmlUrl" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="BBCode" name="bbUrl">
+                    <el-input v-model="allUrl.bbUrl" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="TG文件ID" v-if="detailFile?.metadata?.TgFileId" name="tgId">
+                    <el-input v-model="allUrl.tgId" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+            </el-tabs>
+        </el-dialog>
     </div>
 </template>
 
@@ -73,16 +145,19 @@ import { mapGetters } from 'vuex';
 export default {
 data() {
     return {
-    Number: 0,
-    showLogoutButton: false,
-    tableData: [],
-    search: '',
-    currentPage: 1,
-    pageSize: 15,
-    selectedFiles: [],
-    sortOption: 'dateDesc',
-    isUploading: false
-    };
+        Number: 0,
+        showLogoutButton: false,
+        tableData: [],
+        search: '',
+        currentPage: 1,
+        pageSize: 15,
+        selectedFiles: [],
+        sortOption: 'dateDesc',
+        isUploading: false,
+        showdetailDialog: false,
+        detailFile: null,
+        activeUrlTab: 'originUrl',
+    }
 },
 computed: {
     ...mapGetters(['credentials']),
@@ -106,6 +181,27 @@ computed: {
     },
     sortIcon() {
         return this.sortOption === 'dateDesc' ? 'sort-amount-down' : 'sort-alpha-up';
+    },
+    dialogWidth() {
+        return window.innerWidth > 768 ? '60%' : '90%';
+    },
+    accessType() {
+        if (this.detailFile?.metadata?.ListType === 'White') {
+            return '正常';
+        } else if (this.detailFile?.metadata?.ListType === 'Block' || this.detailFile?.metadata?.Label === 'adult') {
+            return '受限';
+        } else {
+            return '正常';
+        }
+    },
+    allUrl() {
+        return {
+            'originUrl': `${document.location.origin}/file/${this.detailFile?.name}`,
+            'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${document.location.origin}/file/${this.detailFile?.name})`,
+            'htmlUrl': `<img src="${document.location.origin}/file/${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
+            'bbUrl': `[img]${document.location.origin}/file/${this.detailFile?.name}[/img]`,
+            'tgId': this.detailFile?.metadata?.TgFileId || '未知'
+        }
     }
 },
 watch: {
@@ -122,6 +218,110 @@ watch: {
 methods: {
     refreshDashboard() {
         location.reload();
+    },
+    handleDownload(key) {
+        const link = document.createElement('a');
+        link.href = `/file/${key}`;
+        link.download = key;
+        link.click();
+    },
+    openDetailDialog(index, key) {
+        this.detailFile = this.paginatedTableData[index];
+        this.showdetailDialog = true;
+    },
+    handleTabClick(tab) {
+        this.activeUrlTab = tab.props.name;
+    },
+    handleUrlClick(event) {
+        // 复制到剪贴板
+        navigator.clipboard.writeText(event.target.value)
+            .then(() => {
+                this.$message({
+                    type: 'success',
+                    message: '复制成功'
+                });
+            })
+            .catch(() => {
+                this.$message({
+                    type: 'error',
+                    message: '复制失败'
+                });
+            });
+    },
+    handleDetailDelete(key) {
+        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+        }).then(() => {
+        this.fetchWithAuth(`/api/manage/delete/${key}`, { method: 'GET' })
+            .then(response => {
+            if (response.ok) {
+                const fileIndex = this.tableData.findIndex(file => file.name === key);
+                if (fileIndex !== -1) {
+                this.tableData.splice(fileIndex, 1);
+                }
+            } else {
+                return Promise.reject('请求失败');
+            }
+            })
+            .then(() => {
+            this.updateStats();
+            this.$message.success('删除成功!');
+            this.showdetailDialog = false;
+            })
+            .catch(() => this.$message.error('删除失败，请检查网络连接'));
+        }).catch(() => this.$message.info('已取消删除'));
+    },
+    handleBlock(key) {
+        this.$confirm('此操作将把该文件加入黑名单, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+        this.fetchWithAuth(`/api/manage/block/${key}`, { method: 'GET' })
+            .then(response => {
+                if (response.ok) {
+                    const fileIndex = this.tableData.findIndex(file => file.name === key);
+                    if (fileIndex !== -1) {
+                        this.tableData[fileIndex].metadata.ListType = 'Block';
+                    }
+                } else {
+                    return Promise.reject('请求失败');
+                }
+            })
+            .then(() => {
+                this.$message.success('加入黑名单成功!');
+            })
+            .catch(() => this.$message.error('加入黑名单失败，请检查网络连接'));
+        }).catch(
+            () => console.log('已取消加入黑名单')
+        );
+    },
+    handleWhite(key) {
+        this.$confirm('此操作将把该文件加入白名单, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+        this.fetchWithAuth(`/api/manage/white/${key}`, { method: 'GET' })
+            .then(response => {
+                if (response.ok) {
+                    const fileIndex = this.tableData.findIndex(file => file.name === key);
+                    if (fileIndex !== -1) {
+                        this.tableData[fileIndex].metadata.ListType = 'White';
+                    }
+                } else {
+                    return Promise.reject('请求失败');
+                }
+            })
+            .then(() => {
+                this.$message.success('加入白名单成功!');
+            })
+            .catch(() => this.$message.error('加入白名单失败，请检查网络连接'));
+        }).catch(
+            () => console.log('已取消加入白名单')
+        );
     },
     async fetchWithAuth(url, options = {}) {
         // 开发环境, url 前面加上 /api
@@ -217,7 +417,7 @@ methods: {
         this.$router.push('/');
     },
     handleGoToAdmin() {
-        window.location.href = '/admin-detail';
+        this.$router.push('/userConfig');
     },
     handleCopy(index, key) {
         const text = `${document.location.origin}/file/${key}`;
@@ -565,7 +765,6 @@ mounted() {
 
 .overlay-buttons {
     display: flex;
-    gap: 10px;
     pointer-events: auto;
 }
 
