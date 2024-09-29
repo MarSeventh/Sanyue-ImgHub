@@ -1,10 +1,27 @@
 <template>
     <div class="container">
-        <h1>用户管理</h1>
-        <el-table :data="dealedData" style="width: 90%;">
-            <el-table-column prop="ip" label="IP地址"></el-table-column>
-            <el-table-column prop="count" label="上传次数" sortable></el-table-column>
-        </el-table>
+        <el-header>
+            <div class="header-content">
+                <span class="title">用户管理</span>
+                <div class="header-action">
+                    <el-tooltip content="返回主管理页" placement="bottom">
+                        <font-awesome-icon icon="home" class="header-icon" @click="handleGoHome"></font-awesome-icon>
+                    </el-tooltip>
+                    <el-tooltip content="返回上传页" placement="bottom">
+                        <font-awesome-icon icon="upload" class="header-icon" @click="handleGoUpload"></font-awesome-icon>
+                    </el-tooltip>
+                    <el-tooltip content="退出登录" placement="bottom">
+                        <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
+                    </el-tooltip>
+                </div>
+            </div>
+        </el-header>
+        <div class="main-container">
+            <el-table :data="dealedData" style="width: 90%;">
+                <el-table-column prop="ip" label="IP地址"></el-table-column>
+                <el-table-column prop="count" label="上传次数" sortable></el-table-column>
+            </el-table>
+        </div>
     </div>
 </template>
 
@@ -62,6 +79,16 @@ export default {
             });
             return dealedData;
         },
+        handleGoUpload() {
+            this.$router.push('/');
+        },
+        handleLogout() {
+            this.$store.commit('setCredentials', null);
+            this.$router.push('/adminLogin');
+        },
+        handleGoHome() {
+            this.$router.push('/dashboard');
+        }
     },
     mounted() {
         this.fetchWithAuth("/api/manage/check", { method: 'GET' })
@@ -93,9 +120,75 @@ export default {
 
 <style>
 .container {
+    background: linear-gradient(90deg, #ffd7e4 0%, #c8f1ff 100%);
+    min-height: 100vh;
+}
+
+.header-content {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
+    padding: 10px 20px;
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.5s ease, box-shadow 0.5s ease;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+    }
+}
+
+.header-content:hover {
+    background-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+.title {
+    font-size: 1.8em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    color: #333;
+}
+
+.title:hover {
+    color: #B39DDB; /* 使用柔和的淡紫色 */
+}
+
+.header-icon {
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+    outline: none;
+}
+
+.header-icon:hover {
+    color: #B39DDB; /* 使用柔和的淡紫色 */
+    transform: scale(1.2);
+}
+
+.header-action {
+    display: flex;
+    gap: 10px;
+}
+
+.main-container {
+    display: flex;
     justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        margin-top: 35px;
+    }
 }
 </style>

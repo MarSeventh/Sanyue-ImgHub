@@ -83,7 +83,7 @@
             </el-main>
         </el-container>
         <el-dialog title="文件详情" v-model="showdetailDialog" :width="dialogWidth" center>
-            <el-descriptions direction="vertical" border :column="2">
+            <el-descriptions direction="vertical" border :column="tableColumnNum">
                 <template #extra>
                     <div class="detail-actions">
                         <el-button type="primary" @click="handleDownload(detailFile?.name)" round size="small">
@@ -102,20 +102,20 @@
                 </template>
                 <el-descriptions-item 
                     label="文件预览"
-                    :rowspan="2"
+                    :rowspan="tablePreviewSpan"
                     :width="300"
                     align="center"
                     >
                     <video v-if="detailFile?.metadata?.FileType?.includes('video')" :src="'/file/' + detailFile?.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
                     <el-image v-else :src="'/file/' + detailFile?.name" fit="cover" lazy class="image-preview"></el-image>
                 </el-descriptions-item>
-                <el-descriptions-item label="文件名">{{ detailFile?.metadata?.FileName || detailFile?.name }}</el-descriptions-item>
-                <el-descriptions-item label="访问状态">{{ accessType }}</el-descriptions-item>
-                <el-descriptions-item label="上传时间">{{ new Date(detailFile?.metadata?.TimeStamp).toLocaleString() || '未知' }}</el-descriptions-item>
-                <el-descriptions-item label="上传IP">{{ detailFile?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
-                <el-descriptions-item label="上传渠道">{{ detailFile?.metadata?.Channel || '未知' }}</el-descriptions-item>
-                <el-descriptions-item label="文件类型">{{ detailFile?.metadata?.FileType || '未知' }}</el-descriptions-item>
-                <el-descriptions-item label="审查结果">{{ detailFile?.metadata?.Label || '无' }}</el-descriptions-item>
+                <el-descriptions-item label="文件名" class-name="description-item">{{ detailFile?.metadata?.FileName || detailFile?.name }}</el-descriptions-item>
+                <el-descriptions-item label="访问状态" class-name="description-item">{{ accessType }}</el-descriptions-item>
+                <el-descriptions-item label="上传时间" class-name="description-item">{{ new Date(detailFile?.metadata?.TimeStamp).toLocaleString() || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="上传IP" class-name="description-item">{{ detailFile?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="上传渠道" class-name="description-item">{{ detailFile?.metadata?.Channel || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="文件类型" class-name="description-item">{{ detailFile?.metadata?.FileType || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="审查结果" class-name="description-item">{{ detailFile?.metadata?.Label || '无' }}</el-descriptions-item>
             </el-descriptions>
             <el-divider></el-divider>
             <el-tabs  v-model="activeUrlTab" @tab-click="handleTabClick">
@@ -202,6 +202,12 @@ computed: {
             'bbUrl': `[img]${document.location.origin}/file/${this.detailFile?.name}[/img]`,
             'tgId': this.detailFile?.metadata?.TgFileId || '未知'
         }
+    },
+    tableColumnNum() {
+        return window.innerWidth > 768 ? 3 : 1;
+    },
+    tablePreviewSpan() {
+        return window.innerWidth > 768 ? 2 : 1;
     }
 },
 watch: {
@@ -788,5 +794,10 @@ mounted() {
     height: 200px;
     display: block;
     cursor: pointer;
+}
+
+:deep(.description-item) {
+    word-break: break-all;
+    word-wrap: break-word;
 }
 </style>
