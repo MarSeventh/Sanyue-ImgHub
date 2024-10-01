@@ -17,7 +17,33 @@
             </div>
         </el-header>
         <div class="main-container">
-            <el-table :data="dealedData" style="width: 90%;">
+            <el-table :data="dealedData" :default-sort="{ prop: 'count', order: 'descending' }" class="main-table" table-layout="fixed">
+                <el-table-column type="expand">
+                    <template v-slot="props">
+                        <div style="margin: 8px;">
+                            <h3 style="text-align: center;">上传文件列表</h3>
+                            <el-table :data="props.row.data" style="width: 100%" :default-sort="{ prop: 'metadata.TimeStamp', order: 'descending' }" table-layout="fixed">
+                                <el-table-column prop="metadata.FileName" label="文件名"></el-table-column>
+                                <el-table-column prop="name" label="文件预览">
+                                    <template v-slot="{ row }">
+                                        <el-image v-if="row.metadata?.FileType?.includes('image')" :src="'/file/' + row.name" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
+                                        <video v-else :src="'/file/' + row.name" controls style="width: 100px; height: 100px;"></video>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column 
+                                    :formatter="formatTimeStamp" 
+                                    label="上传时间" 
+                                    prop="metadata.TimeStamp"
+                                    sortable 
+                                    :sort-method="sortByTimestamp">
+                                    <template v-slot="{ row }">
+                                        {{ formatTimeStamp(row.metadata.TimeStamp) }}
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="ip" label="IP地址"></el-table-column>
                 <el-table-column prop="count" label="上传次数" sortable></el-table-column>
             </el-table>
@@ -91,6 +117,12 @@ export default {
         },
         handleGoHome() {
             this.$router.push('/dashboard');
+        },
+        formatTimeStamp(timeStamp) {
+            return new Date(timeStamp).toLocaleString();
+        },
+        sortByTimestamp(a, b) {
+            return new Date(a.metadata.TimeStamp) - new Date(b.metadata.TimeStamp);
         }
     },
     mounted() {
@@ -122,6 +154,10 @@ export default {
 </script>
 
 <style>
+.main-table {
+    width: 90%;
+}
+
 .container {
     background: linear-gradient(90deg, #ffd7e4 0%, #c8f1ff 100%);
     min-height: 100vh;
@@ -194,4 +230,4 @@ export default {
         margin-top: 35px;
     }
 }
-</style>
+</style>import { format } from 'core-js/core/date';
