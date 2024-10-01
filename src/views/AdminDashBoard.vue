@@ -47,8 +47,8 @@
                 <template v-for="(item, index) in paginatedTableData" :key="index">
                 <el-card class="img-card">
                     <el-checkbox v-model="item.selected"></el-checkbox>
-                    <video v-if="item.metadata?.FileType?.includes('video')" :src="'/file/' + item.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else :preview-teleported="true" :src="'/file/' + item.name" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
+                    <el-image v-if="item.metadata?.FileType?.includes('image')" :preview-teleported="true" :src="'/file/' + item.name" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
+                    <video v-else :src="'/file/' + item.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
                     <div class="image-overlay">
                         <div class="overlay-buttons">
                             <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
@@ -106,8 +106,8 @@
                     :width="300"
                     align="center"
                     >
-                    <video v-if="detailFile?.metadata?.FileType?.includes('video')" :src="'/file/' + detailFile?.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else :src="'/file/' + detailFile?.name" fit="cover" lazy class="image-preview"></el-image>
+                    <el-image v-if="detailFile?.metadata?.FileType?.includes('image')" :src="'/file/' + detailFile?.name" fit="cover" lazy class="image-preview"></el-image>
+                    <video v-else :src="'/file/' + detailFile?.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
                 </el-descriptions-item>
                 <el-descriptions-item label="文件名" class-name="description-item">{{ detailFile?.metadata?.FileName || detailFile?.name }}</el-descriptions-item>
                 <el-descriptions-item label="访问状态" class-name="description-item">{{ accessType }}</el-descriptions-item>

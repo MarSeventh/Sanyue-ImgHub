@@ -153,7 +153,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .main-table {
     width: 90%;
 }
