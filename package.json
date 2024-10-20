@@ -18,6 +18,7 @@
     "element-plus": "^2.8.2",
     "http-proxy-middleware": "^3.0.2",
     "image-conversion": "^2.1.1",
+    "jszip": "^3.10.1",
     "vue": "^3.2.13",
     "vue-cookies": "^1.8.4",
     "vue-router": "^4.4.3",

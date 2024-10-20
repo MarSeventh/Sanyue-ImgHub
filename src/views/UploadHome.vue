@@ -84,6 +84,8 @@
                     <br/>2.客户端压缩指上传前压缩，服务端压缩指Telegram端压缩
                     <br/>3.若图片大小>10MB，或压缩后图片大小>10MB，服务端压缩将自动失效
                     <br/>4.若图片大小>20MB，将自动进行客户端压缩
+                    <br/>5.若想要存储的图片和原图完全一致，可以将两个压缩设置均设置为关闭
+                    <br/>6.若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题
                 </p>
                 <div class="dialog-action">
                     <el-button type="primary" @click="showCompressDialog = false">确定</el-button>

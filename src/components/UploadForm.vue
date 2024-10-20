@@ -59,7 +59,7 @@
                             </el-button-group>
                         </div>
                     </div>
-                    <div class="upload-list-item" v-for="file in fileList" :key="file.name" :span="8">
+                    <div class="upload-list-item" v-for="file in fileList.slice().reverse()" :key="file.name" :span="8">
                         <a :href="file.url" target="_blank">
                             <!-- 判断文件类型是否为视频 -->
                             <video
@@ -172,7 +172,8 @@ watch: {
             if (this.fileList.length > this.fileListLength) {
                 this.$nextTick(() => {
                     setTimeout(() => {
-                        this.$refs.scrollContainer.setScrollTop(this.$refs.scrollContainer.wrapRef.scrollHeight)
+                        // this.$refs.scrollContainer.setScrollTop(this.$refs.scrollContainer.wrapRef.scrollHeight) // 滚动到底部
+                        this.$refs.scrollContainer.setScrollTop(0) // 滚动到顶部
                     }, 100)
                 })
             }

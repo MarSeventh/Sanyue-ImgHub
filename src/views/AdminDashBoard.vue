@@ -24,11 +24,31 @@
                         </template>
                     </el-dropdown>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" content="批量复制" placement="bottom">
-                    <font-awesome-icon icon="link" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }" @click="handleBatchCopy"></font-awesome-icon>
+                <el-tooltip :disabled="disableTooltip" content="全选此页" placement="bottom">
+                    <font-awesome-icon :icon="selectPageIcon" class="header-icon" @click="handleSelectPage"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" content="批量删除" placement="bottom">
-                    <font-awesome-icon icon="trash-alt" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }" @click="handleBatchDelete"></font-awesome-icon>
+                <el-tooltip :disabled="disableTooltip" content="批量处理" placement="bottom">
+                    <el-dropdown @command="handleBatchAction" :hide-on-click="false" :disabled="selectedFiles.length === 0">
+                        <span class="el-dropdown-link">
+                            <font-awesome-icon icon="ellipsis-h" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }"></font-awesome-icon>
+                        </span>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item command="copy">
+                                    <font-awesome-icon icon="copy" style="margin-right: 5px;"></font-awesome-icon>
+                                    批量复制
+                                </el-dropdown-item>
+                                <el-dropdown-item command="delete">
+                                    <font-awesome-icon icon="trash-alt" style="margin-right: 5px;"></font-awesome-icon>
+                                    批量删除
+                                </el-dropdown-item>
+                                <el-dropdown-item command="download">
+                                    <font-awesome-icon icon="download" style="margin-right: 5px;"></font-awesome-icon>
+                                    批量下载
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
                 </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" content="用户管理" placement="bottom">
                     <font-awesome-icon icon="user-cog" class="header-icon" @click="handleGoToAdmin"></font-awesome-icon>
@@ -141,6 +161,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
+import JSZip from 'jszip';
 
 export default {
 data() {
@@ -156,7 +177,7 @@ data() {
         isUploading: false,
         showdetailDialog: false,
         detailFile: null,
-        activeUrlTab: 'originUrl',
+        activeUrlTab: 'originUrl'
     }
 },
 computed: {
@@ -211,12 +232,19 @@ computed: {
     },
     disableTooltip() {
         return window.innerWidth < 768;
+    },
+    selectPage() {
+        // 如果当前页所有文件都被选中，则返回 true，否则返回 false
+        return this.paginatedTableData.every(file => file.selected);
+    },
+    selectPageIcon() {
+        return this.selectPage ? 'check-square' : 'square';
     }
 },
 watch: {
     tableData: {
         handler(newData) {
-        this.selectedFiles = newData.filter(file => file.selected);
+            this.selectedFiles = newData.filter(file => file.selected);
         },
         deep: true
     },
@@ -464,6 +492,60 @@ methods: {
     handleLogout() {
         this.$store.commit('setCredentials', null);
         this.$router.push('/adminLogin');
+    },
+    handleSelectPage() {
+        if (this.selectPage) {
+            this.paginatedTableData.forEach(file => file.selected = false);
+        } else {
+            this.paginatedTableData.forEach(file => file.selected = true);
+        }
+    },
+    handleBatchAction(command) {
+        if (command === 'copy') {
+            this.handleBatchCopy();
+        } else if (command === 'delete') {
+            this.handleBatchDelete();
+        } else if (command === 'download') {
+            this.handleBatchDownload();
+        }
+    },
+    handleBatchDownload() {
+        // 将选中文件打包成 zip 文件下载
+        const zip = new JSZip();
+        const folder = zip.folder('files');
+        // 构造Promise数组，等待所有文件下载完成后再打包
+        const fileNameCount = {}; // 用于跟踪文件名出现的次数
+
+        const downloadPromises = this.selectedFiles.map(file => {
+            return fetch(`/file/${file.name}`)
+                .then(response => response.blob())
+                .then(blob => {
+                    // 检查文件名是否已经存在
+                    let fileName = file.metadata?.FileName || file.name;
+                    if (fileNameCount[fileName]) {
+                        // 如果已经存在，则在文件名后加上编号
+                        const extension = fileName.substring(fileName.lastIndexOf('.'));
+                        const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+                        fileName = `${baseName}(${fileNameCount[fileName]})${extension}`;
+                        fileNameCount[file.name]++;
+                    } else {
+                        // 如果不存在，则初始化为1
+                        fileNameCount[fileName] = 1;
+                    }
+
+                    // 将文件添加到 zip 文件夹中
+                    folder.file(fileName, blob);
+                });
+        });
+
+        Promise.all(downloadPromises)
+            .then(() => zip.generateAsync({ type: 'blob' }))
+            .then(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'files.zip';
+                link.click();
+            });
     }
 },
 mounted() {
@@ -807,4 +889,4 @@ mounted() {
 :focus-visible {
     outline: none;
 }
-</style>
+</style>, { file }
