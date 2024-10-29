@@ -27,6 +27,22 @@
                 <el-tooltip :disabled="disableTooltip" content="全选此页" placement="bottom">
                     <font-awesome-icon :icon="selectPageIcon" class="header-icon" @click="handleSelectPage"></font-awesome-icon>
                 </el-tooltip>
+                <el-tooltip :disabled="disableTooltip" content="默认链接格式" placement="bottom">
+                    <el-dropdown @command="handleDefaultUrlChange" :hide-on-click="false">
+                        <span class="el-dropdown-link">
+                            <font-awesome-icon icon="link" class="header-icon"></font-awesome-icon>
+                        </span>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item command="originUrl">原始链接</el-dropdown-item>
+                                <el-dropdown-item command="mdUrl">Markdown</el-dropdown-item>
+                                <el-dropdown-item command="htmlUrl">HTML</el-dropdown-item>
+                                <el-dropdown-item command="bbUrl">BBCode</el-dropdown-item>
+                                <el-dropdown-item command="tgId">TG文件ID</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" content="批量处理" placement="bottom">
                     <el-dropdown @command="handleBatchAction" :hide-on-click="false" :disabled="selectedFiles.length === 0">
                         <span class="el-dropdown-link">
@@ -103,23 +119,38 @@
             </el-main>
         </el-container>
         <el-dialog title="文件详情" v-model="showdetailDialog" :width="dialogWidth" center>
+            <div class="detail-actions">
+                <el-button type="primary" @click="handleDownload(detailFile?.name)" round size="small" class="detail-action">
+                    <font-awesome-icon icon="download" style="margin-right: 3px;"></font-awesome-icon> 下载
+                </el-button>
+                <el-button type="primary" @click="handleBlock(detailFile?.name)" round size="small" class="detail-action">
+                    <font-awesome-icon icon="ban" style="margin-right: 3px;"></font-awesome-icon> 黑名单
+                </el-button>
+                <el-button type="primary" @click="handleWhite(detailFile?.name)" round size="small" class="detail-action">
+                    <font-awesome-icon icon="user-plus" style="margin-right: 3px;"></font-awesome-icon> 白名单
+                </el-button>
+                <el-button type="danger" @click="handleDetailDelete(detailFile?.name)" round size="small" class="detail-action">
+                    <font-awesome-icon icon="trash-alt" style="margin-right: 3px;"></font-awesome-icon> 删除
+                </el-button>
+            </div> 
+            <el-tabs  v-model="activeUrlTab" @tab-click="handleTabClick" style="margin-bottom: 10px;">
+                <el-tab-pane label="原始链接" name="originUrl">
+                    <el-input v-model="allUrl.originUrl" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="Markdown" name="mdUrl">
+                    <el-input v-model="allUrl.mdUrl" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="HTML" name="htmlUrl">
+                    <el-input v-model="allUrl.htmlUrl" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="BBCode" name="bbUrl">
+                    <el-input v-model="allUrl.bbUrl" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="TG文件ID" v-if="detailFile?.metadata?.TgFileId" name="tgId">
+                    <el-input v-model="allUrl.tgId" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+            </el-tabs>
             <el-descriptions direction="vertical" border :column="tableColumnNum">
-                <template #extra>
-                    <div class="detail-actions">
-                        <el-button type="primary" @click="handleDownload(detailFile?.name)" round size="small">
-                            <font-awesome-icon icon="download" style="margin-right: 3px;"></font-awesome-icon> 下载
-                        </el-button>
-                        <el-button type="primary" @click="handleBlock(detailFile?.name)" round size="small">
-                            <font-awesome-icon icon="ban" style="margin-right: 3px;"></font-awesome-icon> 黑名单
-                        </el-button>
-                        <el-button type="primary" @click="handleWhite(detailFile?.name)" round size="small">
-                            <font-awesome-icon icon="user-plus" style="margin-right: 3px;"></font-awesome-icon> 白名单
-                        </el-button>
-                        <el-button type="danger" @click="handleDetailDelete(detailFile?.name)" round size="small">
-                            <font-awesome-icon icon="trash-alt" style="margin-right: 3px;"></font-awesome-icon> 删除
-                        </el-button>
-                    </div> 
-                </template>
                 <el-descriptions-item 
                     label="文件预览"
                     :rowspan="tablePreviewSpan"
@@ -137,24 +168,6 @@
                 <el-descriptions-item label="文件类型" class-name="description-item">{{ detailFile?.metadata?.FileType || '未知' }}</el-descriptions-item>
                 <el-descriptions-item label="审查结果" class-name="description-item">{{ detailFile?.metadata?.Label || '无' }}</el-descriptions-item>
             </el-descriptions>
-            <el-divider></el-divider>
-            <el-tabs  v-model="activeUrlTab" @tab-click="handleTabClick">
-                <el-tab-pane label="原始链接" name="originUrl">
-                    <el-input v-model="allUrl.originUrl" readonly @click="handleUrlClick"></el-input>
-                </el-tab-pane>
-                <el-tab-pane label="Markdown" name="mdUrl">
-                    <el-input v-model="allUrl.mdUrl" readonly @click="handleUrlClick"></el-input>
-                </el-tab-pane>
-                <el-tab-pane label="HTML" name="htmlUrl">
-                    <el-input v-model="allUrl.htmlUrl" readonly @click="handleUrlClick"></el-input>
-                </el-tab-pane>
-                <el-tab-pane label="BBCode" name="bbUrl">
-                    <el-input v-model="allUrl.bbUrl" readonly @click="handleUrlClick"></el-input>
-                </el-tab-pane>
-                <el-tab-pane label="TG文件ID" v-if="detailFile?.metadata?.TgFileId" name="tgId">
-                    <el-input v-model="allUrl.tgId" readonly @click="handleUrlClick"></el-input>
-                </el-tab-pane>
-            </el-tabs>
         </el-dialog>
     </div>
 </template>
@@ -177,7 +190,8 @@ data() {
         isUploading: false,
         showdetailDialog: false,
         detailFile: null,
-        activeUrlTab: 'originUrl'
+        activeUrlTab: 'originUrl',
+        defaultUrlFormat: 'originUrl',
     }
 },
 computed: {
@@ -250,6 +264,14 @@ watch: {
     },
     sortOption(newOption) {
         localStorage.setItem('sortOption', newOption);
+    },
+    defaultUrlFormat(newFormat) {
+        localStorage.setItem('defaultUrlFormat', newFormat);
+    },
+    showdetailDialog(newVal) {
+        if (newVal) {
+            this.activeUrlTab = this.defaultUrlFormat || 'originUrl';
+        }
     }
 },
 methods: {
@@ -434,7 +456,25 @@ methods: {
         }).catch(() => this.$message.info('已取消批量删除'));
     },
     handleBatchCopy() {
-        const links = this.selectedFiles.map(file => `${document.location.origin}/file/${file.name}`).join('\n');
+        let tmpLinks = '';
+        switch (this.defaultUrlFormat) {
+            case 'originUrl':
+                tmpLinks = this.selectedFiles.map(file => `${document.location.origin}/file/${file.name}`).join('\n');
+                break;
+            case 'mdUrl':
+                tmpLinks = this.selectedFiles.map(file => `![${file.metadata?.FileName || file.name}](${document.location.origin}/file/${file.name})`).join('\n');
+                break;
+            case 'htmlUrl':
+                tmpLinks = this.selectedFiles.map(file => `<img src="${document.location.origin}/file/${file.name}" alt="${file.metadata?.FileName || file.name}" width=100%>`).join('\n');
+                break;
+            case 'bbUrl':
+                tmpLinks = this.selectedFiles.map(file => `[img]${document.location.origin}/file/${file.name}[/img]`).join('\n');
+                break;
+            case 'tgId':
+                tmpLinks = this.selectedFiles.map(file => file.metadata?.TgFileId || 'none').join('\n');
+                break;
+        }
+        const links = tmpLinks;
         navigator.clipboard ? navigator.clipboard.writeText(links).then(() => this.$message.success('批量复制链接成功~')) :
         this.copyToClipboardFallback(links);
     },
@@ -546,6 +586,26 @@ methods: {
                 link.download = 'files.zip';
                 link.click();
             });
+    },
+    handleDefaultUrlChange(command) {
+        this.defaultUrlFormat = command;
+        switch (command) {
+            case 'originUrl':
+                this.$message.success('默认链接格式已切换为原始链接');
+                break;
+            case 'mdUrl':
+                this.$message.success('默认链接格式已切换为 Markdown');
+                break;
+            case 'htmlUrl':
+                this.$message.success('默认链接格式已切换为 HTML');
+                break;
+            case 'bbUrl':
+                this.$message.success('默认链接格式已切换为 BBCode');
+                break;
+            case 'tgId':
+                this.$message.success('默认链接格式已切换为 TG文件ID');
+                break;
+        }
     }
 },
 mounted() {
@@ -569,6 +629,10 @@ mounted() {
             const savedSortOption = localStorage.getItem('sortOption');
             if (savedSortOption) {
                 this.sortOption = savedSortOption;
+            }
+            const savedDefaultUrlFormat = localStorage.getItem('defaultUrlFormat');
+            if (savedDefaultUrlFormat) {
+                this.defaultUrlFormat = savedDefaultUrlFormat;
             }
             this.sortData(this.tableData);
         })
@@ -889,4 +953,20 @@ mounted() {
 :focus-visible {
     outline: none;
 }
-</style>, { file }
+
+.detail-actions {
+    display: flex;
+    justify-content: right;
+    margin-bottom: 10px;
+}
+@media (max-width: 768px) {
+    .detail-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .detail-action {
+        margin-left: 0;
+    }
+}
+</style>
