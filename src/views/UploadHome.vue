@@ -1,11 +1,12 @@
 <template>
+    <div>
     <div class="upload-home">
         <img id="bg1" class="background-image1" alt="Background Image"/>
         <img id="bg2" class="background-image2" alt="Background Image"/>
         <div class="toolbar">
-            <el-tooltip :disabled="disableTooltip" content="压缩设置" placement="left">
+            <el-tooltip :disabled="disableTooltip" content="上传设置" placement="left">
                 <el-button class="toolbar-button" size="large" @click="openCompressDialog" circle>
-                    <font-awesome-icon icon="file-archive" class="compress-icon" size="lg"/>
+                    <font-awesome-icon icon="cloud-upload" class="compress-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
             <el-tooltip :disabled="disableTooltip" content="链接格式" placement="left">
@@ -36,9 +37,9 @@
             :compressQuality="compressQuality"
             :compressBar="compressBar"
             :serverCompress="serverCompress"
+            :uploadChannel="uploadChannel"
             class="upload"
         />
-        <Footer/>
         <el-dialog title="选择复制链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
             <el-radio-group v-model="selectedUrlForm" @change="changeUrlForm">
                 <el-radio value="url">原始链接</el-radio>
@@ -50,8 +51,15 @@
                 <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
             </div>
         </el-dialog>
-        <el-dialog title="压缩设置" v-model="showCompressDialog" :width="dialogWidth" :show-close="false">
+        <el-dialog title="上传设置" v-model="showCompressDialog" :width="dialogWidth" :show-close="false">
             <el-form label-width="25%">
+                <p style="font-size: medium; font-weight: bold">上传渠道</p>
+                <el-form-item label="选择上传渠道">
+                    <el-radio-group v-model="uploadChannel">
+                        <el-radio label="telegram">Telegram</el-radio>
+                        <el-radio label="cfr2">Cloudflare R2</el-radio>
+                    </el-radio-group>
+                </el-form-item>
                 <p style="font-size: medium; font-weight: bold">客户端压缩</p>
                 <el-form-item label="开启压缩">
                     <el-switch
@@ -68,8 +76,8 @@
                 <el-form-item label="压缩后大小" v-if="customerCompress">
                     <el-slider v-model="compressQuality" :min="1" :max="compressBar" show-input/>
                 </el-form-item>
-                <p style="font-size: medium; font-weight: bold">服务端压缩</p>
-                <el-form-item label="开启压缩">
+                <p style="font-size: medium; font-weight: bold" v-if="uploadChannel === 'telegram'">服务端压缩</p>
+                <el-form-item label="开启压缩" v-if="uploadChannel === 'telegram'">
                     <el-switch
                         v-model="serverCompress"
                         active-text="开启"
@@ -80,18 +88,21 @@
                 </el-form-item>
                 <p style="text-align: left;font-size: small;">
                     <br/>*Tips: 
-                    <br/>1.本设置仅针对图片文件，单位为MB
-                    <br/>2.客户端压缩指上传前压缩，服务端压缩指Telegram端压缩
-                    <br/>3.若图片大小>10MB，或压缩后图片大小>10MB，服务端压缩将自动失效
-                    <br/>4.若图片大小>20MB，将自动进行客户端压缩
-                    <br/>5.若想要存储的图片和原图完全一致，可以将两个压缩设置均设置为关闭
-                    <br/>6.若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题
+                    <br/>1.Telegram渠道和CloudFlare R2渠道配置方式不同，请根据文档分别配置后使用
+                    <br/>2.压缩设置仅针对图片文件，单位为MB
+                    <br/>3.客户端压缩指上传前压缩，服务端压缩仅作用于Telegram渠道
+                    <br/>4.若图片大小>10MB，或压缩后图片大小>10MB，服务端压缩将自动失效
+                    <br/>5.若图片大小>20MB，将自动进行客户端压缩
+                    <br/>6.若想要存储的图片和原图完全一致，可以将两个压缩设置均设置为关闭
+                    <br/>7.若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题
                 </p>
                 <div class="dialog-action">
                     <el-button type="primary" @click="showCompressDialog = false">确定</el-button>
                 </div>
             </el-form>
         </el-dialog>
+    </div>
+    <Footer class="footer"/>
     </div>
 </template>
 
@@ -115,6 +126,7 @@ export default {
             compressQuality: 4, //压缩后大小
             compressBar: 5, //压缩阈值
             serverCompress: true, //服务器端压缩
+            uploadChannel: 'telegram' //上传渠道
         }
     },
     watch: {
@@ -129,10 +141,13 @@ export default {
         },
         serverCompress(val) {
             this.updateCompressConfig('serverCompress', val)
+        },
+        uploadChannel(val) {
+            this.updateStoreUploadChannel(val)
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig']),
+        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
         },
@@ -210,6 +225,8 @@ export default {
         this.compressQuality = this.compressConfig.compressQuality
         this.compressBar = this.compressConfig.compressBar
         this.serverCompress = this.compressConfig.serverCompress
+        // 读取用户选择的上传渠道
+        this.uploadChannel = this.storeUploadChannel
     },
     components: {
         UploadForm,
@@ -235,6 +252,9 @@ export default {
         },
         updateCompressConfig(key, value) {
             this.$store.commit('setCompressConfig', { key, value })
+        },
+        updateStoreUploadChannel(value) {
+            this.$store.commit('setStoreUploadChannel', value)
         }
     }
 }
@@ -379,8 +399,7 @@ export default {
     justify-content: center;
     align-items: center;
     padding: 15px;
-    position: fixed;
-    top: 5vh;
+    margin-top: 5vh;
     color: blanchedalmond;
     user-select: none;
     text-decoration: none;
@@ -406,14 +425,13 @@ export default {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: background-image 1s ease-in-out;
-    background-size: cover;
-    background-attachment: fixed;
-    height: 100vh;
+    min-height: 94vh;
 }
 .upload {
-    position: fixed;
-    top: 20vh;
+    margin-bottom: 5px;
+}
+.footer {
+    height: 6vh;
 }
 .background-image1 {
     position: fixed;

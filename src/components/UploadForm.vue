@@ -152,6 +152,11 @@ props: {
         type: Boolean,
         default: true,
         required: false
+    },
+    uploadChannel: {
+        type: String,
+        default: 'telegram',
+        required: false
     }
 },
 data() {
@@ -227,7 +232,7 @@ methods: {
         // 判断是否需要服务端压缩
         const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
         axios({
-            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress,
+            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress + '&uploadChannel=' + this.uploadChannel,
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {
@@ -383,8 +388,8 @@ methods: {
                 
                 const myUploadCount = this.uploadCount++
 
-                // 开启服务端压缩条件：1.开启服务端压缩 2.如果为图片，则文件大小小于10MB，否则不限制大小
-                const needServerCompress = this.serverCompress && (file.type.includes('image') ? file.size / 1024 / 1024 < 10 : true)
+                // 开启服务端压缩条件：1.上传渠道为Telegram 2.开启服务端压缩 3.如果为图片，则文件大小小于10MB，否则不限制大小
+                const needServerCompress = this.uploadChannel === 'telegram' && this.serverCompress && (file.type.includes('image') ? file.size / 1024 / 1024 < 10 : true)
 
                 if (myUploadCount === 0) {
                     pushFileToQueue(file, needServerCompress)

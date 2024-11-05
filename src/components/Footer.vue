@@ -24,9 +24,7 @@ export default {
 
 <style scoped>
 .page-footer {
-   position: fixed;
-   bottom: 0;
-   display: flex;
+    display: flex;
     justify-content: center;
     align-items: center;
     width: 100vw;

@@ -13,6 +13,7 @@ export default createStore({
       compressBar: 5,
       serverCompress: true,
     },
+    storeUploadChannel: 'telegram',
   },
   getters: {
     userConfig: state => state.userConfig,
@@ -20,6 +21,7 @@ export default createStore({
     credentials: state => state.credentials,
     uploadCopyUrlForm: state => state.uploadCopyUrlForm,
     compressConfig: state => state.compressConfig,
+    storeUploadChannel: state => state.storeUploadChannel,
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -36,7 +38,10 @@ export default createStore({
     },
     setCompressConfig(state, { key, value }) {
       state.compressConfig[key] = value;
-    }
+    },
+    setStoreUploadChannel(state, uploadChannel) {
+      state.storeUploadChannel = uploadChannel;
+    },
   },
   actions: {
     async fetchUserConfig({ commit }) {
