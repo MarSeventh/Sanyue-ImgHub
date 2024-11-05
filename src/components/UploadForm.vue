@@ -19,7 +19,7 @@
             </el-icon>
             <div class="el-upload__text"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
             <template #tip>
-                <div class="el-upload__tip">支持多文件上传，支持图片和视频，不超过20MB</div>
+                <div class="el-upload__tip">支持多文件上传，支持图片和视频，Telegram渠道不支持超过20MB</div>
             </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
@@ -332,9 +332,9 @@ methods: {
     },
     beforeUpload(file) {
         return new Promise((resolve, reject) => {
-            // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值；或文件大小大于20MB
-            const needCustomCompress = file.type.includes('image') && (this.customerCompress && file.size / 1024 / 1024 > this.compressBar || file.size / 1024 / 1024 > 20)
-            const isLt20M = file.size / 1024 / 1024 < 20
+            // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值；或为Telegram渠道且文件大小大于20MB
+            const needCustomCompress = file.type.includes('image') && ((this.customerCompress && file.size / 1024 / 1024 > this.compressBar) || (this.uploadChannel === 'telegram' && file.size / 1024 / 1024 > 20))
+            const isLtLim = file.size / 1024 / 1024 < 20 || this.uploadChannel !== 'telegram'
 
             const pushFileToQueue = (file, serverCompress) => {
                 const fileUrl = URL.createObjectURL(file)
@@ -356,8 +356,8 @@ methods: {
             if (needCustomCompress) {
                 //尝试压缩图片
                 imageConversion.compressAccurately(file, 1024 * this.compressQuality).then((res) => {
-                    //如果压缩后大于20MB，则不上传
-                    if (res.size / 1024 / 1024 > 20) {
+                    //如果压缩后大于20MB，且上传渠道为telegram，则不上传
+                    if (res.size / 1024 / 1024 > 20 && this.uploadChannel === 'telegram') {
                         this.$message.error(file.name + '压缩后文件过大，无法上传!')
                         reject('文件过大')
                     }
@@ -368,8 +368,8 @@ methods: {
                     
                     const myUploadCount = this.uploadCount++
 
-                    //开启服务端压缩条件：1.开启服务端压缩 2.文件大小小于10MB
-                    const needServerCompress = this.serverCompress && newFile.size / 1024 / 1024 < 10
+                    //开启服务端压缩条件：1.开启服务端压缩 2.文件大小小于10MB 3.上传渠道为Telegram
+                    const needServerCompress = this.serverCompress && newFile.size / 1024 / 1024 < 10 && this.uploadChannel === 'telegram'
 
                     if (myUploadCount === 0) {
                         pushFileToQueue(newFile, needServerCompress)
@@ -383,7 +383,7 @@ methods: {
                     this.$message.error(file.name + '压缩失败，无法上传!')
                     reject(err)
                 })
-            } else if (isLt20M) {
+            } else if (isLtLim) {
                 this.uploading = true
                 
                 const myUploadCount = this.uploadCount++
