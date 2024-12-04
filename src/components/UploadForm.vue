@@ -157,6 +157,21 @@ props: {
         type: String,
         default: 'telegram',
         required: false
+    },
+    uploadNameType: {
+        type: String,
+        default: 'default',
+        required: false
+    },
+    useCustomUrl: {
+        type: String,
+        default: 'false',
+        required: false
+    },
+    customUrlPrefix: {
+        type: String,
+        default: '',
+        required: false
     }
 },
 data() {
@@ -185,6 +200,40 @@ watch: {
             this.fileListLength = this.fileList.length
         },
         deep: true
+    },
+    useCustomUrl: {
+        handler() {
+            if (this.useCustomUrl === 'true') {
+                this.fileList.forEach(item => {
+                    item.finalURL = this.customUrlPrefix + item.srcID
+                    item.mdURL = `![${item.name}](${this.customUrlPrefix + item.srcID})`
+                    item.htmlURL = `<img src="${this.customUrlPrefix + item.srcID}" alt="${item.name}" width=100% />`
+                    item.ubbURL = `[img]${this.customUrlPrefix + item.srcID}[/img]`
+                })
+            } else {
+                const rootUrl = `${window.location.protocol}//${window.location.host}/file/`
+                this.fileList.forEach(item => {
+                    item.finalURL = rootUrl + item.srcID
+                    item.mdURL = `![${item.name}](${rootUrl + item.srcID})`
+                    item.htmlURL = `<img src="${rootUrl + item.srcID}" alt="${item.name}" width=100% />`
+                    item.ubbURL = `[img]${rootUrl + item.srcID}[/img]`
+                })
+            }
+        },
+        immediate: true
+    },
+    customUrlPrefix: {
+        handler() {
+            if (this.useCustomUrl === 'true') {
+                this.fileList.forEach(item => {
+                    item.finalURL = this.customUrlPrefix + item.srcID
+                    item.mdURL = `![${item.name}](${this.customUrlPrefix + item.srcID})`
+                    item.htmlURL = `<img src="${this.customUrlPrefix + item.srcID}" alt="${item.name}" width=100% />`
+                    item.ubbURL = `[img]${this.customUrlPrefix + item.srcID}[/img]`
+                })
+            }
+        },
+        immediate: true
     }
 },
 computed: {
@@ -232,7 +281,7 @@ methods: {
         // 判断是否需要服务端压缩
         const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
         axios({
-            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress + '&uploadChannel=' + this.uploadChannel,
+            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress + '&uploadChannel=' + this.uploadChannel + '&uploadNameType=' + this.uploadNameType,
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {
@@ -266,12 +315,15 @@ methods: {
     },
     handleSuccess(response, file) {
         try {     
-            const rootUrl = `${window.location.protocol}//${window.location.host}`
-            this.fileList.find(item => item.uid === file.uid).url = rootUrl + response.data[0].src
-            this.fileList.find(item => item.uid === file.uid).finalURL = rootUrl + response.data[0].src
-            this.fileList.find(item => item.uid === file.uid).mdURL = `![${file.name}](${rootUrl + response.data[0].src})`
-            this.fileList.find(item => item.uid === file.uid).htmlURL = `<img src="${rootUrl + response.data[0].src}" alt="${file.name}" width=100% />`
-            this.fileList.find(item => item.uid === file.uid).ubbURL = `[img]${rootUrl + response.data[0].src}[/img]`
+            const rootUrl = this.useCustomUrl === 'true'? this.customUrlPrefix : `${window.location.protocol}//${window.location.host}/file/`
+            // 从response.data[0].src中去除/file/前缀
+            const srcID = response.data[0].src.replace('/file/', '')
+            this.fileList.find(item => item.uid === file.uid).url = `${window.location.protocol}//${window.location.host}/file/` + srcID
+            this.fileList.find(item => item.uid === file.uid).finalURL = rootUrl + srcID
+            this.fileList.find(item => item.uid === file.uid).mdURL = `![${file.name}](${rootUrl + srcID})`
+            this.fileList.find(item => item.uid === file.uid).htmlURL = `<img src="${rootUrl + srcID}" alt="${file.name}" width=100% />`
+            this.fileList.find(item => item.uid === file.uid).ubbURL = `[img]${rootUrl + srcID}[/img]`
+            this.fileList.find(item => item.uid === file.uid).srcID = srcID
             this.fileList.find(item => item.uid === file.uid).progreess = 100
             this.fileList.find(item => item.uid === file.uid).status = 'success'
             this.$message({
@@ -346,6 +398,7 @@ methods: {
                     mdURL: '',
                     htmlURL: '',
                     ubbURL: '',
+                    srcID: '',
                     status: 'uploading',
                     progreess: 0,
                     serverCompress: serverCompress

@@ -38,15 +38,34 @@
             :compressBar="compressBar"
             :serverCompress="serverCompress"
             :uploadChannel="uploadChannel"
+            :uploadNameType="uploadNameType"
+            :useCustomUrl="useCustomUrl"
+            :customUrlPrefix="customUrlPrefix"
             class="upload"
         />
-        <el-dialog title="选择复制链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
+        <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
+            <p style="font-size: medium; font-weight: bold">默认复制链接</p>
             <el-radio-group v-model="selectedUrlForm" @change="changeUrlForm">
                 <el-radio value="url">原始链接</el-radio>
                 <el-radio value="md">MarkDown</el-radio>
                 <el-radio value="html">HTML</el-radio>
                 <el-radio value="ubb">BBCode</el-radio>
             </el-radio-group>
+            <p style="font-size: medium; font-weight: bold">自定义链接格式</p>
+            <el-form label-width="25%">
+                <el-form-item label="启用自定义">
+                    <el-radio-group v-model="useCustomUrl">
+                        <el-radio value="true">是</el-radio>
+                        <el-radio value="false">否</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="自定义前缀" v-if="useCustomUrl === 'true'">
+                    <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀"/>
+                </el-form-item>
+                <p style="text-align: left;font-size: small;">
+                    <br/>*Tips: 默认链接为https://your.domain/file/xxx.jpg，如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入
+                </p>
+            </el-form>
             <div class="dialog-action">
                 <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
             </div>
@@ -54,10 +73,18 @@
         <el-dialog title="上传设置" v-model="showCompressDialog" :width="dialogWidth" :show-close="false">
             <el-form label-width="25%">
                 <p style="font-size: medium; font-weight: bold">上传渠道</p>
-                <el-form-item label="选择上传渠道">
+                <el-form-item label="上传渠道">
                     <el-radio-group v-model="uploadChannel">
                         <el-radio label="telegram">Telegram</el-radio>
                         <el-radio label="cfr2">Cloudflare R2</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <p style="font-size: medium; font-weight: bold">文件命名方式</p>
+                <el-form-item label="命名方式">
+                    <el-radio-group v-model="uploadNameType">
+                        <el-radio label="default">默认</el-radio>
+                        <el-radio label="index">仅前缀</el-radio>
+                        <el-radio label="origin">仅原名</el-radio>
                     </el-radio-group>
                 </el-form-item>
                 <p style="font-size: medium; font-weight: bold">客户端压缩</p>
@@ -126,7 +153,10 @@ export default {
             compressQuality: 4, //压缩后大小
             compressBar: 5, //压缩阈值
             serverCompress: true, //服务器端压缩
-            uploadChannel: 'telegram' //上传渠道
+            uploadChannel: 'telegram', //上传渠道
+            uploadNameType: 'default', //上传文件命名方式
+            customUrlPrefix: '', //自定义链接前缀
+            useCustomUrl: 'false' //是否启用自定义链接格式
         }
     },
     watch: {
@@ -144,10 +174,19 @@ export default {
         },
         uploadChannel(val) {
             this.updateStoreUploadChannel(val)
+        },
+        uploadNameType(val) {
+            this.updateStoreUploadNameType(val)
+        },
+        customUrlPrefix(val) {
+            this.$store.commit('setCustomUrlSettings', { key: 'customUrlPrefix', value: val })
+        },
+        useCustomUrl(val) {
+            this.$store.commit('setCustomUrlSettings', { key: 'useCustomUrl', value: val })
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel']),
+        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
         },
@@ -227,6 +266,11 @@ export default {
         this.serverCompress = this.compressConfig.serverCompress
         // 读取用户选择的上传渠道
         this.uploadChannel = this.storeUploadChannel
+        // 读取用户选择的上传文件命名方式
+        this.uploadNameType = this.storeUploadNameType
+        // 读取用户自定义链接格式
+        this.customUrlPrefix = this.customUrlSettings.customUrlPrefix
+        this.useCustomUrl = this.customUrlSettings.useCustomUrl
     },
     components: {
         UploadForm,
@@ -255,6 +299,9 @@ export default {
         },
         updateStoreUploadChannel(value) {
             this.$store.commit('setStoreUploadChannel', value)
+        },
+        updateStoreUploadNameType(value) {
+            this.$store.commit('setStoreUploadNameType', value)
         }
     }
 }
