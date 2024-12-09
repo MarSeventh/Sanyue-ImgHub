@@ -12,14 +12,13 @@
             :on-progress="handleProgress"
             :file-list="fileList"
             :show-file-list="false"
-            accept="image/*, video/*"
             >
             <el-icon class="el-icon--upload" :size="100">
                 <CameraFilled color="blanchedalmond"/>
             </el-icon>
             <div class="el-upload__text"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
             <template #tip>
-                <div class="el-upload__tip">支持多文件上传，支持图片和视频，Telegram渠道不支持超过20MB</div>
+                <div class="el-upload__tip">支持多文件上传，支持大多数常见文件格式，Telegram渠道不支持超过20MB</div>
             </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
