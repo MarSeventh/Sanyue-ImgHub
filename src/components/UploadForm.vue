@@ -171,6 +171,11 @@ props: {
         type: String,
         default: '',
         required: false
+    },
+    autoRetry: {
+        type: Boolean,
+        default: true,
+        required: false
     }
 },
 data() {
@@ -280,7 +285,7 @@ methods: {
         // 判断是否需要服务端压缩
         const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
         axios({
-            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress + '&uploadChannel=' + this.uploadChannel + '&uploadNameType=' + this.uploadNameType,
+            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress + '&uploadChannel=' + this.uploadChannel + '&uploadNameType=' + this.uploadNameType + '&autoRetry=' + this.autoRetry,
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {

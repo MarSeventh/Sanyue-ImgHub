@@ -14,6 +14,7 @@ export default createStore({
       serverCompress: true,
     },
     storeUploadChannel: 'telegram',
+    storeAutoRetry: true,
     storeUploadNameType: 'default',
     customUrlSettings: {
       useCustomUrl: 'false',
@@ -29,6 +30,7 @@ export default createStore({
     storeUploadChannel: state => state.storeUploadChannel,
     storeUploadNameType: state => state.storeUploadNameType,
     customUrlSettings: state => state.customUrlSettings,
+    storeAutoRetry: state => state.storeAutoRetry,
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -54,7 +56,10 @@ export default createStore({
     },
     setCustomUrlSettings(state, { key, value }) {
       state.customUrlSettings[key] = value;
-    }
+    },
+    setStoreAutoRetry(state, storeAutoRetry) {
+      state.storeAutoRetry = storeAutoRetry;
+    },
   },
   actions: {
     async fetchUserConfig({ commit }) {

@@ -41,6 +41,7 @@
             :uploadNameType="uploadNameType"
             :useCustomUrl="useCustomUrl"
             :customUrlPrefix="customUrlPrefix"
+            :autoRetry="autoRetry"
             class="upload"
         />
         <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
@@ -78,6 +79,15 @@
                         <el-radio label="telegram">Telegram</el-radio>
                         <el-radio label="cfr2">Cloudflare R2</el-radio>
                     </el-radio-group>
+                </el-form-item>
+                <el-form-item label="失败自动切换">
+                    <el-switch
+                        v-model="autoRetry"
+                        active-text="开启"
+                        inactive-text="关闭"
+                        active-color="#13ce66"
+                        inactive-color="#ff4949"
+                    />
                 </el-form-item>
                 <p style="font-size: medium; font-weight: bold">文件命名方式</p>
                 <el-form-item label="命名方式">
@@ -156,7 +166,8 @@ export default {
             uploadChannel: 'telegram', //上传渠道
             uploadNameType: 'default', //上传文件命名方式
             customUrlPrefix: '', //自定义链接前缀
-            useCustomUrl: 'false' //是否启用自定义链接格式
+            useCustomUrl: 'false', //是否启用自定义链接格式
+            autoRetry: true //失败自动切换
         }
     },
     watch: {
@@ -183,10 +194,13 @@ export default {
         },
         useCustomUrl(val) {
             this.$store.commit('setCustomUrlSettings', { key: 'useCustomUrl', value: val })
+        },
+        autoRetry(val) {
+            this.$store.commit('setStoreAutoRetry', val)
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings']),
+        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
         },
@@ -266,6 +280,8 @@ export default {
         this.serverCompress = this.compressConfig.serverCompress
         // 读取用户选择的上传渠道
         this.uploadChannel = this.storeUploadChannel
+        // 用户定义的失败自动切换
+        this.autoRetry = this.storeAutoRetry
         // 读取用户选择的上传文件命名方式
         this.uploadNameType = this.storeUploadNameType
         // 读取用户自定义链接格式
