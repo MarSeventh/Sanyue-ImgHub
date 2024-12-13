@@ -27,22 +27,6 @@
                 <el-tooltip :disabled="disableTooltip" content="全选此页" placement="bottom">
                     <font-awesome-icon :icon="selectPageIcon" class="header-icon" @click="handleSelectPage"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" content="默认链接格式" placement="bottom">
-                    <el-dropdown @command="handleDefaultUrlChange" :hide-on-click="false">
-                        <span class="el-dropdown-link">
-                            <font-awesome-icon icon="link" class="header-icon"></font-awesome-icon>
-                        </span>
-                        <template #dropdown>
-                            <el-dropdown-menu>
-                                <el-dropdown-item command="originUrl">原始链接</el-dropdown-item>
-                                <el-dropdown-item command="mdUrl">Markdown</el-dropdown-item>
-                                <el-dropdown-item command="htmlUrl">HTML</el-dropdown-item>
-                                <el-dropdown-item command="bbUrl">BBCode</el-dropdown-item>
-                                <el-dropdown-item command="tgId">TG文件ID</el-dropdown-item>
-                            </el-dropdown-menu>
-                        </template>
-                    </el-dropdown>
-                </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" content="批量处理" placement="bottom">
                     <el-dropdown @command="handleBatchAction" :hide-on-click="false" :disabled="selectedFiles.length === 0">
                         <span class="el-dropdown-link">
@@ -66,6 +50,22 @@
                         </template>
                     </el-dropdown>
                 </el-tooltip>
+                <el-tooltip :disabled="disableTooltip" content="默认链接格式" placement="bottom">
+                    <el-dropdown @command="handleDefaultUrlChange" :hide-on-click="false">
+                        <span class="el-dropdown-link">
+                            <font-awesome-icon icon="link" class="header-icon"></font-awesome-icon>
+                        </span>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item command="originUrl">原始链接</el-dropdown-item>
+                                <el-dropdown-item command="mdUrl">Markdown</el-dropdown-item>
+                                <el-dropdown-item command="htmlUrl">HTML</el-dropdown-item>
+                                <el-dropdown-item command="bbUrl">BBCode</el-dropdown-item>
+                                <el-dropdown-item command="tgId">TG文件ID</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" content="用户管理" placement="bottom">
                     <font-awesome-icon icon="user-cog" class="header-icon" @click="handleGoToAdmin"></font-awesome-icon>
                 </el-tooltip>
@@ -83,8 +83,8 @@
                 <template v-for="(item, index) in paginatedTableData" :key="index">
                 <el-card class="img-card">
                     <el-checkbox v-model="item.selected"></el-checkbox>
-                    <video v-if="item.metadata?.FileType?.includes('video') || item.metadata?.FileType?.includes('audio')" :src="'/file/' + item.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else :preview-teleported="true" :src="'/file/' + item.name" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
+                    <video v-if="item.metadata?.FileType?.includes('video') || item.metadata?.FileType?.includes('audio')" :src="'/file/' + item.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                    <el-image v-else :preview-teleported="true" :src="'/file/' + item.name + '?from=admin'" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
                     <div class="image-overlay">
                         <div class="overlay-buttons">
                             <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
@@ -157,8 +157,8 @@
                     :width="300"
                     align="center"
                     >
-                    <video v-if="detailFile?.metadata?.FileType?.includes('video') || detailFile?.metadata?.FileType?.includes('audio')" :src="'/file/' + detailFile?.name" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else :src="'/file/' + detailFile?.name" fit="cover" lazy class="image-preview"></el-image>
+                    <video v-if="detailFile?.metadata?.FileType?.includes('video') || detailFile?.metadata?.FileType?.includes('audio')" :src="'/file/' + detailFile?.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                    <el-image v-else :src="'/file/' + detailFile?.name + '?from=admin'" fit="cover" lazy class="image-preview"></el-image>
                 </el-descriptions-item>
                 <el-descriptions-item label="文件名" class-name="description-item">{{ detailFile?.metadata?.FileName || detailFile?.name }}</el-descriptions-item>
                 <el-descriptions-item label="文件类型" class-name="description-item">{{ detailFile?.metadata?.FileType || '未知' }}</el-descriptions-item>
@@ -206,11 +206,11 @@ computed: {
         const end = start + this.pageSize;
         let data = sortedData.slice(start, end);
         // 增加previewSrcList属性，用于预览图片
-        const fullList = data.filter(file => !file.metadata?.FileType?.includes('video')).map(file => `/file/${file.name}`);
+        const fullList = data.filter(file => !file.metadata?.FileType?.includes('video')).map(file => `/file/${file.name}?from=admin`);
         data.forEach(file => {
             if (!file.metadata?.FileType?.includes('video')) {
                 // 重新排序，索引大于等于当前索引的元素在前，否则在后
-                file.previewSrcList = fullList.slice(fullList.indexOf(`/file/${file.name}`)).concat(fullList.slice(0, fullList.indexOf(`/file/${file.name}`)));
+                file.previewSrcList = fullList.slice(fullList.indexOf(`/file/${file.name}?from=admin`)).concat(fullList.slice(0, fullList.indexOf(`/file/${file.name}?from=admin`)));
             }
         });
         return data;
@@ -281,7 +281,7 @@ methods: {
     },
     handleDownload(key) {
         const link = document.createElement('a');
-        link.href = `/file/${key}`;
+        link.href = `/file/${key}?from=admin`;
         link.download = key;
         link.click();
     },
@@ -558,7 +558,7 @@ methods: {
         const fileNameCount = {}; // 用于跟踪文件名出现的次数
 
         const downloadPromises = this.selectedFiles.map(file => {
-            return fetch(`/file/${file.name}`)
+            return fetch(`/file/${file.name}?from=admin`)
                 .then(response => response.blob())
                 .then(blob => {
                     // 检查文件名是否已经存在

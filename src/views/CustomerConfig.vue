@@ -26,8 +26,8 @@
                                 <el-table-column prop="metadata.FileName" label="文件名"></el-table-column>
                                 <el-table-column prop="name" label="文件预览">
                                     <template v-slot="{ row }">
-                                        <el-image v-if="row.metadata?.FileType?.includes('image')" :src="'/file/' + row.name" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
-                                        <video v-else :src="'/file/' + row.name" controls style="width: 100px; height: 100px;"></video>
+                                        <el-image v-if="row.metadata?.FileType?.includes('image')" :src="'/file/' + row.name + '?from=admin'" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
+                                        <video v-else :src="'/file/' + row.name + '?from=admin'" controls style="width: 100px; height: 100px;"></video>
                                     </template>
                                 </el-table-column>
                                 <el-table-column 
