@@ -46,6 +46,14 @@
                                     <font-awesome-icon icon="download" style="margin-right: 5px;"></font-awesome-icon>
                                     批量下载
                                 </el-dropdown-item>
+                                <el-dropdown-item command="ban">
+                                    <font-awesome-icon icon="ban" style="margin-right: 5px;"></font-awesome-icon>
+                                    批量黑名单
+                                </el-dropdown-item>
+                                <el-dropdown-item command="white">
+                                    <font-awesome-icon icon="user-plus" style="margin-right: 5px;"></font-awesome-icon>
+                                    批量白名单
+                                </el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
@@ -415,18 +423,18 @@ methods: {
         }).then(() => {
         this.fetchWithAuth(`/api/manage/delete/${key}`, { method: 'GET' })
             .then(response => {
-            if (response.ok) {
-                const fileIndex = this.tableData.findIndex(file => file.name === key);
-                if (fileIndex !== -1) {
-                this.tableData.splice(fileIndex, 1);
+                if (response.ok) {
+                    const fileIndex = this.tableData.findIndex(file => file.name === key);
+                    if (fileIndex !== -1) {
+                        this.tableData.splice(fileIndex, 1);
+                    }
+                } else {
+                    return Promise.reject('请求失败');
                 }
-            } else {
-                return Promise.reject('请求失败');
-            }
             })
             .then(() => {
-            this.updateStats();
-            this.$message.success('删除成功!');
+                this.updateStats();
+                this.$message.success('删除成功!');
             })
             .catch(() => this.$message.error('删除失败，请检查网络连接'));
         }).catch(() => this.$message.info('已取消删除'));
@@ -441,17 +449,17 @@ methods: {
 
         Promise.all(promises)
             .then(results => {
-            results.forEach((response, index) => {
-                if (response.ok) {
-                const fileIndex = this.tableData.findIndex(file => file.name === this.selectedFiles[index].name);
-                if (fileIndex !== -1) {
-                    this.tableData.splice(fileIndex, 1);
-                }
-                }
-            });
-            this.selectedFiles = [];
-            this.updateStats();
-            this.$message.success('批量删除成功!');
+                results.forEach((response, index) => {
+                    if (response.ok) {
+                        const fileIndex = this.tableData.findIndex(file => file.name === this.selectedFiles[index].name);
+                        if (fileIndex !== -1) {
+                            this.tableData.splice(fileIndex, 1);
+                        }
+                    }
+                });
+                this.selectedFiles = [];
+                this.updateStats();
+                this.$message.success('批量删除成功!');
             })
             .catch(() => this.$message.error('批量删除失败，请检查网络连接'));
         }).catch(() => this.$message.info('已取消批量删除'));
@@ -548,7 +556,57 @@ methods: {
             this.handleBatchDelete();
         } else if (command === 'download') {
             this.handleBatchDownload();
+        } else if (command === 'ban') {
+            this.handleBatchBlock();
+        } else if (command === 'white') {
+            this.handleBatchWhite();
         }
+    },
+    handleBatchBlock(){
+        this.$confirm('此操作将把选中的文件加入黑名单, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+            const promises = this.selectedFiles.map(file => this.fetchWithAuth(`/api/manage/block/${file.name}`, { method: 'GET' }));
+
+            Promise.all(promises)
+                .then(results => {
+                    results.forEach((response, index) => {
+                        if (response.ok) {
+                            const fileIndex = this.tableData.findIndex(file => file.name === this.selectedFiles[index].name);
+                            if (fileIndex !== -1) {
+                                this.tableData[fileIndex].metadata.ListType = 'Block';
+                            }
+                        }
+                    });
+                    this.$message.success('批量加入黑名单成功!');
+                })
+                .catch(() => this.$message.error('批量加入黑名单失败，请检查网络连接'));
+        }).catch(() => this.$message.info('已取消批量加入黑名单'));
+    },
+    handleBatchWhite(){
+        this.$confirm('此操作将把选中的文件加入白名单, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+            const promises = this.selectedFiles.map(file => this.fetchWithAuth(`/api/manage/white/${file.name}`, { method: 'GET' }));
+
+            Promise.all(promises)
+                .then(results => {
+                    results.forEach((response, index) => {
+                        if (response.ok) {
+                            const fileIndex = this.tableData.findIndex(file => file.name === this.selectedFiles[index].name);
+                            if (fileIndex !== -1) {
+                                this.tableData[fileIndex].metadata.ListType = 'White';
+                            }
+                        }
+                    });
+                    this.$message.success('批量加入白名单成功!');
+                })
+                .catch(() => this.$message.error('批量加入白名单失败，请检查网络连接'));
+        }).catch(() => this.$message.info('已取消批量加入白名单'));
     },
     handleBatchDownload() {
         // 将选中文件打包成 zip 文件下载
