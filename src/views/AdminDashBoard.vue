@@ -267,7 +267,10 @@ computed: {
 watch: {
     tableData: {
         handler(newData) {
-            this.selectedFiles = newData.filter(file => file.selected);
+            // selectedFiles 增加 newData中新选中，不包含在 selectedFiles 中的文件
+            this.selectedFiles = this.selectedFiles.concat(newData.filter(file => file.selected && !this.selectedFiles.includes(file)));
+            // selectedFiles 删掉 newData 中已取消选中的文件
+            this.selectedFiles = this.selectedFiles.filter(file => file.selected);
         },
         deep: true
     },

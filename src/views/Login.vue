@@ -100,7 +100,7 @@ export default {
             } else {
                 this.writtenPass = this.password
             }
-            axios.post('/login', {
+            axios.post('/api/login', {
                 authCode: this.password
             }).then(res => {
                 if (res.status !== 200) {

@@ -46,6 +46,19 @@
                 </el-table-column>
                 <el-table-column prop="ip" label="IP地址"></el-table-column>
                 <el-table-column prop="count" label="上传次数" sortable></el-table-column>
+                <el-table-column label="允许上传">
+                    <template v-slot="{ row }">
+                        <el-switch
+                            v-model="row.enable"
+                            active-color="#13ce66"
+                            inactive-color="#ff4949"
+                            active-text="允许"
+                            inactive-text="禁止"
+                            @change="handleSwitchEnable(row)"
+                        >
+                        </el-switch>
+                    </template>
+                </el-table-column>
             </el-table>
         </div>
     </div>
@@ -60,6 +73,7 @@ export default {
         return {
             tableData: [],
             dealedData: [], // 根据IP地址处理后的数据，格式为 {ip, count, [data]}
+            blockipList: [], // 禁止上传的IP列表
         }
     },
     computed: {
@@ -104,7 +118,8 @@ export default {
             ipSet.forEach(ip => {
                 let ipData = data.filter(item => item.metadata?.UploadIP === ip);
                 let count = ipData.length;
-                dealedData.push({ip, count, data: ipData});
+                let enable = !this.blockipList.includes(ip);
+                dealedData.push({ip, count, data: ipData, enable});
             });
             return dealedData;
         },
@@ -123,6 +138,27 @@ export default {
         },
         sortByTimestamp(a, b) {
             return new Date(a.metadata.TimeStamp) - new Date(b.metadata.TimeStamp);
+        },
+        async handleSwitchEnable(row) {
+            const ip = row.ip;
+            const enable = row.enable;
+            if (enable) {
+                // 从 blockipList 中移除
+                this.blockipList = this.blockipList.filter(item => item !== ip);
+                // 更新 blockipList
+                await this.fetchWithAuth("/api/manage/cusConfig/whiteip", {
+                    method: 'POST',
+                    body: ip
+                });
+            } else {
+                // 添加到 blockipList 中
+                this.blockipList.push(ip);
+                // 更新 blockipList
+                await this.fetchWithAuth("/api/manage/cusConfig/blockip", {
+                    method: 'POST',
+                    body: ip
+                });
+            }
         }
     },
     mounted() {
@@ -140,7 +176,10 @@ export default {
             }
         })
         .then(response => response.json())
-        .then(result => {
+        .then(async result => {
+            // 读取blockipList, 接口返回格式为 'ip1,ip2,ip3'，需要转换为数组
+            const blockipList = await this.fetchWithAuth("/api/manage/cusConfig/blockipList", { method: 'GET' });
+            this.blockipList = (await blockipList.text()).split(',');
             this.tableData = result;
             this.dealedData = this.dealByIP(result); // 根据IP地址处理数据
         })
@@ -156,6 +195,8 @@ export default {
 <style scoped>
 .main-table {
     width: 90%;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .container {
