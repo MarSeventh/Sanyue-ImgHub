@@ -13,10 +13,10 @@
             :file-list="fileList"
             :show-file-list="false"
             >
-            <el-icon class="el-icon--upload" :size="100">
+            <el-icon class="el-icon--upload" :class="{'upload-list-busy': fileList.length}">
                 <CameraFilled color="blanchedalmond"/>
             </el-icon>
-            <div class="el-upload__text"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
+            <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
             <template #tip>
                 <div class="el-upload__tip">支持多文件上传，支持所有常见文件格式，Telegram渠道不支持超过20MB</div>
             </template>
@@ -176,6 +176,11 @@ props: {
         type: Boolean,
         default: true,
         required: false
+    },
+    urlPrefix: {
+        type: String,
+        default: '',
+        required: false
     }
 },
 data() {
@@ -215,12 +220,11 @@ watch: {
                     item.ubbURL = `[img]${this.customUrlPrefix + item.srcID}[/img]`
                 })
             } else {
-                const rootUrl = `${window.location.protocol}//${window.location.host}/file/`
                 this.fileList.forEach(item => {
-                    item.finalURL = rootUrl + item.srcID
-                    item.mdURL = `![${item.name}](${rootUrl + item.srcID})`
-                    item.htmlURL = `<img src="${rootUrl + item.srcID}" alt="${item.name}" width=100% />`
-                    item.ubbURL = `[img]${rootUrl + item.srcID}[/img]`
+                    item.finalURL = this.rootUrl + item.srcID
+                    item.mdURL = `![${item.name}](${this.rootUrl + item.srcID})`
+                    item.htmlURL = `<img src="${this.rootUrl + item.srcID}" alt="${item.name}" width=100% />`
+                    item.ubbURL = `[img]${this.rootUrl + item.srcID}[/img]`
                 })
             }
         },
@@ -259,6 +263,10 @@ computed: {
     },
     disableTooltip() {
         return window.innerWidth < 768
+    },
+    rootUrl() {
+        // 链接前缀，优先级：用户自定义 > urlPrefix > 默认
+        return this.useCustomUrl === 'true' ? this.customUrlPrefix : this.urlPrefix || `${window.location.protocol}//${window.location.host}/file/`
     }
 },
 mounted() {
@@ -319,14 +327,13 @@ methods: {
     },
     handleSuccess(response, file) {
         try {     
-            const rootUrl = this.useCustomUrl === 'true'? this.customUrlPrefix : `${window.location.protocol}//${window.location.host}/file/`
             // 从response.data[0].src中去除/file/前缀
             const srcID = response.data[0].src.replace('/file/', '')
             this.fileList.find(item => item.uid === file.uid).url = `${window.location.protocol}//${window.location.host}/file/` + srcID
-            this.fileList.find(item => item.uid === file.uid).finalURL = rootUrl + srcID
-            this.fileList.find(item => item.uid === file.uid).mdURL = `![${file.name}](${rootUrl + srcID})`
-            this.fileList.find(item => item.uid === file.uid).htmlURL = `<img src="${rootUrl + srcID}" alt="${file.name}" width=100% />`
-            this.fileList.find(item => item.uid === file.uid).ubbURL = `[img]${rootUrl + srcID}[/img]`
+            this.fileList.find(item => item.uid === file.uid).finalURL = this.rootUrl + srcID
+            this.fileList.find(item => item.uid === file.uid).mdURL = `![${file.name}](${this.rootUrl + srcID})`
+            this.fileList.find(item => item.uid === file.uid).htmlURL = `<img src="${this.rootUrl + srcID}" alt="${file.name}" width=100% />`
+            this.fileList.find(item => item.uid === file.uid).ubbURL = `[img]${this.rootUrl + srcID}[/img]`
             this.fileList.find(item => item.uid === file.uid).srcID = srcID
             this.fileList.find(item => item.uid === file.uid).progreess = 100
             this.fileList.find(item => item.uid === file.uid).status = 'success'
@@ -819,7 +826,7 @@ methods: {
     }
 }
 .upload-card-busy :deep(.el-upload-dragger) {
-    height: 25vh;
+    height: 17vh;
 }
 :deep(.el-upload-dragger)  {
     display: flex;
@@ -849,6 +856,17 @@ methods: {
     font-weight: bold;
     font-size: medium;
     user-select: none;
+    transition: all 0.3s ease;
+}
+.el-upload__text.upload-list-busy {
+    font-size: small;
+}
+.el-icon--upload {
+    font-size: 100px;
+    transition: all 0.3s ease;
+}
+.el-icon--upload.upload-list-busy {
+    font-size: 50px;
 }
 .el-upload__tip {
     font-size: medium;

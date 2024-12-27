@@ -42,6 +42,7 @@
             :useCustomUrl="useCustomUrl"
             :customUrlPrefix="customUrlPrefix"
             :autoRetry="autoRetry"
+            :urlPrefix="urlPrefix"
             class="upload"
         />
         <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
@@ -167,7 +168,7 @@ export default {
             uploadNameType: 'default', //上传文件命名方式
             customUrlPrefix: '', //自定义链接前缀
             useCustomUrl: 'false', //是否启用自定义链接格式
-            autoRetry: true //失败自动切换
+            autoRetry: true, //失败自动切换
         }
     },
     watch: {
@@ -218,6 +219,10 @@ export default {
         },
         disableTooltip() {
             return window.innerWidth < 768
+        },
+        urlPrefix() {
+            // 全局自定义链接前缀
+            return this.userConfig?.urlPrefix || `${window.location.protocol}//${window.location.host}/file/`
         }
     },
     mounted() {

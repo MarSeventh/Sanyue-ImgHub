@@ -19,7 +19,11 @@ export default createStore({
     customUrlSettings: {
       useCustomUrl: 'false',
       customUrlPrefix: '',
-    }
+    },
+    adminUrlSettings: {
+      useCustomUrl: 'false',
+      customUrlPrefix: '',
+    },
   },
   getters: {
     userConfig: state => state.userConfig,
@@ -31,6 +35,7 @@ export default createStore({
     storeUploadNameType: state => state.storeUploadNameType,
     customUrlSettings: state => state.customUrlSettings,
     storeAutoRetry: state => state.storeAutoRetry,
+    adminUrlSettings: state => state.adminUrlSettings,
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -59,6 +64,9 @@ export default createStore({
     },
     setStoreAutoRetry(state, storeAutoRetry) {
       state.storeAutoRetry = storeAutoRetry;
+    },
+    setAdminUrlSettings(state, { key, value }) {
+      state.adminUrlSettings[key] = value;
     },
   },
   actions: {

@@ -58,21 +58,10 @@
                         </template>
                     </el-dropdown>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" content="默认链接格式" placement="bottom">
-                    <el-dropdown @command="handleDefaultUrlChange" :hide-on-click="false">
-                        <span class="el-dropdown-link">
-                            <font-awesome-icon icon="link" class="header-icon"></font-awesome-icon>
-                        </span>
-                        <template #dropdown>
-                            <el-dropdown-menu>
-                                <el-dropdown-item command="originUrl">原始链接</el-dropdown-item>
-                                <el-dropdown-item command="mdUrl">Markdown</el-dropdown-item>
-                                <el-dropdown-item command="htmlUrl">HTML</el-dropdown-item>
-                                <el-dropdown-item command="bbUrl">BBCode</el-dropdown-item>
-                                <el-dropdown-item command="tgId">TG文件ID</el-dropdown-item>
-                            </el-dropdown-menu>
-                        </template>
-                    </el-dropdown>
+                <el-tooltip :disabled="disableTooltip" content="链接格式" placement="bottom">
+                    <span class="el-dropdown-link">
+                        <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
+                    </span>
                 </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" content="用户管理" placement="bottom">
                     <font-awesome-icon icon="user-cog" class="header-icon" @click="handleGoToAdmin"></font-awesome-icon>
@@ -126,7 +115,7 @@
             </div>
             </el-main>
         </el-container>
-        <el-dialog title="文件详情" v-model="showdetailDialog" :width="dialogWidth" center>
+        <el-dialog title="文件详情" v-model="showdetailDialog" :width="dialogWidth">
             <div class="detail-actions">
                 <el-button type="primary" @click="handleDownload(detailFile?.name)" round size="small" class="detail-action">
                     <font-awesome-icon icon="download" style="margin-right: 3px;"></font-awesome-icon> 下载
@@ -178,6 +167,34 @@
                 <el-descriptions-item label="审查结果" class-name="description-item">{{ detailFile?.metadata?.Label || '无' }}</el-descriptions-item>
             </el-descriptions>
         </el-dialog>
+        <el-dialog title="链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
+            <p style="font-size: medium; font-weight: bold">默认复制链接</p>
+            <el-radio-group v-model="defaultUrlFormat">
+                <el-radio label="originUrl">原始链接</el-radio>
+                <el-radio label="mdUrl">Markdown</el-radio>
+                <el-radio label="htmlUrl">HTML</el-radio>
+                <el-radio label="bbUrl">BBCode</el-radio>
+                <el-radio label="tgId">TG文件ID</el-radio>
+            </el-radio-group>
+            <p style="font-size: medium; font-weight: bold">自定义链接格式</p>
+            <el-form label-width="25%">
+                <el-form-item label="启用自定义">
+                    <el-radio-group v-model="useCustomUrl">
+                        <el-radio value="true">是</el-radio>
+                        <el-radio value="false">否</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="自定义前缀" v-if="useCustomUrl === 'true'">
+                    <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀"/>
+                </el-form-item>
+                <p style="text-align: left;font-size: small;">
+                    <br/>*Tips: 默认链接为https://your.domain/file/xxx.jpg，如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入
+                </p>
+            </el-form>
+            <div class="dialog-action">
+                <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -201,10 +218,13 @@ data() {
         detailFile: null,
         activeUrlTab: 'originUrl',
         defaultUrlFormat: 'originUrl',
+        showUrlDialog: false,
+        useCustomUrl: 'false', // 是否启用自定义链接
+        customUrlPrefix: '' // 自定义链接前缀
     }
 },
 computed: {
-    ...mapGetters(['credentials']),
+    ...mapGetters(['credentials', 'adminUrlSettings', 'userConfig']),
     filteredTableData() {
         return this.tableData.filter(data => !this.search || data.name.toLowerCase().includes(this.search.toLowerCase()) || data.metadata?.FileName?.toLowerCase().includes(this.search.toLowerCase()));
     },
@@ -240,10 +260,10 @@ computed: {
     },
     allUrl() {
         return {
-            'originUrl': `${document.location.origin}/file/${this.detailFile?.name}`,
-            'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${document.location.origin}/file/${this.detailFile?.name})`,
-            'htmlUrl': `<img src="${document.location.origin}/file/${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
-            'bbUrl': `[img]${document.location.origin}/file/${this.detailFile?.name}[/img]`,
+            'originUrl': `${this.rootUrl}${this.detailFile?.name}`,
+            'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.rootUrl}${this.detailFile?.name})`,
+            'htmlUrl': `<img src="${this.rootUrl}${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
+            'bbUrl': `[img]${this.rootUrl}${this.detailFile?.name}[/img]`,
             'tgId': this.detailFile?.metadata?.TgFileId || '未知'
         }
     },
@@ -262,6 +282,10 @@ computed: {
     },
     selectPageIcon() {
         return this.selectPage ? 'check-square' : 'square';
+    },
+    rootUrl() {
+        // 链接前缀，优先级：用户自定义 > urlPrefix > 默认
+        return this.useCustomUrl === 'true' ? this.customUrlPrefix : this.userConfig?.urlPrefix || `${document.location.origin}/file/`
     }
 },
 watch: {
@@ -284,7 +308,13 @@ watch: {
         if (newVal) {
             this.activeUrlTab = this.defaultUrlFormat || 'originUrl';
         }
-    }
+    },
+    customUrlPrefix(val) {
+        this.$store.commit('setAdminUrlSettings', { key: 'customUrlPrefix', value: val })
+    },
+    useCustomUrl(val) {
+        this.$store.commit('setAdminUrlSettings', { key: 'useCustomUrl', value: val })
+    },
 },
 methods: {
     refreshDashboard() {
@@ -471,16 +501,16 @@ methods: {
         let tmpLinks = '';
         switch (this.defaultUrlFormat) {
             case 'originUrl':
-                tmpLinks = this.selectedFiles.map(file => `${document.location.origin}/file/${file.name}`).join('\n');
+                tmpLinks = this.selectedFiles.map(file => `${this.rootUrl}${file.name}`).join('\n');
                 break;
             case 'mdUrl':
-                tmpLinks = this.selectedFiles.map(file => `![${file.metadata?.FileName || file.name}](${document.location.origin}/file/${file.name})`).join('\n');
+                tmpLinks = this.selectedFiles.map(file => `![${file.metadata?.FileName || file.name}](${this.rootUrl}${file.name})`).join('\n');
                 break;
             case 'htmlUrl':
-                tmpLinks = this.selectedFiles.map(file => `<img src="${document.location.origin}/file/${file.name}" alt="${file.metadata?.FileName || file.name}" width=100%>`).join('\n');
+                tmpLinks = this.selectedFiles.map(file => `<img src="${this.rootUrl}${file.name}" alt="${file.metadata?.FileName || file.name}" width=100%>`).join('\n');
                 break;
             case 'bbUrl':
-                tmpLinks = this.selectedFiles.map(file => `[img]${document.location.origin}/file/${file.name}[/img]`).join('\n');
+                tmpLinks = this.selectedFiles.map(file => `[img]${this.rootUrl}${file.name}[/img]`).join('\n');
                 break;
             case 'tgId':
                 tmpLinks = this.selectedFiles.map(file => file.metadata?.TgFileId || 'none').join('\n');
@@ -509,7 +539,24 @@ methods: {
         this.$router.push('/customerConfig');
     },
     handleCopy(index, key) {
-        const text = `${document.location.origin}/file/${key}`;
+        let text = '';
+        switch (this.defaultUrlFormat) {
+            case 'originUrl':
+                text = `${this.rootUrl}${key}`;
+                break;
+            case 'mdUrl':
+                text = `![${this.paginatedTableData[index].metadata?.FileName || key}](${this.rootUrl}${key})`;
+                break;
+            case 'htmlUrl':
+                text = `<img src="${this.rootUrl}${key}" alt="${this.paginatedTableData[index].metadata?.FileName || key}" width=100%>`;
+                break;
+            case 'bbUrl':
+                text = `[img]${this.rootUrl}${key}[/img]`;
+                break;
+            case 'tgId':
+                text = this.paginatedTableData[index].metadata?.TgFileId || 'none';
+                break;
+        }
         navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success('复制文件链接成功~')) :
         this.copyToClipboardFallback(text);
     },
@@ -648,26 +695,6 @@ methods: {
                 link.download = 'files.zip';
                 link.click();
             });
-    },
-    handleDefaultUrlChange(command) {
-        this.defaultUrlFormat = command;
-        switch (command) {
-            case 'originUrl':
-                this.$message.success('默认链接格式已切换为原始链接');
-                break;
-            case 'mdUrl':
-                this.$message.success('默认链接格式已切换为 Markdown');
-                break;
-            case 'htmlUrl':
-                this.$message.success('默认链接格式已切换为 HTML');
-                break;
-            case 'bbUrl':
-                this.$message.success('默认链接格式已切换为 BBCode');
-                break;
-            case 'tgId':
-                this.$message.success('默认链接格式已切换为 TG文件ID');
-                break;
-        }
     }
 },
 mounted() {
@@ -703,7 +730,12 @@ mounted() {
                 this.$message.error('同步数据时出错，请检查网络连接');
             }
         });
-    }
+    
+    // 读取自定义链接设置项
+    this.customUrlPrefix = this.adminUrlSettings.customUrlPrefix;
+    this.useCustomUrl = this.adminUrlSettings.useCustomUrl;
+}
+
 };
 </script>
 
@@ -715,6 +747,13 @@ mounted() {
     color: #333;
     margin: 0;
     padding: 0;
+}
+
+:deep(.el-dialog) {
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
 }
 
 .header-content {
