@@ -24,6 +24,8 @@ export default createStore({
       useCustomUrl: 'false',
       customUrlPrefix: '',
     },
+    useDarkMode: null,
+    cusDarkMode: false,
   },
   getters: {
     userConfig: state => state.userConfig,
@@ -36,6 +38,8 @@ export default createStore({
     customUrlSettings: state => state.customUrlSettings,
     storeAutoRetry: state => state.storeAutoRetry,
     adminUrlSettings: state => state.adminUrlSettings,
+    useDarkMode: state => state.useDarkMode,
+    cusDarkMode: state => state.cusDarkMode,
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -67,6 +71,12 @@ export default createStore({
     },
     setAdminUrlSettings(state, { key, value }) {
       state.adminUrlSettings[key] = value;
+    },
+    setUseDarkMode(state, useDarkMode) {
+      state.useDarkMode = useDarkMode;
+    },
+    setCusDarkMode(state, cusDarkMode) {
+      state.cusDarkMode = cusDarkMode;
     },
   },
   actions: {

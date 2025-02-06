@@ -3,7 +3,7 @@
         <el-container>
             <el-header>
             <div class="header-content">
-                <span class="title" @click="refreshDashboard">Dashboard</span>
+                <DashboardTabs activeTab="dashboard"></DashboardTabs>
                 <div class="search-card">
                 <el-input v-model="search" size="mini" placeholder="输入关键字搜索"></el-input>
                 </div>
@@ -11,63 +11,53 @@
                     <font-awesome-icon icon="database" class="fa-database"></font-awesome-icon> 记录总数量: {{ Number }}
                 </span>
                 <div class="actions">
-                <el-tooltip :disabled="disableTooltip" content="排序" placement="bottom">
-                    <el-dropdown @command="sort" :hide-on-click="false">
-                        <span class="el-dropdown-link">
-                            <font-awesome-icon :icon="sortIcon" class="header-icon"></font-awesome-icon>
-                        </span>
-                        <template #dropdown>
-                            <el-dropdown-menu>
-                                <el-dropdown-item command="dateDesc">按时间倒序</el-dropdown-item>
-                                <el-dropdown-item command="nameAsc">按名称升序</el-dropdown-item>
-                            </el-dropdown-menu>
-                        </template>
-                    </el-dropdown>
-                </el-tooltip>
+                <el-dropdown @command="sort" :hide-on-click="false">
+                    <span class="el-dropdown-link">
+                        <font-awesome-icon :icon="sortIcon" class="header-icon"></font-awesome-icon>
+                    </span>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item command="dateDesc">按时间倒序</el-dropdown-item>
+                            <el-dropdown-item command="nameAsc">按名称升序</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
                 <el-tooltip :disabled="disableTooltip" content="全选此页" placement="bottom">
                     <font-awesome-icon :icon="selectPageIcon" class="header-icon" @click="handleSelectPage"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" content="批量处理" placement="bottom">
-                    <el-dropdown @command="handleBatchAction" :hide-on-click="false" :disabled="selectedFiles.length === 0">
-                        <span class="el-dropdown-link">
-                            <font-awesome-icon icon="ellipsis-h" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }"></font-awesome-icon>
-                        </span>
-                        <template #dropdown>
-                            <el-dropdown-menu>
-                                <el-dropdown-item command="copy">
-                                    <font-awesome-icon icon="copy" style="margin-right: 5px;"></font-awesome-icon>
-                                    批量复制
-                                </el-dropdown-item>
-                                <el-dropdown-item command="delete">
-                                    <font-awesome-icon icon="trash-alt" style="margin-right: 5px;"></font-awesome-icon>
-                                    批量删除
-                                </el-dropdown-item>
-                                <el-dropdown-item command="download">
-                                    <font-awesome-icon icon="download" style="margin-right: 5px;"></font-awesome-icon>
-                                    批量下载
-                                </el-dropdown-item>
-                                <el-dropdown-item command="ban">
-                                    <font-awesome-icon icon="ban" style="margin-right: 5px;"></font-awesome-icon>
-                                    批量黑名单
-                                </el-dropdown-item>
-                                <el-dropdown-item command="white">
-                                    <font-awesome-icon icon="user-plus" style="margin-right: 5px;"></font-awesome-icon>
-                                    批量白名单
-                                </el-dropdown-item>
-                            </el-dropdown-menu>
-                        </template>
-                    </el-dropdown>
-                </el-tooltip>
+                <el-dropdown @command="handleBatchAction" :hide-on-click="false" :disabled="selectedFiles.length === 0">
+                    <span class="el-dropdown-link">
+                        <font-awesome-icon icon="ellipsis-h" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }"></font-awesome-icon>
+                    </span>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item command="copy">
+                                <font-awesome-icon icon="copy" style="margin-right: 5px;"></font-awesome-icon>
+                                批量复制
+                            </el-dropdown-item>
+                            <el-dropdown-item command="delete">
+                                <font-awesome-icon icon="trash-alt" style="margin-right: 5px;"></font-awesome-icon>
+                                批量删除
+                            </el-dropdown-item>
+                            <el-dropdown-item command="download">
+                                <font-awesome-icon icon="download" style="margin-right: 5px;"></font-awesome-icon>
+                                批量下载
+                            </el-dropdown-item>
+                            <el-dropdown-item command="ban">
+                                <font-awesome-icon icon="ban" style="margin-right: 5px;"></font-awesome-icon>
+                                批量黑名单
+                            </el-dropdown-item>
+                            <el-dropdown-item command="white">
+                                <font-awesome-icon icon="user-plus" style="margin-right: 5px;"></font-awesome-icon>
+                                批量白名单
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
                 <el-tooltip :disabled="disableTooltip" content="链接格式" placement="bottom">
                     <span class="el-dropdown-link">
                         <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
                     </span>
-                </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" content="用户管理" placement="bottom">
-                    <font-awesome-icon icon="user-cog" class="header-icon" @click="handleGoToAdmin"></font-awesome-icon>
-                </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" content="返回上传页" placement="bottom">
-                    <font-awesome-icon icon="upload" class="header-icon" @click="handleGoUpload"></font-awesome-icon>
                 </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" content="退出登录" placement="bottom">
                     <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
@@ -76,12 +66,20 @@
             </div>
             </el-header>
             <el-main class="main-container">
-            <div class="content">
+            <div class="content" v-loading="loading">
                 <template v-for="(item, index) in paginatedTableData" :key="index">
                 <el-card class="img-card">
                     <el-checkbox v-model="item.selected"></el-checkbox>
-                    <video v-if="item.metadata?.FileType?.includes('video') || item.metadata?.FileType?.includes('audio')" :src="'/file/' + item.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else :preview-teleported="true" :src="'/file/' + item.name + '?from=admin'" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
+                    <div class="file-short-info">
+                        <div v-if="item.metadata?.ListType === 'White'" class="success-tag">{{ item.channelTag }}</div>
+                        <div v-else-if="item.metadata?.ListType === 'Block' || item.metadata?.Label === 'adult'" class="fail-tag">{{ item.channelTag }}</div>
+                        <div v-else class="success-tag">{{ item.channelTag }}</div>
+                    </div>
+                    <video v-if="isVideo(item)" :src="'/file/' + item.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                    <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="'/file/' + item.name + '?from=admin'" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
+                    <div v-else class="file-preview">
+                        <font-awesome-icon icon="file" class="file-icon"></font-awesome-icon>
+                    </div>
                     <div class="image-overlay">
                         <div class="overlay-buttons">
                             <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
@@ -111,7 +109,8 @@
                 </template>
             </div>
             <div class="pagination-container">
-                <el-pagination background layout="prev, pager, next" :total="filteredTableData.length" :page-size="pageSize" @current-change="handlePageChange" :current-page.sync="currentPage"></el-pagination>
+                <el-pagination background layout="prev, pager, next" :total="filteredTableData.length" :page-size="pageSize" :current-page.sync="currentPage" @current-change="handlePageChange"></el-pagination>
+                <el-button v-if="currentPage === Math.ceil(filteredTableData.length / pageSize)" type="primary" @click="loadMoreData" :loading="loading" class="load-more">加载更多</el-button>
             </div>
             </el-main>
         </el-container>
@@ -143,8 +142,11 @@
                 <el-tab-pane label="BBCode" name="bbUrl">
                     <el-input v-model="allUrl.bbUrl" readonly @click="handleUrlClick"></el-input>
                 </el-tab-pane>
-                <el-tab-pane label="TG文件ID" v-if="detailFile?.metadata?.TgFileId" name="tgId">
+                <el-tab-pane label="TG File ID" v-if="detailFile?.metadata?.TgFileId" name="tgId">
                     <el-input v-model="allUrl.tgId" readonly @click="handleUrlClick"></el-input>
+                </el-tab-pane>
+                <el-tab-pane label="S3 Location" v-if="detailFile?.metadata?.S3Location" name="s3Location">
+                    <el-input v-model="allUrl.S3Location" readonly @click="handleUrlClick"></el-input>
                 </el-tab-pane>
             </el-tabs>
             <el-descriptions direction="vertical" border :column="tableColumnNum">
@@ -154,17 +156,18 @@
                     :width="300"
                     align="center"
                     >
-                    <video v-if="detailFile?.metadata?.FileType?.includes('video') || detailFile?.metadata?.FileType?.includes('audio')" :src="'/file/' + detailFile?.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else :src="'/file/' + detailFile?.name + '?from=admin'" fit="cover" lazy class="image-preview"></el-image>
+                    <video v-if="isVideo(detailFile)" :src="'/file/' + detailFile?.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                    <el-image v-else-if="isImage(detailFile)" :src="'/file/' + detailFile?.name + '?from=admin'" fit="cover" lazy class="image-preview"></el-image>
+                    <font-awesome-icon v-else icon="file" class="file-icon-detail"></font-awesome-icon>
                 </el-descriptions-item>
                 <el-descriptions-item label="文件名" class-name="description-item">{{ detailFile?.metadata?.FileName || detailFile?.name }}</el-descriptions-item>
                 <el-descriptions-item label="文件类型" class-name="description-item">{{ detailFile?.metadata?.FileType || '未知' }}</el-descriptions-item>
                 <el-descriptions-item label="文件大小(MB)" class-name="description-item">{{ detailFile?.metadata?.FileSize || '未知' }}</el-descriptions-item>
                 <el-descriptions-item label="上传时间" class-name="description-item">{{ new Date(detailFile?.metadata?.TimeStamp).toLocaleString() || '未知' }}</el-descriptions-item>
                 <el-descriptions-item label="访问状态" class-name="description-item">{{ accessType }}</el-descriptions-item>
-                <el-descriptions-item label="上传IP" class-name="description-item">{{ detailFile?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
                 <el-descriptions-item label="上传渠道" class-name="description-item">{{ detailFile?.metadata?.Channel || '未知' }}</el-descriptions-item>
                 <el-descriptions-item label="审查结果" class-name="description-item">{{ detailFile?.metadata?.Label || '无' }}</el-descriptions-item>
+                <el-descriptions-item label="上传IP" class-name="description-item">{{ detailFile?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
             </el-descriptions>
         </el-dialog>
         <el-dialog title="链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
@@ -174,9 +177,14 @@
                 <el-radio label="mdUrl">Markdown</el-radio>
                 <el-radio label="htmlUrl">HTML</el-radio>
                 <el-radio label="bbUrl">BBCode</el-radio>
-                <el-radio label="tgId">TG文件ID</el-radio>
+                <el-radio label="tgId">TG File ID</el-radio>
+                <el-radio label="s3Location">S3链接</el-radio>
             </el-radio-group>
-            <p style="font-size: medium; font-weight: bold">自定义链接格式</p>
+            <p style="font-size: medium; font-weight: bold">自定义链接
+                <el-tooltip content="默认链接为https://your.domain/file/xxx.jpg <br> 如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入" placement="top" raw-content>
+                    <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
+                </el-tooltip>
+            </p>
             <el-form label-width="25%">
                 <el-form-item label="启用自定义">
                     <el-radio-group v-model="useCustomUrl">
@@ -187,9 +195,6 @@
                 <el-form-item label="自定义前缀" v-if="useCustomUrl === 'true'">
                     <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀"/>
                 </el-form-item>
-                <p style="text-align: left;font-size: small;">
-                    <br/>*Tips: 默认链接为https://your.domain/file/xxx.jpg，如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入
-                </p>
             </el-form>
             <div class="dialog-action">
                 <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
@@ -201,6 +206,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import JSZip from 'jszip';
+import DashboardTabs from '@/components/DashboardTabs.vue';
 
 export default {
 data() {
@@ -220,8 +226,12 @@ data() {
         defaultUrlFormat: 'originUrl',
         showUrlDialog: false,
         useCustomUrl: 'false', // 是否启用自定义链接
-        customUrlPrefix: '' // 自定义链接前缀
+        customUrlPrefix: '', // 自定义链接前缀
+        loading: false, // 加载状态
     }
+},
+components: {
+    DashboardTabs
 },
 computed: {
     ...mapGetters(['credentials', 'adminUrlSettings', 'userConfig']),
@@ -241,13 +251,25 @@ computed: {
                 file.previewSrcList = fullList.slice(fullList.indexOf(`/file/${file.name}?from=admin`)).concat(fullList.slice(0, fullList.indexOf(`/file/${file.name}?from=admin`)));
             }
         });
+        // 增加channelTag属性，用于显示渠道信息
+        data.forEach(file => {
+            if (file.metadata?.Channel === 'TelegramNew') {
+                file.channelTag = 'TG';
+            } else if (file.metadata?.Channel === 'CloudflareR2') {
+                file.channelTag = 'R2';
+            } else if (file.metadata?.Channel === 'S3') {
+                file.channelTag = 'S3';
+            } else {
+                file.channelTag = '未知';
+            }
+        });
         return data;
     },
     sortIcon() {
         return this.sortOption === 'dateDesc' ? 'sort-amount-down' : 'sort-alpha-up';
     },
     dialogWidth() {
-        return window.innerWidth > 768 ? '60%' : '90%';
+        return window.innerWidth > 768 ? '50%' : '90%';
     },
     accessType() {
         if (this.detailFile?.metadata?.ListType === 'White') {
@@ -264,7 +286,8 @@ computed: {
             'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.rootUrl}${this.detailFile?.name})`,
             'htmlUrl': `<img src="${this.rootUrl}${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
             'bbUrl': `[img]${this.rootUrl}${this.detailFile?.name}[/img]`,
-            'tgId': this.detailFile?.metadata?.TgFileId || '未知'
+            'tgId': this.detailFile?.metadata?.TgFileId || '未知',
+            'S3Location': this.detailFile?.metadata?.S3Location || '未知'
         }
     },
     tableColumnNum() {
@@ -280,8 +303,13 @@ computed: {
         // 如果当前页所有文件都被选中，则返回 true，否则返回 false
         return this.paginatedTableData.every(file => file.selected);
     },
+    selectedPageFiles() {
+        // 如果当前页有文件被选中，则返回 true，否则返回 false
+        return this.paginatedTableData.some(file => file.selected);
+    },
     selectPageIcon() {
-        return this.selectPage ? 'check-square' : 'square';
+        // 全选为 true 时，返回 check-square；部分选中为 minus-square；全不选为 square
+        return this.selectPage ? 'check-square' : this.selectedPageFiles ? 'minus-square' : 'square';
     },
     rootUrl() {
         // 链接前缀，优先级：用户自定义 > urlPrefix > 默认
@@ -314,12 +342,9 @@ watch: {
     },
     useCustomUrl(val) {
         this.$store.commit('setAdminUrlSettings', { key: 'useCustomUrl', value: val })
-    },
+    }
 },
 methods: {
-    refreshDashboard() {
-        location.reload();
-    },
     handleDownload(key) {
         const link = document.createElement('a');
         link.href = `/file/${key}?from=admin`;
@@ -367,7 +392,7 @@ methods: {
             }
             })
             .then(() => {
-            this.updateStats();
+            this.updateStats(-1, false);
             this.$message.success('删除成功!');
             this.showdetailDialog = false;
             })
@@ -466,7 +491,7 @@ methods: {
                 }
             })
             .then(() => {
-                this.updateStats();
+                this.updateStats(-1, false);
                 this.$message.success('删除成功!');
             })
             .catch(() => this.$message.error('删除失败，请检查网络连接'));
@@ -482,8 +507,10 @@ methods: {
 
         Promise.all(promises)
             .then(results => {
+                let successNum = 0;
                 results.forEach((response, index) => {
                     if (response.ok) {
+                        successNum++;
                         const fileIndex = this.tableData.findIndex(file => file.name === this.selectedFiles[index].name);
                         if (fileIndex !== -1) {
                             this.tableData.splice(fileIndex, 1);
@@ -491,7 +518,7 @@ methods: {
                     }
                 });
                 this.selectedFiles = [];
-                this.updateStats();
+                this.updateStats(-successNum, false);
                 this.$message.success('批量删除成功!');
             })
             .catch(() => this.$message.error('批量删除失败，请检查网络连接'));
@@ -515,6 +542,9 @@ methods: {
             case 'tgId':
                 tmpLinks = this.selectedFiles.map(file => file.metadata?.TgFileId || 'none').join('\n');
                 break;
+            case 's3Location':
+                tmpLinks = this.selectedFiles.map(file => file.metadata?.S3Location || 'none').join('\n');
+                break;
         }
         const links = tmpLinks;
         navigator.clipboard ? navigator.clipboard.writeText(links).then(() => this.$message.success('批量复制链接成功~')) :
@@ -531,12 +561,6 @@ methods: {
         document.execCommand('copy');
         document.body.removeChild(textarea);
         this.$message.success('批量复制链接成功~');
-    },
-    handleGoUpload() {
-        this.$router.push('/');
-    },
-    handleGoToAdmin() {
-        this.$router.push('/customerConfig');
     },
     handleCopy(index, key) {
         let text = '';
@@ -560,11 +584,38 @@ methods: {
         navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success('复制文件链接成功~')) :
         this.copyToClipboardFallback(text);
     },
-    handlePageChange(page) {
-        this.currentPage = page;
+    loadMoreData() {
+        this.loading = true;
+        const start = this.tableData.length;
+        this.fetchWithAuth(`/api/manage/list?start=${start}&count=60`, { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    this.$message.info('没有更多数据了');
+                    return;
+                }
+
+                const moreData = data.map(file => {
+                    file.selected = false;
+                    return file;
+                });
+                this.tableData = this.tableData.concat(data);
+                this.sortData(this.tableData);
+            })
+            .catch(() => this.$message.error('加载更多数据失败，请检查网络连接'))
+            .finally(() => this.loading = false);
     },
-    updateStats() {
-        this.Number = this.tableData.length;
+    updateStats(num, init = false) {
+        if (init) {
+            this.fetchWithAuth('/api/manage/list?count=-1&sum=true', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                this.Number = data.sum;
+            })
+            .catch(() => this.$message.error('更新统计信息失败，请检查网络连接'));
+        } else {
+            this.Number += num;
+        }
     },
     sort(command) {
         this.sortOption = command;
@@ -695,18 +746,47 @@ methods: {
                 link.download = 'files.zip';
                 link.click();
             });
+    },
+    isVideo(file) {
+        let flag = file.metadata?.FileType?.includes('video') || file.metadata?.FileType?.includes('audio');
+        // 用文件名后缀判断是否为视频文件
+        if (!flag) {
+            const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'flv', 'wmv', 'mkv', 'rmvb', '3gp', 'mpg', 'mpeg', 'm4v', 'f4v', 'rm', 'asf', 'dat', 'ts', 'vob', 'swf', 'divx', 'xvid', 'm2ts', 'mts', 'm2v', '3g2', '3gp2', '3gpp', '3gpp2', 'mpe', 'm1v', 'mpv', 'mpv2', 'mp2v', 'm2t', 'm2ts', 'm2v', 'm4b', 'm4p', 'm4v', 'm4r'];
+            const extension = file.name.substring(file.name.lastIndexOf('.') + 1);
+            flag = videoExtensions.includes(extension);
+        }
+        return flag;
+    },
+    isImage(file) {
+        let flag = file.metadata?.FileType?.includes('image');
+        // 用文件名后缀判断是否为图片文件
+        if (!flag) {
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif', 'psd', 'ai', 'eps', 'raw', 'cr2', 'nef', 'orf', 'sr2', 'dng', 'arw', 'rw2', 'raf', 'pef', 'x3f', 'srf', 'erf', 'mrw', 'nrw', 'kdc', 'dcr', 'mef', 'mos', 'crw', 'raf', 'rwl', 'srw', '3fr', 'fff', 'iiq', 'qtk', 'bay', 'k25', 'kdc', 'dcs', 'drf', 'dng', 'erf', 'kdc', 'mdc', 'mef', 'mos', 'mrw', 'nef', 'nrw', 'orf', 'pef', 'ptx', 'pxn', 'r3d', 'raf', 'raw', 'rwl', 'rw2', 'rwz', 'sr2', 'srf', 'x3f'];
+            const extension = file.name.substring(file.name.lastIndexOf('.') + 1);
+            flag = imageExtensions.includes(extension);
+        }
+        return flag;
+    },
+    handlePageChange(page) {
+        this.currentPage = page;
+        // 到最后一页时，加载更多数据
+        if (this.currentPage === Math.ceil(this.filteredTableData.length / this.pageSize)) {
+            this.loadMoreData();
+        }
     }
 },
 mounted() {
+    this.loading = true;
+
     this.fetchWithAuth("/api/manage/check", { method: 'GET' })
         .then(response => response.text())
         .then(result => {
             if(result == "true"){
                 this.showLogoutButton=true;
                 // 在 check 成功后再执行 list 的 fetch 请求
-                return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
+                return this.fetchWithAuth("/api/manage/list?count=60", { method: 'GET' });
             } else if(result=="Not using basic auth."){
-                return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
+                return this.fetchWithAuth("/api/manage/list?count=60", { method: 'GET' });
             } else{
                 throw new Error('Unauthorized');
             }
@@ -714,7 +794,7 @@ mounted() {
         .then(response => response.json())
         .then(result => {
             this.tableData = result.map(file => ({ ...file, selected: false }));
-            this.updateStats();
+            this.updateStats(0, true);
             const savedSortOption = localStorage.getItem('sortOption');
             if (savedSortOption) {
                 this.sortOption = savedSortOption;
@@ -729,6 +809,9 @@ mounted() {
             if (err.message !== 'Unauthorized') {
                 this.$message.error('同步数据时出错，请检查网络连接');
             }
+        })
+        .finally(() => {
+            this.loading = false;
         });
     
     // 读取自定义链接设置项
@@ -741,19 +824,19 @@ mounted() {
 
 <style scoped>
 .container {
-    background: linear-gradient(90deg, #ffd7e4 0%, #c8f1ff 100%);
+    background: var(--admin-container-bg-color);
     min-height: 100vh;
     font-family: 'Arial', sans-serif;
-    color: #333;
+    color: var(--admin-container-color);
     margin: 0;
     padding: 0;
 }
 
 :deep(.el-dialog) {
     border-radius: 12px;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--dialog-bg-color);
     backdrop-filter: blur(10px);
-    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--dialog-box-shadow);
 }
 
 .header-content {
@@ -761,13 +844,20 @@ mounted() {
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background-color: rgba(255, 255, 255, 0.75);
+    background-color: var(--admin-header-content-bg-color);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-bottom: var(--admin-header-content-border-bottom);
+    box-shadow: var(--admin-header-content-box-shadow);
     transition: background-color 0.5s ease, box-shadow 0.5s ease;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
+    position: fixed;
+    top: 0;
+    left: 50%; /* 将左边缘移动到页面中间 */
+    transform: translateX(-50%); /* 向左移动自身宽度的一半 */
+    width: 95%;
+    z-index: 1000;
+    min-height: 45px;
 }
 
 @media (max-width: 768px) {
@@ -777,46 +867,35 @@ mounted() {
 }
 
 .header-content:hover {
-    background-color: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    background-color: var(--admin-header-content-hover-bg-color);
+    box-shadow: var(--admin-header-content-hover-box-shadow);
 }
 
 .header-icon {
     font-size: 1.5em;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: #333;
+    color: var(--admin-container-color);
     outline: none;
 }
 
 .header-icon:hover {
-    color: #B39DDB; /* 使用柔和的淡紫色 */
+    color: var(--admin-purple); /* 使用柔和的淡紫色 */
     transform: scale(1.2);
 }
 
-.title {
-    font-size: 1.8em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.3s ease;
-    color: #333;
-}
-
-.title:hover {
-    color: #B39DDB; /* 使用柔和的淡紫色 */
-}
 
 .stats {
     font-size: 1.2em;
     margin-right: 20px;
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--admin-dashborad-stats-bg-color);
     padding: 5px 10px;
     border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--admin-dashboard-stats-shadow);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    color: #333;
+    color: var(--admin-container-color);
 }
 
 @media (max-width: 768px) {
@@ -834,13 +913,13 @@ mounted() {
 }
 
 .stats:hover {
-    background-color: #f0eaf8; /* 使用柔和的淡紫色 */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-    color: #B39DDB; /* 使用柔和的淡紫色 */
+    background-color: var(--admin-dashborad-stats-hover-bg-color);
+    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+    color: var(--admin-purple); /* 使用柔和的淡紫色 */
 }
 
 .stats:hover .fa-database {
-    color: #B39DDB; /* 使用柔和的淡紫色 */
+    color: var(--admin-purple); /* 使用柔和的淡紫色 */
 }
 
 .header-content .actions {
@@ -859,20 +938,20 @@ mounted() {
     font-size: 1.5em;
     cursor: pointer;
     transition: color 0.3s, transform 0.3s;
-    color: #333;
+    color: var(--admin-container-color);
 }
 
 .header-content .actions i:hover {
-    color: #B39DDB; /* 使用柔和的淡紫色 */
+    color: var(--admin-purple); /* 使用柔和的淡紫色 */
     transform: scale(1.2);
 }
 
 .header-content .actions .el-dropdown-link i {
-    color: #333;
+    color: var(--admin-container-color);
 }
 
 .header-content .actions .el-dropdown-link i:hover {
-    color: #B39DDB; /* 使用柔和的淡紫色 */
+    color: var(--admin-purple); /* 使用柔和的淡紫色 */
 }
 
 .header-content .actions .disabled {
@@ -881,7 +960,7 @@ mounted() {
 }
 
 .header-content .actions .enabled {
-    color: #B39DDB; /* 使用柔和的淡紫色 */
+    color: var(--admin-purple); /* 使用柔和的淡紫色 */
 }
 
 .search-card {
@@ -899,8 +978,8 @@ mounted() {
 
 .search-card :deep(.el-input__wrapper) {
     border-radius: 20px;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background: var(--admin-dashboard-search-card-bg-color);
+    box-shadow: var(--admin-dashboard-search-card-box-shadow);
     transition: background-color 0.3s;
 }
 
@@ -932,7 +1011,7 @@ mounted() {
 .main-container {
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 20px 60px;
     min-height: calc(100vh - 80px);
 }
 
@@ -949,6 +1028,7 @@ mounted() {
     gap: 20px;
     padding: 10px;
     flex-grow: 1;
+    min-height: 80vh;
 }
 
 /* 在小屏幕上，将所有内容放入一列 */
@@ -961,9 +1041,9 @@ mounted() {
 
 .img-card {
     width: 100%;
-    background: rgba(255, 255, 255, 0.6);
+    background: var(--admin-dashboard-imgcard-bg-color);
     border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--admin-dashboard-imgcard-shadow);
     overflow: hidden;
     position: relative;
     transition: transform 0.3s ease;
@@ -975,15 +1055,64 @@ mounted() {
 
 .image-preview {
     width: 100%;
-    height: 200px;
+    height: 18vh;
     object-fit: cover;
     transition: opacity 0.3s ease;
+    filter: var(--image-preview-filter);
 }
 
 .image-preview:hover {
     opacity: 0.8;
 }
 
+.file-short-info {
+    position: absolute;
+    z-index: 10;
+    top: 3px;
+    left: 3px;
+    display: flex;
+    gap: 5px;
+    align-items: start;
+}
+
+.success-tag {
+    background-color: rgba(129, 251, 129, 0.3);
+    color: rgba(57, 174, 21, 0.8);
+    border: 0.5px solid rgba(60, 255, 0, 0.1);
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 0.6em;
+}
+.fail-tag {
+    background-color: rgba(255, 0, 0, 0.3);
+    color: rgba(255, 0, 0, 0.8);
+    border: 0.5px solid rgba(255, 0, 0, 0.1);
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 0.6em;
+}
+.info-tag {
+    background-color: rgba(110, 110, 110, 0.3);
+    color: rgba(110, 110, 110, 0.8);
+    border: 0.5px solid rgba(110, 110, 110, 0.1);
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 0.6em;
+}
+
+.file-preview {
+    width: 100%;
+    height: 18vh;
+}
+.file-icon {
+    height: 40px;
+    position: relative;
+    top: 6vh;
+    opacity: 0.6;
+}
+.file-icon-detail {
+    height: 40px;
+}
 
 .file-info {
     padding: 10px;
@@ -1030,6 +1159,15 @@ mounted() {
     margin-top: 20px;
     padding-bottom: 20px;
 }
+.load-more {
+    cursor: pointer;
+    background-color: var(--admin-dashboard-btn-bg-color);
+    box-shadow: var(--admin-dashboard-btn-shadow);
+    color: var(--admin-dashboard-btn-color);
+    border: none;
+    transition: color 0.3s;
+    margin-left: 20px;
+}
 
 .el-checkbox {
     position: absolute;
@@ -1041,7 +1179,7 @@ mounted() {
 
 .video-preview {
     width: 100%; 
-    height: 200px;
+    height: 18vh;
     display: block;
     cursor: pointer;
 }
@@ -1049,10 +1187,6 @@ mounted() {
 :deep(.description-item) {
     word-break: break-all;
     word-wrap: break-word;
-}
-
-:focus-visible {
-    outline: none;
 }
 
 .detail-actions {
@@ -1069,5 +1203,37 @@ mounted() {
     .detail-action {
         margin-left: 0;
     }
+}
+:deep(.btn-prev){
+    border-radius: 100%;
+    position: fixed;
+    top: 50%;
+    left: 18px;
+    scale: 1.3;
+    color: var(--admin-dashboard-btn-color);
+}
+:deep(.btn-next) {
+    border-radius: 100%;
+    position: fixed;
+    top: 50%;
+    right: 18px;
+    scale: 1.3;
+    color: var(--admin-dashboard-btn-color);
+}
+@media (min-width: 768px) {
+    :deep(.el-pagination.is-background .btn-prev), :deep(.el-pagination.is-background .btn-next) {
+        background-color: var(--admin-dashboard-btn-bg-color);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--admin-dashboard-btn-shadow);
+        transition: all 0.3s ease;
+    }
+    :deep(.el-pagination.is-background .btn-prev:hover), :deep(.el-pagination.is-background .btn-next:hover) {
+        transform: translateY(-10%);
+        box-shadow: var(--admin-dashboard-btn-hover-shadow);
+    }
+}
+
+.question-icon {
+    margin: 0 3px;
 }
 </style>

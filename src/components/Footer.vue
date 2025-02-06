@@ -1,6 +1,6 @@
 <template>
-    <div class="page-footer">
-        <p>© 2024 Designed by <a class="footer-name" href="https://github.com/MarSeventh" target="_blank">SanyueQi</a> for You!
+    <div class="page-footer" v-if="!disableFooter">
+        <p>© 2024-{{ thisYear }} Designed by <a class="footer-name" href="https://github.com/MarSeventh" target="_blank">SanyueQi</a> for You!
             <a :href="footerLink" target="_blank">
                 <font-awesome-icon icon="paper-plane" class="footer-link-icon"/>
             </a>
@@ -16,7 +16,13 @@ export default {
     computed: {
         ...mapGetters(['userConfig']),
         footerLink() {
-            return this.userConfig?.footerLink || 'https://sanyue.site'
+            return this.userConfig?.footerLink || 'https://github.com/MarSeventh/CloudFlare-ImgBed'
+        },
+        thisYear() {
+            return new Date().getFullYear()
+        },
+        disableFooter() {
+            return this.userConfig?.disableFooter || false
         }
     }
 }
@@ -28,17 +34,22 @@ export default {
     justify-content: center;
     align-items: center;
     width: 100vw;
-    color: aliceblue;
+    color: var(--page-footer-text-color);
     font-size: large;
     user-select: none;
 }
+@media (max-width: 768px) {
+    .page-footer {
+        font-size: small;
+    }
+}
 .footer-name {
-    color: antiquewhite;
+    color: var(--page-footer-name-color);
     font-weight: bold;
     text-decoration: none;
 }
 .footer-link-icon {
-    color: antiquewhite;
+    color: var(--page-footer-name-color);
     margin-left: 5px;
 }
 </style>

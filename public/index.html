@@ -15,3 +15,31 @@
     <!-- built files will be auto injected -->
   </body>
 </html>
+<style>
+/* 下拉菜单样式 */
+.el-dropdown__popper.el-popper {
+    border-radius: 12px;
+    border: none;
+    background-color: var(--popper-bg-color);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--popper-shadow);
+}
+.el-dropdown__popper.el-popper .el-dropdown-menu {
+    background: none;
+    border: none;
+}
+.el-dropdown__popper.el-popper .el-dropdown-menu__item {
+    border: none;
+    background: none;
+}
+.el-popper.is-light>.el-popper__arrow::before {
+    background: none;
+    border: none;
+}
+
+/* 加载动画样式 */
+.el-loading-mask {
+    border-radius: 12px;
+}
+
+</style>

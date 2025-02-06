@@ -54,4 +54,28 @@ body {
   padding: 0;
   background-color: #f8f8f8;
 }
+:focus-visible {
+    outline: none;
+}
+</style>
+<style>
+.el-dropdown__popper.el-popper {
+    border-radius: 12px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
+}
+.el-dropdown__popper.el-popper .el-dropdown-menu {
+    background: none;
+    border: none;
+}
+.el-dropdown__popper.el-popper .el-dropdown-menu__item {
+    border: none;
+    background: none;
+}
+.el-popper.is-light>.el-popper__arrow::before {
+    background: none;
+    border: none;
+}
 </style>

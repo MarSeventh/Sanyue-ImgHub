@@ -14,12 +14,9 @@
             :show-file-list="false"
             >
             <el-icon class="el-icon--upload" :class="{'upload-list-busy': fileList.length}">
-                <CameraFilled color="blanchedalmond"/>
+                <CameraFilled/>
             </el-icon>
             <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
-            <template #tip>
-                <div class="el-upload__tip">支持多文件上传，支持所有常见文件格式，Telegram渠道不支持超过20MB</div>
-            </template>
         </el-upload>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
             <div class="upload-list-container" :class="{'upload-list-busy': fileList.length}">
@@ -59,7 +56,7 @@
                         </div>
                     </div>
                     <div class="upload-list-item" v-for="file in fileList.slice().reverse()" :key="file.name" :span="8">
-                        <a :href="file.url" target="_blank">
+                        <a :href="file.url" target="_blank" class="upload-list-item-preview">
                             <!-- 判断文件类型是否为视频 -->
                             <video
                                 v-if="isVideo(file.name)"
@@ -74,11 +71,15 @@
                             </video>
                             <!-- 判断文件类型是否为图片 -->
                             <img
-                                v-else
+                                v-else-if="isImage(file.name)"
                                 style="width: 10vw; border-radius: 12px;"
                                 :src="file.url"
                                 @error="file.url = require('@/assets/404.png')"
                             />
+                            <!-- 其他文件类型 -->
+                            <div v-else style="width: 10vw; border-radius: 12px;">
+                                <font-awesome-icon icon="file" class="file-icon"></font-awesome-icon>
+                            </div>
                         </a>
                         <div class="upload-list-item-content">
                             <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
@@ -306,7 +307,7 @@ methods: {
             if (err.response && err.response.status === 401) {
                 this.waitingList = []
                 this.fileList = []
-                this.$message.error('认证状态错误！')
+                this.$message.error('认证状态错误，请重新登录')
                 this.$router.push('/login')
             } else {
                 this.exceptionList.push(file)
@@ -719,7 +720,7 @@ methods: {
     0%, 100% {
     }
     50% {
-        box-shadow: 0 0 10px 5px #409EFF;
+        box-shadow: var(--el-upload-dragger-hover-box-shadow);
         opacity: 0.8;
     }
 }
@@ -738,10 +739,10 @@ methods: {
     align-items: center;
     justify-content: center;
     border-radius: 15px;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--upload-list-card-bg-color);
     backdrop-filter: blur(10px);
-    border: 1px solid #327ecc50;
-    box-shadow: 1px 2px 5px 1px #327ecc8c;
+    border: var(--upload-list-card-border);
+    box-shadow: var(--upload-list-card-box-shadow) !important;
 }
 .upload-list-container {
     width: 55vw;
@@ -756,17 +757,17 @@ methods: {
     }
 }
 .upload-list-card.upload-list-busy {
-    height: 35vh;
+    height: 40vh;
 }
 .upload-list-container.upload-list-busy {
-    height: 35vh;
+    height: 40vh;
 }
 .upload-list-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin: 5px;
-    border: 1px solid #a5bef7;
+    border: var(--upload-list-item-border);
     padding: 5px;
     border-radius: 15px;
 }
@@ -835,19 +836,19 @@ methods: {
     align-items: center;
     height: 45vh;
     border-radius: 15px;
-    border: 3px dashed #409EFF;
+    border: var(--el-upload-dragger-border);
     opacity: 0.7;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: var(--el-upload-dragger-bg-color);
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
 }
 :deep(.el-upload-dragger:hover) {
     opacity: 0.8;
-    box-shadow: 0 0 10px 5px #409EFF;
+    box-shadow: var(--el-upload-dragger-hover-box-shadow);
 }
 :deep(.el-upload-dragger.is-dragover) {
     opacity: 0.8;
-    box-shadow: 0 0 10px 5px #409EFF;
+    box-shadow: var(--el-upload-dragger-hover-box-shadow);
 }
 .is-uploading :deep(.el-upload-dragger){
     animation: breathe 3s infinite;
@@ -858,20 +859,39 @@ methods: {
     user-select: none;
     transition: all 0.3s ease;
 }
+@media (max-width: 768px) {
+    .el-upload__text {
+        font-size: small;
+    }
+}
 .el-upload__text.upload-list-busy {
     font-size: small;
 }
 .el-icon--upload {
     font-size: 100px;
-    transition: all 0.3s ease;
+    transition: font-size 0.3s ease;
+    color: var(--el-icon--upload-color);
 }
 .el-icon--upload.upload-list-busy {
-    font-size: 50px;
+    font-size: 60px;
+}
+@media (max-width: 768px) {
+    .el-icon--upload {
+        font-size: 50px;
+    }
+    .el-icon--upload.upload-list-busy {
+        font-size: 30px;
+    }
 }
 .el-upload__tip {
     font-size: medium;
-    color: antiquewhite;
+    color: var(--upload-text-color);
     user-select: none;
+}
+@media (max-width: 768px) {
+    .el-upload__tip {
+        font-size: small;
+    }
 }
 .upload-list-dashboard {
     display: flex;
@@ -886,11 +906,16 @@ methods: {
     transition: all 0.3s ease;
 }
 .upload-list-dashboard.list-scrolled {
-    background-color: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--upload-list-dashboard-bg-color);
+    box-shadow: var(--upload-list-dashboard-shadow);
 }
 .upload-list-dashboard-title {
     font-size: medium;
     font-weight: bold;
+}
+
+.file-icon {
+    font-size: 30px;
+    color: var(--upload-list-file-icon-color);
 }
 </style>

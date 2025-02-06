@@ -1,26 +1,38 @@
 <template>
-    <div>
+    <div class="container">
     <div class="upload-home">
         <img id="bg1" class="background-image1" alt="Background Image"/>
         <img id="bg2" class="background-image2" alt="Background Image"/>
+        <ToggleDark class="toggle-dark-button"/>
+        <el-tooltip content="1. 支持多文件上传，支持所有常见文件格式 <br> 2. Telegram 渠道上传的文件大小不支持超过20MB" raw-content placement="bottom">
+            <div class="info-container">
+                <font-awesome-icon icon="question" class="info-icon" size="lg"/>
+            </div>
+        </el-tooltip>
+        <div class="toolbar-manage">
+            <el-button class="toolbar-manage-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleOpenToolbar" circle>
+                <font-awesome-icon v-if="!isToolBarOpen"  icon="bars" class="manage-icon" size="lg"/>
+                <font-awesome-icon v-else icon="times" class="manage-icon" size="lg"/>
+            </el-button>
+        </div>
         <div class="toolbar">
-            <el-tooltip :disabled="disableTooltip" content="上传设置" placement="left">
-                <el-button class="toolbar-button" size="large" @click="openCompressDialog" circle>
+            <el-tooltip :disabled="disableTooltip" content="上传设置" placement="top">
+                <el-button class="toolbar-button compress-button" :class="{ 'active': isToolBarOpen}" size="large" @click="openCompressDialog" circle>
                     <font-awesome-icon icon="cloud-upload" class="compress-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
             <el-tooltip :disabled="disableTooltip" content="链接格式" placement="left">
-                <el-button class="toolbar-button" size="large" @click="openUrlDialog" circle>
+                <el-button class="toolbar-button link-button" :class="{ 'active': isToolBarOpen}" size="large" @click="openUrlDialog" circle>
                     <font-awesome-icon icon="link" class="link-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
             <el-tooltip :disabled="disableTooltip" content="管理页面" placement="left">
-                <el-button class="toolbar-button" size="large" @click="handleManage" circle>
+                <el-button class="toolbar-button config-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleManage" circle>
                     <font-awesome-icon icon="cog" class="config-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
             <el-tooltip :disabled="disableTooltip" content="退出登录" placement="left">
-                <el-button class="toolbar-button" size="large" @click="handleLogout" circle>
+                <el-button class="toolbar-button sign-out-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleLogout" circle>
                     <font-awesome-icon icon="sign-out-alt" class="sign-out-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
@@ -53,7 +65,11 @@
                 <el-radio value="html">HTML</el-radio>
                 <el-radio value="ubb">BBCode</el-radio>
             </el-radio-group>
-            <p style="font-size: medium; font-weight: bold">自定义链接格式</p>
+            <p style="font-size: medium; font-weight: bold">自定义链接
+                <el-tooltip content="默认链接为https://your.domain/file/xxx.jpg <br> 如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入" placement="top" raw-content>
+                    <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
+                </el-tooltip>
+            </p>
             <el-form label-width="25%">
                 <el-form-item label="启用自定义">
                     <el-radio-group v-model="useCustomUrl">
@@ -64,9 +80,6 @@
                 <el-form-item label="自定义前缀" v-if="useCustomUrl === 'true'">
                     <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀"/>
                 </el-form-item>
-                <p style="text-align: left;font-size: small;">
-                    <br/>*Tips: 默认链接为https://your.domain/file/xxx.jpg，如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入
-                </p>
             </el-form>
             <div class="dialog-action">
                 <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
@@ -79,9 +92,13 @@
                     <el-radio-group v-model="uploadChannel">
                         <el-radio label="telegram">Telegram</el-radio>
                         <el-radio label="cfr2">Cloudflare R2</el-radio>
+                        <el-radio label="s3">S3</el-radio>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item label="失败自动切换">
+                <el-form-item label="自动切换">
+                    <el-tooltip content="上传失败自动切换到其他渠道上传" placement="top">
+                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
+                    </el-tooltip>
                     <el-switch
                         v-model="autoRetry"
                         active-text="开启"
@@ -96,9 +113,14 @@
                         <el-radio label="default">默认</el-radio>
                         <el-radio label="index">仅前缀</el-radio>
                         <el-radio label="origin">仅原名</el-radio>
+                        <el-radio label="short">短链接</el-radio>
                     </el-radio-group>
                 </el-form-item>
-                <p style="font-size: medium; font-weight: bold">客户端压缩</p>
+                <p style="font-size: medium; font-weight: bold">客户端压缩
+                    <el-tooltip content="1. 上传前在本地进行压缩，仅对图片文件生效 <br> 2. 若图片大小大于20MB，将自动进行压缩" placement="top" raw-content>
+                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
+                    </el-tooltip>
+                </p>
                 <el-form-item label="开启压缩">
                     <el-switch
                         v-model="customerCompress"
@@ -109,12 +131,22 @@
                     />
                 </el-form-item>
                 <el-form-item label="压缩阈值" v-if="customerCompress">
-                    <el-slider v-model="compressBar" :min="1" :max="20" show-input/>
+                    <el-tooltip content="设置图片大小阈值，超过此值将自动压缩，单位MB" placement="top">
+                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
+                    </el-tooltip>
+                    <el-slider class="compress-slider" v-model="compressBar" :min="1" :max="20" show-input :format-tooltip="(value) => `${value} MB`"/>
                 </el-form-item>
-                <el-form-item label="压缩后大小" v-if="customerCompress">
-                    <el-slider v-model="compressQuality" :min="1" :max="compressBar" show-input/>
+                <el-form-item label="期望大小" v-if="customerCompress">
+                    <el-tooltip content="设置压缩后图片大小期望值，单位MB" placement="top">
+                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
+                    </el-tooltip>
+                    <el-slider class="compress-slider" v-model="compressQuality" :min="1" :max="compressBar" :format-tooltip="(value) => `${value} MB`" show-input/>
                 </el-form-item>
-                <p style="font-size: medium; font-weight: bold" v-if="uploadChannel === 'telegram'">服务端压缩</p>
+                <p style="font-size: medium; font-weight: bold" v-if="uploadChannel === 'telegram'">服务端压缩
+                    <el-tooltip content="1. 在 Telegram 端进行压缩，仅对上传渠道为 Telegram 的图片文件生效 <br> 2. 若图片大小（本地压缩后大小）大于10MB，本设置自动失效 <br> 3. 若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题" placement="top" raw-content>
+                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
+                    </el-tooltip>
+                </p>
                 <el-form-item label="开启压缩" v-if="uploadChannel === 'telegram'">
                     <el-switch
                         v-model="serverCompress"
@@ -124,16 +156,6 @@
                         inactive-color="#ff4949"
                     />
                 </el-form-item>
-                <p style="text-align: left;font-size: small;">
-                    <br/>*Tips: 
-                    <br/>1.Telegram渠道和CloudFlare R2渠道配置方式不同，请根据文档分别配置后使用
-                    <br/>2.压缩设置仅针对图片文件，单位为MB
-                    <br/>3.客户端压缩指上传前压缩，服务端压缩仅作用于Telegram渠道
-                    <br/>4.若图片大小>10MB，或压缩后图片大小>10MB，服务端压缩将自动失效
-                    <br/>5.若图片大小>20MB，将自动进行客户端压缩
-                    <br/>6.若想要存储的图片和原图完全一致，可以将两个压缩设置均设置为关闭
-                    <br/>7.若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题
-                </p>
                 <div class="dialog-action">
                     <el-button type="primary" @click="showCompressDialog = false">确定</el-button>
                 </div>
@@ -147,6 +169,7 @@
 <script>
 import UploadForm from '@/components/UploadForm.vue'
 import Footer from '@/components/Footer.vue'
+import ToggleDark from '@/components/ToggleDark.vue'
 import { ref } from 'vue'
 import cookies from 'vue-cookies'
 import { mapGetters } from 'vuex'
@@ -169,6 +192,8 @@ export default {
             customUrlPrefix: '', //自定义链接前缀
             useCustomUrl: 'false', //是否启用自定义链接格式
             autoRetry: true, //失败自动切换
+            useDefaultWallPaper: false,
+            isToolBarOpen: false, //是否打开工具栏
         }
     },
     watch: {
@@ -198,6 +223,15 @@ export default {
         },
         autoRetry(val) {
             this.$store.commit('setStoreAutoRetry', val)
+        },
+        isDark(val) {
+            if (this.useDefaultWallPaper) {
+                const bg1 = document.getElementById('bg1')
+                bg1.src = val? require('@/assets/background.jpg') : require('@/assets/background-light.jpg')
+                bg1.onload = () => {
+                    bg1.style.opacity = this.bkOpacity
+                }
+            }
         }
     },
     computed: {
@@ -215,7 +249,7 @@ export default {
             return this.userConfig?.bkOpacity || 1
         },
         dialogWidth() {
-            return window.innerWidth > 768 ? '40%' : '80%'
+            return window.innerWidth > 768 ? '50%' : '90%'
         },
         disableTooltip() {
             return window.innerWidth < 768
@@ -223,6 +257,9 @@ export default {
         urlPrefix() {
             // 全局自定义链接前缀
             return this.userConfig?.urlPrefix || `${window.location.protocol}//${window.location.host}/file/`
+        },
+        isDark() {
+            return this.$store.getters.useDarkMode
         }
     },
     mounted() {
@@ -234,6 +271,8 @@ export default {
                 bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
                 bg1.onload = () => {
                     bg1.style.opacity = this.bkOpacity
+                    // 取消container的默认背景颜色
+                    document.querySelector('.container').style.background = 'transparent'
                 }
                 setInterval(() => {
                     //如果bing壁纸组为空，跳过
@@ -252,6 +291,8 @@ export default {
             bg1.src = this.userConfig.uploadBkImg[this.customWallPaperIndex]
             bg1.onload = () => {
                 bg1.style.opacity = this.bkOpacity
+                // 取消container的默认背景颜色
+                document.querySelector('.container').style.background = 'transparent'
             }
             setInterval(() => {
                 let curBg = bg1.style.opacity != 0 ? bg1 : bg2
@@ -268,14 +309,20 @@ export default {
             bg1.src = this.userConfig.uploadBkImg[0]
             bg1.onload = () => {
                 bg1.style.opacity = this.bkOpacity
+                // 取消container的默认背景颜色
+                document.querySelector('.container').style.background = 'transparent'
             }
         } else {
             //默认壁纸
-            bg1.src = require('@/assets/background.jpg')
-            bg1.onload = () => {
-                bg1.style.opacity = this.bkOpacity
-            }
+            // this.useDefaultWallPaper = true
+            // bg1.src = this.isDark? require('@/assets/background.jpg') : require('@/assets/background-light.jpg')
+            // bg1.onload = () => {
+            //     bg1.style.opacity = this.bkOpacity
+            //     // 取消container的默认背景颜色
+            //     document.querySelector('.container').style.background = 'transparent'
+            // }
         }
+
         // 读取用户选择的链接格式
         this.selectedUrlForm = this.uploadCopyUrlForm || 'url'
         // 读取用户选择的压缩设置
@@ -295,7 +342,8 @@ export default {
     },
     components: {
         UploadForm,
-        Footer
+        Footer,
+        ToggleDark
     },
     methods: {
         handleManage() {
@@ -323,12 +371,27 @@ export default {
         },
         updateStoreUploadNameType(value) {
             this.$store.commit('setStoreUploadNameType', value)
+        },
+        handleOpenToolbar () {
+            this.isToolBarOpen = !this.isToolBarOpen
+            // 等过渡动画结束，向active类添加pointer-events属性，使其可以点击
+            setTimeout(() => {
+                const buttons = document.querySelectorAll('.toolbar-button')
+                buttons.forEach(button => {
+                    button.style.pointerEvents = this.isToolBarOpen? 'auto' : 'none'
+                })
+            }, 300)
         }
     }
 }
 </script>
 
 <style scoped>
+.container {
+    background: var(--bg-color);
+    min-height: 100vh;
+}
+
 /* 定义顺时针和逆时针旋转动画 */
 .rotate {
     animation: spin 2s ease-in-out; /* 动画时长为2秒，执行一次 */
@@ -344,8 +407,14 @@ export default {
     0% {
         transform: rotate(0deg); /* 初始位置 */
     }
+    25% {
+        transform: rotate(5deg); /* 顺时针旋转20度 */
+    }
     50% {
-        transform: rotate(360deg); /* 顺时针旋转一圈 */
+        transform: rotate(0deg); /* 顺时针旋转回到初始位置 */
+    }
+    75% {
+        transform: rotate(-3deg); /* 逆时针旋转20度 */
     }
     100% {
         transform: rotate(0deg); /* 逆时针旋转回到初始位置 */
@@ -358,14 +427,8 @@ export default {
     0% {
         transform: rotate(0deg); /* 初始位置 */
     }
-    25% {
-        transform: rotate(10deg); /* 顺时针旋转5度 */
-    }
     50% {
-        transform: rotate(0deg); /* 回到初始位置 */
-    }
-    75% {
-        transform: rotate(-10deg); /* 逆时针旋转5度 */
+        transform: rotate(10deg); /* 旋转10度 */
     }
     100% {
         transform: rotate(0deg); /* 回到初始位置 */
@@ -377,14 +440,8 @@ export default {
     0% {
         transform: translateX(0); /* 初始位置 */
     }
-    25% {
-        transform: translateX(5px); /* 左移5px */
-    }
     50% {
-        transform: translateX(0); /* 回到初始位置 */
-    }
-    75% {
-        transform: translateX(5px); /* 右移5px */
+        transform: translateX(-1px); /* 向右移动3像素 */
     }
     100% {
         transform: translateX(0); /* 回到初始位置 */
@@ -396,66 +453,184 @@ export default {
     0% {
         transform: scale(1); /* 初始大小 */
     }
-    25% {
-        transform: scale(1.2); /* 放大20% */
-    }
     50% {
-        transform: scale(1); /* 回到初始大小 */
-    }
-    75% {
-        transform: scale(1.2); /* 放大20% */
+        transform: scale(1.1); /* 放大到1.2倍 */
     }
     100% {
         transform: scale(1); /* 回到初始大小 */
     }
 }
 
-/* 非移动端时的图标动画样式 */
-@media (min-width: 768px) {
-    .compress-icon:hover {
-        animation: scale 1s ease-in-out;
+
+.toggle-dark-button {
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    position: fixed;
+    top: 30px;
+    right: 30px;
+}
+
+.info-container {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    color: var(--theme-toggle-color);
+    transition: all 0.3s ease;
+    position: fixed;
+    top: 30px;
+    right: 80px;
+    cursor: pointer;
+}
+.info-icon {
+    outline: none;
+}
+@media (max-width: 768px) {
+    .info-container {
+        width: 2rem;
+        height: 2rem;
     }
-    .config-icon:hover {
-        animation: spin 2s ease-in-out;
-    }
-    .link-icon:hover {
-        animation: rotate-shake 0.5s ease-in-out;
-    }
-    .sign-out-icon:hover {
-        animation: shake 0.8s ease-in-out;
-    }
+}
+
+.toolbar-manage {
+    position: fixed;
+    bottom: 50px;
+    right: 30px;
+    z-index: 200;
+}
+.toolbar-manage-button {
+    border: none;
+    transition: all 0.3s ease, border-radius 0.4s ease;
+    margin-left: 0;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    color: var(--toolbar-button-color);
+    outline: none;
+    border-radius: 12px;
+}
+.toolbar-manage-button.active {
+    border-radius: 50%;
 }
 
 .toolbar {
     position: fixed;
-    bottom: 8vh;
-    right: 1.5vw;
+    bottom: 50px;
+    right: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
     z-index: 100;
 }
+
 .toolbar-button {
     border: none;
     transition: all 0.3s ease;
-    margin-bottom: 10px;
     margin-left: 0;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
     backdrop-filter: blur(10px);
-    color: #327ECC;
+    color: var(--toolbar-button-color);
 }
+
+/* 按钮形成扇形 */
+.compress-button {
+    position: fixed;
+    bottom: 50px;
+    right: 30px;
+    opacity: 0;
+    transition: all 0.3s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    pointer-events: none;
+}
+.compress-button.active {
+    transform: translateY(-75px);
+    opacity: 1;
+}
+
+.link-button {
+    position: fixed;
+    bottom: 50px;
+    right: 30px;
+    opacity: 0;
+    transition: all 0.3s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    pointer-events: none;
+}
+.link-button.active {
+    transform: translateY(-58px) translateX(-50px);
+    opacity: 1;
+}
+
+.config-button {
+    position: fixed;
+    bottom: 50px;
+    right: 30px;
+    opacity: 0;
+    transition: all 0.3s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    pointer-events: none;
+}
+.config-button.active {
+    transform: translateY(-11px) translateX(-75px);
+    opacity: 1;
+}
+
+.sign-out-button {
+    position: fixed;
+    bottom: 50px;
+    right: 30px;
+    opacity: 0;
+    transition: all 0.3s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    pointer-events: none;
+}
+.sign-out-button.active {
+    transform: translateY(42px) translateX(-68px);
+    opacity: 1;
+}
+
+/* 非移动端时的图标动画样式 */
 @media (min-width: 768px) {
-    .toolbar-button:hover {
-        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-        transform: translateY(-3px);
-        background-color: rgba(255, 255, 255, 0.9);
+    .compress-button:hover {
+        transform: translateY(-77px);
+    }
+    .link-button:hover {
+        transform: translateY(-60px) translateX(-52px);
+    }
+    .config-button:hover {
+        transform: translateY(-12px) translateX(-77px);
+    }
+    .sign-out-button:hover {
+        transform: translateY(44px) translateX(-70px);
+    }
+
+    .compress-icon:hover {
+        animation: scale 0.5s ease-in-out;
+    }
+    .config-icon:hover {
+        animation: spin 0.5s ease-in-out;
+    }
+    .link-icon:hover {
+        animation: rotate-shake 0.5s ease-in-out;
+    }
+    .sign-out-icon:hover {
+        animation: shake 0.5s ease-in-out;
     }
 }
+
+
 :deep(.el-dialog) {
     border-radius: 12px;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--dialog-bg-color);
     backdrop-filter: blur(10px);
-    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--dialog-box-shadow);
 }
 .dialog-action {
     display: flex;
@@ -468,25 +643,37 @@ export default {
     align-items: center;
     padding: 15px;
     margin-top: 5vh;
-    color: blanchedalmond;
+    color: var(--upload-header-color);
     user-select: none;
     text-decoration: none;
+    position: relative;
+    top: -3vh;
+    transition: all 0.3s ease;
 }
 .main-title {
-    background: linear-gradient(to right, rgb(239, 250, 195), #f3a060);
+    background: var(--upload-main-title-color);
+    transition: all 0.3s ease;
     background-clip: text;
     color: transparent;
     text-decoration: none;
 }
 .logo {
-    height: 90px;
-    width: 90px;
-    margin-right: 5px;
+    height: 70px;
+    width: 70px;
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    z-index: 100;
 }
 .title {
-    font-size: 2em;
+    font-size: 2.5rem;
     font-weight: 700;
     font-family: 'Noto Sans SC', sans-serif;
+}
+@media (max-width: 768px) {
+    .title {
+        font-size: 1.8rem;
+    }
 }
 .upload-home {
     display: flex;
@@ -494,10 +681,23 @@ export default {
     justify-content: center;
     align-items: center;
     min-height: 94vh;
+    background-color: var(--admin-container-bg-color);
 }
 .upload {
     margin-bottom: 5px;
+    position: relative;
+    top: -3vh;
 }
+
+.question-icon {
+    margin: 0 3px;
+}
+
+.compress-slider {
+    width: 80%;
+    margin: 0 auto;
+}
+
 .footer {
     height: 6vh;
 }
@@ -523,4 +723,5 @@ export default {
     opacity: 0;
     transition: all 1s ease-in-out;
 }
+
 </style>

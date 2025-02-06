@@ -2,14 +2,8 @@
     <div class="container">
         <el-header>
             <div class="header-content">
-                <span class="title">用户管理</span>
+                <DashboardTabs activeTab="customerConfig"></DashboardTabs>
                 <div class="header-action">
-                    <el-tooltip :disabled="disableTooltip" content="返回主管理页" placement="bottom">
-                        <font-awesome-icon icon="home" class="header-icon" @click="handleGoHome"></font-awesome-icon>
-                    </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip" content="返回上传页" placement="bottom">
-                        <font-awesome-icon icon="upload" class="header-icon" @click="handleGoUpload"></font-awesome-icon>
-                    </el-tooltip>
                     <el-tooltip :disabled="disableTooltip" content="退出登录" placement="bottom">
                         <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                     </el-tooltip>
@@ -17,17 +11,20 @@
             </div>
         </el-header>
         <div class="main-container">
-            <el-table :data="dealedData" :default-sort="{ prop: 'count', order: 'descending' }" class="main-table" table-layout="fixed">
+            <el-table :data="paginatedData" :default-sort="{ prop: 'count', order: 'descending' }" class="main-table" table-layout="fixed" v-loading="loading">
                 <el-table-column type="expand">
                     <template v-slot="props">
                         <div style="margin: 8px;">
                             <h3 style="text-align: center;">上传文件列表</h3>
-                            <el-table :data="props.row.data" style="width: 100%" :default-sort="{ prop: 'metadata.TimeStamp', order: 'descending' }" table-layout="fixed">
+                            <el-table :data="props.row.data" style="width: 100%" :default-sort="{ prop: 'metadata.TimeStamp', order: 'descending' }" table-layout="fixed" :max-height="400">
                                 <el-table-column prop="metadata.FileName" label="文件名"></el-table-column>
                                 <el-table-column prop="name" label="文件预览">
                                     <template v-slot="{ row }">
                                         <el-image v-if="row.metadata?.FileType?.includes('image')" :src="'/file/' + row.name + '?from=admin'" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
-                                        <video v-else :src="'/file/' + row.name + '?from=admin'" controls style="width: 100px; height: 100px;"></video>
+                                        <video v-else-if="row.metadata?.FileType?.includes('video')" :src="'/file/' + row.name + '?from=admin'" controls style="width: 100px; height: 100px;"></video>
+                                        <div v-else style="width: 100px; height: 100px; display: flex; justify-content: center; align-items: center;">
+                                            <font-awesome-icon icon="file" style="font-size: 2em;"></font-awesome-icon>
+                                        </div>
                                     </template>
                                 </el-table-column>
                                 <el-table-column 
@@ -60,12 +57,26 @@
                     </template>
                 </el-table-column>
             </el-table>
+
+            <!-- 分页组件 -->
+            <div class="pagination-container">
+                <el-pagination
+                    background
+                    layout="prev, pager, next"
+                    :total="dealedData.length"
+                    :current-page="currentPage"
+                    :page-size="pageSize"
+                    @current-change="handlePageChange"
+                ></el-pagination>
+                <el-button v-if="currentPage === Math.ceil(dealedData.length / pageSize)" type="primary" @click="loadMoreData" :loading="loading" class="load-more">加载更多</el-button>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
+import DashboardTabs from '@/components/DashboardTabs.vue';
 
 export default {
     name: 'CustomerConfig',
@@ -74,12 +85,27 @@ export default {
             tableData: [],
             dealedData: [], // 根据IP地址处理后的数据，格式为 {ip, count, [data]}
             blockipList: [], // 禁止上传的IP列表
+
+            loading: false,
+
+            // 分页数据
+            currentPage: 1,
+            pageSize: 10, // 默认每页10条
         }
+    },
+    components: {
+        DashboardTabs
     },
     computed: {
         ...mapGetters(['credentials']),
         disableTooltip() {
             return window.innerWidth < 768;
+        },
+        paginatedData() {
+            // 计算分页数据
+            const start = (this.currentPage - 1) * this.pageSize;
+            const end = start + this.pageSize;
+            return this.dealedData.slice(start, end);
         }
     },
     methods: {
@@ -107,31 +133,9 @@ export default {
 
             return response;
         },
-        dealByIP(data) {
-            let dealedData = [];
-            let ipSet = new Set();
-            data.forEach(item => {
-                if (item.metadata?.UploadIP) {
-                    ipSet.add(item.metadata.UploadIP);
-                }
-            });
-            ipSet.forEach(ip => {
-                let ipData = data.filter(item => item.metadata?.UploadIP === ip);
-                let count = ipData.length;
-                let enable = !this.blockipList.includes(ip);
-                dealedData.push({ip, count, data: ipData, enable});
-            });
-            return dealedData;
-        },
-        handleGoUpload() {
-            this.$router.push('/');
-        },
         handleLogout() {
             this.$store.commit('setCredentials', null);
             this.$router.push('/adminLogin');
-        },
-        handleGoHome() {
-            this.$router.push('/dashboard');
         },
         formatTimeStamp(timeStamp) {
             return new Date(timeStamp).toLocaleString();
@@ -159,18 +163,55 @@ export default {
                     body: ip
                 });
             }
+        },
+        handlePageChange(page) {
+            this.currentPage = page;
+            // 到最后一页时，加载更多数据
+            if (page === Math.ceil(this.dealedData.length / this.pageSize)) {
+                this.loadMoreData();
+            }
+        },
+        loadMoreData() {
+            this.loading = true;
+            const start = this.dealedData.length;
+            const count = 20; // 每次加载20条数据
+            this.fetchWithAuth(`/api/manage/cusConfig/list?start=${start}&count=${count}`, { method: 'GET' })
+            .then(response => response.json())
+            .then(result => {
+                this.dealedData = this.dealedData.concat(result.map(item => {
+                    const enable = !this.blockipList.includes(item.ip);
+                    return {
+                        ip: item.ip,
+                        count: item.count,
+                        data: item.data,
+                        enable: enable
+                    };
+                }));
+            })
+            .catch(() => {
+                this.$message.error('加载更多数据时出错，请检查网络连接');
+            })
+            .finally(() => {
+                this.loading = false;
+            });
+        },
+        handleSizeChange(size) {
+            this.pageSize = size;
+            this.currentPage = 1;
         }
     },
     mounted() {
+        this.loading = true;
+
         this.fetchWithAuth("/api/manage/check", { method: 'GET' })
         .then(response => response.text())
         .then(result => {
             if(result == "true"){
                 this.showLogoutButton=true;
                 // 在 check 成功后再执行 list 的 fetch 请求
-                return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
+                return this.fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' });
             } else if(result=="Not using basic auth."){
-                return this.fetchWithAuth("/api/manage/list", { method: 'GET' });
+                return this.fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' });
             } else{
                 throw new Error('Unauthorized');
             }
@@ -180,13 +221,23 @@ export default {
             // 读取blockipList, 接口返回格式为 'ip1,ip2,ip3'，需要转换为数组
             const blockipList = await this.fetchWithAuth("/api/manage/cusConfig/blockipList", { method: 'GET' });
             this.blockipList = (await blockipList.text()).split(',');
-            this.tableData = result;
-            this.dealedData = this.dealByIP(result); // 根据IP地址处理数据
+            this.dealedData = result.map(item => {
+                const enable = !this.blockipList.includes(item.ip);
+                return {
+                    ip: item.ip,
+                    count: item.count,
+                    data: item.data,
+                    enable: enable
+                };
+            });
         })
         .catch((err) => {
             if (err.message !== 'Unauthorized') {
                 this.$message.error('同步数据时出错，请检查网络连接');
             }
+        })
+        .finally(() => {
+            this.loading = false;
         });
     }
 }
@@ -196,12 +247,18 @@ export default {
 .main-table {
     width: 90%;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--admin-cuscfg-table-shadow);
+    min-height: 530px;
+    background-color: var(--admin-cuscfg-table-bg-color);
 }
 
 .container {
-    background: linear-gradient(90deg, #ffd7e4 0%, #c8f1ff 100%);
+    background: var(--admin-container-bg-color);
     min-height: 100vh;
+    font-family: 'Arial', sans-serif;
+    color: var(--admin-container-color);
+    margin: 0;
+    padding: 0;
 }
 
 .header-content {
@@ -209,13 +266,20 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background-color: rgba(255, 255, 255, 0.75);
+    background-color: var(--admin-header-content-bg-color);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-bottom: var(--admin-header-content-border-bottom);
+    box-shadow: var(--admin-header-content-box-shadow);
     transition: background-color 0.5s ease, box-shadow 0.5s ease;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
+    position: fixed;
+    top: 0;
+    left: 50%; /* 将左边缘移动到页面中间 */
+    transform: translateX(-50%); /* 向左移动自身宽度的一半 */
+    width: 95%;
+    z-index: 1000;
+    min-height: 45px;
 }
 
 @media (max-width: 768px) {
@@ -225,27 +289,15 @@ export default {
 }
 
 .header-content:hover {
-    background-color: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-}
-
-.title {
-    font-size: 1.8em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.3s ease;
-    color: #333;
-}
-
-.title:hover {
-    color: #B39DDB; /* 使用柔和的淡紫色 */
+    background-color: var(--admin-header-content-hover-bg-color);
+    box-shadow: var(--admin-header-content-hover-box-shadow);
 }
 
 .header-icon {
     font-size: 1.5em;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: #333;
+    color: var(--admin-container-color);
     outline: none;
 }
 
@@ -261,7 +313,7 @@ export default {
 
 .main-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
     margin-top: 20px;
 }
@@ -271,4 +323,21 @@ export default {
         margin-top: 35px;
     }
 }
-</style>import { format } from 'core-js/core/date';
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+.load-more {
+    cursor: pointer;
+    background-color: var(--admin-dashboard-btn-bg-color);
+    box-shadow: var(--admin-dashboard-btn-shadow);
+    color: var(--admin-dashboard-btn-color);
+    border: none;
+    transition: color 0.3s;
+    margin-left: 20px;
+}
+</style>
