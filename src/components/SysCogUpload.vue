@@ -190,7 +190,13 @@ data() {
                 if (names.filter((name) => name === value).length > 1) {
                     callback(new Error('渠道名不能重复'));
                 } else if (value === 'Telegram_env') {
-                    callback(new Error('渠道名不能为保留值'));
+                    // 判断该渠道保存位置是否为环境变量
+                    const savePath = this.telegramSettings.channels.find((item) => item.name === value).savePath;
+                    if (savePath !== 'environment variable') {
+                        callback(new Error('渠道名不能为保留值'));
+                    } else {
+                        callback();
+                    }
                 } else {
                     callback();
                 }
@@ -223,7 +229,13 @@ data() {
                 if (names.filter((name) => name === value).length > 1) {
                     callback(new Error('渠道名不能重复'));
                 } else if (value === 'S3_env') {
-                    callback(new Error('渠道名不能为保留值'));
+                    // 判断该渠道保存位置是否为环境变量
+                    const savePath = this.s3Settings.channels.find((item) => item.name === value).savePath;
+                    if (savePath !== 'environment variable') {   
+                        callback(new Error('渠道名不能为保留值'));
+                    } else {
+                        callback();
+                    }
                 } else {
                     callback();
                 }
