@@ -13,7 +13,7 @@ const routes = [
       let authCode = cookies.get('authCode');
       if (authCode === null && to.name !== 'login') {
         // 尝试未设置密码的情况
-        axios.post('/login', {
+        axios.post('/api/login', {
             authCode: 'unset'
         }).then(res => {
             if (res.status !== 200) {
