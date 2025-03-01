@@ -6,6 +6,7 @@ export default createStore({
     userConfig: null,
     bingWallPapers: [],
     credentials: null,
+    uploadMethod: 'default',
     uploadCopyUrlForm: '',
     compressConfig: {
       customerCompress: true,
@@ -31,6 +32,7 @@ export default createStore({
     userConfig: state => state.userConfig,
     bingWallPapers: state => state.bingWallPapers,
     credentials: state => state.credentials,
+    storeUploadMethod: state => state.uploadMethod,
     uploadCopyUrlForm: state => state.uploadCopyUrlForm,
     compressConfig: state => state.compressConfig,
     storeUploadChannel: state => state.storeUploadChannel,
@@ -50,6 +52,9 @@ export default createStore({
     },
     setCredentials(state, credentials) {
       state.credentials = credentials;
+    },
+    setUploadMethod(state, uploadMethod) {
+      state.uploadMethod = uploadMethod;
     },
     setUploadCopyUrlForm(state, uploadCopyUrlForm) {
       state.uploadCopyUrlForm = uploadCopyUrlForm;

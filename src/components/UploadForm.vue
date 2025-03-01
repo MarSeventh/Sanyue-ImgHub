@@ -1,6 +1,7 @@
 <template>
     <div class="upload-form">
         <el-upload
+            v-if="uploadMethod === 'default'"
             class="upload-card"
             :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length}"
             drag
@@ -18,6 +19,38 @@
             </el-icon>
             <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
         </el-upload>
+        <div v-else-if="uploadMethod === 'paste'" class="upload-card">
+            <el-card 
+                class="paste-card"
+                :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length}"
+            >
+                <el-input
+                    v-model="pastedUrls"
+                    class="upload-card-textarea"
+                    placeholder="粘贴外链上传，多个外链用换行分隔"
+                    type="textarea"
+                    :rows="fileList.length ? 3 : 10"
+                />
+                <div class="paste-card-actions">
+                    <el-button
+                        class="paste-card-upload-button"
+                        type="primary"
+                        :size="fileList.length ? 'small' : 'medium'"
+                        @click="handleUploadPasteUrls"
+                    >
+                        上 传
+                    </el-button>
+                    <el-radio-group 
+                        v-model="pasteUploadMethod" 
+                        class="paste-card-method-group"
+                        :size="fileList.length ? 'small' : 'medium'"
+                    >
+                        <el-radio-button label="save">转存</el-radio-button>
+                        <el-radio-button label="external">外链</el-radio-button>
+                    </el-radio-group>
+                </div>
+            </el-card>
+        </div>
         <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
             <div class="upload-list-container" :class="{'upload-list-busy': fileList.length}">
                 <el-scrollbar @scroll="handleScroll" ref="scrollContainer">
@@ -182,6 +215,11 @@ props: {
         type: String,
         default: '',
         required: false
+    },
+    uploadMethod: {
+        type: String,
+        default: 'default',
+        required: false
     }
 },
 data() {
@@ -193,7 +231,9 @@ data() {
         exceptionList: [],
         listScrolled: false,
         fileListLength: 0,
-        uploadCount: 0
+        uploadCount: 0,
+        pastedUrls: '',
+        pasteUploadMethod: 'save',
     }
 },
 watch: {
@@ -215,6 +255,9 @@ watch: {
         handler() {
             if (this.useCustomUrl === 'true') {
                 this.fileList.forEach(item => {
+                    if (item.uploadChannel === 'external') {
+                        return
+                    }
                     item.finalURL = this.customUrlPrefix + item.srcID
                     item.mdURL = `![${item.name}](${this.customUrlPrefix + item.srcID})`
                     item.htmlURL = `<img src="${this.customUrlPrefix + item.srcID}" alt="${item.name}" width=100% />`
@@ -222,6 +265,9 @@ watch: {
                 })
             } else {
                 this.fileList.forEach(item => {
+                    if (item.uploadChannel === 'external') {
+                        return
+                    }
                     item.finalURL = this.rootUrl + item.srcID
                     item.mdURL = `![${item.name}](${this.rootUrl + item.srcID})`
                     item.htmlURL = `<img src="${this.rootUrl + item.srcID}" alt="${item.name}" width=100% />`
@@ -235,6 +281,9 @@ watch: {
         handler() {
             if (this.useCustomUrl === 'true') {
                 this.fileList.forEach(item => {
+                    if (item.uploadChannel === 'external') {
+                        return
+                    }
                     item.finalURL = this.customUrlPrefix + item.srcID
                     item.mdURL = `![${item.name}](${this.customUrlPrefix + item.srcID})`
                     item.htmlURL = `<img src="${this.customUrlPrefix + item.srcID}" alt="${item.name}" width=100% />`
@@ -293,8 +342,15 @@ methods: {
         formData.append('file', file.file)
         // 判断是否需要服务端压缩
         const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
+        const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
+        const autoRetry = this.autoRetry && uploadChannel !== 'external'
+        const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
+        // 外链渠道，将外链写入formData
+        if (uploadChannel === 'external') {
+            formData.append('url', file.file.url)
+        }
         axios({
-            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress + '&uploadChannel=' + this.uploadChannel + '&uploadNameType=' + this.uploadNameType + '&autoRetry=' + this.autoRetry,
+            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress + '&uploadChannel=' + uploadChannel + '&uploadNameType=' + uploadNameType + '&autoRetry=' + autoRetry,
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {
@@ -328,14 +384,18 @@ methods: {
     },
     handleSuccess(response, file) {
         try {     
-            // 从response.data[0].src中去除/file/前缀
-            const srcID = response.data[0].src.replace('/file/', '')
-            this.fileList.find(item => item.uid === file.uid).url = `${window.location.protocol}//${window.location.host}/file/` + srcID
-            this.fileList.find(item => item.uid === file.uid).finalURL = this.rootUrl + srcID
-            this.fileList.find(item => item.uid === file.uid).mdURL = `![${file.name}](${this.rootUrl + srcID})`
-            this.fileList.find(item => item.uid === file.uid).htmlURL = `<img src="${this.rootUrl + srcID}" alt="${file.name}" width=100% />`
-            this.fileList.find(item => item.uid === file.uid).ubbURL = `[img]${this.rootUrl + srcID}[/img]`
-            this.fileList.find(item => item.uid === file.uid).srcID = srcID
+            // 对上传渠道为外链的，不修改链接
+            const uploadChannel = this.fileList.find(item => item.uid === file.uid).uploadChannel || this.uploadChannel
+            if (uploadChannel !== 'external') {
+                // 从response.data[0].src中去除/file/前缀
+                const srcID = response.data[0].src.replace('/file/', '')
+                this.fileList.find(item => item.uid === file.uid).url = `${window.location.protocol}//${window.location.host}/file/` + srcID
+                this.fileList.find(item => item.uid === file.uid).finalURL = this.rootUrl + srcID
+                this.fileList.find(item => item.uid === file.uid).mdURL = `![${file.name}](${this.rootUrl + srcID})`
+                this.fileList.find(item => item.uid === file.uid).htmlURL = `<img src="${this.rootUrl + srcID}" alt="${file.name}" width=100% />`
+                this.fileList.find(item => item.uid === file.uid).ubbURL = `[img]${this.rootUrl + srcID}[/img]`
+                this.fileList.find(item => item.uid === file.uid).srcID = srcID
+            }
             this.fileList.find(item => item.uid === file.uid).progreess = 100
             this.fileList.find(item => item.uid === file.uid).status = 'success'
             this.$message({
@@ -549,13 +609,70 @@ methods: {
             return
         }
         const items = event.clipboardData.items
+        if (items.length > 0) {
+            this.uploadFromUrl(items)
+        }
+    },
+    handleUploadPasteUrls() {
+        // 用于上传在上传文本框中粘贴的外链
+        const urls = this.pastedUrls.split('\n');
+        // 处理空行和首尾空字符，链接须符合URL规范
+        const validUrls = urls.map(url => url.trim()).
+            filter(url => url !== '').
+            filter(url => /^(https?:\/\/[^\s$.?#].[^\s]*)$/.test(url));
+
+        // 根据粘贴上传方式进行上传
+        if (this.pasteUploadMethod === 'save') {
+            // 正常上传
+            this.uploadFromUrl(validUrls.map(url => {
+                return {
+                    kind: 'string',
+                    getAsString: (callback) => {
+                        callback(url);
+                    }
+                }
+            }));
+        } else if (this.pasteUploadMethod === 'external') {
+            // 仅保存外链，使用 external 渠道上传
+            for (let i = 0; i < validUrls.length; i++) {
+                const url = validUrls[i];
+                const fileName = url.split('/').pop();
+                const mdUrl = `![${fileName}](${url})`;
+                const htmlUrl = `<img src="${url}" alt="${fileName}" width=100% />`;
+                const ubbUrl = `[img]${url}[/img]`;
+                // 将 url 作为文件内容，文件名为 URL 的最后一部分
+                const file = new File([], url.split('/').pop(), { type: 'text/plain' });
+                file.uid = Date.now() + i;
+                file.url = url;
+                this.fileList.push({
+                    uid: file.uid,
+                    name: file.name,
+                    url: url,
+                    finalURL: url,
+                    mdURL: mdUrl,
+                    htmlURL: htmlUrl,
+                    ubbURL: ubbUrl,
+                    srcID: url,
+                    status: 'uploading',
+                    progreess: 0,
+                    serverCompress: false,
+                    uploadChannel: 'external'
+                });
+                // 上传
+                this.uploadFile({ file: file, 
+                    onProgress: (evt) => this.handleProgress(evt), 
+                    onSuccess: (response, file) => this.handleSuccess(response, file), 
+                    onError: (error, file) => this.handleError(error, file) });
+            }
+        }
+    },
+    uploadFromUrl(items) {
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file') {
                 const file = items[i].getAsFile()
                 // 判断文件类型是否为图片或视频
                 if (file.type.includes('image') || file.type.includes('video')) {
                     file.uid = Date.now() + i
-                    file.file = file
                     //接收beforeUpload的Promise对象
                     const checkResult = this.beforeUpload(file)
                     if (checkResult instanceof Promise) {
@@ -637,7 +754,6 @@ methods: {
                         .then(blob => {
                             const file = new File([blob], fileName, { type: blob.type });
                             file.uid = Date.now() + i;
-                            file.file = file;
                             //接收beforeUpload的Promise对象
                             const checkResult = this.beforeUpload(file);
                             if (checkResult instanceof Promise) {
@@ -893,6 +1009,83 @@ methods: {
         font-size: small;
     }
 }
+
+.paste-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 45vh;
+    border-radius: 15px;
+    border: var(--el-upload-dragger-border);
+    box-shadow: none;
+    opacity: 0.7;
+    background-color: var(--el-upload-dragger-bg-color);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+.paste-card:hover {
+    opacity: 0.8;
+    box-shadow: var(--el-upload-dragger-hover-box-shadow);
+}
+.upload-card-busy.paste-card {
+    height: 17vh;
+}
+.upload-card-textarea {
+    width: 50vw;
+    border-radius: 12px;
+    background-color: var(--el-upload-dragger-bg-color);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    display: flex;
+}
+:deep(.el-textarea__inner) {
+    border-radius: 12px;
+    background-color: var(--el-upload-dragger-bg-color);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    resize: none;
+}
+:deep(.el-textarea__inner.is-focus) {
+    border-color: var(--paste-card-textarea-border-color);
+    box-shadow: var(--paste-card-textarea-box-shadow);
+}
+/* 修改滚动条的整体样式 */
+.upload-card-textarea ::-webkit-scrollbar {
+  width: 8px; /* 滚动条宽度 */
+  height: 8px; /* 滚动条高度（水平滚动条） */
+}
+/* 修改滚动条的轨道样式 */
+.upload-card-textarea ::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 轨道背景色 */
+  border-radius: 12px; /* 轨道圆角 */
+}
+/* 修改滚动条的滑块样式 */
+.upload-card-textarea ::-webkit-scrollbar-thumb {
+  background: #888; /* 滑块背景色 */
+  border-radius: 4px; /* 滑块圆角 */
+}
+/* 修改滚动条滑块在悬停时的样式 */
+.upload-card-textarea ::-webkit-scrollbar-thumb:hover {
+  background: #555; /* 滑块悬停时的背景色 */
+}
+.paste-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 50vw;
+    margin-top: 10px;
+}
+.paste-card-upload-button {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.paste-card-method-group :deep(.el-radio-button__inner) {
+    transition: all 0.3s ease, color 0.1s ease;
+}
+
 .upload-list-dashboard {
     display: flex;
     justify-content: space-between;

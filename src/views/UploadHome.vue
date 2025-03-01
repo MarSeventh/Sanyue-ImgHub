@@ -9,6 +9,12 @@
                 <font-awesome-icon icon="question" class="info-icon" size="lg"/>
             </div>
         </el-tooltip>
+        <el-tooltip content="切换上传方式" placement="bottom">
+            <el-button class="upload-method-button" @click="handleChangeUploadMethod">
+                <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
+                <font-awesome-icon v-else-if="uploadMethod === 'paste'" icon="paste" class="upload-method-icon" size="lg"/>
+            </el-button>
+        </el-tooltip>
         <div class="toolbar-manage">
             <el-button class="toolbar-manage-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleOpenToolbar" circle>
                 <font-awesome-icon v-if="!isToolBarOpen"  icon="bars" class="manage-icon" size="lg"/>
@@ -55,6 +61,7 @@
             :customUrlPrefix="customUrlPrefix"
             :autoRetry="autoRetry"
             :urlPrefix="urlPrefix"
+            :uploadMethod="uploadMethod"
             class="upload"
         />
         <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
@@ -194,6 +201,7 @@ export default {
             autoRetry: true, //失败自动切换
             useDefaultWallPaper: false,
             isToolBarOpen: false, //是否打开工具栏
+            uploadMethod: 'default', //上传方式
         }
     },
     watch: {
@@ -235,7 +243,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry']),
+        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
         },
@@ -339,6 +347,8 @@ export default {
         // 读取用户自定义链接格式
         this.customUrlPrefix = this.customUrlSettings.customUrlPrefix
         this.useCustomUrl = this.customUrlSettings.useCustomUrl
+        // 读取用户偏好的上传方式
+        this.uploadMethod = this.storeUploadMethod
     },
     components: {
         UploadForm,
@@ -381,6 +391,10 @@ export default {
                     button.style.pointerEvents = this.isToolBarOpen? 'auto' : 'none'
                 })
             }, 300)
+        },
+        handleChangeUploadMethod() {
+            this.uploadMethod = this.uploadMethod === 'default'? 'paste' : 'default'
+            this.$store.commit('setUploadMethod', this.uploadMethod)
         }
     }
 }
@@ -472,6 +486,34 @@ export default {
     position: fixed;
     top: 30px;
     right: 30px;
+}
+
+.upload-method-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    color: var(--theme-toggle-color);
+    border-radius: 12px;
+    position: fixed;
+    top: 30px;
+    right: 130px;
+    outline: none;
+}
+@media (max-width: 768px) {
+    .upload-method-button {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+.upload-method-icon {
+    outline: none;
 }
 
 .info-container {

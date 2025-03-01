@@ -259,6 +259,8 @@ computed: {
                 file.channelTag = 'R2';
             } else if (file.metadata?.Channel === 'S3') {
                 file.channelTag = 'S3';
+            } else if (file.metadata?.Channel === 'External') {
+                file.channelTag = '外链';
             } else {
                 file.channelTag = '未知';
             }
@@ -281,13 +283,25 @@ computed: {
         }
     },
     allUrl() {
-        return {
-            'originUrl': `${this.rootUrl}${this.detailFile?.name}`,
-            'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.rootUrl}${this.detailFile?.name})`,
-            'htmlUrl': `<img src="${this.rootUrl}${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
-            'bbUrl': `[img]${this.rootUrl}${this.detailFile?.name}[/img]`,
-            'tgId': this.detailFile?.metadata?.TgFileId || '未知',
-            'S3Location': this.detailFile?.metadata?.S3Location || '未知'
+        // 外链图片均采用外链
+        if (this.detailFile?.metadata?.Channel === 'External') {
+            return {
+                'originUrl': `${this.detailFile?.metadata?.ExternalLink}`,
+                'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.detailFile?.metadata?.ExternalLink})`,
+                'htmlUrl': `<img src="${this.detailFile?.metadata?.ExternalLink}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
+                'bbUrl': `[img]${this.detailFile?.metadata?.ExternalLink}[/img]`,
+                'tgId': this.detailFile?.metadata?.TgFileId || '未知',
+                'S3Location': this.detailFile?.metadata?.S3Location || '未知'
+            }
+        } else {
+            return {
+                'originUrl': `${this.rootUrl}${this.detailFile?.name}`,
+                'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.rootUrl}${this.detailFile?.name})`,
+                'htmlUrl': `<img src="${this.rootUrl}${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
+                'bbUrl': `[img]${this.rootUrl}${this.detailFile?.name}[/img]`,
+                'tgId': this.detailFile?.metadata?.TgFileId || '未知',
+                'S3Location': this.detailFile?.metadata?.S3Location || '未知'
+            }
         }
     },
     tableColumnNum() {
@@ -528,16 +542,40 @@ methods: {
         let tmpLinks = '';
         switch (this.defaultUrlFormat) {
             case 'originUrl':
-                tmpLinks = this.selectedFiles.map(file => `${this.rootUrl}${file.name}`).join('\n');
+                tmpLinks = this.selectedFiles.map(file => {
+                    if (file.metadata?.Channel === 'External') {
+                        return file.metadata?.ExternalLink;
+                    } else {
+                        return `${this.rootUrl}${file.name}`;
+                    }
+                }).join('\n');
                 break;
             case 'mdUrl':
-                tmpLinks = this.selectedFiles.map(file => `![${file.metadata?.FileName || file.name}](${this.rootUrl}${file.name})`).join('\n');
+                tmpLinks = this.selectedFiles.map(file => {
+                    if (file.metadata?.Channel === 'External') {
+                        return `![${file.metadata?.FileName || file.name}](${file.metadata?.ExternalLink})`;
+                    } else {
+                        return `![${file.metadata?.FileName || file.name}](${this.rootUrl}${file.name})`;
+                    }
+                }).join('\n');
                 break;
             case 'htmlUrl':
-                tmpLinks = this.selectedFiles.map(file => `<img src="${this.rootUrl}${file.name}" alt="${file.metadata?.FileName || file.name}" width=100%>`).join('\n');
+                tmpLinks = this.selectedFiles.map(file => {
+                    if (file.metadata?.Channel === 'External') {
+                        return `<img src="${file.metadata?.ExternalLink}" alt="${file.metadata?.FileName || file.name}" width=100%>`;
+                    } else {
+                        return `<img src="${this.rootUrl}${file.name}" alt="${file.metadata?.FileName || file.name}" width=100%>`;
+                    }
+                }).join('\n');
                 break;
             case 'bbUrl':
-                tmpLinks = this.selectedFiles.map(file => `[img]${this.rootUrl}${file.name}[/img]`).join('\n');
+                tmpLinks = this.selectedFiles.map(file => {
+                    if (file.metadata?.Channel === 'External') {
+                        return `[img]${file.metadata?.ExternalLink}[/img]`;
+                    } else {
+                        return `[img]${this.rootUrl}${file.name}[/img]`;
+                    }
+                }).join('\n');
                 break;
             case 'tgId':
                 tmpLinks = this.selectedFiles.map(file => file.metadata?.TgFileId || 'none').join('\n');
@@ -564,22 +602,48 @@ methods: {
     },
     handleCopy(index, key) {
         let text = '';
-        switch (this.defaultUrlFormat) {
-            case 'originUrl':
-                text = `${this.rootUrl}${key}`;
-                break;
-            case 'mdUrl':
-                text = `![${this.paginatedTableData[index].metadata?.FileName || key}](${this.rootUrl}${key})`;
-                break;
-            case 'htmlUrl':
-                text = `<img src="${this.rootUrl}${key}" alt="${this.paginatedTableData[index].metadata?.FileName || key}" width=100%>`;
-                break;
-            case 'bbUrl':
-                text = `[img]${this.rootUrl}${key}[/img]`;
-                break;
-            case 'tgId':
-                text = this.paginatedTableData[index].metadata?.TgFileId || 'none';
-                break;
+        if (this.paginatedTableData[index].metadata?.Channel === 'External') {
+            switch (this.defaultUrlFormat) {
+                case 'originUrl':
+                    text = this.paginatedTableData[index].metadata?.ExternalLink;
+                    break;
+                case 'mdUrl':
+                    text = `![${this.paginatedTableData[index].metadata?.FileName || key}](${this.paginatedTableData[index].metadata?.ExternalLink})`;
+                    break;
+                case 'htmlUrl':
+                    text = `<img src="${this.paginatedTableData[index].metadata?.ExternalLink}" alt="${this.paginatedTableData[index].metadata?.FileName || key}" width=100%>`;
+                    break;
+                case 'bbUrl':
+                    text = `[img]${this.paginatedTableData[index].metadata?.ExternalLink}[/img]`;
+                    break;
+                case 'tgId':
+                    text = this.paginatedTableData[index].metadata?.TgFileId || 'none';
+                    break;
+                case 's3Location':
+                    text = this.paginatedTableData[index].metadata?.S3Location || 'none';
+                    break;
+            }
+        } else {
+            switch (this.defaultUrlFormat) {
+                case 'originUrl':
+                    text = `${this.rootUrl}${key}`;
+                    break;
+                case 'mdUrl':
+                    text = `![${this.paginatedTableData[index].metadata?.FileName || key}](${this.rootUrl}${key})`;
+                    break;
+                case 'htmlUrl':
+                    text = `<img src="${this.rootUrl}${key}" alt="${this.paginatedTableData[index].metadata?.FileName || key}" width=100%>`;
+                    break;
+                case 'bbUrl':
+                    text = `[img]${this.rootUrl}${key}[/img]`;
+                    break;
+                case 'tgId':
+                    text = this.paginatedTableData[index].metadata?.TgFileId || 'none';
+                    break;
+                case 's3Location':
+                    text = this.paginatedTableData[index].metadata?.S3Location || 'none';
+                    break;
+            }
         }
         navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success('复制文件链接成功~')) :
         this.copyToClipboardFallback(text);
@@ -752,7 +816,7 @@ methods: {
         // 用文件名后缀判断是否为视频文件
         if (!flag) {
             const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'flv', 'wmv', 'mkv', 'rmvb', '3gp', 'mpg', 'mpeg', 'm4v', 'f4v', 'rm', 'asf', 'dat', 'ts', 'vob', 'swf', 'divx', 'xvid', 'm2ts', 'mts', 'm2v', '3g2', '3gp2', '3gpp', '3gpp2', 'mpe', 'm1v', 'mpv', 'mpv2', 'mp2v', 'm2t', 'm2ts', 'm2v', 'm4b', 'm4p', 'm4v', 'm4r'];
-            const extension = file.name.substring(file.name.lastIndexOf('.') + 1);
+            const extension = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
             flag = videoExtensions.includes(extension);
         }
         return flag;
@@ -762,7 +826,7 @@ methods: {
         // 用文件名后缀判断是否为图片文件
         if (!flag) {
             const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif', 'psd', 'ai', 'eps', 'raw', 'cr2', 'nef', 'orf', 'sr2', 'dng', 'arw', 'rw2', 'raf', 'pef', 'x3f', 'srf', 'erf', 'mrw', 'nrw', 'kdc', 'dcr', 'mef', 'mos', 'crw', 'raf', 'rwl', 'srw', '3fr', 'fff', 'iiq', 'qtk', 'bay', 'k25', 'kdc', 'dcs', 'drf', 'dng', 'erf', 'kdc', 'mdc', 'mef', 'mos', 'mrw', 'nef', 'nrw', 'orf', 'pef', 'ptx', 'pxn', 'r3d', 'raf', 'raw', 'rwl', 'rw2', 'rwz', 'sr2', 'srf', 'x3f'];
-            const extension = file.name.substring(file.name.lastIndexOf('.') + 1);
+            const extension = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
             flag = imageExtensions.includes(extension);
         }
         return flag;

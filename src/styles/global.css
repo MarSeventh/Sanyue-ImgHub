@@ -19,6 +19,9 @@
     --el-upload-dragger-border: 3px dashed #409EFF; /* el-upload-dragger边框 */
     --el-upload-dragger-hover-box-shadow: 0 0 10px 5px #409EFF; /* el-upload-dragger悬浮阴影 */
 
+    --paste-card-textarea-border-color: #409EFF; /* 粘贴卡片文本框边框颜色 */
+    --paste-card-textarea-box-shadow: 0 0 6px 1px #409EFF; /* 粘贴卡片文本框阴影 */
+
     --el-icon--upload-color: #1f8bf8; /* 上传图标颜色 */
     --upload-text-color: rgba(58, 58, 58, 0.8); /* 上传页提示文字颜色 */
     --upload-header-color:  rgba(58, 58, 58, 0.8); /* 上传页标题颜色 */
@@ -111,6 +114,8 @@
     --el-upload-dragger-bg-color: rgba(0, 0, 0, 0.6); /* el-upload-dragger背景 */
     --el-upload-dragger-border: 3px dashed #8fadc8; /* el-upload-dragger边框 */
     --el-upload-dragger-hover-box-shadow: 0 0 10px 5px #8fadc8; /* el-upload-dragger悬浮阴影 */
+    --paste-card-textarea-border-color: #8fadc8; /* 粘贴卡片文本框边框颜色 */
+    --paste-card-textarea-box-shadow: 0 0 6px 1px #8fadc8; /* 粘贴卡片文本框阴影 */
 
     --el-icon--upload-color: blanchedalmond; /* 上传图标颜色 */
     --upload-text-color: antiquewhite; /* 上传页提示文字颜色 */
