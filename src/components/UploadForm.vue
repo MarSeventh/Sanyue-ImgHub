@@ -35,7 +35,7 @@
                     <el-button
                         class="paste-card-upload-button"
                         type="primary"
-                        :size="fileList.length ? 'small' : 'medium'"
+                        :size="pasteCardMethodButtonSize"
                         @click="handleUploadPasteUrls"
                     >
                         上 传
@@ -43,7 +43,7 @@
                     <el-radio-group 
                         v-model="pasteUploadMethod" 
                         class="paste-card-method-group"
-                        :size="fileList.length ? 'small' : 'medium'"
+                        :size="pasteCardMethodButtonSize"
                     >
                         <el-radio-button label="save">转存</el-radio-button>
                         <el-radio-button label="external">外链</el-radio-button>
@@ -317,6 +317,13 @@ computed: {
     rootUrl() {
         // 链接前缀，优先级：用户自定义 > urlPrefix > 默认
         return this.useCustomUrl === 'true' ? this.customUrlPrefix : this.urlPrefix || `${window.location.protocol}//${window.location.host}/file/`
+    },
+    pasteCardMethodButtonSize() {
+        if (this.fileList.length) {
+            return 'small'
+        } else {
+            return window.innerWidth < 768 ? 'small' : 'medium'
+        }
     }
 },
 mounted() {
@@ -1076,7 +1083,7 @@ methods: {
     justify-content: space-between;
     align-items: center;
     width: 50vw;
-    margin-top: 10px;
+    margin-top: 3%;
 }
 .paste-card-upload-button {
     border-radius: 12px;

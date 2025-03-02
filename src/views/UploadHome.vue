@@ -9,7 +9,7 @@
                 <font-awesome-icon icon="question" class="info-icon" size="lg"/>
             </div>
         </el-tooltip>
-        <el-tooltip content="切换上传方式" placement="bottom">
+        <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
                 <font-awesome-icon v-else-if="uploadMethod === 'paste'" icon="paste" class="upload-method-icon" size="lg"/>
