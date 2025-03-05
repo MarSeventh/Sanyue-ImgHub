@@ -66,51 +66,98 @@
             </div>
             </el-header>
             <el-main class="main-container">
+            <!-- 添加面包屑导航 -->
+            <div class="breadcrumb">
+                <el-breadcrumb separator="/">
+                    <el-breadcrumb-item @click="navigateToFolder('')">根目录</el-breadcrumb-item>
+                    <el-breadcrumb-item 
+                        v-for="(folder, index) in currentPath.split('/').filter(Boolean)" 
+                        :key="index"
+                        @click="navigateToFolder(currentPath.split('/').slice(0, index + 1).join('/'))"
+                    >
+                        {{ folder }}
+                    </el-breadcrumb-item>
+                </el-breadcrumb>
+            </div>
             <div class="content" v-loading="loading">
+                <!-- 文件夹和文件列表 -->
                 <template v-for="(item, index) in paginatedTableData" :key="index">
-                <el-card class="img-card">
-                    <el-checkbox v-model="item.selected"></el-checkbox>
-                    <div class="file-short-info">
-                        <div v-if="item.metadata?.ListType === 'White'" class="success-tag">{{ item.channelTag }}</div>
-                        <div v-else-if="item.metadata?.ListType === 'Block' || item.metadata?.Label === 'adult'" class="fail-tag">{{ item.channelTag }}</div>
-                        <div v-else class="success-tag">{{ item.channelTag }}</div>
-                    </div>
-                    <video v-if="isVideo(item)" :src="'/file/' + item.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="'/file/' + item.name + '?from=admin'" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
-                    <div v-else class="file-preview">
-                        <font-awesome-icon icon="file" class="file-icon"></font-awesome-icon>
-                    </div>
-                    <div class="image-overlay">
-                        <div class="overlay-buttons">
-                            <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
-                                <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">
-                                    <font-awesome-icon icon="copy"></font-awesome-icon>
-                                </el-button>
-                            </el-tooltip>
-                            <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
-                                <el-button size="mini" type="primary" @click.stop="handleDownload(item.name)">
-                                    <font-awesome-icon icon="download"></font-awesome-icon>
-                                </el-button>
-                            </el-tooltip>
-                            <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
-                                <el-button size="mini" type="primary" @click.stop="openDetailDialog(index, item.name)">
-                                    <font-awesome-icon icon="info"></font-awesome-icon>
-                                </el-button>
-                            </el-tooltip>
-                            <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
-                                <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
-                                    <font-awesome-icon icon="trash-alt"></font-awesome-icon>
-                                </el-button>
-                            </el-tooltip>
+                    <!-- 文件夹卡片 -->
+                    <el-card v-if="isFolder(item)" class="img-card folder-card" @click="enterFolder(item.name)">
+                        <div class="folder-icon">
+                            <font-awesome-icon icon="folder" size="3x"/>
                         </div>
-                    </div>
-                    <div class="file-info">{{ item.metadata?.FileName || item.name }}</div>
-                </el-card>
+                        <div class="file-info">{{ getFolderName(item.name) }}</div>
+                    </el-card>
+                    
+                    <!-- 文件卡片 -->
+                    <el-card v-else class="img-card">
+                        <el-checkbox v-model="item.selected"></el-checkbox>
+                        <div class="file-short-info">
+                            <div v-if="item.metadata?.ListType === 'White'" class="success-tag">{{ item.channelTag }}</div>
+                            <div v-else-if="item.metadata?.ListType === 'Block' || item.metadata?.Label === 'adult'" class="fail-tag">{{ item.channelTag }}</div>
+                            <div v-else class="success-tag">{{ item.channelTag }}</div>
+                        </div>
+                        <video v-if="isVideo(item)" :src="'/file/' + item.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                        <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="'/file/' + item.name + '?from=admin'" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
+                        <div v-else class="file-preview">
+                            <font-awesome-icon icon="file" class="file-icon"></font-awesome-icon>
+                        </div>
+                        <div class="image-overlay">
+                            <div class="overlay-buttons">
+                                <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
+                                    <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">
+                                        <font-awesome-icon icon="copy"></font-awesome-icon>
+                                    </el-button>
+                                </el-tooltip>
+                                <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
+                                    <el-button size="mini" type="primary" @click.stop="handleDownload(item.name)">
+                                        <font-awesome-icon icon="download"></font-awesome-icon>
+                                    </el-button>
+                                </el-tooltip>
+                                <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
+                                    <el-button size="mini" type="primary" @click.stop="openDetailDialog(index, item.name)">
+                                        <font-awesome-icon icon="info"></font-awesome-icon>
+                                    </el-button>
+                                </el-tooltip>
+                                <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
+                                    <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
+                                        <font-awesome-icon icon="trash-alt"></font-awesome-icon>
+                                    </el-button>
+                                </el-tooltip>
+                            </div>
+                        </div>
+                        <div class="file-info">{{ getFileName(item.metadata?.FileName || item.name) }}</div>
+                    </el-card>
                 </template>
             </div>
             <div class="pagination-container">
-                <el-pagination background layout="prev, pager, next" :total="filteredTableData.length" :page-size="pageSize" :current-page.sync="currentPage" @current-change="handlePageChange"></el-pagination>
-                <el-button v-if="currentPage === Math.ceil(filteredTableData.length / pageSize)" type="primary" @click="loadMoreData" :loading="loading" class="load-more">加载更多</el-button>
+                <el-pagination 
+                    background 
+                    layout="prev, pager, next" 
+                    :total="filteredTableData.length" 
+                    :page-size="pageSize" 
+                    :current-page="currentPage" 
+                    @current-change="handlePageChange">
+                </el-pagination>
+                <div class="pagination-right">
+                    <el-button 
+                        type="primary" 
+                        @click="refreshFileList" 
+                        :loading="refreshLoading"
+                        class="refresh-btn">
+                        <font-awesome-icon icon="sync" :class="{ 'fa-spin': refreshLoading }"/>
+                        刷新
+                    </el-button>
+                    <el-button 
+                        v-if="currentPage === Math.ceil(filteredTableData.length / pageSize)" 
+                        type="primary" 
+                        @click="loadMoreData" 
+                        :loading="loading" 
+                        class="load-more">
+                        加载更多
+                    </el-button>
+                </div>
             </div>
             </el-main>
         </el-container>
@@ -207,6 +254,7 @@
 import { mapGetters } from 'vuex';
 import JSZip from 'jszip';
 import DashboardTabs from '@/components/DashboardTabs.vue';
+import { fileManager } from '@/utils/fileManager';
 
 export default {
 data() {
@@ -228,6 +276,8 @@ data() {
         useCustomUrl: 'false', // 是否启用自定义链接
         customUrlPrefix: '', // 自定义链接前缀
         loading: false, // 加载状态
+        currentPath: '', // 当前文件夹路径
+        refreshLoading: false,
     }
 },
 components: {
@@ -837,37 +887,193 @@ methods: {
         if (this.currentPage === Math.ceil(this.filteredTableData.length / this.pageSize)) {
             this.loadMoreData();
         }
-    }
+    },
+    // 判断是否为文件夹
+    isFolder(item) {
+        // 如果是已经标记为文件夹的项目，直接返回true
+        if (item.isFolder) {
+            return true;
+        }
+        
+        // 获取真实的文件路径（去除URL前缀）
+        let path = item.name;
+        if (path.startsWith('http')) {
+            path = path.split('/file/')[1];
+        }
+        
+        // 如果文件名包含'/'，需要判断是否是当前路径下的文件
+        if (path && path.includes('/')) {
+            // 获取相对于当前路径的部分
+            const relativePath = this.currentPath ? 
+                path.substring(this.currentPath.length) : 
+                path;
+            
+            // 如果在根目录，第一个斜杠前的部分就是文件夹
+            if (this.currentPath === '') {
+                return !path.split('/')[0].includes('.');
+            }
+            
+            // 如果在子文件夹中，检查相对路径是否还包含其他文件夹
+            return relativePath.includes('/');
+        }
+        
+        return false;
+    },
+    
+    // 获取文件夹名称
+    getFolderName(path) {
+        // 如果是完整URL，获取/file/后的路径
+        if (path.startsWith('http')) {
+            path = path.split('/file/')[1];
+        }
+        
+        // 如果是文件夹路径，只返回最后一级文件夹名
+        if (path && path.includes('/')) {
+            const parts = path.split('/');
+            // 如果是根目录下的文件夹
+            if (this.currentPath === '') {
+                return parts[0];
+            }
+            // 如果是子文件夹
+            const relativePath = path.substring(this.currentPath.length);
+            return relativePath.split('/')[0];
+        }
+        return path;
+    },
+    
+    // 获取文件名称（去除路径和URL前缀）
+    getFileName(path) {
+        if (path.startsWith('http')) {
+            path = path.split('/file/')[1];
+        }
+        return path.split('/').pop();
+    },
+    
+    // 进入文件夹
+    enterFolder(folderPath) {
+        // 确保路径末尾有 '/'
+        this.currentPath = folderPath + (folderPath.endsWith('/') ? '' : '/');
+        this.fetchFileList();
+    },
+    
+    // 导航到指定文件夹
+    navigateToFolder(path) {
+        // 确保空路径时不添加 '/'
+        this.currentPath = path ? (path + (path.endsWith('/') ? '' : '/')) : '';
+        this.fetchFileList();
+    },
+    
+    // 修改获取文件列表的方法
+    async fetchFileList() {
+        this.loading = true;
+        try {
+            // 从本地存储获取数据
+            const data = fileManager.getLocalFileList();
+            
+            // 处理数据，将文件夹和文件分开
+            const folders = new Set();
+            const files = [];
+            
+            data.forEach(item => {
+                let path = item.name;
+                if (path.startsWith('http')) {
+                    path = path.split('/file/')[1];
+                }
+
+                if (path.includes('/')) {
+                    const pathParts = path.split('/');
+                    if (this.currentPath === '') {
+                        // 在根目录，显示第一级文件夹
+                        const firstFolder = pathParts[0];
+                        if (!firstFolder.includes('.')) {
+                            folders.add(firstFolder);
+                        }
+                    } else {
+                        // 在子文件夹中，显示当前路径下的下一级文件夹
+                        if (path.startsWith(this.currentPath)) {
+                            const relativePath = path.substring(this.currentPath.length);
+                            const nextFolder = relativePath.split('/')[0];
+                            if (nextFolder && !nextFolder.includes('.')) {
+                                folders.add(this.currentPath + (this.currentPath.endsWith('/') ? '' : '/') + nextFolder);
+                            }
+                        }
+                    }
+                }
+                
+                // 只显示当前文件夹下的文件
+                if (this.currentPath === '') {
+                    // 在根目录，只显示没有 '/' 的文件
+                    if (!path.includes('/')) {
+                        files.push(item);
+                    }
+                } else {
+                    // 在子文件夹中，显示当前路径下的文件
+                    if (path.startsWith(this.currentPath)) {
+                        const relativePath = path.substring(this.currentPath.length);
+                        if (!relativePath.includes('/')) {
+                            files.push(item);
+                        }
+                    }
+                }
+            });
+            
+            // 合并文件夹和文件
+            this.tableData = [
+                ...Array.from(folders).map(folder => ({ 
+                    name: folder, 
+                    isFolder: true,
+                    selected: false,
+                    metadata: { FileName: folder.split('/').pop() }
+                })),
+                ...files
+            ];
+            
+            // 更新统计信息
+            this.updateStats(0, true);
+            
+        } catch (error) {
+            console.error('Error fetching file list:', error);
+            this.$message.error('获取文件列表失败');
+        } finally {
+            this.loading = false;
+        }
+    },
+    // 刷新文件列表
+    async refreshFileList() {
+        this.refreshLoading = true;
+        try {
+            const success = await fileManager.refreshFileList(this.fetchWithAuth);
+            if (success) {
+                await this.fetchFileList();
+                this.$message.success('刷新成功');
+            } else {
+                throw new Error('Refresh failed');
+            }
+        } catch (error) {
+            console.error('Error refreshing file list:', error);
+            this.$message.error('刷新失败，请重试');
+        } finally {
+            this.refreshLoading = false;
+        }
+    },
 },
 mounted() {
     this.loading = true;
-
     this.fetchWithAuth("/api/manage/check", { method: 'GET' })
         .then(response => response.text())
         .then(result => {
             if(result == "true"){
-                this.showLogoutButton=true;
-                // 在 check 成功后再执行 list 的 fetch 请求
-                return this.fetchWithAuth("/api/manage/list?count=60", { method: 'GET' });
-            } else if(result=="Not using basic auth."){
-                return this.fetchWithAuth("/api/manage/list?count=60", { method: 'GET' });
-            } else{
+                this.showLogoutButton = true;
+                return true;
+            } else if(result == "Not using basic auth."){
+                return true;
+            } else {
                 throw new Error('Unauthorized');
             }
         })
-        .then(response => response.json())
-        .then(result => {
-            this.tableData = result.map(file => ({ ...file, selected: false }));
-            this.updateStats(0, true);
-            const savedSortOption = localStorage.getItem('sortOption');
-            if (savedSortOption) {
-                this.sortOption = savedSortOption;
-            }
-            const savedDefaultUrlFormat = localStorage.getItem('defaultUrlFormat');
-            if (savedDefaultUrlFormat) {
-                this.defaultUrlFormat = savedDefaultUrlFormat;
-            }
-            this.sortData(this.tableData);
+        .then(() => {
+            // 首次加载时刷新文件列表
+            return this.refreshFileList();
         })
         .catch((err) => {
             if (err.message !== 'Unauthorized') {
@@ -1299,5 +1505,38 @@ mounted() {
 
 .question-icon {
     margin: 0 3px;
+}
+
+.breadcrumb {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: var(--el-bg-color);
+    border-radius: 4px;
+}
+
+.folder-card {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.folder-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.folder-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: var(--el-color-primary);
+}
+
+:deep(.el-breadcrumb__item) {
+    cursor: pointer;
+}
+
+:deep(.el-breadcrumb__inner:hover) {
+    color: var(--el-color-primary);
 }
 </style>
