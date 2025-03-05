@@ -27,6 +27,7 @@ export default createStore({
     },
     useDarkMode: null,
     cusDarkMode: false,
+    uploadFolder: '',
   },
   getters: {
     userConfig: state => state.userConfig,
@@ -42,6 +43,9 @@ export default createStore({
     adminUrlSettings: state => state.adminUrlSettings,
     useDarkMode: state => state.useDarkMode,
     cusDarkMode: state => state.cusDarkMode,
+    storeUploadFolder: (state) => {
+      return state.uploadFolder || localStorage.getItem('uploadFolder') || ''
+    }
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -83,6 +87,10 @@ export default createStore({
     setCusDarkMode(state, cusDarkMode) {
       state.cusDarkMode = cusDarkMode;
     },
+    setStoreUploadFolder(state, folder) {
+      state.uploadFolder = folder
+      localStorage.setItem('uploadFolder', folder)
+    }
   },
   actions: {
     async fetchUserConfig({ commit }) {
@@ -117,6 +125,15 @@ export default createStore({
         commit('setBingWallPapers', bingWallPapers);
       } catch (error) {
         console.log(error);
+      }
+    },
+    initializeStore({ commit }) {
+      // ... existing initialization code ...
+      
+      // 初始化上传文件夹设置
+      const uploadFolder = localStorage.getItem('uploadFolder')
+      if (uploadFolder) {
+        commit('setStoreUploadFolder', uploadFolder)
       }
     }
   },
