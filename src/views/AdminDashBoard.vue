@@ -66,7 +66,7 @@
             </div>
             </el-header>
             <el-main class="main-container">
-            <!-- 添加面包屑导航 -->
+            <!-- 目录导航 -->
             <div class="breadcrumb">
                 <el-breadcrumb separator="/">
                     <el-breadcrumb-item @click="navigateToFolder('')">根目录</el-breadcrumb-item>
@@ -144,7 +144,6 @@
                     <el-button 
                         type="primary" 
                         @click="refreshFileList" 
-                        :loading="refreshLoading"
                         class="refresh-btn">
                         <font-awesome-icon icon="sync" :class="{ 'fa-spin': refreshLoading }"/>
                         刷新
@@ -437,6 +436,10 @@ watch: {
     },
     useCustomUrl(val) {
         this.$store.commit('setAdminUrlSettings', { key: 'useCustomUrl', value: val })
+    },
+    currentPath(val) {
+        // 页面切换时，取消选择的内容
+        this.tableData.forEach(file => file.selected = false);
     }
 },
 methods: {
@@ -994,7 +997,7 @@ methods: {
         this.fetchFileList();
     },
     
-    // 修改获取文件列表的方法
+    // 获取文件列表
     async fetchFileList() {
         this.loading = true;
         try {
@@ -1470,6 +1473,15 @@ mounted() {
     transition: color 0.3s;
     margin-left: 20px;
 }
+.refresh-btn {
+    cursor: pointer;
+    background-color: var(--admin-dashboard-btn-bg-color);
+    box-shadow: var(--admin-dashboard-btn-shadow);
+    color: var(--admin-dashboard-btn-color);
+    border: none;
+    transition: color 0.3s;
+    margin-left: 20px;
+}
 
 .el-checkbox {
     position: absolute;
@@ -1567,7 +1579,8 @@ mounted() {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100px;
+    width: 100%;
+    height: 18vh;
     color: var(--el-color-primary);
 }
 

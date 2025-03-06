@@ -103,8 +103,8 @@
                         <el-radio label="s3">S3</el-radio>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item label="上传文件夹">
-                    <el-input style="width: 300px;" v-model="uploadFolder" placeholder="请输入上传文件夹路径"/>
+                <el-form-item label="上传目录">
+                    <el-input style="width: 300px;" v-model="uploadFolder" placeholder="请输入上传目录路径"/>
                 </el-form-item>
                 <el-form-item label="自动切换">
                     <el-tooltip content="上传失败自动切换到其他渠道上传" placement="top">
