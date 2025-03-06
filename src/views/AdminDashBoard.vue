@@ -149,7 +149,7 @@
                         刷新
                     </el-button>
                     <el-button 
-                        v-if="currentPage === Math.ceil(filteredTableData.length / pageSize)" 
+                        v-if="currentPage === Math.ceil(filteredTableData.length / pageSize) && !currentPath" 
                         type="primary" 
                         @click="loadMoreData" 
                         :loading="loading" 
@@ -285,9 +285,40 @@ components: {
 computed: {
     ...mapGetters(['credentials', 'adminUrlSettings', 'userConfig']),
     filteredTableData() {
-        return this.tableData.filter(data => !this.search || data.name.toLowerCase().includes(this.search.toLowerCase()) || data.metadata?.FileName?.toLowerCase().includes(this.search.toLowerCase()));
+        // 先根据当前路径过滤数据
+        const currentPathData = this.tableData.filter(data => {
+            if (data.isFolder) {
+                // 对于文件夹，只显示当前路径下的直接子文件夹
+                if (this.currentPath === '') {
+                    return !data.name.includes('/');
+                } else {
+                    return data.name.startsWith(this.currentPath) && 
+                           data.name.substring(this.currentPath.length).split('/').filter(Boolean).length === 1;
+                }
+            } else {
+                // 对于文件，只显示当前路径下的文件
+                let path = data.name;
+                if (path.startsWith('http')) {
+                    path = path.split('/file/')[1];
+                }
+                if (this.currentPath === '') {
+                    return !path.includes('/');
+                } else {
+                    return path.startsWith(this.currentPath) && 
+                           !path.substring(this.currentPath.length).includes('/');
+                }
+            }
+        });
+
+        // 再根据搜索条件过滤
+        return currentPathData.filter(data => 
+            !this.search || 
+            data.name.toLowerCase().includes(this.search.toLowerCase()) || 
+            data.metadata?.FileName?.toLowerCase().includes(this.search.toLowerCase())
+        );
     },
     paginatedTableData() {
+        console.log(this.currentPage);
         const sortedData = this.sortData(this.filteredTableData);
         const start = (this.currentPage - 1) * this.pageSize;
         const end = start + this.pageSize;
@@ -716,7 +747,7 @@ methods: {
                     file.selected = false;
                     return file;
                 });
-                this.tableData = this.tableData.concat(data);
+                this.tableData = this.tableData.concat(moreData);
                 this.sortData(this.tableData);
             })
             .catch(() => this.$message.error('加载更多数据失败，请检查网络连接'))
@@ -887,7 +918,7 @@ methods: {
     handlePageChange(page) {
         this.currentPage = page;
         // 到最后一页时，加载更多数据
-        if (this.currentPage === Math.ceil(this.filteredTableData.length / this.pageSize)) {
+        if (this.currentPage === Math.ceil(this.filteredTableData.length / this.pageSize) && !this.currentPath) {
             this.loadMoreData();
         }
     },
@@ -1300,6 +1331,7 @@ mounted() {
     grid-template-rows: repeat(3, 1fr);
     gap: 20px;
     padding: 10px;
+    padding-bottom: 0px;
     flex-grow: 1;
     min-height: 80vh;
 }
@@ -1429,7 +1461,7 @@ mounted() {
 .pagination-container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 5px;
     padding-bottom: 20px;
 }
 .load-more {
@@ -1520,10 +1552,17 @@ mounted() {
 }
 
 .breadcrumb {
-    margin-bottom: 15px;
-    padding: 10px;
+    padding: 15px;
     background-color: var(--el-bg-color);
     border-radius: 8px;
+    font-size: 1.2em;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.breadcrumb:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.15);
 }
 
 .folder-card {
