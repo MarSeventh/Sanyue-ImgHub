@@ -8,10 +8,10 @@ class FileManager {
     getLocalFileList() {
         try {
             const fileList = localStorage.getItem(this.FILE_LIST_PATH);
-            return fileList ? JSON.parse(fileList) : [];
+            return fileList ? JSON.parse(fileList) : { files: [], directories: [] };
         } catch (error) {
             console.error('Error reading local file list:', error);
-            return [];
+            return { files: [], directories: [] };
         }
     }
 
@@ -30,10 +30,25 @@ class FileManager {
     addFile(newFile) {
         try {
             const fileList = this.getLocalFileList();
-            fileList.push(newFile);
+            fileList.files.push(newFile);
             return this.saveFileList(fileList);
         } catch (error) {
             console.error('Error adding file:', error);
+            return false;
+        }
+    }
+
+    // 添加新文件夹
+    addFolder(folderName) {
+        try {
+            const fileList = this.getLocalFileList();
+            if (!fileList.directories.includes(folderName)) {
+                fileList.directories.push(folderName);
+                return this.saveFileList(fileList);
+            }
+            return false; // 文件夹已存在
+        } catch (error) {
+            console.error('Error adding folder:', error);
             return false;
         }
     }
@@ -42,7 +57,7 @@ class FileManager {
     removeFile(fileName) {
         try {
             let fileList = this.getLocalFileList();
-            fileList = fileList.filter(file => file.name !== fileName);
+            fileList.files = fileList.files.filter(file => file.name !== fileName);
             return this.saveFileList(fileList);
         } catch (error) {
             console.error('Error removing file:', error);
@@ -50,10 +65,38 @@ class FileManager {
         }
     }
 
-    // 更新文件列表
-    async refreshFileList(fetchWithAuth) {
+    // 从列表中删除文件夹（同时删除该文件夹下的所有文件）
+    removeFolder(folderName) {
         try {
-            const response = await fetchWithAuth('/api/manage/list?count=-1', { method: 'GET' });
+            let fileList = this.getLocalFileList();
+            fileList.files = fileList.files.filter(file => !file.name.startsWith(folderName + '/'));
+            fileList.directories = fileList.directories.filter(dir => dir !== folderName);
+            return this.saveFileList(fileList);
+        } catch (error) {
+            console.error('Error removing folder:', error);
+            return false;
+        }
+    }
+
+    // 获取指定目录下的文件和子目录
+    getFilesInFolder(folderName) {
+        try {
+            const fileList = this.getLocalFileList();
+            const files = fileList.files.filter(file => file.name.startsWith(folderName + '/'));
+            const subdirectories = fileList.directories.filter(dir => dir.startsWith(folderName + '/'));
+            return { files, directories: subdirectories };
+        } catch (error) {
+            console.error('Error getting files in folder:', error);
+            return { files: [], directories: [] };
+        }
+    }
+
+    // 更新文件列表
+    async refreshFileList(fetchWithAuth, dir) {
+        try {
+            const response = await fetchWithAuth(`/api/manage/list?count=60&dir=${dir}`, {
+                method: 'GET',
+            });
             const newFileList = await response.json();
             return this.saveFileList(newFileList);
         } catch (error) {
@@ -61,6 +104,25 @@ class FileManager {
             return false;
         }
     }
+
+    // 读取更多数据
+    async loadMoreFiles(fetchWithAuth, dir) {
+        try {
+            const fileList = this.getLocalFileList();
+            const start = fileList.files.length;
+
+            const response = await fetchWithAuth(`/api/manage/list?dir=${dir}&start=${start}&count=60`, {
+                method: 'GET',
+            });
+           
+            const moreFiles = await response.json();
+            fileList.files.push(...moreFiles.files);
+            return this.saveFileList(fileList);
+        } catch (error) {
+            console.error('Error loading more files:', error);
+            return { files: [], directories: [] };
+        }
+    }
 }
 
-export const fileManager = new FileManager(); 
+export const fileManager = new FileManager();

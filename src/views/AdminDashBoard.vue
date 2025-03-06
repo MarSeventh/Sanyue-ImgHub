@@ -8,7 +8,7 @@
                 <el-input v-model="search" size="mini" placeholder="输入关键字搜索"></el-input>
                 </div>
                 <span class="stats">
-                    <font-awesome-icon icon="database" class="fa-database"></font-awesome-icon> 记录总数量: {{ Number }}
+                    <font-awesome-icon icon="database" class="fa-database"></font-awesome-icon> 文件数量: {{ Number }}
                 </span>
                 <div class="actions">
                 <el-dropdown @command="sort" :hide-on-click="false">
@@ -146,10 +146,9 @@
                         @click="refreshFileList" 
                         class="refresh-btn">
                         <font-awesome-icon icon="sync" :class="{ 'fa-spin': refreshLoading }"/>
-                        刷新
                     </el-button>
                     <el-button 
-                        v-if="currentPage === Math.ceil(filteredTableData.length / pageSize) && !currentPath" 
+                        v-if="currentPage === Math.ceil(filteredTableData.length / pageSize)" 
                         type="primary" 
                         @click="loadMoreData" 
                         :loading="loading" 
@@ -413,7 +412,7 @@ watch: {
     tableData: {
         handler(newData) {
             // selectedFiles 增加 newData中新选中，不包含在 selectedFiles 中的文件
-            this.selectedFiles = this.selectedFiles.concat(newData.filter(file => file.selected && !this.selectedFiles.includes(file)));
+            this.selectedFiles = this.selectedFiles.concat(newData.filter(file => file.selected && !this.selectedFiles.includes(file) && !file.isFolder));
             // selectedFiles 删掉 newData 中已取消选中的文件
             this.selectedFiles = this.selectedFiles.filter(file => file.selected);
         },
@@ -589,6 +588,7 @@ methods: {
             })
             .then(() => {
                 this.updateStats(-1, false);
+                fileManager.removeFile(key);
                 this.$message.success('删除成功!');
             })
             .catch(() => this.$message.error('删除失败，请检查网络连接'));
@@ -731,30 +731,22 @@ methods: {
         navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success('复制文件链接成功~')) :
         this.copyToClipboardFallback(text);
     },
-    loadMoreData() {
+    async loadMoreData() {
         this.loading = true;
-        const start = this.tableData.length;
-        this.fetchWithAuth(`/api/manage/list?start=${start}&count=60`, { method: 'GET' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.length === 0) {
-                    this.$message.info('没有更多数据了');
-                    return;
-                }
-
-                const moreData = data.map(file => {
-                    file.selected = false;
-                    return file;
-                });
-                this.tableData = this.tableData.concat(moreData);
-                this.sortData(this.tableData);
-            })
-            .catch(() => this.$message.error('加载更多数据失败，请检查网络连接'))
-            .finally(() => this.loading = false);
+        
+        try {
+            await fileManager.loadMoreFiles(this.fetchWithAuth, this.currentPath);
+            // 获取新的文件列表后
+            await this.fetchFileList();
+        } catch (error) {
+            this.$message.error('加载更多文件失败，请检查网络连接');
+        } finally {
+            this.loading = false;
+        }
     },
     updateStats(num, init = false) {
         if (init) {
-            this.fetchWithAuth('/api/manage/list?count=-1&sum=true', { method: 'GET' })
+            this.fetchWithAuth(`/api/manage/list?count=-1&sum=true&dir=${this.currentPath}`, { method: 'GET' })
             .then(response => response.json())
             .then(data => {
                 this.Number = data.sum;
@@ -986,14 +978,16 @@ methods: {
     enterFolder(folderPath) {
         // 确保路径末尾有 '/'
         this.currentPath = folderPath + (folderPath.endsWith('/') ? '' : '/');
-        this.fetchFileList();
+        // 刷新文件列表，到指定currentPath下
+        this.refreshFileList();
     },
     
     // 导航到指定文件夹
     navigateToFolder(path) {
         // 确保空路径时不添加 '/'
         this.currentPath = path ? (path + (path.endsWith('/') ? '' : '/')) : '';
-        this.fetchFileList();
+        // 刷新文件列表，到指定currentPath下
+        this.refreshFileList();
     },
     
     // 获取文件列表
@@ -1003,67 +997,32 @@ methods: {
             // 从本地存储获取数据
             const data = fileManager.getLocalFileList();
             
-            // 处理数据，将文件夹和文件分开
-            const folders = new Set();
-            const files = [];
-            
-            data.forEach(item => {
-                let path = item.name;
-                if (path.startsWith('http')) {
-                    path = path.split('/file/')[1];
-                }
+            // 解析返回的数据
+            const folders = new Set(data.directories || []);
+            const files = data.files || [];
 
-                if (path.includes('/')) {
-                    const pathParts = path.split('/');
-                    if (this.currentPath === '') {
-                        // 在根目录，显示第一级文件夹
-                        const firstFolder = pathParts[0];
-                        if (!firstFolder.includes('.')) {
-                            folders.add(firstFolder);
-                        }
-                    } else {
-                        // 在子文件夹中，显示当前路径下的下一级文件夹
-                        if (path.startsWith(this.currentPath)) {
-                            const relativePath = path.substring(this.currentPath.length);
-                            const nextFolder = relativePath.split('/')[0];
-                            if (nextFolder && !nextFolder.includes('.')) {
-                                folders.add(this.currentPath + (this.currentPath.endsWith('/') ? '' : '/') + nextFolder);
-                            }
-                        }
-                    }
-                }
-                
-                // 只显示当前文件夹下的文件
-                if (this.currentPath === '') {
-                    // 在根目录，只显示没有 '/' 的文件
-                    if (!path.includes('/')) {
-                        files.push(item);
-                    }
-                } else {
-                    // 在子文件夹中，显示当前路径下的文件
-                    if (path.startsWith(this.currentPath)) {
-                        const relativePath = path.substring(this.currentPath.length);
-                        if (!relativePath.includes('/')) {
-                            files.push(item);
-                        }
-                    }
-                }
-            });
-            
-            // 合并文件夹和文件
-            this.tableData = [
-                ...Array.from(folders).map(folder => ({ 
-                    name: folder, 
-                    isFolder: true,
-                    selected: false,
-                    metadata: { FileName: folder.split('/').pop() }
-                })),
-                ...files
-            ];
-            
+            // 处理文件夹数据
+            const folderItems = Array.from(folders).map(folder => ({
+                name: folder,
+                isFolder: true,
+                selected: false,
+                metadata: { FileName: folder.split('/').pop() }
+            }));
+
+            // 处理文件数据
+            const fileItems = files.map(file => ({
+                name: file.name,
+                isFolder: false,
+                selected: false,
+                metadata: file.metadata
+            }));
+
+            // 更新表格数据
+            this.tableData = [...folderItems, ...fileItems];
+
             // 更新统计信息
             this.updateStats(0, true);
-            
+                
         } catch (error) {
             console.error('Error fetching file list:', error);
             this.$message.error('获取文件列表失败');
@@ -1075,10 +1034,9 @@ methods: {
     async refreshFileList() {
         this.refreshLoading = true;
         try {
-            const success = await fileManager.refreshFileList(this.fetchWithAuth);
+            const success = await fileManager.refreshFileList(this.fetchWithAuth, this.currentPath);
             if (success) {
                 await this.fetchFileList();
-                this.$message.success('刷新成功');
             } else {
                 throw new Error('Refresh failed');
             }
