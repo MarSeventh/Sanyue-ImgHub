@@ -549,7 +549,7 @@ methods: {
     },
     async fetchWithAuth(url, options = {}) {
         // 开发环境, url 前面加上 /api
-        // url = `/api${url}`;
+        url = `/api${url}`;
         if (this.credentials) {
             // 设置 Authorization 头
             options.headers = {
@@ -1461,7 +1461,7 @@ mounted() {
 .pagination-container {
     display: flex;
     justify-content: center;
-    margin-top: 5px;
+    margin-top: 20px;
     padding-bottom: 20px;
 }
 .load-more {
@@ -1556,13 +1556,13 @@ mounted() {
     background-color: var(--el-bg-color);
     border-radius: 8px;
     font-size: 1.2em;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: var(--admin-dashboard-stats-shadow);
     transition: all 0.3s ease;
 }
 
 .breadcrumb:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: var(--admin-dashboard-stats-hover-shadow);
 }
 
 .folder-card {
