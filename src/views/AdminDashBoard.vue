@@ -33,23 +33,27 @@
                         <el-dropdown-menu>
                             <el-dropdown-item command="copy">
                                 <font-awesome-icon icon="copy" style="margin-right: 5px;"></font-awesome-icon>
-                                批量复制
+                                复制
                             </el-dropdown-item>
                             <el-dropdown-item command="delete">
                                 <font-awesome-icon icon="trash-alt" style="margin-right: 5px;"></font-awesome-icon>
-                                批量删除
+                                删除
                             </el-dropdown-item>
                             <el-dropdown-item command="download">
                                 <font-awesome-icon icon="download" style="margin-right: 5px;"></font-awesome-icon>
-                                批量下载
+                                下载
+                            </el-dropdown-item>
+                            <el-dropdown-item command="move">
+                                <font-awesome-icon icon="folder" style="margin-right: 5px;"></font-awesome-icon>
+                                移动
                             </el-dropdown-item>
                             <el-dropdown-item command="ban">
                                 <font-awesome-icon icon="ban" style="margin-right: 5px;"></font-awesome-icon>
-                                批量黑名单
+                                加入黑名单
                             </el-dropdown-item>
                             <el-dropdown-item command="white">
                                 <font-awesome-icon icon="user-plus" style="margin-right: 5px;"></font-awesome-icon>
-                                批量白名单
+                                加入白名单
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
@@ -83,9 +87,19 @@
                 <!-- 文件夹和文件列表 -->
                 <template v-for="(item, index) in paginatedTableData" :key="index">
                     <!-- 文件夹卡片 -->
-                    <el-card v-if="isFolder(item)" class="img-card folder-card" @click="enterFolder(item.name)">
-                        <div class="folder-icon">
+                    <el-card v-if="isFolder(item)" class="img-card folder-card">
+                        <el-checkbox v-model="item.selected"></el-checkbox>
+                        <div class="folder-icon" @click="enterFolder(item.name)">
                             <font-awesome-icon icon="folder" size="3x"/>
+                        </div>
+                        <div class="folder-overlay">
+                            <div class="folder-actions">
+                                <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
+                                    <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
+                                        <font-awesome-icon icon="trash-alt"></font-awesome-icon>
+                                    </el-button>
+                                </el-tooltip>
+                            </div>
                         </div>
                         <div class="file-info">{{ getFolderName(item.name) }}</div>
                     </el-card>
@@ -284,33 +298,8 @@ components: {
 computed: {
     ...mapGetters(['credentials', 'adminUrlSettings', 'userConfig']),
     filteredTableData() {
-        // 先根据当前路径过滤数据
-        const currentPathData = this.tableData.filter(data => {
-            if (data.isFolder) {
-                // 对于文件夹，只显示当前路径下的直接子文件夹
-                if (this.currentPath === '') {
-                    return !data.name.includes('/');
-                } else {
-                    return data.name.startsWith(this.currentPath) && 
-                           data.name.substring(this.currentPath.length).split('/').filter(Boolean).length === 1;
-                }
-            } else {
-                // 对于文件，只显示当前路径下的文件
-                let path = data.name;
-                if (path.startsWith('http')) {
-                    path = path.split('/file/')[1];
-                }
-                if (this.currentPath === '') {
-                    return !path.includes('/');
-                } else {
-                    return path.startsWith(this.currentPath) && 
-                           !path.substring(this.currentPath.length).includes('/');
-                }
-            }
-        });
-
-        // 再根据搜索条件过滤
-        return currentPathData.filter(data => 
+        // 根据搜索条件过滤
+        return this.tableData.filter(data => 
             !this.search || 
             data.name.toLowerCase().includes(this.search.toLowerCase()) || 
             data.metadata?.FileName?.toLowerCase().includes(this.search.toLowerCase())
@@ -322,7 +311,7 @@ computed: {
         const end = start + this.pageSize;
         let data = sortedData.slice(start, end);
         // 增加previewSrcList属性，用于预览图片
-        const fullList = data.filter(file => !file.metadata?.FileType?.includes('video')).map(file => `/file/${file.name}?from=admin`);
+        const fullList = data.filter(file => file.metadata?.FileType?.includes('image') ).map(file => `/file/${file.name}?from=admin`);
         data.forEach(file => {
             if (!file.metadata?.FileType?.includes('video')) {
                 // 重新排序，索引大于等于当前索引的元素在前，否则在后
@@ -412,9 +401,11 @@ watch: {
     tableData: {
         handler(newData) {
             // selectedFiles 增加 newData中新选中，不包含在 selectedFiles 中的文件
-            this.selectedFiles = this.selectedFiles.concat(newData.filter(file => file.selected && !this.selectedFiles.includes(file) && !file.isFolder));
+            this.selectedFiles = this.selectedFiles.concat(newData.filter(file => file.selected && !this.selectedFiles.includes(file)));
             // selectedFiles 删掉 newData 中已取消选中的文件
             this.selectedFiles = this.selectedFiles.filter(file => file.selected);
+            // selectedFiles 删掉 tableData 中已删除的文件
+            this.selectedFiles = this.selectedFiles.filter(file => newData.includes(file));
         },
         deep: true
     },
@@ -570,12 +561,15 @@ methods: {
         return response;
     },
     handleDelete(index, key) {
-        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        // 判断是否为文件夹
+        const isFolder = this.tableData.find(file => file.name === key).isFolder;
+
+        this.$confirm(`此操作将永久删除${isFolder ? '文件夹' : '该文件'}, 是否继续?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
         }).then(() => {
-        this.fetchWithAuth(`/api/manage/delete/${key}`, { method: 'GET' })
+        this.fetchWithAuth(`/api/manage/delete/${key}?folder=${isFolder}`, { method: 'GET' })
             .then(response => {
                 if (response.ok) {
                     const fileIndex = this.tableData.findIndex(file => file.name === key);
@@ -595,12 +589,15 @@ methods: {
         }).catch(() => this.$message.info('已取消删除'));
     },
     handleBatchDelete() {
-        this.$confirm('此操作将永久删除选中的文件, 是否继续?', '提示', {
+        this.$confirm('此操作将永久删除选中的文件及文件夹, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
         }).then(() => {
-        const promises = this.selectedFiles.map(file => this.fetchWithAuth(`/api/manage/delete/${file.name}`, { method: 'GET' }));
+        const promises = this.selectedFiles.map(file => {
+            const isFolder = file.isFolder;
+            return this.fetchWithAuth(`/api/manage/delete/${file.name}?folder=${isFolder}`, { method: 'GET' });
+        });
 
         Promise.all(promises)
             .then(results => {
@@ -626,6 +623,9 @@ methods: {
         switch (this.defaultUrlFormat) {
             case 'originUrl':
                 tmpLinks = this.selectedFiles.map(file => {
+                    // 跳过文件夹
+                    if (file.isFolder) return '';
+
                     if (file.metadata?.Channel === 'External') {
                         return file.metadata?.ExternalLink;
                     } else {
@@ -635,6 +635,9 @@ methods: {
                 break;
             case 'mdUrl':
                 tmpLinks = this.selectedFiles.map(file => {
+                    // 跳过文件夹
+                    if (file.isFolder) return '';
+
                     if (file.metadata?.Channel === 'External') {
                         return `![${file.metadata?.FileName || file.name}](${file.metadata?.ExternalLink})`;
                     } else {
@@ -644,6 +647,9 @@ methods: {
                 break;
             case 'htmlUrl':
                 tmpLinks = this.selectedFiles.map(file => {
+                    // 跳过文件夹
+                    if (file.isFolder) return '';
+
                     if (file.metadata?.Channel === 'External') {
                         return `<img src="${file.metadata?.ExternalLink}" alt="${file.metadata?.FileName || file.name}" width=100%>`;
                     } else {
@@ -653,6 +659,9 @@ methods: {
                 break;
             case 'bbUrl':
                 tmpLinks = this.selectedFiles.map(file => {
+                    // 跳过文件夹
+                    if (file.isFolder) return '';
+
                     if (file.metadata?.Channel === 'External') {
                         return `[img]${file.metadata?.ExternalLink}[/img]`;
                     } else {
@@ -661,12 +670,15 @@ methods: {
                 }).join('\n');
                 break;
             case 'tgId':
-                tmpLinks = this.selectedFiles.map(file => file.metadata?.TgFileId || 'none').join('\n');
+                tmpLinks = this.selectedFiles.map(file => file.metadata?.TgFileId || '').join('\n');
                 break;
             case 's3Location':
-                tmpLinks = this.selectedFiles.map(file => file.metadata?.S3Location || 'none').join('\n');
+                tmpLinks = this.selectedFiles.map(file => file.metadata?.S3Location || '').join('\n');
                 break;
         }
+        // 删除空行
+        tmpLinks = tmpLinks.replace(/^\s*[\r\n]/gm, '');
+
         const links = tmpLinks;
         navigator.clipboard ? navigator.clipboard.writeText(links).then(() => this.$message.success('批量复制链接成功~')) :
         this.copyToClipboardFallback(links);
@@ -760,8 +772,21 @@ methods: {
         this.sortOption = command;
     },
     sortData(data) {
-        return this.sortOption === 'nameAsc' ? data.sort((a, b) => a.name.localeCompare(b.name)) :
-        data.sort((a, b) => b.metadata.TimeStamp - a.metadata.TimeStamp);
+        // 文件夹始终在前
+        const folders = data.filter(file => file.isFolder);
+        const files = data.filter(file => !file.isFolder);
+
+        if (this.sortOption === 'dateDesc') {
+            // 按时间降序
+            folders.sort((a, b) => new Date(b.metadata?.TimeStamp) - new Date(a.metadata?.TimeStamp));
+            files.sort((a, b) => new Date(b.metadata?.TimeStamp) - new Date(a.metadata?.TimeStamp));
+        } else {
+            // 按文件名升序
+            folders.sort((a, b) => a.name.localeCompare(b.name));
+            files.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        return folders.concat(files);
     },
     handleVideoClick(event) {
         const videoElement = event.target;
@@ -796,11 +821,46 @@ methods: {
             this.handleBatchDelete();
         } else if (command === 'download') {
             this.handleBatchDownload();
+        } else if (command === 'move') {
+            this.handleBatchMove();
         } else if (command === 'ban') {
             this.handleBatchBlock();
         } else if (command === 'white') {
             this.handleBatchWhite();
         }
+    },
+    handleBatchMove() {
+        // 弹窗输入新的文件夹路径
+        this.$prompt('请输入新的目录', '移动文件', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputPattern: /^\/([a-zA-Z0-9_]+(\/[a-zA-Z0-9_]+)*)?$/,
+            inputErrorMessage: '请输入/开头的正确目录路径'
+        }).then(({ value }) => {
+            const newPath = value;
+            const promises = this.selectedFiles.map(file => {
+                const isFolder = file.isFolder;
+                return this.fetchWithAuth(`/api/manage/move/${file.name}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' });
+            });
+
+            Promise.all(promises)
+                .then(results => {
+                    let successNum = 0;
+                    results.forEach((response, index) => {
+                        if (response.ok) {
+                            successNum++;
+                            const fileIndex = this.tableData.findIndex(file => file.name === this.selectedFiles[index].name);
+                            if (fileIndex !== -1) {
+                                this.tableData.splice(fileIndex, 1);
+                            }
+                        }
+                    });
+                    this.selectedFiles = [];
+                    this.updateStats(-successNum, false);
+                    this.$message.success('移动成功!');
+                })
+                .catch(() => this.$message.error('移动失败，请检查网络连接'));
+        }).catch(() => this.$message.info('已取消移动文件'));
     },
     handleBatchBlock(){
         this.$confirm('此操作将把选中的文件加入黑名单, 是否继续?', '提示', {
@@ -808,7 +868,13 @@ methods: {
             cancelButtonText: '取消',
             type: 'warning'
         }).then(() => {
-            const promises = this.selectedFiles.map(file => this.fetchWithAuth(`/api/manage/block/${file.name}`, { method: 'GET' }));
+            // 跳过文件夹
+            const promises = this.selectedFiles.map(file => {
+                if (file.isFolder) {
+                    return Promise.resolve({ ok: false });
+                }
+                return this.fetchWithAuth(`/api/manage/block/${file.name}`, { method: 'GET' });
+            });
 
             Promise.all(promises)
                 .then(results => {
@@ -831,7 +897,13 @@ methods: {
             cancelButtonText: '取消',
             type: 'warning'
         }).then(() => {
-            const promises = this.selectedFiles.map(file => this.fetchWithAuth(`/api/manage/white/${file.name}`, { method: 'GET' }));
+            // 跳过文件夹
+            const promises = this.selectedFiles.map(file => {
+                if (file.isFolder) {
+                    return Promise.resolve({ ok: false });
+                }
+                return this.fetchWithAuth(`/api/manage/white/${file.name}`, { method: 'GET' });
+            });
 
             Promise.all(promises)
                 .then(results => {
@@ -855,26 +927,27 @@ methods: {
         // 构造Promise数组，等待所有文件下载完成后再打包
         const fileNameCount = {}; // 用于跟踪文件名出现的次数
 
-        const downloadPromises = this.selectedFiles.map(file => {
-            return fetch(`/file/${file.name}?from=admin`)
-                .then(response => response.blob())
-                .then(blob => {
-                    // 检查文件名是否已经存在
-                    let fileName = file.metadata?.FileName || file.name;
-                    if (fileNameCount[fileName]) {
-                        // 如果已经存在，则在文件名后加上编号
-                        const extension = fileName.substring(fileName.lastIndexOf('.'));
-                        const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-                        fileName = `${baseName}(${fileNameCount[fileName]})${extension}`;
-                        fileNameCount[file.name]++;
-                    } else {
-                        // 如果不存在，则初始化为1
-                        fileNameCount[fileName] = 1;
-                    }
-
-                    // 将文件添加到 zip 文件夹中
-                    folder.file(fileName, blob);
-                });
+        const downloadPromises = this.selectedFiles.map(async file => {
+            // 跳过文件夹
+            if (file.isFolder) {
+                return;
+            }
+            const response = await fetch(`/file/${file.name}?from=admin`);
+            const blob = await response.blob();
+            // 检查文件名是否已经存在
+            let fileName = file.metadata?.FileName || file.name;
+            if (fileNameCount[fileName]) {
+                // 如果已经存在，则在文件名后加上编号
+                const extension = fileName.substring(fileName.lastIndexOf('.'));
+                const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+                fileName = `${baseName}(${fileNameCount[fileName]})${extension}`;
+                fileNameCount[file.name]++;
+            } else {
+                // 如果不存在，则初始化为1
+                fileNameCount[fileName] = 1;
+            }
+            // 将文件添加到 zip 文件夹中
+            folder.file(fileName, blob);
         });
 
         Promise.all(downloadPromises)
@@ -909,7 +982,7 @@ methods: {
     handlePageChange(page) {
         this.currentPage = page;
         // 到最后一页时，加载更多数据
-        if (this.currentPage === Math.ceil(this.filteredTableData.length / this.pageSize) && !this.currentPath) {
+        if (this.currentPage === Math.ceil(this.filteredTableData.length / this.pageSize)) {
             this.loadMoreData();
         }
     },
@@ -1033,6 +1106,7 @@ methods: {
     // 刷新文件列表
     async refreshFileList() {
         this.refreshLoading = true;
+        this.loading = true;
         try {
             const success = await fileManager.refreshFileList(this.fetchWithAuth, this.currentPath);
             if (success) {
@@ -1045,6 +1119,7 @@ methods: {
             this.$message.error('刷新失败，请重试');
         } finally {
             this.refreshLoading = false;
+            this.loading = false;
         }
     },
 },
@@ -1540,6 +1615,32 @@ mounted() {
     height: 18vh;
     color: var(--el-color-primary);
 }
+
+.folder-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.folder-card:hover .folder-overlay {
+    opacity: 1;
+}
+
+.folder-actions {
+    position: absolute;
+    bottom: 20%;
+    display: flex;
+    pointer-events: auto;
+}
+
 
 :deep(.el-breadcrumb__item) {
     cursor: pointer;
