@@ -318,7 +318,6 @@ computed: {
         );
     },
     paginatedTableData() {
-        console.log(this.currentPage);
         const sortedData = this.sortData(this.filteredTableData);
         const start = (this.currentPage - 1) * this.pageSize;
         const end = start + this.pageSize;

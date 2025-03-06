@@ -53,7 +53,7 @@ class FileManager {
     // 更新文件列表
     async refreshFileList(fetchWithAuth) {
         try {
-            const response = await fetchWithAuth('/api/manage/list?count=60', { method: 'GET' });
+            const response = await fetchWithAuth('/api/manage/list?count=-1', { method: 'GET' });
             const newFileList = await response.json();
             return this.saveFileList(newFileList);
         } catch (error) {
