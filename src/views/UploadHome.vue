@@ -103,7 +103,7 @@
                         <el-radio label="s3">S3</el-radio>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item label="上传目录">
+                <el-form-item label="上传目录" v-if="uploadChannel !== 'telegram'">
                     <el-input style="width: 300px;" v-model="uploadFolder" placeholder="请输入上传目录路径"/>
                 </el-form-item>
                 <el-form-item label="自动切换">
