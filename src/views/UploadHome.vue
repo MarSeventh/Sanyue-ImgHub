@@ -9,6 +9,7 @@
                 <font-awesome-icon icon="question" class="info-icon" size="lg"/>
             </div>
         </el-tooltip>
+        <el-input class="upload-folder" v-model="uploadFolder" placeholder="上传目录"/>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
@@ -524,6 +525,29 @@ export default {
 }
 .upload-method-icon {
     outline: none;
+}
+
+.upload-folder {
+    width: 100px;
+    height: 2.5rem;
+    position: fixed;
+    top: 30px;
+    right: 180px;
+    z-index: 100;
+    border-radius: 12px;
+}
+@media (max-width: 768px) {
+    .upload-folder {
+        width: 80px;
+        height: 2rem;
+    }
+}
+.upload-folder :deep(.el-input__wrapper) {
+    border-radius: 12px;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    border: none;
 }
 
 .info-container {

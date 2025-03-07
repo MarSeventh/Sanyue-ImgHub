@@ -44,7 +44,7 @@
                                 下载
                             </el-dropdown-item>
                             <el-dropdown-item command="move">
-                                <font-awesome-icon icon="folder" style="margin-right: 5px;"></font-awesome-icon>
+                                <font-awesome-icon icon="file-export" style="margin-right: 5px;"></font-awesome-icon>
                                 移动
                             </el-dropdown-item>
                             <el-dropdown-item command="ban">
@@ -90,7 +90,7 @@
                     <el-card v-if="isFolder(item)" class="img-card folder-card">
                         <el-checkbox v-model="item.selected"></el-checkbox>
                         <div class="folder-icon" @click="enterFolder(item.name)">
-                            <font-awesome-icon icon="folder" size="3x"/>
+                            <font-awesome-icon icon="folder-open" size="4x"/>
                         </div>
                         <div class="folder-overlay">
                             <div class="folder-actions">
@@ -99,6 +99,11 @@
                                         <font-awesome-icon icon="trash-alt"></font-awesome-icon>
                                     </el-button>
                                 </el-tooltip>
+                                <el-tooltip :disabled="disableTooltip" content="移动" placement="top">
+                                    <el-button size="mini" type="primary" @click.stop="handleMove(index, item.name)">
+                                        <font-awesome-icon icon="file-export"></font-awesome-icon>
+                                    </el-button>
+                                </el-tooltip>  
                             </div>
                         </div>
                         <div class="file-info">{{ getFolderName(item.name) }}</div>
@@ -115,30 +120,39 @@
                         <video v-if="isVideo(item)" :src="'/file/' + item.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
                         <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="'/file/' + item.name + '?from=admin'" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
                         <div v-else class="file-preview">
-                            <font-awesome-icon icon="file" class="file-icon"></font-awesome-icon>
+                            <font-awesome-icon icon="file" class="file-icon" size="4x"></font-awesome-icon>
                         </div>
                         <div class="image-overlay">
                             <div class="overlay-buttons">
-                                <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
-                                    <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">
-                                        <font-awesome-icon icon="copy"></font-awesome-icon>
-                                    </el-button>
-                                </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
-                                    <el-button size="mini" type="primary" @click.stop="handleDownload(item.name)">
-                                        <font-awesome-icon icon="download"></font-awesome-icon>
-                                    </el-button>
-                                </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
-                                    <el-button size="mini" type="primary" @click.stop="openDetailDialog(index, item.name)">
-                                        <font-awesome-icon icon="info"></font-awesome-icon>
-                                    </el-button>
-                                </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
-                                    <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
-                                        <font-awesome-icon icon="trash-alt"></font-awesome-icon>
-                                    </el-button>
-                                </el-tooltip>
+                                <div class="button-row">
+                                    <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
+                                        <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">
+                                            <font-awesome-icon icon="copy"></font-awesome-icon>
+                                        </el-button>
+                                    </el-tooltip>
+                                    <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
+                                        <el-button size="mini" type="primary" @click.stop="handleDownload(item.name)">
+                                            <font-awesome-icon icon="download"></font-awesome-icon>
+                                        </el-button>
+                                    </el-tooltip>
+                                </div>
+                                <div class="button-row">
+                                    <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
+                                        <el-button size="mini" type="primary" @click.stop="openDetailDialog(index, item.name)">
+                                            <font-awesome-icon icon="info"></font-awesome-icon>
+                                        </el-button>
+                                    </el-tooltip>
+                                    <el-tooltip :disabled="disableTooltip" content="移动" placement="top">
+                                        <el-button size="mini" type="primary" @click.stop="handleMove(index, item.name)">
+                                            <font-awesome-icon icon="file-export"></font-awesome-icon>
+                                        </el-button>
+                                    </el-tooltip>
+                                    <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
+                                        <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
+                                            <font-awesome-icon icon="trash-alt"></font-awesome-icon>
+                                        </el-button>
+                                    </el-tooltip>
+                                </div>
                             </div>
                         </div>
                         <div class="file-info">{{ getFileName(item.metadata?.FileName || item.name) }}</div>
@@ -829,15 +843,57 @@ methods: {
             this.handleBatchWhite();
         }
     },
+    handleMove(index, key) {
+        // 弹窗输入新的文件夹路径
+        this.$prompt('请输入新的目录', '移动文件', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputPattern: /^\/([a-zA-Z0-9_\u4e00-\u9fa5]+(\/[a-zA-Z0-9_\u4e00-\u9fa5]+)*)?$/,
+            inputErrorMessage: '请输入/开头的正确目录路径'
+        }).then(({ value }) => {
+            // 去掉开头的 /，结尾若没有 /，则加上
+            const newPath = value.replace(/^\/+/, '') + (value.endsWith('/') ? '' : value === '' ? '' : '/');
+            const isFolder = this.tableData.find(file => file.name === key).isFolder;
+            // 判断目标文件夹是否是当前文件夹
+            if (newPath === this.currentPath) {
+                this.$message.warning('目标文件夹不能是当前文件夹');
+                return;
+            }
+            this.fetchWithAuth(`/api/manage/move/${key}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' })
+                .then(response => {
+                    if (response.ok) {
+                        const fileIndex = this.tableData.findIndex(file => file.name === key);
+                        if (fileIndex !== -1) {
+                            this.tableData.splice(fileIndex, 1);
+                        }
+                        this.updateStats(-1, false);
+                        this.$message.success('移动成功!');
+                    } else {
+                        return Promise.reject('请求失败');
+                    }
+                })
+                .then(() => {
+                    // 刷新文件列表
+                    this.refreshFileList();
+                })
+                .catch(() => this.$message.error('移动失败，请检查网络连接'));
+        }).catch(() => this.$message.info('已取消移动文件'));
+    },
     handleBatchMove() {
         // 弹窗输入新的文件夹路径
         this.$prompt('请输入新的目录', '移动文件', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
-            inputPattern: /^\/([a-zA-Z0-9_]+(\/[a-zA-Z0-9_]+)*)?$/,
+            inputPattern: /^\/([a-zA-Z0-9_\u4e00-\u9fa5]+(\/[a-zA-Z0-9_\u4e00-\u9fa5]+)*)?$/,
             inputErrorMessage: '请输入/开头的正确目录路径'
         }).then(({ value }) => {
-            const newPath = value;
+            // 去掉开头的 /，结尾若没有 /，则加上
+            const newPath = value.replace(/^\/+/, '') + (value.endsWith('/') ? '' : value === '' ? '' : '/');
+            // 判断目标文件夹是否是当前文件夹
+            if (newPath === this.currentPath) {
+                this.$message.warning('目标文件夹不能是当前文件夹');
+                return;
+            }
             const promises = this.selectedFiles.map(file => {
                 const isFolder = file.isFolder;
                 return this.fetchWithAuth(`/api/manage/move/${file.name}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' });
@@ -849,15 +905,19 @@ methods: {
                     results.forEach((response, index) => {
                         if (response.ok) {
                             successNum++;
+                            this.selectedFiles[index].selected = false;
                             const fileIndex = this.tableData.findIndex(file => file.name === this.selectedFiles[index].name);
                             if (fileIndex !== -1) {
                                 this.tableData.splice(fileIndex, 1);
                             }
                         }
                     });
-                    this.selectedFiles = [];
                     this.updateStats(-successNum, false);
                     this.$message.success('移动成功!');
+                })
+                .then(() => {
+                    // 刷新文件列表
+                    this.refreshFileList();
                 })
                 .catch(() => this.$message.error('移动失败，请检查网络连接'));
         }).catch(() => this.$message.info('已取消移动文件'));
@@ -1438,13 +1498,13 @@ mounted() {
 }
 
 .file-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 18vh;
 }
 .file-icon {
-    height: 40px;
-    position: relative;
-    top: 6vh;
     opacity: 0.6;
 }
 .file-icon-detail {
@@ -1487,7 +1547,15 @@ mounted() {
 
 .overlay-buttons {
     display: flex;
+    flex-direction: column;
+    gap: 8px; /* 行间距 */
     pointer-events: auto;
+}
+
+.button-row {
+    display: flex;
+    justify-content: center; /* 按钮居中 */
+    gap: 8px; /* 按钮间距 */
 }
 
 .pagination-container {
@@ -1636,7 +1704,7 @@ mounted() {
 
 .folder-actions {
     position: absolute;
-    bottom: 20%;
+    bottom: 15%;
     display: flex;
     pointer-events: auto;
 }
