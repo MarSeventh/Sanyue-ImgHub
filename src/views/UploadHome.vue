@@ -9,6 +9,7 @@
                 <font-awesome-icon icon="question" class="info-icon" size="lg"/>
             </div>
         </el-tooltip>
+        <el-input class="upload-folder" v-model="uploadFolder" placeholder="上传目录"/>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
@@ -62,6 +63,7 @@
             :autoRetry="autoRetry"
             :urlPrefix="urlPrefix"
             :uploadMethod="uploadMethod"
+            :uploadFolder="uploadFolder"
             class="upload"
         />
         <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
@@ -101,6 +103,9 @@
                         <el-radio label="cfr2">Cloudflare R2</el-radio>
                         <el-radio label="s3">S3</el-radio>
                     </el-radio-group>
+                </el-form-item>
+                <el-form-item label="上传目录">
+                    <el-input style="width: 300px;" v-model="uploadFolder" placeholder="请输入上传目录路径"/>
                 </el-form-item>
                 <el-form-item label="自动切换">
                     <el-tooltip content="上传失败自动切换到其他渠道上传" placement="top">
@@ -202,6 +207,7 @@ export default {
             useDefaultWallPaper: false,
             isToolBarOpen: false, //是否打开工具栏
             uploadMethod: 'default', //上传方式
+            uploadFolder: '', // 添加上传文件夹属性
         }
     },
     watch: {
@@ -232,6 +238,9 @@ export default {
         autoRetry(val) {
             this.$store.commit('setStoreAutoRetry', val)
         },
+        uploadFolder(val) {
+            this.$store.commit('setStoreUploadFolder', val)
+        },
         isDark(val) {
             if (this.useDefaultWallPaper) {
                 const bg1 = document.getElementById('bg1')
@@ -243,7 +252,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod']),
+        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
         },
@@ -349,6 +358,8 @@ export default {
         this.useCustomUrl = this.customUrlSettings.useCustomUrl
         // 读取用户偏好的上传方式
         this.uploadMethod = this.storeUploadMethod
+        // 读取用户设置的上传文件夹
+        this.uploadFolder = this.storeUploadFolder
     },
     components: {
         UploadForm,
@@ -514,6 +525,29 @@ export default {
 }
 .upload-method-icon {
     outline: none;
+}
+
+.upload-folder {
+    width: 100px;
+    height: 2.5rem;
+    position: fixed;
+    top: 30px;
+    right: 180px;
+    z-index: 100;
+    border-radius: 12px;
+}
+@media (max-width: 768px) {
+    .upload-folder {
+        width: 80px;
+        height: 2rem;
+    }
+}
+.upload-folder :deep(.el-input__wrapper) {
+    border-radius: 12px;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    border: none;
 }
 
 .info-container {

@@ -77,8 +77,8 @@
                                         <el-button type="primary" round style="outline: none; border-right: none;">
                                             <font-awesome-icon icon="trash-alt" />
                                         </el-button>
-                                        <template v-slot:dropdown>
-                                            <el-dropdown-menu slot="dropdown">
+                                        <template #dropdown>
+                                            <el-dropdown-menu>
                                                 <el-dropdown-item @click="clearFileList">清空全部</el-dropdown-item>
                                                 <el-dropdown-item @click="clearSuccessList">清空已上传</el-dropdown-item>
                                             </el-dropdown-menu>
@@ -220,6 +220,11 @@ props: {
         type: String,
         default: 'default',
         required: false
+    },
+    uploadFolder: {
+        type: String,
+        default: '',
+        required: false
     }
 },
 data() {
@@ -357,7 +362,12 @@ methods: {
             formData.append('url', file.file.url)
         }
         axios({
-            url: '/upload' + '?authCode=' + cookies.get('authCode') + '&serverCompress=' + needServerCompress + '&uploadChannel=' + uploadChannel + '&uploadNameType=' + uploadNameType + '&autoRetry=' + autoRetry,
+            url: '/upload' + '?authCode=' + cookies.get('authCode') + 
+                '&serverCompress=' + needServerCompress + 
+                '&uploadChannel=' + uploadChannel + 
+                '&uploadNameType=' + uploadNameType + 
+                '&autoRetry=' + autoRetry + 
+                '&uploadFolder=' + this.uploadFolder,
             method: 'post',
             data: formData,
             onUploadProgress: (progressEvent) => {
