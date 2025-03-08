@@ -22,6 +22,15 @@
                 <el-form-item label="启用">
                     <el-switch v-model="settings.randomImageAPI.enabled" :disabled="settings.randomImageAPI.fixed"></el-switch>
                 </el-form-item>
+                <el-form-item prop="randomImageAPI.allowedDir">
+                    <template #label>
+                        <span>目录</span>
+                        <el-tooltip content="1. 开放随机图权限的目录，默认为根目录，多个目录用逗号分隔 <br/> 2. 目录均采用绝对路径，例如/img/cover，表示该目录及其所有子目录的文件可被随机图API访问" placement="right" raw-content>
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-input v-model="settings.randomImageAPI.allowedDir" :disabled="settings.randomImageAPI.fixed"></el-input>
+                </el-form-item>
             </el-form>
             <h4 class="second-title">CloudFlare API Token
                 <el-tooltip content="设置后可以使后端拉黑、删除等操作不受CDN缓存限制 <br/> 建议设置,设置方式请查阅文档" placement="right" raw-content>
