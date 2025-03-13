@@ -1,3 +1,29 @@
+<div align="center">
+    <a href="https://github.com/MarSeventh/CloudFlare-ImgBed"><img width="200px" alt="logo" src="https://imgbed.sanyue.site/file/github/1741863225688_logo.e8dbfa27.png"/></a>
+    <p><em>🗂️开源文件托管解决方案，基于 Cloudflare Pages，支持 Telegram Bot 、 Cloudflare R2 ，S3 API 等多种不同存储渠道。</em></p>
+    <div>
+        <a href="https://github.com/MarSeventh/CloudFlare-ImgBed/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/MarSeventh/CloudFlare-ImgBed" alt="License" />
+        </a>
+        <a href="https://github.com/MarSeventh/CloudFlare-ImgBed/releases">
+        <img src="https://img.shields.io/github/release/MarSeventh/CloudFlare-ImgBed" alt="latest version" />
+        </a>
+        <a href="https://github.com/MarSeventh/CloudFlare-ImgBed/releases">
+        <img src="https://img.shields.io/github/downloads/MarSeventh/CloudFlare-ImgBed/total?color=%239F7AEA&logo=github" alt="Downloads" />
+        </a>
+        <a href="https://github.com/MarSeventh/CloudFlare-ImgBed/issues">
+          <img src="https://img.shields.io/github/issues/MarSeventh/CloudFlare-ImgBed" alt="Issues" />
+        </a>
+        <a href="https://github.com/MarSeventh/CloudFlare-ImgBed/stargazers">
+          <img src="https://img.shields.io/github/stars/MarSeventh/CloudFlare-ImgBed" alt="Stars" />
+        </a>
+        <a href="https://github.com/MarSeventh/CloudFlare-ImgBed/network/members">
+          <img src="https://img.shields.io/github/forks/MarSeventh/CloudFlare-ImgBed" alt="Forks" />
+        </a>
+    </div>
+</div>
+
+----
 # sanyue_imghub
 
 ### 本仓库为[MarSeventh/CloudFlare-ImgBed](https://github.com/MarSeventh/CloudFlare-ImgBed)项目的前端仓库，详细介绍及部署方式请移步该仓库。
