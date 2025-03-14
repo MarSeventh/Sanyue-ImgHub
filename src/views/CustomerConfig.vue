@@ -42,6 +42,7 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="ip" label="IP地址"></el-table-column>
+                <el-table-column prop="address" label="地址"></el-table-column>
                 <el-table-column prop="count" label="上传次数" sortable></el-table-column>
                 <el-table-column label="允许上传">
                     <template v-slot="{ row }">
@@ -225,6 +226,7 @@ export default {
                 const enable = !this.blockipList.includes(item.ip);
                 return {
                     ip: item.ip,
+                    address: item.address,
                     count: item.count,
                     data: item.data,
                     enable: enable
