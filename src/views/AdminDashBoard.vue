@@ -869,7 +869,19 @@ methods: {
                             // 更新本地文件管理器
                             const newKey = newPath + key.split('/').pop();
                             fileManager.moveFile(key, newKey, isFolder, this.currentPath);
+                            // 移除文件
                             this.tableData.splice(fileIndex, 1);
+                            // 强制重新渲染内容
+                            this.$nextTick(() => {
+                                // 创建临时数组
+                                const tempData = [...this.tableData];
+                                // 清空数组
+                                this.tableData = [];
+                                // 在下一个tick中恢复数据
+                                this.$nextTick(() => {
+                                    this.tableData = tempData;
+                                });
+                            });
                         }
                         this.updateStats(-1, false);
                         this.$message.success('移动成功!');
@@ -917,9 +929,21 @@ methods: {
                                 // 更新本地文件管理器
                                 const newKey = newPath + file.name.split('/').pop();
                                 fileManager.moveFile(file.name, newKey, file.isFolder, this.currentPath);
+                                // 移除文件
                                 this.tableData.splice(fileIndex, 1);
                             }
                         }
+                    });
+                    // 强制重新渲染内容
+                    this.$nextTick(() => {
+                        // 创建临时数组
+                        const tempData = [...this.tableData];
+                        // 清空数组
+                        this.tableData = [];
+                        // 在下一个tick中恢复数据
+                        this.$nextTick(() => {
+                            this.tableData = tempData;
+                        });
                     });
                     this.updateStats(-successNum, false);
                     this.$message.success('移动成功!');

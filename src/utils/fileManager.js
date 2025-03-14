@@ -75,11 +75,14 @@ class FileManager {
 
             }
 
-            // 如果新路径是当前目录的直接子目录，则添加新目录
-            if (currentPath === '' || newPath.startsWith(currentPath)) {
-                const newFolder = currentPath + newPath.substring(currentPath.length).split('/')[0];
-                if (!fileList.directories.includes(newFolder)) {
-                    fileList.directories.push(newFolder);
+            // 如果新路径包含当前目录的直接子目录，则添加直接子目录
+            if (newPath.startsWith(currentPath)) {
+                const pathArray = newPath.substring(currentPath.length).split('/');
+                if (pathArray.length > 1) {
+                    const newFolder = currentPath + pathArray[0];
+                    if (!fileList.directories.includes(newFolder)) {
+                        fileList.directories.push(newFolder);
+                    }
                 }
             }
 
