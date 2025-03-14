@@ -241,6 +241,7 @@
                 <el-descriptions-item label="上传渠道" class-name="description-item">{{ detailFile?.metadata?.Channel || '未知' }}</el-descriptions-item>
                 <el-descriptions-item label="审查结果" class-name="description-item">{{ detailFile?.metadata?.Label || '无' }}</el-descriptions-item>
                 <el-descriptions-item label="上传IP" class-name="description-item">{{ detailFile?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="上传地址" class-name="description-item">{{ detailFile?.metadata?.UploadAddress || '未知' }}</el-descriptions-item>
             </el-descriptions>
         </el-dialog>
         <el-dialog title="链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">

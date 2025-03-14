@@ -183,6 +183,7 @@ export default {
                     const enable = !this.blockipList.includes(item.ip);
                     return {
                         ip: item.ip,
+                        address: item.address,
                         count: item.count,
                         data: item.data,
                         enable: enable
