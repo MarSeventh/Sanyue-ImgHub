@@ -53,6 +53,43 @@ class FileManager {
         }
     }
 
+    // 移动文件或文件夹
+    moveFile(oldPath, newPath, isFolder = false, currentPath = '') {
+        try {
+            let fileList = this.getLocalFileList();
+            
+            if (isFolder) {
+                // 更新目录列表
+                const oldFolderIndex = fileList.directories.indexOf(oldPath);
+                if (oldFolderIndex !== -1) {
+                    fileList.directories.splice(oldFolderIndex, 1);
+                }
+
+            } else {
+                // 移动单个文件
+                const fileIndex = fileList.files.findIndex(file => file.name === oldPath);
+                if (fileIndex !== -1) {
+                    // 从旧位置移除
+                    fileList.files.splice(fileIndex, 1);
+                }
+
+            }
+
+            // 如果新路径是当前目录的直接子目录，则添加新目录
+            if (currentPath === '' || newPath.startsWith(currentPath)) {
+                const newFolder = currentPath + newPath.substring(currentPath.length).split('/')[0];
+                if (!fileList.directories.includes(newFolder)) {
+                    fileList.directories.push(newFolder);
+                }
+            }
+
+            return this.saveFileList(fileList);
+        } catch (error) {
+            console.error('Error moving file:', error);
+            return false;
+        }
+    }
+
     // 从列表中删除文件
     removeFile(fileName) {
         try {

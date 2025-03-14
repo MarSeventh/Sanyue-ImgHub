@@ -624,6 +624,7 @@ methods: {
                         if (fileIndex !== -1) {
                             this.tableData.splice(fileIndex, 1);
                         }
+                        fileManager.removeFile(this.selectedFiles[index].name);
                     }
                 });
                 this.selectedFiles = [];
@@ -865,6 +866,9 @@ methods: {
                     if (response.ok) {
                         const fileIndex = this.tableData.findIndex(file => file.name === key);
                         if (fileIndex !== -1) {
+                            // 更新本地文件管理器
+                            const newKey = newPath + key.split('/').pop();
+                            fileManager.moveFile(key, newKey, isFolder, this.currentPath);
                             this.tableData.splice(fileIndex, 1);
                         }
                         this.updateStats(-1, false);
@@ -874,8 +878,8 @@ methods: {
                     }
                 })
                 .then(() => {
-                    // 刷新文件列表
-                    this.refreshFileList();
+                    // 刷新本地文件列表
+                    this.refreshLocalFileList();
                 })
                 .catch(() => this.$message.error('移动失败，请检查网络连接'));
         }).catch(() => this.$message.info('已取消移动文件'));
@@ -906,9 +910,13 @@ methods: {
                     results.forEach((response, index) => {
                         if (response.ok) {
                             successNum++;
-                            this.selectedFiles[index].selected = false;
-                            const fileIndex = this.tableData.findIndex(file => file.name === this.selectedFiles[index].name);
+                            const file = this.selectedFiles[index];
+                            file.selected = false;
+                            const fileIndex = this.tableData.findIndex(f => f.name === file.name);
                             if (fileIndex !== -1) {
+                                // 更新本地文件管理器
+                                const newKey = newPath + file.name.split('/').pop();
+                                fileManager.moveFile(file.name, newKey, file.isFolder, this.currentPath);
                                 this.tableData.splice(fileIndex, 1);
                             }
                         }
@@ -917,8 +925,8 @@ methods: {
                     this.$message.success('移动成功!');
                 })
                 .then(() => {
-                    // 刷新文件列表
-                    this.refreshFileList();
+                    // 刷新本地文件列表
+                    this.refreshLocalFileList();
                 })
                 .catch(() => this.$message.error('移动失败，请检查网络连接'));
         }).catch(() => this.$message.info('已取消移动文件'));
@@ -1177,6 +1185,20 @@ methods: {
             }
         } catch (error) {
             console.error('Error refreshing file list:', error);
+            this.$message.error('刷新失败，请重试');
+        } finally {
+            this.refreshLoading = false;
+            this.loading = false;
+        }
+    },
+    // 刷新本地文件列表
+    async refreshLocalFileList() {
+        this.refreshLoading = true;
+        this.loading = true;
+        try {
+            await this.fetchFileList();
+        } catch (error) {
+            console.error('Error refreshing local file list:', error);
             this.$message.error('刷新失败，请重试');
         } finally {
             this.refreshLoading = false;
