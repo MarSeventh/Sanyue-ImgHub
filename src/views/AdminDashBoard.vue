@@ -553,7 +553,7 @@ methods: {
     },
     async fetchWithAuth(url, options = {}) {
         // 开发环境, url 前面加上 /api
-        url = `/api${url}`;
+        // url = `/api${url}`;
         if (this.credentials) {
             // 设置 Authorization 头
             options.headers = {
