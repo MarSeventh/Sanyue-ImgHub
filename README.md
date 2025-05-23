@@ -11,6 +11,9 @@
         <a href="https://github.com/MarSeventh/CloudFlare-ImgBed/releases">
         <img src="https://img.shields.io/github/downloads/MarSeventh/CloudFlare-ImgBed/total?color=%239F7AEA&logo=github" alt="Downloads" />
         </a>
+        <a href="https://hub.docker.com/r/marseventh/cloudflare-imgbed">
+  		  <img src="https://img.shields.io/docker/pulls/marseventh/cloudflare-imgbed?style=flat-square" alt="Docker Pulls" />
+		</a>
         <a href="https://github.com/MarSeventh/CloudFlare-ImgBed/issues">
           <img src="https://img.shields.io/github/issues/MarSeventh/CloudFlare-ImgBed" alt="Issues" />
         </a>
@@ -22,6 +25,7 @@
         </a>
     </div>
 </div>
+
 
 ----
 # sanyue_imghub
@@ -37,7 +41,5 @@
 3. 将修改好的`CloudFlare-ImgBed`项目部署上去即可，具体方法参照完整项目的文档
 
 ## TIPS
-
-**一天手搓出来的前端，后续还会继续完善，有bug欢迎提出。**
 
 **如果觉得项目不错希望您能给个免费的star✨✨✨，非常感谢！**

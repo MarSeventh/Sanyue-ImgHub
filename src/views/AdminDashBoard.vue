@@ -1118,18 +1118,29 @@ methods: {
             path = path.split('/file/')[1];
         }
         
+        let folderName = '';
         // 如果是文件夹路径，只返回最后一级文件夹名
         if (path && path.includes('/')) {
             const parts = path.split('/');
             // 如果是根目录下的文件夹
             if (this.currentPath === '') {
-                return parts[0];
+                folderName = parts[0];
+            } else {
+                // 如果是子文件夹
+                const relativePath = path.substring(this.currentPath.length);
+                folderName = relativePath.split('/')[0];
             }
-            // 如果是子文件夹
-            const relativePath = path.substring(this.currentPath.length);
-            return relativePath.split('/')[0];
+        } else {
+            folderName = path;
         }
-        return path;
+
+        const maxLength = 20; // Adjust max length as needed
+        if (folderName.length > maxLength) {
+            const startLength = Math.floor((maxLength - 3) / 2);
+            const endLength = Math.ceil((maxLength - 3) / 2);
+            return `${folderName.substring(0, startLength)}...${folderName.substring(folderName.length - endLength)}`;
+        }
+        return folderName;
     },
     
     // 获取文件名称（去除路径和URL前缀）
@@ -1137,7 +1148,14 @@ methods: {
         if (path.startsWith('http')) {
             path = path.split('/file/')[1];
         }
-        return path.split('/').pop();
+        let fileName = path.split('/').pop();
+        const maxLength = 20; // Adjust max length as needed, ensure it fits in one line
+        if (fileName.length > maxLength) {
+            const startLength = Math.floor((maxLength - 3) / 2);
+            const endLength = Math.ceil((maxLength - 3) / 2);
+            return `${fileName.substring(0, startLength)}...${fileName.substring(fileName.length - endLength)}`;
+        }
+        return fileName;
     },
     
     // 进入文件夹

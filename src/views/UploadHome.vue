@@ -175,6 +175,14 @@
         </el-dialog>
     </div>
     <Footer class="footer"/>
+    <el-dialog title="公告" v-model="showAnnouncementDialog" :width="dialogWidth" :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false" center>
+        <div v-html="announcementContent"></div>
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button type="primary" @click="showAnnouncementDialog = false">朕已阅</el-button>
+            </span>
+        </template>
+    </el-dialog>
     </div>
 </template>
 
@@ -208,6 +216,8 @@ export default {
             isToolBarOpen: false, //是否打开工具栏
             uploadMethod: 'default', //上传方式
             uploadFolder: '', // 添加上传文件夹属性
+            showAnnouncementDialog: false, // 控制公告弹窗的显示
+            announcementContent: '', // 公告内容
         }
     },
     watch: {
@@ -360,6 +370,15 @@ export default {
         this.uploadMethod = this.storeUploadMethod
         // 读取用户设置的上传文件夹
         this.uploadFolder = this.storeUploadFolder
+
+        // 首次访问公告
+        const visited = localStorage.getItem('visitedUploadHome')
+        const announcement = this.userConfig?.announcement
+        if (!visited && announcement) {
+            this.announcementContent = announcement
+            this.showAnnouncementDialog = true
+            localStorage.setItem('visitedUploadHome', 'true')
+        }
     },
     components: {
         UploadForm,

@@ -2,7 +2,11 @@
     <div class="upload-settings" v-loading="loading">   
         <!-- 一级设置：上传渠道 -->
         <div class="upload-channel">
-        <h3 class="first-title">上传渠道</h3>
+        <h3 class="first-title">上传渠道
+            <el-tooltip content="设置每类上传渠道的详细配置 <br> 点击“保存设置”会同时保存对每类配置的修改" placement="right" raw-content>
+                <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+            </el-tooltip>
+        </h3>
         <el-radio-group v-model="activeChannel">
             <el-radio
             v-for="channel in channels"

@@ -7,19 +7,19 @@
     @select="handleSelect"
     >
         <el-menu-item index="upload" class="menu-item">
-            <font-awesome-icon icon="cloud-upload"></font-awesome-icon>
+            <font-awesome-icon icon="cloud-upload" style="width: 18px;"></font-awesome-icon>
             <span slot="title">上传设置</span>
         </el-menu-item>
         <el-menu-item index="security" class="menu-item">
-            <font-awesome-icon icon="shield"></font-awesome-icon>
+            <font-awesome-icon icon="shield" style="width: 18px;"></font-awesome-icon>
             <span slot="title">安全设置</span>
         </el-menu-item>
         <el-menu-item index="page" class="menu-item">
-            <font-awesome-icon icon="pager"></font-awesome-icon>
-            <span slot="title">页面设置</span>
+            <font-awesome-icon icon="pager" style="width: 18px;"></font-awesome-icon>
+            <span slot="title">网页设置</span>
         </el-menu-item>
         <el-menu-item index="others" class="menu-item">
-            <font-awesome-icon icon="cog"></font-awesome-icon>
+            <font-awesome-icon icon="cog" style="width: 18px;"></font-awesome-icon>
             <span slot="title">其他设置</span>
         </el-menu-item>
     </el-menu>
