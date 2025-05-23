@@ -553,7 +553,7 @@ methods: {
     },
     async fetchWithAuth(url, options = {}) {
         // 开发环境, url 前面加上 /api
-        // url = `/api${url}`;
+        url = `/api${url}`;
         if (this.credentials) {
             // 设置 Authorization 头
             options.headers = {
@@ -1113,11 +1113,6 @@ methods: {
     
     // 获取文件夹名称
     getFolderName(path) {
-        // 如果是完整URL，获取/file/后的路径
-        if (path.startsWith('http')) {
-            path = path.split('/file/')[1];
-        }
-        
         let folderName = '';
         // 如果是文件夹路径，只返回最后一级文件夹名
         if (path && path.includes('/')) {
@@ -1145,9 +1140,6 @@ methods: {
     
     // 获取文件名称（去除路径和URL前缀）
     getFileName(path) {
-        if (path.startsWith('http')) {
-            path = path.split('/file/')[1];
-        }
         let fileName = path.split('/').pop();
         const maxLength = 20; // Adjust max length as needed, ensure it fits in one line
         if (fileName.length > maxLength) {
