@@ -7,11 +7,16 @@ import { mapGetters } from 'vuex'
 
 export default {
   computed: {
-    ...mapGetters(['userConfig'])
+    ...mapGetters(['userConfig', 'useDarkMode'])
   },
   mounted() {
     this.setSiteTitle(),
     this.setSiteIcon()
+  },
+  watch: {
+    useDarkMode() {
+      this.setSiteIcon()
+    }
   },
   methods: {
     setSiteTitle() {
@@ -20,7 +25,14 @@ export default {
     setSiteIcon() {
       const link = document.createElement('link')
       link.rel = 'icon'
-      link.href = this.userConfig?.siteIcon || '/logo.png'
+      
+      // 根据深色模式选择不同的 logo
+      if (this.useDarkMode) {
+        link.href = this.userConfig?.siteIcon || '/logo-dark.png'
+      } else {
+        link.href = this.userConfig?.siteIcon || '/logo.png'
+      }
+      
       document.head.appendChild(link)
     }
   }
