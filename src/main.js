@@ -60,9 +60,33 @@ const applyDarkModeClass = (isDarkMode) => {
     }
 };
 
+// 预设网站标题的函数
+const presetSiteTitle = (userConfig) => {
+    document.title = userConfig?.siteTitle || 'Sanyue ImgHub';
+};
+
+// 预设网站图标的函数
+const presetSiteIcon = (isDarkMode, userConfig) => { 
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    
+    if (isDarkMode) {
+        link.href = userConfig?.siteIcon || '/logo-dark.png';
+    } else {
+        link.href = userConfig?.siteIcon || '/logo.png';
+    }
+    
+    document.head.appendChild(link);
+};
+
 store.dispatch('fetchUserConfig').then(() => {
     // 初始化时应用 dark 模式
     initDarkModeClass(store.state.useDarkMode);
+    
+    // 预设网站标题和图标
+    presetSiteTitle(store.getters.userConfig);
+    presetSiteIcon(store.state.useDarkMode, store.getters.userConfig);
+    
     // 监听 useDarkMode 的变化
     store.subscribe((mutation, state) => {
         if (mutation.type === 'setUseDarkMode') {

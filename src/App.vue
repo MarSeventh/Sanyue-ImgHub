@@ -9,19 +9,12 @@ export default {
   computed: {
     ...mapGetters(['userConfig', 'useDarkMode'])
   },
-  mounted() {
-    this.setSiteTitle(),
-    this.setSiteIcon()
-  },
   watch: {
     useDarkMode() {
       this.setSiteIcon()
     }
   },
   methods: {
-    setSiteTitle() {
-      document.title = this.userConfig?.siteTitle || 'Sanyue ImgHub'
-    },
     setSiteIcon() {
       const link = document.createElement('link')
       link.rel = 'icon'
