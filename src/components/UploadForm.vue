@@ -815,15 +815,18 @@ methods: {
     },
     // 判断是否为图片类型
     isImage(fileName) {
-      const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-      const extension = fileName.split('.').pop().toLowerCase();
-      return imageExtensions.includes(extension);
+        const imageExtensions = [
+            'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico', 'avif', 'heic',
+            'jfif', 'pjpeg', 'pjp', 'raw', 'cr2', 'nef', 'dng', 'eps', 'ai', 'emf', 'wmf'
+        ];
+        const extension = fileName.split('.').pop().toLowerCase();
+        return imageExtensions.includes(extension);
     },
     // 判断是否为视频类型
     isVideo(fileName) {
-      const videoExtensions = ['mp4', 'webm', 'ogg', 'mkv'];
-      const extension = fileName.split('.').pop().toLowerCase();
-      return videoExtensions.includes(extension);
+        const videoExtensions = ['mp4', 'webm', 'ogg', 'mkv'];
+        const extension = fileName.split('.').pop().toLowerCase();
+        return videoExtensions.includes(extension);
     },
     handleScroll(event) {
         this.listScrolled = event.scrollTop > 0 && this.fileList.length > 0
