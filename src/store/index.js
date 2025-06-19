@@ -105,7 +105,7 @@ export default createStore({
     async fetchBingWallPapers({ commit }) {
       try {
         const response = await axios.get('/api/bing/wallpaper');
-        const wallpapers = response.data;
+        const wallpapers = response.data.data;
         const bingWallPapers = wallpapers.map(wallpaper => {
           return {
             url: 'https://www.bing.com' + wallpaper.url,

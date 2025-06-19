@@ -127,17 +127,14 @@
                     </template>
                     <el-input v-model="channel.endpoint" :disabled="channel.fixed"/>
                 </el-form-item>
+                <el-form-item label="路径风格" prop="pathStyle">
+                    <el-switch v-model="channel.pathStyle" :disabled="channel.fixed"/>
+                </el-form-item>
                 <el-form-item label="存储桶名称" prop="bucketName">
                     <el-input v-model="channel.bucketName" :disabled="channel.fixed"/>
                 </el-form-item>
-                <el-form-item prop="region">
-                    <template #label>
-                        存储桶区域
-                        <el-tooltip content="默认填写 auto 即可" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-input v-model="channel.region" placeholder="auto" :disabled="channel.fixed"/>
+                <el-form-item label="存储桶区域" prop="region">
+                    <el-input v-model="channel.region" placeholder="默认填写 auto 即可" :disabled="channel.fixed"/>
                 </el-form-item>
                 <el-form-item label="访问密钥 ID" prop="accessKeyId">
                     <el-input v-model="channel.accessKeyId" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
@@ -300,7 +297,7 @@ methods: {
                 //     enabled: true,
                 //     fixed: false
                 // });
-                this.$message.error('暂不支持增加 R2渠道 配置');
+                this.$message.error('R2渠道请通过绑定 R2 存储桶或通过 S3 渠道添加');
                 break;
             case 's3':
                 this.s3Settings.channels.push({
@@ -313,6 +310,7 @@ methods: {
                     region: '',
                     bucketName: '',
                     endpoint: '',
+                    pathStyle: false,
                     enabled: true,
                     fixed: false
                 });

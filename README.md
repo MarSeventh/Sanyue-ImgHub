@@ -34,11 +34,12 @@
 
 ## Deployment
 
-如果要在**完整项目基础上定制前端**，只需要三步（**前提是你需要有基本的`git`、`nodejs`等工具的使用能力**）：
+如果要在**完整项目基础上定制前端**，只需要四步（**前提是你需要有基本的`git`、`nodejs`等工具的使用能力**）：
 
-1. 将该项目拉到本地，`npm install`，修改环境变量`.env.development`中的`VUE_APP_BACKEND_URL`为你自己图床的URL
-2. 进行DIY，然后`npm run build`，进入打包好的`/dist`目录，将里面的所有内容复制到`CloudFlare-ImgBed`项目的根目录
-3. 将修改好的`CloudFlare-ImgBed`项目部署上去即可，具体方法参照完整项目的文档
+1. 将`CloudFlare-ImgBed`拉取到本地，`npm install`安装依赖，`npm run start`启动项目（作为后端服务运行）
+2. 将该前端项目拉取到本地，`npm install`，修改环境变量`.env.development`中的`VUE_APP_BACKEND_URL`为你本地后端服务的URL（默认无需修改）
+3. 进行DIY，然后`npm run build`，进入打包好的`/dist`目录，将里面的所有内容复制到`CloudFlare-ImgBed`项目的根目录
+4. 将修改好的`CloudFlare-ImgBed`项目部署上去即可，具体方法参照完整项目的文档
 
 ## TIPS
 
