@@ -1,4 +1,5 @@
 import { createStore } from 'vuex'
+import axios from '@/utils/axios';
 import createPersistedState from 'vuex-persistedstate';
 
 export default createStore({
@@ -95,24 +96,23 @@ export default createStore({
   actions: {
     async fetchUserConfig({ commit }) {
       try {
-        const response = await fetch('/userConfig');
-        const userConfig = await response.json();
-        commit('setUserConfig', userConfig);
+        const response = await axios.get('/userConfig');
+        commit('setUserConfig', response.data);
       } catch (error) {
         console.log(error);
       }
     },
     async fetchBingWallPapers({ commit }) {
       try {
-        const response = await fetch('/api/bing/wallpaper');
-        const jsonResponse = await response.json();
-        const wallpapers = jsonResponse.data;
+        const response = await axios.get('/api/bing/wallpaper');
+        const wallpapers = response.data;
         const bingWallPapers = wallpapers.map(wallpaper => {
           return {
             url: 'https://www.bing.com' + wallpaper.url,
           };
         }
         );
+
         //预加载图片，阻塞直到图片加载完成
         await Promise.all(bingWallPapers.map(wallpaper => {
           return new Promise((resolve, reject) => {

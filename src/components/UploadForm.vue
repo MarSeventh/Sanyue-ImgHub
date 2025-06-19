@@ -154,7 +154,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from '@/utils/axios'
 import cookies from 'vue-cookies'
 import * as imageConversion from 'image-conversion'
 

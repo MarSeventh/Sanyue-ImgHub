@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import cookies from 'vue-cookies'
 import store from '../store'
-import axios from 'axios'
+import axios from '@/utils/axios'
 
 const routes = [
   {

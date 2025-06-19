@@ -19,7 +19,6 @@
     </div>
 </template>
 <script>
-import { mapGetters } from 'vuex';
 import DashboardTabs from '@/components/DashboardTabs.vue';
 import SysConfigTabs from '@/components/SysConfigTabs.vue';
 import SysCogUpload from '@/components/SysCogUpload.vue';
@@ -59,7 +58,6 @@ export default {
         SysCogOthers
     },
     computed: {
-        ...mapGetters(['credentials']),
         disableTooltip() {
             return window.innerWidth < 768;
         },
@@ -79,30 +77,6 @@ export default {
         }
     },
     methods: {
-        async fetchWithAuth(url, options = {}) {
-            // 开发环境, url 前面加上 /api
-            // url = `/api${url}`;
-            if (this.credentials) {
-                // 设置 Authorization 头
-                options.headers = {
-                    ...options.headers,
-                    'Authorization': `Basic ${this.credentials}`
-                };
-                // 确保包含凭据，如 cookies
-                options.credentials = 'include'; 
-            }
-
-            const response = await fetch(url, options);
-
-            if (response.status === 401) {
-                // Redirect to the login page if a 401 Unauthorized is returned
-                this.$message.error('认证状态错误，请重新登录');
-                this.$router.push('/adminLogin'); 
-                throw new Error('Unauthorized');
-            }
-
-            return response;
-        },
         handleLogout() {
             this.$store.commit('setCredentials', null);
             this.$router.push('/adminLogin');

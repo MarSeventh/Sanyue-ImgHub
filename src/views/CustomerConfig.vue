@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import fetchWithAuth from '@/utils/fetchWithAuth';
 import DashboardTabs from '@/components/DashboardTabs.vue';
 
 export default {
@@ -98,7 +98,6 @@ export default {
         DashboardTabs
     },
     computed: {
-        ...mapGetters(['credentials']),
         disableTooltip() {
             return window.innerWidth < 768;
         },
@@ -110,30 +109,6 @@ export default {
         }
     },
     methods: {
-        async fetchWithAuth(url, options = {}) {
-            // 开发环境, url 前面加上 /api
-            // url = `/api${url}`;
-            if (this.credentials) {
-                // 设置 Authorization 头
-                options.headers = {
-                    ...options.headers,
-                    'Authorization': `Basic ${this.credentials}`
-                };
-                // 确保包含凭据，如 cookies
-                options.credentials = 'include'; 
-            }
-
-            const response = await fetch(url, options);
-
-            if (response.status === 401) {
-                // Redirect to the login page if a 401 Unauthorized is returned
-                this.$message.error('认证状态错误，请重新登录');
-                this.$router.push('/adminLogin'); 
-                throw new Error('Unauthorized');
-            }
-
-            return response;
-        },
         handleLogout() {
             this.$store.commit('setCredentials', null);
             this.$router.push('/adminLogin');
@@ -151,7 +126,7 @@ export default {
                 // 从 blockipList 中移除
                 this.blockipList = this.blockipList.filter(item => item !== ip);
                 // 更新 blockipList
-                await this.fetchWithAuth("/api/manage/cusConfig/whiteip", {
+                await fetchWithAuth("/api/manage/cusConfig/whiteip", {
                     method: 'POST',
                     body: ip
                 });
@@ -159,7 +134,7 @@ export default {
                 // 添加到 blockipList 中
                 this.blockipList.push(ip);
                 // 更新 blockipList
-                await this.fetchWithAuth("/api/manage/cusConfig/blockip", {
+                await fetchWithAuth("/api/manage/cusConfig/blockip", {
                     method: 'POST',
                     body: ip
                 });
@@ -176,7 +151,7 @@ export default {
             this.loading = true;
             const start = this.dealedData.length;
             const count = 20; // 每次加载20条数据
-            this.fetchWithAuth(`/api/manage/cusConfig/list?start=${start}&count=${count}`, { method: 'GET' })
+            fetchWithAuth(`/api/manage/cusConfig/list?start=${start}&count=${count}`, { method: 'GET' })
             .then(response => response.json())
             .then(result => {
                 this.dealedData = this.dealedData.concat(result.map(item => {
@@ -205,15 +180,15 @@ export default {
     mounted() {
         this.loading = true;
 
-        this.fetchWithAuth("/api/manage/check", { method: 'GET' })
+        fetchWithAuth("/api/manage/check", { method: 'GET' })
         .then(response => response.text())
         .then(result => {
             if(result == "true"){
                 this.showLogoutButton=true;
                 // 在 check 成功后再执行 list 的 fetch 请求
-                return this.fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' });
+                return fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' });
             } else if(result=="Not using basic auth."){
-                return this.fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' });
+                return fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' });
             } else{
                 throw new Error('Unauthorized');
             }
@@ -221,7 +196,7 @@ export default {
         .then(response => response.json())
         .then(async result => {
             // 读取blockipList, 接口返回格式为 'ip1,ip2,ip3'，需要转换为数组
-            const blockipList = await this.fetchWithAuth("/api/manage/cusConfig/blockipList", { method: 'GET' });
+            const blockipList = await fetchWithAuth("/api/manage/cusConfig/blockipList", { method: 'GET' });
             this.blockipList = (await blockipList.text()).split(',');
             this.dealedData = result.map(item => {
                 const enable = !this.blockipList.includes(item.ip);

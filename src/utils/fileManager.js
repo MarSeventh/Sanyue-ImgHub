@@ -1,4 +1,6 @@
 // 文件管理器工具类
+import fetchWithAuth from '@/utils/fetchWithAuth';
+
 class FileManager {
     constructor() {
         this.FILE_LIST_PATH = 'data/fileList.json';
@@ -132,7 +134,7 @@ class FileManager {
     }
 
     // 更新文件列表
-    async refreshFileList(fetchWithAuth, dir) {
+    async refreshFileList(dir) {
         try {
             const response = await fetchWithAuth(`/api/manage/list?count=60&dir=${dir}`, {
                 method: 'GET',
@@ -146,7 +148,7 @@ class FileManager {
     }
 
     // 读取更多数据
-    async loadMoreFiles(fetchWithAuth, dir) {
+    async loadMoreFiles(dir) {
         try {
             const fileList = this.getLocalFileList();
             const start = fileList.files.length;

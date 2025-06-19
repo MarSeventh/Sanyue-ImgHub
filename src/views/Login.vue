@@ -25,7 +25,7 @@
 
 <script>
 import cookies from 'vue-cookies'
-import axios from 'axios'
+import axios from '@/utils/axios'
 import { mapGetters } from 'vuex'
 import Footer from '@/components/Footer.vue'
 import ToggleDark from '@/components/ToggleDark.vue'

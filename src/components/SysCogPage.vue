@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import fetchWithAuth from '@/utils/fetchWithAuth';
 
 export default {
 data() {
@@ -38,35 +38,10 @@ data() {
     };
 },
 computed: {
-    ...mapGetters(['credentials']),
 },
 methods: {
-    async fetchWithAuth(url, options = {}) {
-        // 开发环境, url 前面加上 /api
-        // url = `/api${url}`;
-        if (this.credentials) {
-            // 设置 Authorization 头
-            options.headers = {
-                ...options.headers,
-                'Authorization': `Basic ${this.credentials}`
-            };
-            // 确保包含凭据，如 cookies
-            options.credentials = 'include'; 
-        }
-
-        const response = await fetch(url, options);
-
-        if (response.status === 401) {
-            // Redirect to the login page if a 401 Unauthorized is returned
-            this.$message.error('认证状态错误，请重新登录');
-            this.$router.push('/adminLogin'); 
-            throw new Error('Unauthorized');
-        }
-
-        return response;
-    },
     saveSettings() {
-        this.fetchWithAuth('/api/manage/sysConfig/page', {
+        fetchWithAuth('/api/manage/sysConfig/page', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -79,7 +54,7 @@ methods: {
 mounted() {
     this.loading = true;
     // 获取上传设置
-    this.fetchWithAuth('/api/manage/sysConfig/page')
+    fetchWithAuth('/api/manage/sysConfig/page')
     .then((response) => response.json())
     .then((data) => {
         this.settings = data;

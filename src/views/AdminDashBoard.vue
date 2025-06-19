@@ -117,8 +117,8 @@
                             <div v-else-if="item.metadata?.ListType === 'Block' || item.metadata?.Label === 'adult'" class="fail-tag">{{ item.channelTag }}</div>
                             <div v-else class="success-tag">{{ item.channelTag }}</div>
                         </div>
-                        <video v-if="isVideo(item)" :src="'/file/' + item.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                        <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="'/file/' + item.name + '?from=admin'" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
+                        <video v-if="isVideo(item)" :src="getFileLink(item.name)" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                        <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="getFileLink(item.name)" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
                         <div v-else class="file-preview">
                             <font-awesome-icon icon="file" class="file-icon" size="4x"></font-awesome-icon>
                         </div>
@@ -229,8 +229,8 @@
                     :width="300"
                     align="center"
                     >
-                    <video v-if="isVideo(detailFile)" :src="'/file/' + detailFile?.name + '?from=admin'" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
-                    <el-image v-else-if="isImage(detailFile)" :src="'/file/' + detailFile?.name + '?from=admin'" fit="cover" lazy class="image-preview"></el-image>
+                    <video v-if="isVideo(detailFile)" :src="getFileLink(detailFile?.name)" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                    <el-image v-else-if="isImage(detailFile)" :src="getFileLink(detailFile?.name)" fit="cover" lazy class="image-preview"></el-image>
                     <font-awesome-icon v-else icon="file" class="file-icon-detail"></font-awesome-icon>
                 </el-descriptions-item>
                 <el-descriptions-item label="文件名" class-name="description-item">{{ detailFile?.metadata?.FileName || detailFile?.name }}</el-descriptions-item>
@@ -282,6 +282,7 @@ import { mapGetters } from 'vuex';
 import JSZip from 'jszip';
 import DashboardTabs from '@/components/DashboardTabs.vue';
 import { fileManager } from '@/utils/fileManager';
+import fetchWithAuth from '@/utils/fetchWithAuth';
 
 export default {
 data() {
@@ -311,7 +312,7 @@ components: {
     DashboardTabs
 },
 computed: {
-    ...mapGetters(['credentials', 'adminUrlSettings', 'userConfig']),
+    ...mapGetters(['adminUrlSettings', 'userConfig']),
     filteredTableData() {
         // 根据搜索条件过滤
         return this.tableData.filter(data => 
@@ -326,11 +327,11 @@ computed: {
         const end = start + this.pageSize;
         let data = sortedData.slice(start, end);
         // 增加previewSrcList属性，用于预览图片
-        const fullList = data.filter(file => file.metadata?.FileType?.includes('image') ).map(file => `/file/${file.name}?from=admin`);
+        const fullList = data.filter(file => file.metadata?.FileType?.includes('image') ).map(file => this.getFileLink(file.name));
         data.forEach(file => {
-            if (!file.metadata?.FileType?.includes('video')) {
+            if (file.metadata?.FileType?.includes('image')) {
                 // 重新排序，索引大于等于当前索引的元素在前，否则在后
-                file.previewSrcList = fullList.slice(fullList.indexOf(`/file/${file.name}?from=admin`)).concat(fullList.slice(0, fullList.indexOf(`/file/${file.name}?from=admin`)));
+                file.previewSrcList = fullList.slice(fullList.indexOf(this.getFileLink(file.name))).concat(fullList.slice(0, fullList.indexOf(this.getFileLink(file.name))));
             }
         });
         // 增加channelTag属性，用于显示渠道信息
@@ -449,7 +450,7 @@ watch: {
 methods: {
     handleDownload(key) {
         const link = document.createElement('a');
-        link.href = `/file/${key}?from=admin`;
+        link.href = this.getFileLink(key);
         link.download = key;
         link.click();
     },
@@ -482,7 +483,7 @@ methods: {
         cancelButtonText: '取消',
         type: 'warning'
         }).then(() => {
-        this.fetchWithAuth(`/api/manage/delete/${key}`, { method: 'GET' })
+        fetchWithAuth(`/api/manage/delete/${key}`, { method: 'GET' })
             .then(response => {
             if (response.ok) {
                 const fileIndex = this.tableData.findIndex(file => file.name === key);
@@ -507,7 +508,7 @@ methods: {
             cancelButtonText: '取消',
             type: 'warning'
         }).then(() => {
-        this.fetchWithAuth(`/api/manage/block/${key}`, { method: 'GET' })
+        fetchWithAuth(`/api/manage/block/${key}`, { method: 'GET' })
             .then(response => {
                 if (response.ok) {
                     const fileIndex = this.tableData.findIndex(file => file.name === key);
@@ -532,7 +533,7 @@ methods: {
             cancelButtonText: '取消',
             type: 'warning'
         }).then(() => {
-        this.fetchWithAuth(`/api/manage/white/${key}`, { method: 'GET' })
+        fetchWithAuth(`/api/manage/white/${key}`, { method: 'GET' })
             .then(response => {
                 if (response.ok) {
                     const fileIndex = this.tableData.findIndex(file => file.name === key);
@@ -551,30 +552,6 @@ methods: {
             () => console.log('已取消加入白名单')
         );
     },
-    async fetchWithAuth(url, options = {}) {
-        // 开发环境, url 前面加上 /api
-        // url = `/api${url}`;
-        if (this.credentials) {
-            // 设置 Authorization 头
-            options.headers = {
-                ...options.headers,
-                'Authorization': `Basic ${this.credentials}`
-            };
-            // 确保包含凭据，如 cookies
-            options.credentials = 'include'; 
-        }
-
-        const response = await fetch(url, options);
-
-        if (response.status === 401) {
-            // Redirect to the login page if a 401 Unauthorized is returned
-            this.$message.error('认证状态错误，请重新登录');
-            this.$router.push('/adminLogin'); 
-            throw new Error('Unauthorized');
-        }
-
-        return response;
-    },
     handleDelete(index, key) {
         // 判断是否为文件夹
         const isFolder = this.tableData.find(file => file.name === key).isFolder;
@@ -584,7 +561,7 @@ methods: {
         cancelButtonText: '取消',
         type: 'warning'
         }).then(() => {
-        this.fetchWithAuth(`/api/manage/delete/${key}?folder=${isFolder}`, { method: 'GET' })
+        fetchWithAuth(`/api/manage/delete/${key}?folder=${isFolder}`, { method: 'GET' })
             .then(response => {
                 if (response.ok) {
                     const fileIndex = this.tableData.findIndex(file => file.name === key);
@@ -611,7 +588,7 @@ methods: {
         }).then(() => {
         const promises = this.selectedFiles.map(file => {
             const isFolder = file.isFolder;
-            return this.fetchWithAuth(`/api/manage/delete/${file.name}?folder=${isFolder}`, { method: 'GET' });
+            return fetchWithAuth(`/api/manage/delete/${file.name}?folder=${isFolder}`, { method: 'GET' });
         });
 
         Promise.all(promises)
@@ -763,7 +740,7 @@ methods: {
         this.loading = true;
         
         try {
-            await fileManager.loadMoreFiles(this.fetchWithAuth, this.currentPath);
+            await fileManager.loadMoreFiles(this.currentPath);
             // 获取新的文件列表后
             await this.fetchFileList();
         } catch (error) {
@@ -774,7 +751,7 @@ methods: {
     },
     updateStats(num, init = false) {
         if (init) {
-            this.fetchWithAuth(`/api/manage/list?count=-1&sum=true&dir=${this.currentPath}`, { method: 'GET' })
+            fetchWithAuth(`/api/manage/list?count=-1&sum=true&dir=${this.currentPath}`, { method: 'GET' })
             .then(response => response.json())
             .then(data => {
                 this.Number = data.sum;
@@ -861,7 +838,7 @@ methods: {
                 this.$message.warning('目标文件夹不能是当前文件夹');
                 return;
             }
-            this.fetchWithAuth(`/api/manage/move/${key}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' })
+            fetchWithAuth(`/api/manage/move/${key}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' })
                 .then(response => {
                     if (response.ok) {
                         const fileIndex = this.tableData.findIndex(file => file.name === key);
@@ -913,7 +890,7 @@ methods: {
             }
             const promises = this.selectedFiles.map(file => {
                 const isFolder = file.isFolder;
-                return this.fetchWithAuth(`/api/manage/move/${file.name}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' });
+                return fetchWithAuth(`/api/manage/move/${file.name}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' });
             });
 
             Promise.all(promises)
@@ -966,7 +943,7 @@ methods: {
                 if (file.isFolder) {
                     return Promise.resolve({ ok: false });
                 }
-                return this.fetchWithAuth(`/api/manage/block/${file.name}`, { method: 'GET' });
+                return fetchWithAuth(`/api/manage/block/${file.name}`, { method: 'GET' });
             });
 
             Promise.all(promises)
@@ -995,7 +972,7 @@ methods: {
                 if (file.isFolder) {
                     return Promise.resolve({ ok: false });
                 }
-                return this.fetchWithAuth(`/api/manage/white/${file.name}`, { method: 'GET' });
+                return fetchWithAuth(`/api/manage/white/${file.name}`, { method: 'GET' });
             });
 
             Promise.all(promises)
@@ -1025,7 +1002,7 @@ methods: {
             if (file.isFolder) {
                 return;
             }
-            const response = await fetch(`/file/${file.name}?from=admin`);
+            const response = await fetch(this.getFileLink(file.name));
             const blob = await response.blob();
             // 检查文件名是否已经存在
             let fileName = file.metadata?.FileName || file.name;
@@ -1071,6 +1048,10 @@ methods: {
             flag = imageExtensions.includes(extension);
         }
         return flag;
+    },
+    getFileLink(filename) {
+        const fileLink = process.env.NODE_ENV === 'production' ? `/file/${filename}?from=admin` : `/api/file/${filename}?from=admin`;
+        return fileLink;
     },
     handlePageChange(page) {
         this.currentPage = page;
@@ -1211,7 +1192,7 @@ methods: {
         this.refreshLoading = true;
         this.loading = true;
         try {
-            const success = await fileManager.refreshFileList(this.fetchWithAuth, this.currentPath);
+            const success = await fileManager.refreshFileList(this.currentPath);
             if (success) {
                 await this.fetchFileList();
             } else {
@@ -1242,7 +1223,7 @@ methods: {
 },
 mounted() {
     this.loading = true;
-    this.fetchWithAuth("/api/manage/check", { method: 'GET' })
+    fetchWithAuth("/api/manage/check", { method: 'GET' })
         .then(response => response.text())
         .then(result => {
             if(result == "true"){
