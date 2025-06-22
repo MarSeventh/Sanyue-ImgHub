@@ -40,18 +40,28 @@
 
         <!-- 一级设置：上传管理 -->
         <div class="first-settings">
-            <h3 class="first-title">上传管理</h3>
+            <h3 class="first-title">上传管理</h3>            
             <h4 class="second-title">图像审查
-                <el-tooltip content="目前仅支持 moderatecontent.com 渠道" placement="top">
+                <el-tooltip content="支持 nsfwjs 和 moderatecontent.com 渠道" placement="top">
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
-            </h4>
+            </h4>         
             <el-form :model="uploadSettings.moderate" label-width="120px">
-                <el-form-item label="审查渠道">
-                    <el-input v-model="uploadSettings.moderate.channel"/>
+                <el-form-item label="开启审查">
+                    <el-switch v-model="uploadSettings.moderate.enabled"/>
                 </el-form-item>
-                <el-form-item label="API Key">
-                    <el-input v-model="uploadSettings.moderate.apiKey"/>
+                <el-form-item label="审查渠道">
+                    <el-select v-model="uploadSettings.moderate.channel" placeholder="请选择审查渠道">
+                        <el-option label="默认（官方提供）" value="default"></el-option>
+                        <el-option label="moderatecontent.com" value="moderatecontent.com"></el-option>
+                        <el-option label="nsfwjs" value="nsfwjs"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item v-if="uploadSettings.moderate.channel === 'moderatecontent.com'" label="API Key">
+                    <el-input v-model="uploadSettings.moderate.moderateContentApiKey"/>
+                </el-form-item>
+                <el-form-item v-if="uploadSettings.moderate.channel === 'nsfwjs'" label="API 路径">
+                    <el-input v-model="uploadSettings.moderate.nsfwApiPath" placeholder="https://nsfwjs.your.domain"/>
                 </el-form-item>
             </el-form>
         </div>
@@ -70,9 +80,12 @@
                     </template>
                     <el-input v-model="accessSettings.allowedDomains"/>
                 </el-form-item>
+            </el-form>
+            <h4 class="second-title">白名单模式</h4>
+            <el-form :model="accessSettings" label-width="120px">
                 <el-form-item>
                     <template #label>
-                        白名单模式
+                        是否开启
                         <el-tooltip content="开启后，仅白名单文件可被访问" placement="top">
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                         </el-tooltip>

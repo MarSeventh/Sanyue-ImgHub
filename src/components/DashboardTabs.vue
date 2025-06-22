@@ -131,7 +131,7 @@ export default {
 .tabs-dropdown-link.rotate-up {
     color: var(--admin-purple); /* 使用柔和的淡紫色 */
 }
-/* el-dropdown有关的样式在index.html中定义 */
+/* el-dropdown有关的全局样式在index.html中定义 */
 </style>
 
 <style>
