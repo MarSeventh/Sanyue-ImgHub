@@ -74,7 +74,7 @@
                 <el-form-item>
                     <template #label>
                         放行域名
-                        <el-tooltip content="留空默认全部放行，多个域名请用英文逗号分隔" placement="top">
+                        <el-tooltip content="1.针对访问域名设置权限 <br/> 2.留空默认全部放行，多个域名请用英文逗号分隔" placement="top" raw-content>
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                         </el-tooltip>
                     </template>
@@ -86,7 +86,7 @@
                 <el-form-item>
                     <template #label>
                         是否开启
-                        <el-tooltip content="开启后，仅白名单文件可被访问" placement="top">
+                        <el-tooltip content="1.针对文件设置权限 <br> 2.开启后，仅被加入白名单的文件可被访问" placement="top" raw-content>
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                         </el-tooltip>
                     </template>
