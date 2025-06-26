@@ -1,11 +1,7 @@
 <template>
     <div class="login">
-        <img id="bg1" class="background-image1" alt="Background Image"/>
-        <img id="bg2" class="background-image2" alt="Background Image"/>
         <ToggleDark class="toggle-dark"/>
-        <a href="https://github.com/MarSeventh/CloudFlare-ImgBed">
-            <img class="logo" alt="Sanyue logo" :src="logoUrl"/>
-        </a> 
+        <Logo />
         <div class="login-container">
             <h1 class="login-title">登录到 {{ ownerName }} 图床</h1>
             <div class="input-container">
@@ -32,86 +28,31 @@ import axios from '@/utils/axios'
 import { mapGetters } from 'vuex'
 import Footer from '@/components/Footer.vue'
 import ToggleDark from '@/components/ToggleDark.vue'
+import Logo from '@/components/Logo.vue'
+import backgroundManager from '@/mixins/backgroundManager'
 
 export default {
+    mixins: [backgroundManager],
     data() {
         return {
             password: '',
             writtenPass: '',
-            bingWallPaperIndex: 0,
-            customWallPaperIndex: 0,
-            useDefaultWallPaper: false,
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers']),
-        bkInterval() {
-            return this.userConfig?.bkInterval || 3000
-        },
-        bkOpacity() {
-            return this.userConfig?.bkOpacity || 1
-        },
+        ...mapGetters(['userConfig']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
-        },
-        logoUrl() {
-            return this.userConfig?.logoUrl || require('../assets/logo.png')
         },
     },
     components: {
         Footer,
-        ToggleDark
+        ToggleDark,
+        Logo
     },
     mounted() {
-        const bg1 = document.getElementById('bg1')
-        const bg2 = document.getElementById('bg2')
-        if (this.userConfig?.loginBkImg === 'bing') {
-            //bing壁纸轮播
-            this.$store.dispatch('fetchBingWallPapers').then(() => {
-                bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-                bg1.onload = () => {
-                    bg1.style.opacity = this.bkOpacity
-                    // 取消container的默认背景颜色
-                    document.querySelector('.login').style.background = 'transparent'
-                }
-                setInterval(() => {
-                    let curBg = bg1.style.opacity != 0 ? bg1 : bg2
-                    let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
-                    curBg.style.opacity = 0
-                    this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
-                    nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-                    nextBg.onload = () => {
-                        nextBg.style.opacity = this.bkOpacity
-                    }
-                }, this.bkInterval)
-            })
-        } else if (this.userConfig?.loginBkImg instanceof Array && this.userConfig?.loginBkImg?.length > 1) {
-            //自定义壁纸组轮播
-            bg1.src = this.userConfig.loginBkImg[this.customWallPaperIndex]
-            bg1.onload = () => {
-                bg1.style.opacity = this.bkOpacity
-                // 取消container的默认背景颜色
-                document.querySelector('.login').style.background = 'transparent'
-            }
-            setInterval(() => {
-                let curBg = bg1.style.opacity != 0 ? bg1 : bg2
-                let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
-                curBg.style.opacity = 0
-                this.customWallPaperIndex = (this.customWallPaperIndex + 1) % this.userConfig.loginBkImg.length
-                nextBg.src = this.userConfig.loginBkImg[this.customWallPaperIndex]
-                nextBg.onload = () => {
-                    nextBg.style.opacity = this.bkOpacity
-                }
-            }, this.bkInterval)
-        } else if (this.userConfig?.loginBkImg instanceof Array && this.userConfig?.loginBkImg?.length == 1) {
-            //单张自定义壁纸
-            bg1.src = this.userConfig.loginBkImg[0]
-            bg1.onload = () => {
-                bg1.style.opacity = this.bkOpacity
-                // 取消container的默认背景颜色
-                document.querySelector('.login').style.background = 'transparent'
-            }
-        }
+        // 初始化背景图，启用自动创建元素
+        this.initializeBackground('loginBkImg', '.login', true, true)
     },
     methods: {
         login() {
@@ -253,40 +194,5 @@ export default {
 .toggle-dark:hover {
     transform: scale(1.05);
     box-shadow: var(--toolbar-button-shadow-hover);
-}
-.logo {
-    height: 70px;
-    width: 70px;
-    position: fixed;
-    top: 5px;
-    left: 5px;
-    z-index: 100;
-    transition: all 0.3s ease;
-}
-.logo:hover {
-    transform: scale(1.1) rotate(5deg);
-}
-
-.background-image1 {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -1;
-    opacity: 0;
-    transition: all 1s ease-in-out;
-}
-.background-image2 {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -1;
-    opacity: 0;
-    transition: all 1s ease-in-out;
 }
 </style>

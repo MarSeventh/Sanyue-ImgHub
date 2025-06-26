@@ -1,8 +1,6 @@
 <template>
     <div class="container">
     <div class="upload-home">
-        <img id="bg1" class="background-image1" alt="Background Image"/>
-        <img id="bg2" class="background-image2" alt="Background Image"/>
         <ToggleDark class="toggle-dark-button"/>
         <el-tooltip content="1. 支持多文件上传，支持所有常见文件格式 <br> 2. Telegram 渠道上传的文件大小不支持超过20MB" raw-content placement="bottom">
             <div class="info-container">
@@ -45,9 +43,7 @@
             </el-tooltip>
         </div>
         <div class="header">
-            <a href="https://github.com/MarSeventh/CloudFlare-ImgBed">
-                <img class="logo" alt="Sanyue logo" :src="logoUrl"/>
-            </a> 
+            <Logo />
             <h1 class="title"><a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a> ImgHub</h1>
         </div>
         <UploadForm 
@@ -190,18 +186,19 @@
 import UploadForm from '@/components/UploadForm.vue'
 import Footer from '@/components/Footer.vue'
 import ToggleDark from '@/components/ToggleDark.vue'
+import Logo from '@/components/Logo.vue'
+import backgroundManager from '@/mixins/backgroundManager'
 import { ref } from 'vue'
 import cookies from 'vue-cookies'
 import { mapGetters } from 'vuex'
 
 export default {
     name: 'UploadHome',
+    mixins: [backgroundManager],
     data() {
         return {
             selectedUrlForm: ref(''),
             showUrlDialog: false,
-            bingWallPaperIndex: 0,
-            customWallPaperIndex: 0,
             showCompressDialog: false,
             customerCompress: true, //上传前压缩
             compressQuality: 4, //压缩后大小
@@ -251,30 +248,12 @@ export default {
         },
         uploadFolder(val) {
             this.$store.commit('setStoreUploadFolder', val)
-        },
-        isDark(val) {
-            if (this.useDefaultWallPaper) {
-                const bg1 = document.getElementById('bg1')
-                bg1.src = val? require('@/assets/background.jpg') : require('@/assets/background-light.jpg')
-                bg1.onload = () => {
-                    bg1.style.opacity = this.bkOpacity
-                }
-            }
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'bingWallPapers', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder']),
+        ...mapGetters(['userConfig', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
-        },
-        logoUrl() {
-            return this.userConfig?.logoUrl || require('../assets/logo.png')
-        },
-        bkInterval() {
-            return this.userConfig?.bkInterval || 3000
-        },
-        bkOpacity() {
-            return this.userConfig?.bkOpacity || 1
         },
         dialogWidth() {
             return window.innerWidth > 768 ? '50%' : '90%'
@@ -285,71 +264,11 @@ export default {
         urlPrefix() {
             // 全局自定义链接前缀
             return this.userConfig?.urlPrefix || `${window.location.protocol}//${window.location.host}/file/`
-        },
-        isDark() {
-            return this.$store.getters.useDarkMode
         }
     },
     mounted() {
-        const bg1 = document.getElementById('bg1')
-        const bg2 = document.getElementById('bg2')
-        if (this.userConfig?.uploadBkImg === 'bing') {
-            //bing壁纸轮播
-            this.$store.dispatch('fetchBingWallPapers').then(() => {
-                bg1.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-                bg1.onload = () => {
-                    bg1.style.opacity = this.bkOpacity
-                    // 取消container的默认背景颜色
-                    document.querySelector('.container').style.background = 'transparent'
-                }
-                setInterval(() => {
-                    //如果bing壁纸组为空，跳过
-                    let curBg = bg1.style.opacity != 0 ? bg1 : bg2
-                    let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
-                    curBg.style.opacity = 0
-                    this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
-                    nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-                    nextBg.onload = () => {
-                        nextBg.style.opacity = this.bkOpacity
-                    }
-                }, this.bkInterval)
-            })
-        } else if (this.userConfig?.uploadBkImg instanceof Array && this.userConfig?.uploadBkImg?.length > 1) {
-            //自定义壁纸组轮播
-            bg1.src = this.userConfig.uploadBkImg[this.customWallPaperIndex]
-            bg1.onload = () => {
-                bg1.style.opacity = this.bkOpacity
-                // 取消container的默认背景颜色
-                document.querySelector('.container').style.background = 'transparent'
-            }
-            setInterval(() => {
-                let curBg = bg1.style.opacity != 0 ? bg1 : bg2
-                let nextBg = bg1.style.opacity != 0 ? bg2 : bg1
-                curBg.style.opacity = 0
-                this.customWallPaperIndex = (this.customWallPaperIndex + 1) % this.userConfig.uploadBkImg.length
-                nextBg.src = this.userConfig.uploadBkImg[this.customWallPaperIndex]
-                nextBg.onload = () => {
-                    nextBg.style.opacity = this.bkOpacity
-                }
-            }, this.bkInterval)
-        } else if (this.userConfig?.uploadBkImg instanceof Array && this.userConfig?.uploadBkImg.length == 1) {
-            //单张自定义壁纸
-            bg1.src = this.userConfig.uploadBkImg[0]
-            bg1.onload = () => {
-                bg1.style.opacity = this.bkOpacity
-                // 取消container的默认背景颜色
-                document.querySelector('.container').style.background = 'transparent'
-            }
-        } else {
-            //默认壁纸
-            // this.useDefaultWallPaper = true
-            // bg1.src = this.isDark? require('@/assets/background.jpg') : require('@/assets/background-light.jpg')
-            // bg1.onload = () => {
-            //     bg1.style.opacity = this.bkOpacity
-            //     // 取消container的默认背景颜色
-            //     document.querySelector('.container').style.background = 'transparent'
-            // }
-        }
+        // 初始化背景图，启用自动创建元素
+        this.initializeBackground('uploadBkImg', '.container', false, true)
 
         // 读取用户选择的链接格式
         this.selectedUrlForm = this.uploadCopyUrlForm || 'url'
@@ -384,7 +303,8 @@ export default {
     components: {
         UploadForm,
         Footer,
-        ToggleDark
+        ToggleDark,
+        Logo
     },
     methods: {
         handleManage() {
@@ -809,19 +729,6 @@ export default {
 .title:hover .main-title {
     transform: scale(1.1) rotate(-2deg);
 }
-.logo {
-    height: 70px;
-    width: 70px;
-    position: fixed;
-    top: 5px;
-    left: 5px;
-    z-index: 100;
-    transition: all 0.3s ease;
-}
-.logo:hover {
-    transform: scale(1.1) rotate(5deg);
-}
-
 
 .upload-home {
     display: flex;
@@ -848,28 +755,6 @@ export default {
 
 .footer {
     height: 6vh;
-}
-.background-image1 {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -1;
-    opacity: 0;
-    transition: all 1s ease-in-out;
-}
-.background-image2 {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -1;
-    opacity: 0;
-    transition: all 1s ease-in-out;
 }
 
 </style>
