@@ -2,11 +2,11 @@ import store from '@/store'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
-const credentials = store.state.credentials || null
-
 export default async function fetchWithAuth(url, options = {}) {
     // 开发环境下添加 /api 前缀
     url = process.env.NODE_ENV === 'production' ? url : `/api${url}`;
+
+    const credentials = store.getters.credentials || null;
 
     if (credentials) {
         // 设置 Authorization 头

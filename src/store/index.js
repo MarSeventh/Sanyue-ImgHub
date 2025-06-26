@@ -126,15 +126,6 @@ export default createStore({
       } catch (error) {
         console.log(error);
       }
-    },
-    initializeStore({ commit }) {
-      // ... existing initialization code ...
-      
-      // 初始化上传文件夹设置
-      const uploadFolder = localStorage.getItem('uploadFolder')
-      if (uploadFolder) {
-        commit('setStoreUploadFolder', uploadFolder)
-      }
     }
   },
   modules: {

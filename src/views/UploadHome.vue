@@ -395,7 +395,7 @@ export default {
         handleLogout() {
             cookies.remove('authCode')
             this.$router.push('/login')
-            this.$message.success('已退出登录~')
+            this.$message.success('已退出登录')
         },
         changeUrlForm() {
             this.$store.commit('setUploadCopyUrlForm', this.selectedUrlForm)

@@ -673,7 +673,7 @@ methods: {
         tmpLinks = tmpLinks.replace(/^\s*[\r\n]/gm, '');
 
         const links = tmpLinks;
-        navigator.clipboard ? navigator.clipboard.writeText(links).then(() => this.$message.success('批量复制链接成功~')) :
+        navigator.clipboard ? navigator.clipboard.writeText(links).then(() => this.$message.success('批量复制链接成功')) :
         this.copyToClipboardFallback(links);
     },
     copyToClipboardFallback(text) {
@@ -686,7 +686,7 @@ methods: {
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        this.$message.success('批量复制链接成功~');
+        this.$message.success('批量复制链接成功');
     },
     handleCopy(index, key) {
         let text = '';
@@ -733,7 +733,7 @@ methods: {
                     break;
             }
         }
-        navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success('复制文件链接成功~')) :
+        navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success('复制文件链接成功')) :
         this.copyToClipboardFallback(text);
     },
     async loadMoreData() {
