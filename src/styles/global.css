@@ -17,6 +17,7 @@
 
     --el-upload-dragger-bg-color: rgba(255, 255, 255, 0.6); /* el-upload-dragger背景 */
     --el-upload-dragger-border: 3px dashed #409EFF; /* el-upload-dragger边框 */
+    --el-upload-dragger-border-color: #409EFF; /* el-upload-dragger边框颜色 */
     --el-upload-dragger-hover-box-shadow: 0 0 10px 5px #409EFF; /* el-upload-dragger悬浮阴影 */
     --el-upload-dragger-uniform-color: #409EFF; /* el-upload-dragger统一颜色 */
 
@@ -92,6 +93,7 @@
     /* 上传页工具栏按钮 */
     --toolbar-button-bg-color: rgba(255, 255, 255, 0.5); /* 上传页工具栏按钮背景 */
     --toolbar-button-shadow: 1px 2px 4px rgba(0, 0, 0, 0.3); /* 上传页工具栏按钮阴影 */
+    --toolbar-button-shadow-hover: 1px 2px 4px rgba(0, 0, 0, 0.5); /* 上传页工具栏按钮悬浮阴影 */
     --toolbar-button-color: #327ECC; /* 上传页工具栏按钮文字颜色 */
 }
 
@@ -114,6 +116,7 @@
 
     --el-upload-dragger-bg-color: rgba(0, 0, 0, 0.6); /* el-upload-dragger背景 */
     --el-upload-dragger-border: 3px dashed #8fadc8; /* el-upload-dragger边框 */
+    --el-upload-dragger-border-color: #8fadc8; /* el-upload-dragger边框颜色 */
     --el-upload-dragger-hover-box-shadow: 0 0 10px 5px #8fadc8; /* el-upload-dragger悬浮阴影 */
     --el-upload-dragger-uniform-color: #8fadc8; /* el-upload-dragger统一颜色 */
 
@@ -187,5 +190,6 @@
     /* 上传页工具栏按钮 */
     --toolbar-button-bg-color: rgba(0, 0, 0, 0.7); /* 上传页工具栏按钮背景 */
     --toolbar-button-shadow: -1px 2px 4px rgba(255, 255, 255, 0.3); /* 上传页工具栏按钮阴影 */
+    --toolbar-button-shadow-hover: -1px 2px 4px rgba(255, 255, 255, 0.5); /* 上传页工具栏按钮悬浮阴影 */
     --toolbar-button-color: #bedefd; /* 上传页工具栏按钮文字颜色 */
 }

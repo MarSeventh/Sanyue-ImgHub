@@ -978,6 +978,9 @@ methods: {
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
 }
+:deep(.el-upload:focus .el-upload-dragger) {
+    border-color: var(--el-upload-dragger-border-color);
+}
 :deep(.el-upload-dragger:hover) {
     opacity: 0.8;
     box-shadow: var(--el-upload-dragger-hover-box-shadow);

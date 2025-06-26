@@ -3,6 +3,9 @@
         <img id="bg1" class="background-image1" alt="Background Image"/>
         <img id="bg2" class="background-image2" alt="Background Image"/>
         <ToggleDark class="toggle-dark"/>
+        <a href="https://github.com/MarSeventh/CloudFlare-ImgBed">
+            <img class="logo" alt="Sanyue logo" :src="logoUrl"/>
+        </a> 
         <div class="login-container">
             <h1 class="login-title">登录到 {{ ownerName }} 图床</h1>
             <div class="input-container">
@@ -40,19 +43,6 @@ export default {
             useDefaultWallPaper: false,
         }
     },
-    watch: {
-        isDark: {
-            handler(val) {
-                if (this.useDefaultWallPaper) {
-                    const bg1 = document.getElementById('bg1')
-                    bg1.src = val? require('@/assets/background.jpg') : require('@/assets/background-light.jpg')
-                    bg1.onload = () => {
-                        bg1.style.opacity = this.bkOpacity
-                    }
-                }
-            }
-        }
-    },
     computed: {
         ...mapGetters(['userConfig', 'bingWallPapers']),
         bkInterval() {
@@ -64,9 +54,9 @@ export default {
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
         },
-        isDark() {
-            return this.$store.getters.useDarkMode
-        }
+        logoUrl() {
+            return this.userConfig?.logoUrl || require('../assets/logo.png')
+        },
     },
     components: {
         Footer,
@@ -121,15 +111,6 @@ export default {
                 // 取消container的默认背景颜色
                 document.querySelector('.login').style.background = 'transparent'
             }
-        } else {
-            //默认壁纸
-            // this.useDefaultWallPaper = true
-            // bg1.src = this.isDark? require('@/assets/background.jpg') : require('@/assets/background-light.jpg')
-            // bg1.onload = () => {
-            //     bg1.style.opacity = this.bkOpacity
-            //     // 取消container的默认背景颜色
-            //     document.querySelector('.login').style.background = 'transparent'
-            // }
         }
     },
     methods: {
@@ -195,6 +176,7 @@ export default {
     margin-bottom: 15px;
     color: var(--login-title-color);
     font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer;
 }
 @media (max-width: 768px) {
     .login-title {
@@ -252,6 +234,39 @@ export default {
     transition: all 0.3s ease;
     border: none;
 }
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100vw;
+}
+.toggle-dark {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+}
+.toggle-dark:hover {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
+}
+.logo {
+    height: 70px;
+    width: 70px;
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    z-index: 100;
+    transition: all 0.3s ease;
+}
+.logo:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
 .background-image1 {
     position: fixed;
     top: 0;
@@ -273,21 +288,5 @@ export default {
     z-index: -1;
     opacity: 0;
     transition: all 1s ease-in-out;
-}
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100vw;
-}
-.toggle-dark {
-    position: fixed;
-    top: 30px;
-    right: 30px;
-    border: none;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
 }
 </style>

@@ -5,7 +5,11 @@
             <div class="header-content">
                 <DashboardTabs activeTab="dashboard"></DashboardTabs>
                 <div class="search-card">
-                <el-input v-model="search" size="mini" placeholder="输入关键字搜索"></el-input>
+                    <el-input v-model="tempSearch" size="mini" placeholder="输入关键字搜索" @keyup.enter="handleSearch">
+                        <template #suffix>
+                            <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
+                        </template>
+                    </el-input>
                 </div>
                 <span class="stats">
                     <font-awesome-icon icon="database" class="fa-database"></font-awesome-icon> 文件数量: {{ Number }}
@@ -32,27 +36,27 @@
                     <template #dropdown>
                         <el-dropdown-menu>
                             <el-dropdown-item command="copy">
-                                <font-awesome-icon icon="copy" style="margin-right: 5px;"></font-awesome-icon>
+                                <font-awesome-icon icon="copy" class="batch-action-item-icon"></font-awesome-icon>
                                 复制
                             </el-dropdown-item>
                             <el-dropdown-item command="delete">
-                                <font-awesome-icon icon="trash-alt" style="margin-right: 5px;"></font-awesome-icon>
+                                <font-awesome-icon icon="trash-alt" class="batch-action-item-icon"></font-awesome-icon>
                                 删除
                             </el-dropdown-item>
                             <el-dropdown-item command="download">
-                                <font-awesome-icon icon="download" style="margin-right: 5px;"></font-awesome-icon>
+                                <font-awesome-icon icon="download" class="batch-action-item-icon"></font-awesome-icon>
                                 下载
                             </el-dropdown-item>
                             <el-dropdown-item command="move">
-                                <font-awesome-icon icon="file-export" style="margin-right: 5px;"></font-awesome-icon>
+                                <font-awesome-icon icon="file-export" class="batch-action-item-icon"></font-awesome-icon>
                                 移动
                             </el-dropdown-item>
                             <el-dropdown-item command="ban">
-                                <font-awesome-icon icon="ban" style="margin-right: 5px;"></font-awesome-icon>
+                                <font-awesome-icon icon="ban" class="batch-action-item-icon"></font-awesome-icon>
                                 加入黑名单
                             </el-dropdown-item>
                             <el-dropdown-item command="white">
-                                <font-awesome-icon icon="user-plus" style="margin-right: 5px;"></font-awesome-icon>
+                                <font-awesome-icon icon="user-plus" class="batch-action-item-icon"></font-awesome-icon>
                                 加入白名单
                             </el-dropdown-item>
                         </el-dropdown-menu>
@@ -93,7 +97,7 @@
                             <font-awesome-icon icon="folder-open" size="4x"/>
                         </div>
                         <div class="folder-overlay">
-                            <div class="folder-actions">
+                            <div v-if="!isSearchMode" class="folder-actions">
                                 <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
                                     <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
                                         <font-awesome-icon icon="trash-alt"></font-awesome-icon>
@@ -163,7 +167,7 @@
                 <el-pagination 
                     background 
                     layout="prev, pager, next" 
-                    :total="filteredTableData.length" 
+                    :total="tableData.length" 
                     :page-size="pageSize" 
                     :current-page="currentPage" 
                     @current-change="handlePageChange">
@@ -176,7 +180,7 @@
                         <font-awesome-icon icon="sync" :class="{ 'fa-spin': refreshLoading }"/>
                     </el-button>
                     <el-button 
-                        v-if="currentPage === Math.ceil(filteredTableData.length / pageSize)" 
+                        v-if="currentPage === Math.ceil(tableData.length / pageSize)" 
                         type="primary" 
                         @click="loadMoreData" 
                         :loading="loading" 
@@ -283,6 +287,7 @@ import JSZip from 'jszip';
 import DashboardTabs from '@/components/DashboardTabs.vue';
 import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import WhiteListOn from './WhiteListOn.vue';
 
 export default {
 data() {
@@ -290,7 +295,9 @@ data() {
         Number: 0,
         showLogoutButton: false,
         tableData: [],
+        tempSearch: '',
         search: '',
+        isSearchMode: false,
         currentPage: 1,
         pageSize: 15,
         selectedFiles: [],
@@ -313,16 +320,8 @@ components: {
 },
 computed: {
     ...mapGetters(['adminUrlSettings', 'userConfig']),
-    filteredTableData() {
-        // 根据搜索条件过滤
-        return this.tableData.filter(data => 
-            !this.search || 
-            data.name.toLowerCase().includes(this.search.toLowerCase()) || 
-            data.metadata?.FileName?.toLowerCase().includes(this.search.toLowerCase())
-        );
-    },
     paginatedTableData() {
-        const sortedData = this.sortData(this.filteredTableData);
+        const sortedData = this.sortData(this.tableData);
         const start = (this.currentPage - 1) * this.pageSize;
         const end = start + this.pageSize;
         let data = sortedData.slice(start, end);
@@ -448,6 +447,12 @@ watch: {
     }
 },
 methods: {
+    handleSearch() {
+        this.search = this.tempSearch;
+        this.isSearchMode = this.search.trim() !== '';
+        this.currentPage = 1; // 重置到第一页
+        this.refreshFileList();
+    },
     handleDownload(key) {
         const link = document.createElement('a');
         link.href = this.getFileLink(key);
@@ -740,7 +745,7 @@ methods: {
         this.loading = true;
         
         try {
-            await fileManager.loadMoreFiles(this.currentPath);
+            await fileManager.loadMoreFiles(this.currentPath, this.search);
             // 获取新的文件列表后
             await this.fetchFileList();
         } catch (error) {
@@ -751,7 +756,7 @@ methods: {
     },
     updateStats(num, init = false) {
         if (init) {
-            fetchWithAuth(`/api/manage/list?count=-1&sum=true&dir=${this.currentPath}`, { method: 'GET' })
+            fetchWithAuth(`/api/manage/list?count=-1&sum=true&dir=${this.currentPath}&search=${this.search}`, { method: 'GET' })
             .then(response => response.json())
             .then(data => {
                 this.Number = data.sum;
@@ -1056,7 +1061,7 @@ methods: {
     handlePageChange(page) {
         this.currentPage = page;
         // 到最后一页时，加载更多数据
-        if (this.currentPage === Math.ceil(this.filteredTableData.length / this.pageSize)) {
+        if (this.currentPage === Math.ceil(this.tableData.length / this.pageSize)) {
             this.loadMoreData();
         }
     },
@@ -1192,7 +1197,7 @@ methods: {
         this.refreshLoading = true;
         this.loading = true;
         try {
-            const success = await fileManager.refreshFileList(this.currentPath);
+            const success = await fileManager.refreshFileList(this.currentPath, this.search);
             if (success) {
                 await this.fetchFileList();
             } else {
@@ -1330,6 +1335,7 @@ mounted() {
     box-shadow: var(--admin-dashboard-stats-shadow);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     color: var(--admin-container-color);
+    cursor: pointer;
 }
 
 @media (max-width: 768px) {
@@ -1397,11 +1403,16 @@ mounted() {
     color: var(--admin-purple); /* 使用柔和的淡紫色 */
 }
 
+.batch-action-item-icon {
+    width: 20px;
+    margin-right: 5px;
+}
+
+/* 搜索卡片样式 */
 .search-card {
     margin-left: auto;
     margin-right: 20px;
 }
-
 @media (max-width: 768px) {
     .search-card {
         margin-right: 0;
@@ -1409,7 +1420,6 @@ mounted() {
         margin-top: 10px;
     }
 }
-
 .search-card :deep(.el-input__wrapper) {
     border-radius: 20px;
     background: var(--admin-dashboard-search-card-bg-color);
@@ -1425,23 +1435,44 @@ mounted() {
     transition: width 0.3s;
     background: none;
 }
-
 @media (max-width: 768px) {
     .search-card :deep(.el-input__inner) {
         width: 60vw;
     }
 }
-
 .search-card :deep(.el-input__inner:focus) {
     width: 400px;
 }
-
 @media (max-width: 768px) {
     .search-card :deep(.el-input__inner:focus) {
         width: 80vw;
     }
 }
+.search-icon {
+    cursor: pointer;
+    color: var(--admin-container-color);
+    transition: all 0.3s ease;
+    font-size: 1.3em;
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+.search-card:focus-within .search-icon {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+.search-card:focus-within .search-icon:hover {
+    color: var(--admin-purple); /* 使用柔和的淡紫色 */
+    transform: scale(1.2);
+}
+.search-card :deep(.el-input__suffix) {
+    display: flex;
+    align-items: center;
+    right: 10px;
+}
 
+/* 主容器样式 */
 .main-container {
     display: flex;
     flex-direction: column;
@@ -1751,8 +1782,8 @@ mounted() {
 :deep(.el-breadcrumb__item) {
     cursor: pointer;
 }
-
 :deep(.el-breadcrumb__inner:hover) {
     color: var(--el-color-primary);
 }
+
 </style>

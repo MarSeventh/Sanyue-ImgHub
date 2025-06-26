@@ -159,8 +159,8 @@ export default {
 .main-container {
   margin-top: 60px;
   transition: margin-left 0.3s ease, width 0.3s ease; /* 添加过渡效果 */
-  width: calc(100% - 200px); /* 默认宽度（侧边栏展开时） */
-  margin-left: 130px; /* 默认左边距（侧边栏展开时） */
+  width: calc(100% - 250px); /* 默认宽度（侧边栏展开时） */
+  margin-left: 150px; /* 默认左边距（侧边栏展开时） */
 }
 
 .main-container.collapsed {

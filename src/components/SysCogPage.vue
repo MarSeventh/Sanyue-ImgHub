@@ -3,7 +3,7 @@
         <!-- 一级设置：页面设置 -->
         <div class="first-settings">
             <h3 class="first-title">页面设置</h3>
-            <el-form :model="settings" label-width="120px">
+            <el-form :model="settings" label-width="150px">
                 <el-form-item v-for="(setting, index) in settings.config" :key="index">
                     <template #label>
                         {{ setting.label }}

@@ -89,7 +89,7 @@ beforeDestroy() {
     min-height: 300px;
 }
 .el-menu-vertical:not(.el-menu--collapse) {
-    width: 130px;
+    width: 140px;
     min-height: 300px;
 }
 

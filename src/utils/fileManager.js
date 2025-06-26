@@ -134,9 +134,10 @@ class FileManager {
     }
 
     // 更新文件列表
-    async refreshFileList(dir) {
+    async refreshFileList(dir, search = '') {
+        search = encodeURIComponent(search.trim());
         try {
-            const response = await fetchWithAuth(`/api/manage/list?count=60&dir=${dir}`, {
+            const response = await fetchWithAuth(`/api/manage/list?count=60&dir=${dir}&search=${search}`, {
                 method: 'GET',
             });
             const newFileList = await response.json();
@@ -148,12 +149,13 @@ class FileManager {
     }
 
     // 读取更多数据
-    async loadMoreFiles(dir) {
+    async loadMoreFiles(dir, search = '') {
+        search = encodeURIComponent(search.trim());
         try {
             const fileList = this.getLocalFileList();
             const start = fileList.files.length;
 
-            const response = await fetchWithAuth(`/api/manage/list?dir=${dir}&start=${start}&count=60`, {
+            const response = await fetchWithAuth(`/api/manage/list?dir=${dir}&start=${start}&count=60&search=${search}`, {
                 method: 'GET',
             });
            

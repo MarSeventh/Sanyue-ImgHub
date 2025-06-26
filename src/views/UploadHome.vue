@@ -9,7 +9,7 @@
                 <font-awesome-icon icon="question" class="info-icon" size="lg"/>
             </div>
         </el-tooltip>
-        <el-input class="upload-folder" v-model="uploadFolder" placeholder="上传目录"/>
+        <el-input class="upload-folder" :class="{ 'active': isFolderInputActive }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="isFolderInputActive = false"/>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
@@ -179,7 +179,7 @@
         <div v-html="announcementContent"></div>
         <template #footer>
             <span class="dialog-footer">
-                <el-button type="primary" @click="showAnnouncementDialog = false">朕已阅</el-button>
+                <el-button type="primary" @click="showAnnouncementDialog = false">我已知晓！</el-button>
             </span>
         </template>
     </el-dialog>
@@ -216,6 +216,7 @@ export default {
             isToolBarOpen: false, //是否打开工具栏
             uploadMethod: 'default', //上传方式
             uploadFolder: '', // 添加上传文件夹属性
+            isFolderInputActive: false,
             showAnnouncementDialog: false, // 控制公告弹窗的显示
             announcementContent: '', // 公告内容
         }
@@ -546,6 +547,7 @@ export default {
     outline: none;
 }
 
+/* 上传文件输入框样式 */
 .upload-folder {
     width: 100px;
     height: 2.5rem;
@@ -554,11 +556,18 @@ export default {
     right: 180px;
     z-index: 100;
     border-radius: 12px;
+    transition: all 0.3s ease, width 0.4s ease;
+}
+.upload-folder.active {
+    width: 200px;
 }
 @media (max-width: 768px) {
     .upload-folder {
         width: 80px;
         height: 2rem;
+    }
+    .upload-folder.active {
+        width: 120px;
     }
 }
 .upload-folder :deep(.el-input__wrapper) {
@@ -568,6 +577,7 @@ export default {
     backdrop-filter: blur(10px);
     border: none;
 }
+
 
 .info-container {
     width: 2.5rem;
@@ -636,6 +646,17 @@ export default {
     box-shadow: var(--toolbar-button-shadow);
     backdrop-filter: blur(10px);
     color: var(--toolbar-button-color);
+}
+
+/* 按钮悬停效果 */
+.upload-folder:hover,
+.toggle-dark-button:hover,
+.info-container:hover,
+.upload-method-button:hover,
+.toolbar-manage-button:hover,
+.toolbar-button:hover {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
 }
 
 /* 按钮形成扇形 */
@@ -732,6 +753,8 @@ export default {
     justify-content: center;
     margin-top: 20px;
 }
+
+
 .header {
     display: flex;
     justify-content: center;
@@ -745,12 +768,46 @@ export default {
     top: -3vh;
     transition: all 0.3s ease;
 }
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: 'Noto Sans SC', sans-serif;
+    position: relative;
+    padding-bottom: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.title:hover {
+    transform: scale(1.05);
+}
+.title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--upload-main-title-color);
+    transition: width 0.4s ease-in-out;
+}
+.title:hover::after {
+    width: 100%;
+}
+@media (max-width: 768px) {
+    .title {
+        font-size: 1.8rem;
+    }
+}
 .main-title {
     background: var(--upload-main-title-color);
     transition: all 0.3s ease;
     background-clip: text;
     color: transparent;
     text-decoration: none;
+    display: inline-block;
+}
+.title:hover .main-title {
+    transform: scale(1.1) rotate(-2deg);
 }
 .logo {
     height: 70px;
@@ -759,17 +816,13 @@ export default {
     top: 5px;
     left: 5px;
     z-index: 100;
+    transition: all 0.3s ease;
 }
-.title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    font-family: 'Noto Sans SC', sans-serif;
+.logo:hover {
+    transform: scale(1.1) rotate(5deg);
 }
-@media (max-width: 768px) {
-    .title {
-        font-size: 1.8rem;
-    }
-}
+
+
 .upload-home {
     display: flex;
     flex-direction: column;
