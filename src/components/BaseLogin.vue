@@ -261,7 +261,6 @@ export default {
 }
 
 .submit {
-    margin-top: 10px;
     margin-bottom: 10px;
     width: 40%;
     height: 15%;
@@ -324,12 +323,18 @@ export default {
 }
 
 .password-input:deep(.el-input__inner) {
-    color: var(--text-color);
+    color: var(--text-color, var(--login-input-text-color, #333));
     font-size: 1rem;
     font-weight: 500;
     background: transparent;
     border: none;
     box-shadow: none;
+}
+
+/* 深色模式下输入文字颜色增强 */
+[data-theme="dark"] .password-input:deep(.el-input__inner),
+.dark .password-input:deep(.el-input__inner) {
+    color: var(--text-color, #ffffff) !important;
 }
 
 .password-input:deep(.el-input__inner)::placeholder {
