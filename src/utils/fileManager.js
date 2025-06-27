@@ -135,7 +135,7 @@ class FileManager {
 
     // 更新文件列表
     async refreshFileList(dir, search = '') {
-        search = encodeURIComponent(search.trim());
+        search = search.trim();
         try {
             const response = await fetchWithAuth(`/api/manage/list?count=60&dir=${dir}&search=${search}`, {
                 method: 'GET',
@@ -150,7 +150,7 @@ class FileManager {
 
     // 读取更多数据
     async loadMoreFiles(dir, search = '') {
-        search = encodeURIComponent(search.trim());
+        search = search.trim();
         try {
             const fileList = this.getLocalFileList();
             const start = fileList.files.length;
