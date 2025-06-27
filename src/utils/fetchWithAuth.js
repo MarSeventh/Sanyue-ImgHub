@@ -24,7 +24,6 @@ export default async function fetchWithAuth(url, options = {}) {
         // Redirect to the login page if a 401 Unauthorized is returned
         ElMessage.error('认证状态错误，请重新登录');
         router.push('/adminLogin'); 
-        throw new Error('Unauthorized');
     }
 
     return response;

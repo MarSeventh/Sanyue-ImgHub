@@ -14,9 +14,11 @@
                     <el-input v-model="authSettings.user.authCode" type="password" show-password @input="handleUserPassInput" autocomplete="new-password"/>
                 </el-form-item>
 
-                <el-form-item label="确认密码" prop="confirmNewUserPassword" v-if="showUserPassConfirm">
-                    <el-input v-model="authSettings.user.confirmNewUserPassword" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
+                <transition name="fade-slide" mode="out-in">
+                    <el-form-item label="确认密码" prop="confirmNewUserPassword" v-if="showUserPassConfirm" key="user-confirm">
+                        <el-input v-model="authSettings.user.confirmNewUserPassword" type="password" show-password autocomplete="new-password"/>
+                    </el-form-item>
+                </transition>
             </el-form>
             <h4 class="second-title">管理端认证</h4>
             <el-form 
@@ -32,9 +34,11 @@
                     <el-input v-model="authSettings.admin.adminPassword" type="password" show-password @input="handleAdminPassInput" autocomplete="new-password"/>
                 </el-form-item>
 
-                <el-form-item label="确认密码" prop="confirmNewAdminPassword" v-if="showAdminPassConfirm">
-                    <el-input v-model="authSettings.admin.confirmNewAdminPassword" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
+                <transition name="fade-slide" mode="out-in">
+                    <el-form-item label="确认密码" prop="confirmNewAdminPassword" v-if="showAdminPassConfirm" key="admin-confirm">
+                        <el-input v-model="authSettings.admin.confirmNewAdminPassword" type="password" show-password autocomplete="new-password"/>
+                    </el-form-item>
+                </transition>
             </el-form>
         </div>
 
@@ -127,10 +131,23 @@ data() {
         showAdminPassConfirm: false, // 显示管理密码确认框
 
         userPassRules: {
+            authCode: [
+                { validator: (rule, value, callback) => {
+                    // URL保留字符列表
+                    const urlReservedChars = ['%', '&', '?', '#', '/'];
+                    const hasReservedChar = urlReservedChars.some(char => value && value.includes(char));
+                    
+                    if (hasReservedChar) {
+                        callback(new Error('密码不能包含部分URL保留字符: % & ? # /'));
+                    } else {
+                        callback();
+                    }
+                }, trigger: 'blur' }
+            ],
             confirmNewUserPassword: [
                 { message: '请再次输入上传密码', trigger: 'blur' },
                 { validator: (rule, value, callback) => {
-                    if (value !== this.authSettings.user.authCode) {
+                    if (value && value !== this.authSettings.user.authCode) {
                         callback(new Error('两次输入密码不一致'));
                     } else {
                         callback();
@@ -143,7 +160,7 @@ data() {
             confirmNewAdminPassword: [
                 { message: '请再次输入管理密码', trigger: 'blur' },
                 { validator: (rule, value, callback) => {
-                    if (value !== this.authSettings.admin.adminPassword) {
+                    if (value && value !== this.authSettings.admin.adminPassword) {
                         callback(new Error('两次输入密码不一致'));
                     } else {
                         callback();
@@ -213,6 +230,11 @@ methods: {
                 body: JSON.stringify(settings)
             }).then(() => {
                 this.$message.success('设置已保存');
+                // 更新原密码
+                this.oriUserPassword = this.authSettings.user.authCode;
+                this.oriAdminPassword = this.authSettings.admin.adminPassword;
+                this.showUserPassConfirm = false;
+                this.showAdminPassConfirm = false;
             });
         });
     }
@@ -258,6 +280,26 @@ mounted() {
 .actions {
     margin-top: 20px;
     text-align: right;
+}
+
+/* 确认密码框的动画效果 */
+.fade-slide-enter-active, .fade-slide-leave-active {
+    transition: all 0.3s ease-in-out;
+}
+
+.fade-slide-enter-from {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.fade-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.fade-slide-enter-to, .fade-slide-leave-from {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 </style>

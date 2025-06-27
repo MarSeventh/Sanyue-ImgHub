@@ -41,6 +41,7 @@
     --login-container-box-shadow: 0 0 12px rgba(0, 0, 0, 0.12); /* 登录容器阴影 */
     --login-container-hover-box-shadow: 0 0 12px 4px rgba(0, 0, 0, 0.24); /* 登录容器悬浮阴影 */
     --login-submit-btn-bg-color: #487cb0e8; /* 登录按钮背景 */
+    --login-title-glow-color: rgba(52, 152, 219, 0.5); /* 登录标题辉光颜色 */
 
     /* el-dialog */
     --dialog-bg-color: rgba(255, 255, 255, 0.7); /* el-dialog背景 */
@@ -141,6 +142,7 @@
     --login-container-box-shadow: -3px 2px 12px rgba(255, 255, 255, 0.12); /* 登录容器阴影 */
     --login-container-hover-box-shadow: -3px 2px 12px 4px rgba(255, 255, 255, 0.24); /* 登录容器悬浮阴影 */
     --login-submit-btn-bg-color: #8fadc8b4; /* 登录按钮背景 */
+    --login-title-glow-color: rgba(143, 173, 200, 0.7); /* 登录标题辉光颜色 */
 
     /* el-dialog */
     --dialog-bg-color: rgba(0, 0, 0, 0.8); /* el-dialog背景 */
