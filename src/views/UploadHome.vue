@@ -727,7 +727,7 @@ export default {
     display: inline-block;
 }
 .title:hover .main-title {
-    transform: scale(1.1) rotate(5deg);
+    transform: scale(1.1) rotate(-5deg);
 }
 
 .upload-home {

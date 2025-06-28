@@ -6,8 +6,12 @@
             <h1 class="login-title" tabindex="0">{{ title }}</h1>
             
             <!-- 动态渲染输入字段 -->
-            <div v-for="field in fields" :key="field.key" class="input-container">
-                <label class="input-name">{{ field.label }}</label>
+            <div v-for="(field, index) in fields" :key="field.key" class="input-container">
+                <label 
+                    class="input-name" 
+                    :ref="`inputLabel${index}`"
+                    :style="{ '--underline-width': labelUnderlineWidths[index] + 'px' }"
+                >{{ field.label }}</label>
                 <div class="input-wrapper">
                     <el-input
                         v-model="formData[field.key]"
@@ -69,11 +73,22 @@ export default {
     },
     data() {
         return {
-            formData: {}
+            formData: {},
+            labelUnderlineWidths: []
         }
     },
     computed: {
         ...mapGetters(['userConfig']),
+    },
+    watch: {
+        fields: {
+            handler() {
+                this.$nextTick(() => {
+                    this.calculateLabelWidths();
+                });
+            },
+            deep: true
+        }
     },
     components: {
         Footer,
@@ -85,6 +100,10 @@ export default {
         this.initFormData();
         // 初始化背景图
         this.initializeBackground(this.backgroundKey, '.login', !this.isAdmin, true);
+        // 在下一个tick计算标签宽度，确保DOM已经渲染
+        this.$nextTick(() => {
+            this.calculateLabelWidths();
+        });
     },
     methods: {
         initFormData() {
@@ -94,6 +113,34 @@ export default {
                 newFormData[field.key] = '';
             });
             this.formData = newFormData;
+            // 初始化下划线宽度数组
+            this.labelUnderlineWidths = new Array(this.fields.length).fill(0);
+        },
+        calculateLabelWidths() {
+            // 计算每个标签的文字宽度
+            this.$nextTick(() => {
+                this.fields.forEach((field, index) => {
+                    const labelRef = this.$refs[`inputLabel${index}`];
+                    if (labelRef && labelRef[0]) {
+                        // 创建一个临时的canvas来测量文字宽度
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        
+                        // 获取标签的计算样式
+                        const labelElement = labelRef[0];
+                        const computedStyle = window.getComputedStyle(labelElement);
+                        
+                        // 设置font样式以匹配标签
+                        context.font = `${computedStyle.fontWeight} ${computedStyle.fontSize} ${computedStyle.fontFamily}`;
+                        
+                        // 测量文字宽度
+                        const textWidth = context.measureText(field.label).width;
+                        
+                        // 添加一些额外的边距，确保下划线覆盖整个文字
+                        this.labelUnderlineWidths[index] = Math.ceil(textWidth) + 3;
+                    }
+                });
+            });
         },
         handleSubmit() {
             // 触发父组件的提交事件，传递表单数据
@@ -227,7 +274,7 @@ export default {
 
 .input-container:has(.input-wrapper.focused) .input-name::before,
 .input-container:hover .input-name::before {
-    width: 50px;
+    width: var(--underline-width, 50px);
 }
 
 .input-container:has(.input-wrapper.focused) .input-name,
@@ -248,7 +295,7 @@ export default {
 }
 
 .input-wrapper.focused .input-underline {
-    width: 100%;
+    width: 90%;
 }
 
 @media (max-width: 768px) {
@@ -257,6 +304,10 @@ export default {
         width: 60px;
         min-width: 50px;
         height: 45px;
+    }
+    
+    .input-wrapper.focused .input-underline {
+        width: 95%;
     }
 }
 
@@ -277,7 +328,7 @@ export default {
 }
 
 .password-input {
-    width: 100%;
+    width: 90%;
     height: 50px;
     position: relative;
     margin-bottom: 4px;
@@ -361,6 +412,7 @@ export default {
 
 @media (max-width: 768px) {
     .password-input {
+        width: 95%;
         height: 45px;
     }
     
