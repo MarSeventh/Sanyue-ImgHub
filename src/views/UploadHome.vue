@@ -386,6 +386,15 @@ export default {
     }
 }
 
+@keyframes streamer {
+    0% {
+        background-position: 200% center;
+    }
+    100% {
+        background-position: -200% center;
+    }
+}
+
 
 /* 关键帧：旋转抖动 */
 @keyframes rotate-shake {
@@ -727,7 +736,8 @@ export default {
     display: inline-block;
 }
 .title:hover .main-title {
-    transform: scale(1.1) rotate(-5deg);
+    background-size: 200% auto;
+    animation: streamer 2s linear infinite;
 }
 
 .upload-home {
@@ -756,5 +766,4 @@ export default {
 .footer {
     height: 6vh;
 }
-
 </style>
