@@ -6,17 +6,15 @@ export default async function fetchWithAuth(url, options = {}) {
     // 开发环境下添加 /api 前缀
     url = process.env.NODE_ENV === 'production' ? url : `/api${url}`;
 
-    const credentials = store.getters.credentials || null;
+    const credentials = store.getters.credentials || btoa('unset:unset');
 
-    if (credentials) {
-        // 设置 Authorization 头
-        options.headers = {
-            ...options.headers,
-            'Authorization': `Basic ${credentials}`
-        };
-        // 确保包含凭据，如 cookies
-        options.credentials = 'include'; 
-    }
+    // 设置 Authorization 头
+    options.headers = {
+        ...options.headers,
+        'Authorization': `Basic ${credentials}`
+    };
+    // 确保包含凭据，如 cookies
+    options.credentials = 'include'; 
 
     const response = await fetch(url, options);
 
