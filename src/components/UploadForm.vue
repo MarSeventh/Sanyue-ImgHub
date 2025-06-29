@@ -715,17 +715,13 @@ methods: {
                     const urlPattern = /^(https?:\/\/[^\s$.?#].[^\s]*)$/;
                     let fileName = '';
                     if (urlPattern.test(text)) {
-                        fetch('/api/fetchRes', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ url: text })
+                        axios.post('/api/fetchRes', { url: text }, {
+                            responseType: 'blob'
                         }).then(response => {
-                            const contentType = response.headers.get('content-type');
+                            const contentType = response.headers['content-type'];
                             if (response.status == 200 && (contentType.includes('image') || contentType.includes('video'))) {
                                 // 提取文件名
-                                const disposition = response.headers.get('Content-Disposition');
+                                const disposition = response.headers['content-disposition'];
                                 if (disposition) {
                                     const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
                                     const filenameStarRegex = /filename\*\s*=\s*UTF-8''([^;\n]*)/; // 处理 filename*
@@ -763,27 +759,27 @@ methods: {
                                     }
                                     fileName = 'PastedFile' + Date.now() + i + '.' + extension;
                                 }
-                                return response.blob();
+                                
+                                // 读取文件内容
+                                const blob = response.data;
+                                const file = new File([blob], fileName, { type: blob.type });
+                                file.uid = Date.now() + i;
+                                // 接收beforeUpload的Promise对象
+                                const checkResult = this.beforeUpload(file);
+                                if (checkResult instanceof Promise) {
+                                    checkResult.then((newFile) => {
+                                        if (newFile instanceof File) {
+                                            this.uploadFile({ file: newFile, 
+                                                onProgress: (evt) => this.handleProgress(evt), 
+                                                onSuccess: (response, file) => this.handleSuccess(response, file), 
+                                                onError: (error, file) => this.handleError(error, file) });
+                                        }
+                                    }).catch((err) => {
+                                        console.log(err);
+                                    });
+                                }
                             } else {
                                 throw new Error('URL地址的内容不是图片或视频');
-                            }
-                        })
-                        .then(blob => {
-                            const file = new File([blob], fileName, { type: blob.type });
-                            file.uid = Date.now() + i;
-                            //接收beforeUpload的Promise对象
-                            const checkResult = this.beforeUpload(file);
-                            if (checkResult instanceof Promise) {
-                                checkResult.then((newFile) => {
-                                    if (newFile instanceof File) {
-                                        this.uploadFile({ file: newFile, 
-                                            onProgress: (evt) => this.handleProgress(evt), 
-                                            onSuccess: (response, file) => this.handleSuccess(response, file), 
-                                            onError: (error, file) => this.handleError(error, file) });
-                                    }
-                                }).catch((err) => {
-                                    console.log(err);
-                                });
                             }
                         })
                         .catch(error => {

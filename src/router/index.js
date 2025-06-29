@@ -144,6 +144,11 @@ const routes = [
     name: 'whiteliston',
     component: () => import('../views/WhiteListOn.vue'),
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'notFound',
+    component: () => import('../views/NotFound.vue'),
+  },
 ]
 
 const router = createRouter({

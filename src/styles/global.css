@@ -29,6 +29,12 @@
     --upload-header-color:  rgba(58, 58, 58, 0.8); /* 上传页标题颜色 */
     --upload-main-title-color: linear-gradient(to right, #a1e3cc, rgb(120, 174, 236)); /* 上传页主标题颜色 */
 
+    /* 上传页工具栏按钮 */
+    --toolbar-button-bg-color: rgba(255, 255, 255, 0.5); /* 上传页工具栏按钮背景 */
+    --toolbar-button-shadow: 1px 2px 4px rgba(0, 0, 0, 0.3); /* 上传页工具栏按钮阴影 */
+    --toolbar-button-shadow-hover: 1px 2px 4px rgba(0, 0, 0, 0.5); /* 上传页工具栏按钮悬浮阴影 */
+    --toolbar-button-color: #327ECC; /* 上传页工具栏按钮文字颜色 */
+
     /* Footer */
     --page-footer-text-color: rgb(58, 58, 58, 0.8); /* 页脚文字颜色 */
     --page-footer-name-color: rgba(12, 76, 105, 0.8); /* 页脚用户名颜色 */
@@ -94,11 +100,8 @@
     --admin-theme-toggle-color: #000000; /* 管理端主题切换按钮颜色 */
     --admin-theme-toggle-bg-color: #000000; /* 管理端主题切换按钮背景 */
 
-    /* 上传页工具栏按钮 */
-    --toolbar-button-bg-color: rgba(255, 255, 255, 0.5); /* 上传页工具栏按钮背景 */
-    --toolbar-button-shadow: 1px 2px 4px rgba(0, 0, 0, 0.3); /* 上传页工具栏按钮阴影 */
-    --toolbar-button-shadow-hover: 1px 2px 4px rgba(0, 0, 0, 0.5); /* 上传页工具栏按钮悬浮阴影 */
-    --toolbar-button-color: #327ECC; /* 上传页工具栏按钮文字颜色 */
+    /* 404 页面 */
+    --not-found-title-text-color: linear-gradient(to right, #6b9788, rgb(98, 133, 172));
 }
 
 /* 暗黑模式 */
@@ -132,6 +135,12 @@
     --upload-text-color: antiquewhite; /* 上传页提示文字颜色 */
     --upload-header-color: blanchedalmond; /* 上传页标题颜色 */
     --upload-main-title-color: linear-gradient(to right, rgb(239, 250, 195), #f3a060); /* 上传页主标题颜色 */
+
+    /* 上传页工具栏按钮 */
+    --toolbar-button-bg-color: rgba(0, 0, 0, 0.7); /* 上传页工具栏按钮背景 */
+    --toolbar-button-shadow: -1px 2px 4px rgba(255, 255, 255, 0.3); /* 上传页工具栏按钮阴影 */
+    --toolbar-button-shadow-hover: -1px 2px 4px rgba(255, 255, 255, 0.5); /* 上传页工具栏按钮悬浮阴影 */
+    --toolbar-button-color: #bedefd; /* 上传页工具栏按钮文字颜色 */
 
     /* Footer */
     --page-footer-text-color: aliceblue; /* 页脚文字颜色 */
@@ -195,9 +204,6 @@
     --admin-theme-toggle-color: #ffffff; /* 管理端主题切换按钮颜色 */
     --admin-theme-toggle-bg-color: #fcfcfc; /* 管理端主题切换按钮背景 */
 
-    /* 上传页工具栏按钮 */
-    --toolbar-button-bg-color: rgba(0, 0, 0, 0.7); /* 上传页工具栏按钮背景 */
-    --toolbar-button-shadow: -1px 2px 4px rgba(255, 255, 255, 0.3); /* 上传页工具栏按钮阴影 */
-    --toolbar-button-shadow-hover: -1px 2px 4px rgba(255, 255, 255, 0.5); /* 上传页工具栏按钮悬浮阴影 */
-    --toolbar-button-color: #bedefd; /* 上传页工具栏按钮文字颜色 */
+    /* 404 页面 */
+    --not-found-title-text-color: linear-gradient(to right, rgb(239, 250, 195), #f3a060); /* 404 页面标题颜色 */
 }
