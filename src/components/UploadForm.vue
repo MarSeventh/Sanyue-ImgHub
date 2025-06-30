@@ -155,7 +155,6 @@
 
 <script>
 import axios from '@/utils/axios'
-import cookies from 'vue-cookies'
 import * as imageConversion from 'image-conversion'
 
 export default {
@@ -247,8 +246,10 @@ watch: {
             if (this.fileList.length > this.fileListLength) {
                 this.$nextTick(() => {
                     setTimeout(() => {
-                        // this.$refs.scrollContainer.setScrollTop(this.$refs.scrollContainer.wrapRef.scrollHeight) // 滚动到底部
-                        this.$refs.scrollContainer.setScrollTop(0) // 滚动到顶部
+                        if (this.$refs.scrollContainer) {
+                            // this.$refs.scrollContainer.setScrollTop(this.$refs.scrollContainer.wrapRef.scrollHeight) // 滚动到底部
+                            this.$refs.scrollContainer.setScrollTop(0) // 滚动到顶部
+                        }
                     }, 100)
                 })
             }
@@ -336,6 +337,9 @@ mounted() {
 },
 beforeUnmount() {
     document.removeEventListener('paste', this.handlePaste)
+    // 清理状态
+    this.waitingList = []
+    this.fileList = []
 },
 methods: {
     uploadFile(file) {
@@ -362,14 +366,15 @@ methods: {
             formData.append('url', file.file.url)
         }
         axios({
-            url: '/upload' + '?authCode=' + cookies.get('authCode') + 
-                '&serverCompress=' + needServerCompress + 
+            url: '/upload' + 
+                '?serverCompress=' + needServerCompress + 
                 '&uploadChannel=' + uploadChannel + 
                 '&uploadNameType=' + uploadNameType + 
                 '&autoRetry=' + autoRetry + 
                 '&uploadFolder=' + this.uploadFolder,
             method: 'post',
             data: formData,
+            withAuthCode: true,
             onUploadProgress: (progressEvent) => {
                 const percentCompleted = Math.round((progressEvent.loaded / progressEvent.total) * 100)
                 file.onProgress({ percent: percentCompleted, file: file.file })
@@ -377,12 +382,7 @@ methods: {
         }).then(res => {
             file.onSuccess(res, file.file)
         }).catch(err => {
-            if (err.response && err.response.status === 401) {
-                this.waitingList = []
-                this.fileList = []
-                this.$message.error('认证状态错误，请重新登录')
-                this.$router.push('/login')
-            } else {
+            if (err.response && err.response.status !== 401) {
                 this.exceptionList.push(file)
                 file.onError(err, file.file)
             }
