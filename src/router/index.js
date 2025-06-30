@@ -11,12 +11,11 @@ const adminAuthGuard = (to, from, next) => {
   if (credentials === null && to.name !== 'adminLogin') {
     // 尝试未设置密码的情况
     const credentials = btoa('unset:unset')
-    fetch('/api/manage/check', { 
-      method: 'GET',
+    axios.get('/api/manage/check', {
       headers: {
         'Authorization': 'Basic ' + credentials
       },
-      credentials: 'include'
+      withCredentials: true
     }).then(res => {
       if (res.status !== 200) {
         throw new Error('认证失败！')
