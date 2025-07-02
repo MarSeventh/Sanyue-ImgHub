@@ -326,9 +326,9 @@ computed: {
         const end = start + this.pageSize;
         let data = sortedData.slice(start, end);
         // 增加previewSrcList属性，用于预览图片
-        const fullList = data.filter(file => file.metadata?.FileType?.includes('image') ).map(file => this.getFileLink(file.name));
+        const fullList = data.filter(file => this.isImage(file)).map(file => this.getFileLink(file.name));
         data.forEach(file => {
-            if (file.metadata?.FileType?.includes('image')) {
+            if (this.isImage(file)) {
                 // 重新排序，索引大于等于当前索引的元素在前，否则在后
                 file.previewSrcList = fullList.slice(fullList.indexOf(this.getFileLink(file.name))).concat(fullList.slice(0, fullList.indexOf(this.getFileLink(file.name))));
             }
