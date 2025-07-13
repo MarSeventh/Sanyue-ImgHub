@@ -354,17 +354,36 @@ methods: {
         } else {
             this.fileList.find(item => item.uid === file.file.uid).status = 'uploading'
         }
-        const formData = new FormData()
-        formData.append('file', file.file)
-        // 判断是否需要服务端压缩
+
+        const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
+
+        // 如果上传渠道为外链，直接使用外链上传
+        if (uploadChannel === 'external') {
+            this.uploadSingleFile(file)
+            return
+        }
+
+        // 其他渠道，检查文件大小，决定是否使用分块上传
+        const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB
+        if (file.file.size > CHUNK_SIZE) {
+            this.uploadFileInChunks(file)
+        } else {
+            this.uploadSingleFile(file)
+        }
+    },
+    // 单文件上传
+    uploadSingleFile(file) {
         const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
         const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
         const autoRetry = this.autoRetry && uploadChannel !== 'external'
         const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
-        // 外链渠道，将外链写入formData
+        
+        const formData = new FormData()
+        formData.append('file', file.file)
         if (uploadChannel === 'external') {
             formData.append('url', file.file.url)
         }
+
         axios({
             url: '/upload' + 
                 '?serverCompress=' + needServerCompress + 
@@ -391,6 +410,190 @@ methods: {
                 this.uploading = false
             }
         })
+    },
+    // 分块上传
+    async uploadFileInChunks(file) {
+        const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB
+        const fileSize = file.file.size
+        const totalChunks = Math.ceil(fileSize / CHUNK_SIZE)
+        const uploadId = `upload_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+        
+        const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
+        const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
+        const autoRetry = this.autoRetry && uploadChannel !== 'external'
+        const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
+
+        try {
+            // 上传所有分块
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * CHUNK_SIZE
+                const end = Math.min(start + CHUNK_SIZE, fileSize)
+                const chunk = file.file.slice(start, end)
+                
+                const formData = new FormData()
+                formData.append('file', chunk, `${file.file.name}.part${i.toString().padStart(3, '0')}`)
+                formData.append('chunkIndex', i.toString())
+                formData.append('totalChunks', totalChunks.toString())
+                formData.append('uploadId', uploadId)
+                formData.append('originalFileName', file.file.name)
+
+                let retryCount = 0
+                const maxRetries = 3
+
+                while (retryCount < maxRetries) {
+                    try {
+                        await axios({
+                            url: '/upload' + 
+                                '?serverCompress=' + needServerCompress + 
+                                '&uploadChannel=' + uploadChannel + 
+                                '&uploadNameType=' + uploadNameType + 
+                                '&autoRetry=' + autoRetry + 
+                                '&uploadFolder=' + this.uploadFolder +
+                                '&chunked=true',
+                            method: 'post',
+                            data: formData,
+                            withAuthCode: true,
+                            onUploadProgress: (progressEvent) => {
+                                // 计算总体上传进度
+                                const chunkProgress = Math.round((progressEvent.loaded / progressEvent.total) * 100)
+                                const totalProgress = Math.round(((i * 100 + chunkProgress) / totalChunks))
+                                file.onProgress({ percent: totalProgress, file: file.file })
+                            }
+                        })
+                        break // 成功，跳出重试循环
+                    } catch (err) {
+                        retryCount++
+                        if (retryCount >= maxRetries) {
+                            throw new Error(`分块 ${i + 1}/${totalChunks} 上传失败: ${err.message}`)
+                        }
+                        // 等待后重试
+                        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+                    }
+                }
+            }
+
+            // 所有分块上传完成，发送合并请求
+            const mergeFormData = new FormData()
+            mergeFormData.append('uploadId', uploadId)
+            mergeFormData.append('totalChunks', totalChunks.toString())
+            mergeFormData.append('originalFileName', file.file.name)
+            mergeFormData.append('originalFileType', file.file.type)
+            mergeFormData.append('originalFileSize', file.file.size.toString())
+
+            const response = await axios({
+                url: '/upload' + 
+                    '?serverCompress=' + needServerCompress + 
+                    '&uploadChannel=' + uploadChannel + 
+                    '&uploadNameType=' + uploadNameType + 
+                    '&autoRetry=' + autoRetry + 
+                    '&uploadFolder=' + this.uploadFolder +
+                    '&chunked=true&merge=true',
+                method: 'post',
+                data: mergeFormData,
+                withAuthCode: true
+            })
+
+            // 检查是否为异步处理
+            if (response.status === 202) {
+                // 异步处理，开始轮询状态
+                await this.pollMergeStatus(response.data.uploadId, response.data.statusCheckUrl, file)
+            } else {
+                // 同步处理完成
+                file.onSuccess(response, file.file)
+            }
+        } catch (err) {
+            console.error('分块上传失败:', err)
+            if (err.response && err.response.status !== 401) {
+                this.exceptionList.push(file)
+                file.onError(err, file.file)
+            }
+        } finally {
+            if (this.uploadingCount + this.waitingCount === 0) {
+                this.uploading = false
+            }
+        }
+    },
+    // 轮询合并状态
+    async pollMergeStatus(uploadId, statusCheckUrl, file) {
+        const maxPollingTime = 10 * 60 * 1000 // 10分钟最大轮询时间
+        const pollInterval = 2000 // 2秒轮询间隔
+        const startTime = Date.now()
+        
+        // 显示异步处理提示
+        const fileItem = this.fileList.find(item => item.uid === file.file.uid)
+
+        this.$message({
+            type: 'info',
+            message: `${file.file.name} 文件较大，正在后台处理中...`,
+            duration: 5000
+        })
+
+        const poll = async () => {
+            try {
+                // 检查是否超时
+                if (Date.now() - startTime > maxPollingTime) {
+                    throw new Error('合并处理超时，请稍后刷新页面查看结果')
+                }
+
+                const response = await axios({
+                    url: statusCheckUrl,
+                    method: 'get',
+                    withAuthCode: true
+                })
+
+                const status = response.data
+
+                switch (status.status) {
+                    case 'processing':
+                    case 'merging':
+                    case 'uploading':
+                        // 继续轮询
+                        setTimeout(poll, pollInterval)
+                        break
+                        
+                    case 'success':
+                        // 处理成功
+                        if (status.result) {
+                            const mockResponse = {
+                                data: status.result,
+                                status: 200
+                            }
+                            file.onSuccess(mockResponse, file.file)
+                        } else {
+                            throw new Error('处理完成但未返回结果')
+                        }
+                        break
+                        
+                    case 'error':
+                        throw new Error(status.message || status.error || '后台处理失败')
+                        
+                    default:
+                        // 继续轮询
+                        setTimeout(poll, pollInterval)
+                }
+
+            } catch (error) {
+                console.error('轮询状态失败:', error)
+                
+                // 检查是否为网络错误，如果是则继续重试
+                if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
+                    if (Date.now() - startTime < maxPollingTime) {
+                        setTimeout(poll, pollInterval * 2) // 网络错误时延长轮询间隔
+                        return
+                    }
+                }
+
+                // 处理失败
+                this.$message.error(`${file.file.name} 后台处理失败: ${error.message}`)
+                if (fileItem) {
+                    fileItem.status = 'exception'
+                }
+                file.onError(error, file.file)
+            }
+        }
+
+        // 开始轮询
+        setTimeout(poll, pollInterval)
     },
     handleRemove(file) {
         this.fileList = this.fileList.filter(item => item.uid !== file.uid)
@@ -473,9 +676,9 @@ methods: {
     },
     beforeUpload(file) {
         return new Promise((resolve, reject) => {
-            // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值；或为Telegram渠道且文件大小大于20MB
-            const needCustomCompress = file.type.includes('image') && ((this.customerCompress && file.size / 1024 / 1024 > this.compressBar) || (this.uploadChannel === 'telegram' && file.size / 1024 / 1024 > 20))
-            const isLtLim = file.size / 1024 / 1024 < 20 || this.uploadChannel !== 'telegram'
+            // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值
+            const needCustomCompress = file.type.includes('image') && this.customerCompress && file.size / 1024 / 1024 > this.compressBar
+            const isLtLim = file.size / 1024 / 1024 <= 1024 || this.uploadChannel !== 'telegram'
 
             const pushFileToQueue = (file, serverCompress) => {
                 const fileUrl = URL.createObjectURL(file)
@@ -498,8 +701,8 @@ methods: {
             if (needCustomCompress) {
                 //尝试压缩图片
                 imageConversion.compressAccurately(file, 1024 * this.compressQuality).then((res) => {
-                    //如果压缩后大于20MB，且上传渠道为telegram，则不上传
-                    if (res.size / 1024 / 1024 > 20 && this.uploadChannel === 'telegram') {
+                    //如果压缩后大于1024MB，且上传渠道为telegram，则不上传
+                    if (res.size / 1024 / 1024 > 1024 && this.uploadChannel === 'telegram') {
                         this.$message.error(file.name + '压缩后文件过大，无法上传!')
                         reject('文件过大')
                     }

@@ -2,7 +2,7 @@
     <div class="container">
     <div class="upload-home">
         <ToggleDark class="toggle-dark-button"/>
-        <el-tooltip content="1. 支持多文件上传，支持所有常见文件格式 <br> 2. Telegram 渠道上传的文件大小不支持超过20MB" raw-content placement="bottom">
+        <el-tooltip content="1. 支持多文件上传，支持所有常见文件格式 <br> 2. Telegram 渠道上传的文件大小不支持超过1GB" raw-content placement="bottom">
             <div class="info-container">
                 <font-awesome-icon icon="question" class="info-icon" size="lg"/>
             </div>
@@ -125,7 +125,7 @@
                     </el-radio-group>
                 </el-form-item>
                 <p style="font-size: medium; font-weight: bold">客户端压缩
-                    <el-tooltip content="1. 上传前在本地进行压缩，仅对图片文件生效 <br> 2. 若图片大小大于20MB，将自动进行压缩" placement="top" raw-content>
+                    <el-tooltip content="上传前在本地进行压缩，仅对图片文件生效" placement="top" raw-content>
                         <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
                     </el-tooltip>
                 </p>
