@@ -588,6 +588,7 @@ methods: {
                 if (fileItem) {
                     fileItem.status = 'exception'
                 }
+                this.exceptionList.push(file)
                 file.onError(error, file.file)
             }
         }
