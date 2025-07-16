@@ -416,7 +416,6 @@ methods: {
         const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB
         const fileSize = file.file.size
         const totalChunks = Math.ceil(fileSize / CHUNK_SIZE)
-        const uploadId = `upload_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
         
         const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
         const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
@@ -424,7 +423,34 @@ methods: {
         const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
 
         try {
-            // 上传所有分块
+            // 第一步：初始化分块上传，获取uploadId
+            const initFormData = new FormData()
+            initFormData.append('originalFileName', file.file.name)
+            initFormData.append('originalFileType', file.file.type)
+            initFormData.append('originalFileSize', file.file.size.toString())
+            initFormData.append('totalChunks', totalChunks.toString())
+
+            const initResponse = await axios({
+                url: '/upload' + 
+                    '?serverCompress=' + needServerCompress + 
+                    '&uploadChannel=' + uploadChannel + 
+                    '&uploadNameType=' + uploadNameType + 
+                    '&autoRetry=' + autoRetry + 
+                    '&uploadFolder=' + this.uploadFolder +
+                    '&initChunked=true',
+                method: 'post',
+                data: initFormData,
+                withAuthCode: true
+            })
+
+            if (!initResponse.data.success) {
+                throw new Error('初始化分块上传失败: ' + initResponse.data.message)
+            }
+
+            const uploadId = initResponse.data.uploadId
+            console.log('分块上传初始化成功，uploadId:', uploadId)
+
+            // 第二步：上传所有分块
             for (let i = 0; i < totalChunks; i++) {
                 const start = i * CHUNK_SIZE
                 const end = Math.min(start + CHUNK_SIZE, fileSize)
@@ -472,7 +498,7 @@ methods: {
                 }
             }
 
-            // 所有分块上传完成，发送合并请求
+            // 第三步：所有分块上传完成，发送合并请求
             const mergeFormData = new FormData()
             mergeFormData.append('uploadId', uploadId)
             mergeFormData.append('totalChunks', totalChunks.toString())
