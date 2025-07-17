@@ -364,8 +364,8 @@ methods: {
         }
 
         // 其他渠道，检查文件大小，决定是否使用分块上传
-        const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB
-        if (file.file.size > CHUNK_SIZE) {
+        const CHUNK_THRESHOLD = 20 * 1024 * 1024 // 20MB
+        if (file.file.size > CHUNK_THRESHOLD) {
             this.uploadFileInChunks(file)
         } else {
             this.uploadSingleFile(file)
@@ -413,7 +413,7 @@ methods: {
     },
     // 分块上传
     async uploadFileInChunks(file) {
-        const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB
+        const CHUNK_SIZE = 10 * 1024 * 1024 // 10MB
         const fileSize = file.file.size
         const totalChunks = Math.ceil(fileSize / CHUNK_SIZE)
         
@@ -449,6 +449,13 @@ methods: {
 
             const uploadId = initResponse.data.uploadId
             console.log('分块上传初始化成功，uploadId:', uploadId)
+
+            // 记录 totalChunks 和 uploadId 到文件项，用于后续清理
+            const fileItem = this.fileList.find(item => item.uid === file.file.uid)
+            if (fileItem) {
+                fileItem.totalChunks = totalChunks
+                fileItem.uploadId = uploadId
+            }
 
             // 第二步：上传所有分块
             for (let i = 0; i < totalChunks; i++) {
@@ -529,6 +536,19 @@ methods: {
             }
         } catch (err) {
             console.error('分块上传失败:', err)
+            
+            // 如果有uploadId，清理相关资源
+            const fileItem = this.fileList.find(item => item.uid === file.file.uid)
+            if (fileItem && fileItem.uploadId) {
+                this.cleanupUploadResources(fileItem.uploadId, fileItem.totalChunks)
+                    .then(() => {
+                        console.log(`已清理分块上传失败的资源: ${fileItem.uploadId}`)
+                    })
+                    .catch(cleanupError => {
+                        console.warn('清理分块上传失败资源时出错:', cleanupError)
+                    })
+            }
+            
             if (err.response && err.response.status !== 401) {
                 this.exceptionList.push(file)
                 file.onError(err, file.file)
@@ -610,6 +630,19 @@ methods: {
                 }
 
                 // 处理失败
+                console.error('轮询处理失败:', error)
+                
+                // 发送清理请求以清理后台资源
+                if (fileItem && fileItem.uploadId) {
+                    this.cleanupUploadResources(fileItem.uploadId, fileItem.totalChunks)
+                        .then(() => {
+                            console.log(`已清理失败上传的资源: ${fileItem.uploadId}`)
+                        })
+                        .catch(cleanupError => {
+                            console.warn('清理失败上传资源时出错:', cleanupError)
+                        })
+                }
+                
                 this.$message.error(`${file.file.name} 后台处理失败: ${error.message}`)
                 if (fileItem) {
                     fileItem.status = 'exception'
@@ -628,6 +661,21 @@ methods: {
             type: 'info',
             message: file.name + '已删除'
         })
+    },
+
+    // 清理上传资源
+    async cleanupUploadResources(uploadId, totalChunks = 0) {
+        try {
+            await axios({
+                url: `/upload?cleanup=true&uploadId=${uploadId}&totalChunks=${totalChunks}`,
+                method: 'get',
+                withAuthCode: true,
+                timeout: 5000
+            })
+            console.log(`清理上传资源成功: ${uploadId}`)
+        } catch (error) {
+            console.warn('清理上传资源失败:', error)
+        }
     },
     handleSuccess(response, file) {
         try {     
