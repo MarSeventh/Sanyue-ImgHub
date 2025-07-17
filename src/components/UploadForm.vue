@@ -413,7 +413,7 @@ methods: {
     },
     // 分块上传
     async uploadFileInChunks(file) {
-        const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB
+        const CHUNK_SIZE = 10 * 1024 * 1024 // 20MB
         const fileSize = file.file.size
         const totalChunks = Math.ceil(fileSize / CHUNK_SIZE)
         
