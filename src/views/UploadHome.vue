@@ -104,7 +104,7 @@
                     <el-input style="width: 300px;" v-model="uploadFolder" placeholder="请输入上传目录路径"/>
                 </el-form-item>
                 <el-form-item label="自动切换">
-                    <el-tooltip content="上传失败自动切换到其他渠道上传" placement="top">
+                    <el-tooltip content="对于非分块上传文件，上传失败自动切换到其他渠道上传" placement="top">
                         <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
                     </el-tooltip>
                     <el-switch

@@ -46,7 +46,7 @@
         <div class="first-settings">
             <h3 class="first-title">上传管理</h3>            
             <h4 class="second-title">图像审查
-                <el-tooltip content="支持 nsfwjs 和 moderatecontent.com 渠道" placement="top">
+                <el-tooltip content="仅对非分块上传文件生效，支持 nsfwjs 和 moderatecontent.com 渠道" placement="top">
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h4>         
