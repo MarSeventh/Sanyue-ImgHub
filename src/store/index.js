@@ -96,7 +96,7 @@ export default createStore({
   actions: {
     async fetchUserConfig({ commit }) {
       try {
-        const response = await axios.get('/userConfig');
+        const response = await axios.get('/api/userConfig');
         commit('setUserConfig', response.data);
       } catch (error) {
         console.log(error);
