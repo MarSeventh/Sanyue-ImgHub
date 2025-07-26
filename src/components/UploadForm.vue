@@ -427,7 +427,6 @@ methods: {
             const initFormData = new FormData()
             initFormData.append('originalFileName', file.file.name)
             initFormData.append('originalFileType', file.file.type)
-            initFormData.append('originalFileSize', file.file.size.toString())
             initFormData.append('totalChunks', totalChunks.toString())
 
             const initResponse = await axios({
@@ -469,6 +468,7 @@ methods: {
                 formData.append('totalChunks', totalChunks.toString())
                 formData.append('uploadId', uploadId)
                 formData.append('originalFileName', file.file.name)
+                formData.append('originalFileType', file.file.type)
 
                 let retryCount = 0
                 const maxRetries = 3
@@ -503,6 +503,10 @@ methods: {
                         await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
                     }
                 }
+                
+                if (retryCount === maxRetries) {
+                    throw new Error(`分块 ${i + 1}/${totalChunks} 上传失败，已重试 ${maxRetries} 次`)
+                }
             }
 
             // 第三步：所有分块上传完成，发送合并请求
@@ -511,7 +515,6 @@ methods: {
             mergeFormData.append('totalChunks', totalChunks.toString())
             mergeFormData.append('originalFileName', file.file.name)
             mergeFormData.append('originalFileType', file.file.type)
-            mergeFormData.append('originalFileSize', file.file.size.toString())
 
             const response = await axios({
                 url: '/upload' + 
