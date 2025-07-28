@@ -212,7 +212,7 @@ export default {
             useDefaultWallPaper: false,
             isToolBarOpen: false, //是否打开工具栏
             uploadMethod: 'default', //上传方式
-            uploadFolder: '', // 添加上传文件夹属性
+            uploadFolder: '', // 上传文件夹
             isFolderInputActive: false,
             showAnnouncementDialog: false, // 控制公告弹窗的显示
             announcementContent: '', // 公告内容
@@ -247,7 +247,14 @@ export default {
             this.$store.commit('setStoreAutoRetry', val)
         },
         uploadFolder(val) {
-            this.$store.commit('setStoreUploadFolder', val)
+            // 验证上传文件夹路径的合法性
+            if (this.validateUploadFolder(val)) {
+                this.$store.commit('setStoreUploadFolder', val)
+            } else {
+                this.$nextTick(() => {
+                    this.uploadFolder = this.storeUploadFolder
+                })
+            }
         }
     },
     computed: {
@@ -307,6 +314,34 @@ export default {
         Logo
     },
     methods: {
+        // 验证上传文件夹路径的合法性
+        validateUploadFolder(path) {
+            // 如果路径为空，返回true（允许空路径）
+            if (!path || path.trim() === '') {
+                return true
+            }
+            
+            // 检查路径是否以/开头
+            if (!path.startsWith('/')) {
+                this.$message.error('上传目录必须以 "/" 开头')
+                return false
+            }
+            
+            // 检查路径是否包含非法字符
+            const invalidChars = /[\\:\*\?"'<>\| \(\)\[\]\{\}#%\^`~;@&=\+\$,]/
+            if (invalidChars.test(path)) {
+                this.$message.error('上传目录包含非法字符，请使用合法的路径格式')
+                return false
+            }
+            
+            // 检查路径是否包含连续的斜杠
+            if (path.includes('//')) {
+                this.$message.error('上传目录不能包含连续的斜杠')
+                return false
+            }
+            
+            return true
+        },
         handleManage() {
             this.$router.push('/dashboard')
         },

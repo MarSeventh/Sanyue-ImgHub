@@ -6,6 +6,10 @@
     :collapse="isCollapse"
     @select="handleSelect"
     >
+        <el-menu-item index="status" class="menu-item">
+            <font-awesome-icon icon="chart-bar" style="width: 18px;"></font-awesome-icon>
+            <span slot="title">系统状态</span>
+        </el-menu-item>
         <el-menu-item index="upload" class="menu-item">
             <font-awesome-icon icon="cloud-upload" style="width: 18px;"></font-awesome-icon>
             <span slot="title">上传设置</span>
@@ -36,7 +40,7 @@ name: 'SysConfigTabs',
 props: {
     activeIndex: {
         type: String,
-        default: 'upload'
+        default: 'status'
     },
     isCollapse: {
         type: Boolean,

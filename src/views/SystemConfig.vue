@@ -21,6 +21,7 @@
 <script>
 import DashboardTabs from '@/components/DashboardTabs.vue';
 import SysConfigTabs from '@/components/SysConfigTabs.vue';
+import SysCogStatus from '@/components/SysCogStatus.vue';
 import SysCogUpload from '@/components/SysCogUpload.vue';
 import SysCogSecurity from '@/components/SysCogSecurity.vue';
 import SysCogPage from '@/components/SysCogPage.vue';
@@ -30,7 +31,7 @@ export default {
     name: 'SystemConfig',
     data() {
         return {
-            activeIndex: 'upload',
+            activeIndex: 'status',
             isSidebarCollapse: false
         }
     },
@@ -52,6 +53,7 @@ export default {
     components: {
         DashboardTabs,
         SysConfigTabs,
+        SysCogStatus,
         SysCogUpload,
         SysCogSecurity,
         SysCogPage,
@@ -65,6 +67,10 @@ export default {
         currentComponent() {
             const hash = this.$route.hash.replace('#', '');
             switch (hash) {
+                case 'status':
+                    return SysCogStatus;
+                case 'upload':
+                    return SysCogUpload;
                 case 'security':
                     return SysCogSecurity;
                 case 'page':
@@ -72,7 +78,7 @@ export default {
                 case 'others':
                     return SysCogOthers;
                 default:
-                    return SysCogUpload;
+                    return SysCogStatus;
             }
         }
     },
@@ -83,7 +89,7 @@ export default {
         },
         // 设置默认锚点
         setDefaultHash() {
-            const defaultHash = '#upload'; // 默认锚点
+            const defaultHash = '#status'; // 默认锚点
             window.location.hash = defaultHash;
             this.activeIndex = defaultHash.replace('#', '');
         },

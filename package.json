@@ -1,6 +1,6 @@
 {
   "name": "sanyue_imghub",
-  "version": "0.1.0",
+  "version": "2.0.2",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -15,12 +15,14 @@
     "@vueuse/core": "^12.3.0",
     "@vueuse/head": "^2.0.0",
     "axios": "^1.7.7",
+    "chart.js": "^4.5.0",
     "core-js": "^3.38.1",
     "element-plus": "^2.8.2",
     "http-proxy-middleware": "^3.0.2",
     "image-conversion": "^2.1.1",
     "jszip": "^3.10.1",
     "vue": "^3.2.13",
+    "vue-chartjs": "^5.3.2",
     "vue-cookies": "^1.8.4",
     "vue-router": "^4.4.3",
     "vuex": "^4.1.0",
