@@ -203,7 +203,7 @@ export default {
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-    height: 40vh;
+    height: 45vh;
     width: 40vw;
     border-radius: 12px;
     box-shadow: var(--login-container-box-shadow);

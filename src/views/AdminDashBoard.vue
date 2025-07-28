@@ -756,12 +756,7 @@ methods: {
     },
     updateStats(num, init = false) {
         if (init) {
-            fetchWithAuth(`/api/manage/list?count=-1&sum=true&dir=${this.currentPath}&search=${this.search}`, { method: 'GET' })
-            .then(response => response.json())
-            .then(data => {
-                this.Number = data.sum;
-            })
-            .catch(() => this.$message.error('更新统计信息失败，请检查网络连接'));
+            this.Number = num;
         } else {
             this.Number += num;
         }
@@ -1183,8 +1178,8 @@ methods: {
             this.tableData = [...folderItems, ...fileItems];
 
             // 更新统计信息
-            this.updateStats(0, true);
-                
+            this.updateStats(data.totalCount, true);
+
         } catch (error) {
             console.error('Error fetching file list:', error);
             this.$message.error('获取文件列表失败');
