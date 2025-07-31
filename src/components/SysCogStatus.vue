@@ -106,17 +106,51 @@
           <span>系统维护</span>
         </div>
         <div class="action-content">
-          <el-button 
-            type="primary" 
-            :loading="rebuilding"
-            @click="rebuildIndex"
-            class="rebuild-btn"
-          >
-            <font-awesome-icon icon="sync-alt" />
-            {{ rebuilding ? '重建中...' : '重建索引' }}
-          </el-button>
-          <div class="action-description">
-            重新扫描所有文件并更新索引数据，适用于数据不一致时的修复
+          <div class="action-buttons">
+            <el-tooltip content="重新扫描所有文件并更新索引数据，适用于数据不一致时的修复" placement="top">
+              <el-button 
+                type="primary" 
+                :loading="rebuilding"
+                @click="rebuildIndex"
+                class="action-btn rebuild-btn"
+              >
+                <font-awesome-icon icon="sync-alt" />
+                {{ rebuilding ? '重建中...' : '重建索引' }}
+              </el-button>
+            </el-tooltip>
+
+            <el-tooltip content="备份所有文件元数据和系统设置到JSON文件" placement="top">
+              <el-button 
+                type="success" 
+                :loading="backing"
+                @click="backupData"
+                class="action-btn backup-btn"
+              >
+                <font-awesome-icon icon="download" />
+                {{ backing ? '备份中...' : '备份数据' }}
+              </el-button>
+            </el-tooltip>
+
+            <el-tooltip content="从备份文件恢复数据，将覆盖现有的文件元数据和系统设置" placement="top">
+              <div class="restore-section">
+                <input 
+                  type="file" 
+                  ref="fileInput" 
+                  accept=".json"
+                  @change="handleFileSelect"
+                  style="display: none"
+                />
+                <el-button 
+                  type="warning" 
+                  :loading="restoring"
+                  @click="selectRestoreFile"
+                  class="action-btn restore-btn"
+                >
+                  <font-awesome-icon icon="upload" />
+                  {{ restoring ? '恢复中...' : '恢复数据' }}
+                </el-button>
+              </div>
+            </el-tooltip>
           </div>
         </div>
       </div>
@@ -159,6 +193,8 @@ export default {
     return {
       loading: false,
       rebuilding: false,
+      backing: false,
+      restoring: false,
       indexInfo: {},
       version: packageInfo.version // 从package.json获取版本号
     }
@@ -211,6 +247,111 @@ export default {
         this.$message.error('重建索引失败')
       } finally {
         this.rebuilding = false
+      }
+    },
+
+    // 备份数据
+    async backupData() {
+      this.backing = true
+      try {
+        const response = await fetchWithAuth('/api/manage/sysConfig/backup?action=backup', {
+          method: 'GET'
+        })
+        
+        if (response.ok) {
+          // 创建下载链接
+          const blob = await response.blob()
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `imgbed_backup_${new Date().toISOString().split('T')[0]}.json`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          window.URL.revokeObjectURL(url)
+          
+          this.$message.success('备份文件已下载')
+        } else {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'API请求失败')
+        }
+      } catch (error) {
+        console.error('备份数据失败:', error)
+        this.$message.error('备份数据失败: ' + error.message)
+      } finally {
+        this.backing = false
+      }
+    },
+
+    // 选择恢复文件
+    selectRestoreFile() {
+      if (this.restoring) return
+      this.$refs.fileInput.click()
+    },
+
+    // 处理文件选择
+    async handleFileSelect(event) {
+      const file = event.target.files[0]
+      if (!file) return
+
+      if (!file.name.endsWith('.json')) {
+        this.$message.error('请选择JSON格式的备份文件')
+        return
+      }
+
+      // 确认恢复操作
+      try {
+        await this.$confirm(
+          '恢复操作将覆盖现有的文件元数据和系统设置，此操作不可逆。确定要继续吗？',
+          '确认恢复',
+          {
+            confirmButtonText: '确定恢复',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        )
+        
+        await this.restoreData(file)
+      } catch (error) {
+        if (error !== 'cancel') {
+          console.error('确认恢复失败:', error)
+        }
+      }
+      
+      // 清除文件选择
+      event.target.value = ''
+    },
+
+    // 恢复数据
+    async restoreData(file) {
+      this.restoring = true
+      try {
+        const response = await fetchWithAuth('/api/manage/sysConfig/backup?action=restore', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: await file.text()
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          this.$message.success(
+            `恢复完成！已恢复 ${result.stats.restoredFiles} 个文件和 ${result.stats.restoredSettings} 个设置项`
+          )
+          // 刷新索引信息
+          setTimeout(() => {
+            this.fetchIndexInfo()
+          }, 1000)
+        } else {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'API请求失败')
+        }
+      } catch (error) {
+        console.error('恢复数据失败:', error)
+        this.$message.error('恢复数据失败: ' + error.message)
+      } finally {
+        this.restoring = false
       }
     },
 
@@ -440,7 +581,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 3px;
   font-size: 16px;
   font-weight: 600;
   color: var(--admin-container-color);
@@ -453,33 +594,63 @@ export default {
 
 .action-content {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: center;
+  padding: 20px 0;
 }
 
-.rebuild-btn {
-  align-self: flex-start;
-  background: linear-gradient(135deg, var(--admin-purple), #E1BEE7);
+.action-buttons {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.action-btn {
   border: none;
   border-radius: 12px;
   padding: 12px 24px;
+  margin-left: 0;
   font-weight: 600;
   transition: all 0.3s ease;
+  min-width: 140px;
+  height: 48px;
 }
 
-.rebuild-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(179, 157, 219, 0.4);
+.action-btn:hover {
+  transform: translateY(-2px);
 }
 
-.rebuild-btn .fa-icon {
+.action-btn .fa-icon {
   margin-right: 8px;
 }
 
-.action-description {
-  font-size: 13px;
-  color: #666;
-  line-height: 1.5;
+.rebuild-btn {
+  background: linear-gradient(135deg, var(--admin-purple), #E1BEE7);
+}
+
+.rebuild-btn:hover {
+  box-shadow: 0 6px 16px rgba(179, 157, 219, 0.4);
+}
+
+.backup-btn {
+  background: linear-gradient(135deg, #4CAF50, #81C784);
+}
+
+.backup-btn:hover {
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+.restore-btn {
+  background: linear-gradient(135deg, #FF9800, #FFB74D);
+}
+
+.restore-btn:hover {
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+}
+
+.restore-section {
+  display: inline-block;
 }
 
 /* 文件信息区域 */
@@ -565,6 +736,16 @@ export default {
   .card-value {
     font-size: 24px;
   }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .action-btn {
+    width: 100%;
+    min-width: unset;
+  }
 }
 
 /* 加载动画 */
@@ -581,10 +762,6 @@ export default {
 /* 深色模式适配 */
 @media (prefers-color-scheme: dark) {
   .card-title {
-    color: #aaa;
-  }
-  
-  .action-description {
     color: #aaa;
   }
   
