@@ -5,6 +5,7 @@
     --popper-bg-color: rgba(255, 255, 255, 0.8); /* el-dropdown背景 */
     --popper-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1); /* el-dropdown阴影 */
     --image-preview-filter: brightness(1); /* 图片预览滤镜 */
+    --text-bg-color: rgba(0, 0, 0, 0.1); /* 文本背景颜色 */
 
     /* 上传页 */
     --upload-list-card-bg-color: rgba(255, 255, 255, 0.7); /* el-upload-list-card背景 */
@@ -111,6 +112,7 @@
     --popper-bg-color: rgba(0, 0, 0, 0.8); /* el-dropdown背景 */
     --popper-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.1); /* el-dropdown阴影 */
     --image-preview-filter: brightness(0.8); /* 图片预览滤镜 */
+    --text-bg-color: rgba(255, 255, 255, 0.1); /* 文本背景颜色 */
 
     /* 上传页 */
     --upload-list-card-bg-color: rgba(0, 0, 0, 0.7); /* el-upload-list-card背景 */

@@ -99,10 +99,138 @@
             </el-form>
         </div>
 
+        <!-- 一级设置：API Token管理 -->
+        <div class="first-settings">
+            <h3 class="first-title">API Token 管理</h3>
+            
+            <div class="token-actions">
+                <el-button type="small" @click="showCreateTokenDialog = true">新建 Token</el-button>
+            </div>
+
+            <div class="token-table-container">
+                <el-table 
+                    :data="apiTokens" 
+                    class="token-table"
+                    v-loading="tokenLoading"
+                >
+                    <el-table-column prop="name" label="名称" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content">{{ scope.row.name }}</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="token" label="Token" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content">
+                                <span class="token-display">{{ scope.row.token }}</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="permissions" label="权限" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content">
+                                <el-tag 
+                                    v-for="perm in scope.row.permissions" 
+                                    :key="perm" 
+                                    size="small" 
+                                    class="permission-tag"
+                                >
+                                    {{ getPermissionText(perm) }}
+                                </el-tag>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="createdAt" label="创建时间" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content">{{ formatDate(scope.row.createdAt) }}</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" fixed="right" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content action-buttons">
+                                <el-button class="action-button" size="small" @click="editToken(scope.row)">编辑</el-button>
+                                <el-button class="action-button" size="small" type="danger" @click="deleteToken(scope.row.id)">删除</el-button>
+                            </div>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </div>
+
         <!-- 保存按钮 -->
         <div class="actions">
             <el-button type="primary" @click="saveSettings">保存设置</el-button>
         </div>
+
+        <!-- 创建Token对话框 -->
+        <el-dialog v-model="showCreateTokenDialog" title="创建新 API Token" :width="dialogWidth">
+            <el-form :model="newToken" :rules="tokenRules" ref="tokenForm" label-width="100px">
+                <el-form-item label="Token 名称" prop="name">
+                    <el-input v-model="newToken.name" placeholder="请输入Token名称"/>
+                </el-form-item>
+                <el-form-item label="权限" prop="permissions">
+                    <el-checkbox-group v-model="newToken.permissions">
+                        <el-checkbox label="upload">上传</el-checkbox>
+                        <el-checkbox label="delete">删除</el-checkbox>
+                        <el-checkbox label="list">列出</el-checkbox>
+                    </el-checkbox-group>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="showCreateTokenDialog = false">取消</el-button>
+                    <el-button type="primary" @click="createToken">创建</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
+        <!-- 编辑Token对话框 -->
+        <el-dialog v-model="showEditTokenDialog" title="编辑 API Token" :width="dialogWidth">
+            <el-form :model="editingToken" :rules="tokenRules" ref="editTokenForm" label-width="100px">
+                <el-form-item label="Token 名称">
+                    <el-input v-model="editingToken.name" disabled/>
+                </el-form-item>
+                <el-form-item label="权限" prop="permissions">
+                    <el-checkbox-group v-model="editingToken.permissions">
+                        <el-checkbox label="upload">上传</el-checkbox>
+                        <el-checkbox label="delete">删除</el-checkbox>
+                        <el-checkbox label="list">列出</el-checkbox>
+                    </el-checkbox-group>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="showEditTokenDialog = false">取消</el-button>
+                    <el-button type="primary" @click="updateToken">更新</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
+        <!-- Token创建成功对话框 -->
+        <el-dialog v-model="showTokenResultDialog" title="Token 创建成功" :width="dialogWidth">
+            <div class="token-result">
+                <p style="margin-bottom: 15px; color: #e6a23c;">
+                    <font-awesome-icon icon="exclamation-triangle" style="margin-right: 5px;"/>
+                    请妥善保存以下Token，关闭此窗口后将无法再次查看完整Token！
+                </p>
+                <el-form label-width="100px">
+                    <el-form-item label="Token 名称">
+                        <span>{{ createdToken.name }}</span>
+                    </el-form-item>
+                    <el-form-item label="完整Token">
+                        <el-input v-model="createdToken.token" readonly>
+                            <template #append>
+                                <el-button @click="copyToken">复制</el-button>
+                            </template>
+                        </el-input>
+                    </el-form-item>
+                </el-form>
+            </div>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button type="primary" @click="showTokenResultDialog = false">我已保存</el-button>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -120,8 +248,10 @@ data() {
             moderate: {}
         },
         accessSettings: {},
+        apiTokens: [], // API Token列表
         // 加载状态
         loading: false,
+        tokenLoading: false,
 
         // 修改密码相关
         oriUserPassword: '', // 原上传密码
@@ -129,6 +259,27 @@ data() {
 
         showUserPassConfirm: false, // 显示用户密码确认框
         showAdminPassConfirm: false, // 显示管理密码确认框
+
+        // Token对话框相关
+        showCreateTokenDialog: false,
+        showEditTokenDialog: false,
+        showTokenResultDialog: false,
+        
+        newToken: {
+            name: '',
+            owner: '',
+            permissions: []
+        },
+        editingToken: {
+            id: '',
+            name: '',
+            owner: '',
+            permissions: []
+        },
+        createdToken: {
+            name: '',
+            token: ''
+        },
 
         userPassRules: {
             authCode: [
@@ -167,10 +318,22 @@ data() {
                     }
                 }, trigger: 'blur' }
             ]
+        },
+
+        tokenRules: {
+            name: [
+                { required: true, message: '请输入Token名称', trigger: 'blur' }
+            ],
+            permissions: [
+                { required: true, message: '请选择权限', trigger: 'change' }
+            ]
         }
     };
 },
 computed: {
+    dialogWidth() {
+        return window.innerWidth > 768 ? '50%' : '90%';
+    },
 },
 methods: {
     handleUserPassInput() {
@@ -187,6 +350,146 @@ methods: {
             this.showAdminPassConfirm = false;
         }
     },
+    
+    // Token相关方法
+    getPermissionText(permission) {
+        const permissionMap = {
+            'upload': '上传',
+            'delete': '删除', 
+            'list': '列出'
+        };
+        return permissionMap[permission] || permission;
+    },
+    
+    formatDate(dateString) {
+        return new Date(dateString).toLocaleString('zh-CN');
+    },
+    
+    async loadApiTokens() {
+        this.tokenLoading = true;
+        try {
+            const response = await fetchWithAuth('/api/manage/apiTokens');
+            const data = await response.json();
+            this.apiTokens = data.tokens || [];
+        } catch (error) {
+            this.$message.error('获取Token列表失败');
+        } finally {
+            this.tokenLoading = false;
+        }
+    },
+    
+    createToken() {
+        this.$refs.tokenForm.validate(async (valid) => {
+            if (!valid) return;
+            
+            try {
+                this.newToken.owner = 'admin'; // 默认所有Token归属管理员
+                const response = await fetchWithAuth('/api/manage/apiTokens', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(this.newToken)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    this.createdToken = {
+                        name: data.name,
+                        token: data.token
+                    };
+                    this.showCreateTokenDialog = false;
+                    this.showTokenResultDialog = true;
+                    this.newToken = { name: '', owner: '', permissions: [] };
+                    await this.loadApiTokens();
+                    this.$message.success('Token创建成功');
+                } else {
+                    this.$message.error(data.error || 'Token创建失败');
+                }
+            } catch (error) {
+                this.$message.error('Token创建失败');
+            }
+        });
+    },
+    
+    editToken(token) {
+        this.editingToken = {
+            id: token.id,
+            name: token.name,
+            owner: token.owner,
+            permissions: [...token.permissions]
+        };
+        this.showEditTokenDialog = true;
+    },
+    
+    updateToken() {
+        this.$refs.editTokenForm.validate(async (valid) => {
+            if (!valid) return;
+            
+            try {
+                const response = await fetchWithAuth('/api/manage/apiTokens', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tokenId: this.editingToken.id,
+                        permissions: this.editingToken.permissions
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    this.showEditTokenDialog = false;
+                    await this.loadApiTokens();
+                    this.$message.success('Token权限更新成功');
+                } else {
+                    this.$message.error(data.error || 'Token更新失败');
+                }
+            } catch (error) {
+                this.$message.error('Token更新失败');
+            }
+        });
+    },
+    
+    async deleteToken(tokenId) {
+        try {
+            await this.$confirm('此操作将永久删除该Token，是否继续？', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            });
+            
+            const response = await fetchWithAuth(`/api/manage/apiTokens?id=${tokenId}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                await this.loadApiTokens();
+                this.$message.success('Token删除成功');
+            } else {
+                this.$message.error(data.error || 'Token删除失败');
+            }
+        } catch (error) {
+            if (error !== 'cancel') {
+                this.$message.error('Token删除失败');
+            }
+        }
+    },
+    
+    async copyToken() {
+        try {
+            await navigator.clipboard.writeText(this.createdToken.token);
+            this.$message.success('Token已复制到剪贴板');
+        } catch (error) {
+            this.$message.error('复制失败，请手动复制');
+        }
+    },
+    
     saveSettings() {
         // 所有表单的Promise数组
         let validationPromises = [];
@@ -254,6 +557,9 @@ mounted() {
         this.oriAdminPassword = this.authSettings.admin.adminPassword;
         this.authSettings.user.confirmNewUserPassword = '';
         this.authSettings.admin.confirmNewAdminPassword = '';
+        
+        // 加载API Token列表
+        this.loadApiTokens();
     })
     .finally(() => {
         this.loading = false;
@@ -280,6 +586,154 @@ mounted() {
 .actions {
     margin-top: 20px;
     text-align: right;
+}
+
+.token-actions {
+    text-align: right;
+    margin-bottom: 20px;
+    margin-right: 2%;
+}
+
+.token-table-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.token-table {
+    width: 96%;
+    max-width: 1200px;
+    border-radius: 12px !important;
+    overflow: hidden;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.token-table :deep(.el-table__header-wrapper) {
+    border-radius: 12px 12px 0 0;
+}
+
+.token-table :deep(.el-table__body-wrapper) {
+    border-radius: 0 0 12px 12px;
+}
+
+.token-table :deep(.el-table) {
+    border-radius: 12px;
+}
+
+.token-table :deep(.el-table__header) {
+    background-color: #f8f9fa;
+}
+
+.token-table :deep(.el-table th) {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #ebeef5;
+    text-align: center;
+}
+
+.token-table :deep(.el-table td) {
+    border-bottom: 1px solid #ebeef5;
+}
+
+.token-table :deep(.el-table__row:last-child td) {
+    border-bottom: none;
+}
+
+.table-cell-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px 4px;
+    min-height: 40px;
+}
+
+.action-buttons {
+    gap: 8px;
+}
+
+.action-button {
+    margin-left: 0;
+}
+
+.permission-tag {
+    margin: 2px !important;
+}
+
+.token-display {
+    font-family: 'Courier New', monospace;
+    background-color: var(--text-bg-color);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    word-break: break-all;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 响应式布局 */
+@media (max-width: 1200px) {
+    .token-table {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .token-table-container {
+        padding: 0 10px;
+    }
+    
+    .table-cell-content {
+        padding: 6px 2px;
+        min-height: 36px;
+    }
+    
+    .token-display {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .token-table-container {
+        padding: 0 5px;
+    }
+    
+    .table-cell-content {
+        padding: 4px 2px;
+        min-height: 32px;
+        font-size: 12px;
+    }
+    
+    .action-buttons .el-button {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .permission-tag {
+        font-size: 11px;
+        padding: 0 4px;
+        height: 20px;
+        line-height: 20px;
+    }
+}
+
+.token-result {
+    padding: 10px 0;
+}
+
+.token-result .el-form-item {
+    margin-bottom: 20px;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 /* 确认密码框的动画效果 */
