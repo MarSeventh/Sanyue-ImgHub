@@ -15,9 +15,10 @@ export default createStore({
       compressBar: 5,
       serverCompress: true,
     },
-    storeUploadChannel: 'telegram',
+    storeUploadChannel: '',
     storeAutoRetry: true,
-    storeUploadNameType: 'default',
+    storeUploadNameType: '',
+    uploadFolder: '',
     customUrlSettings: {
       useCustomUrl: 'false',
       customUrlPrefix: '',
@@ -28,7 +29,6 @@ export default createStore({
     },
     useDarkMode: null,
     cusDarkMode: false,
-    uploadFolder: '',
   },
   getters: {
     userConfig: state => state.userConfig,

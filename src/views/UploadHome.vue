@@ -204,8 +204,8 @@ export default {
             compressQuality: 4, //压缩后大小
             compressBar: 5, //压缩阈值
             serverCompress: true, //服务器端压缩
-            uploadChannel: 'telegram', //上传渠道
-            uploadNameType: 'default', //上传文件命名方式
+            uploadChannel: '', //上传渠道
+            uploadNameType: '', //上传文件命名方式
             customUrlPrefix: '', //自定义链接前缀
             useCustomUrl: 'false', //是否启用自定义链接格式
             autoRetry: true, //失败自动切换
@@ -285,18 +285,18 @@ export default {
         this.compressBar = this.compressConfig.compressBar
         this.serverCompress = this.compressConfig.serverCompress
         // 读取用户选择的上传渠道
-        this.uploadChannel = this.storeUploadChannel
+        this.uploadChannel = this.storeUploadChannel || this.userConfig?.defaultUploadChannel || 'telegram'
         // 用户定义的失败自动切换
         this.autoRetry = this.storeAutoRetry
         // 读取用户选择的上传文件命名方式
-        this.uploadNameType = this.storeUploadNameType
+        this.uploadNameType = this.storeUploadNameType || this.userConfig?.defaultUploadNameType || 'default'
         // 读取用户自定义链接格式
         this.customUrlPrefix = this.customUrlSettings.customUrlPrefix
         this.useCustomUrl = this.customUrlSettings.useCustomUrl
         // 读取用户偏好的上传方式
         this.uploadMethod = this.storeUploadMethod
         // 读取用户设置的上传文件夹
-        this.uploadFolder = this.storeUploadFolder
+        this.uploadFolder = this.storeUploadFolder || this.userConfig?.defaultUploadFolder || ''
 
         // 首次访问公告
         const visited = localStorage.getItem('visitedUploadHome')
