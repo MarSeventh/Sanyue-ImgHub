@@ -756,4 +756,10 @@ mounted() {
     transform: translateY(0);
 }
 
+:deep(.el-dialog) {
+    border-radius: 12px;
+    background-color: var(--dialog-bg-color);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--dialog-box-shadow);
+}
 </style>
