@@ -500,7 +500,7 @@ export default {
 }
 
 .chart-content {
-  min-height: 200px;
+  min-height: 160px;
 }
 
 .empty-state {
@@ -508,7 +508,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 200px;
+  height: 160px;
   color: #999;
   font-size: 14px;
 }
