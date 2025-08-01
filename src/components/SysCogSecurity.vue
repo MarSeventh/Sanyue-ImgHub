@@ -3,6 +3,7 @@
         <!-- 一级设置：认证管理 -->
         <div class="first-settings">
             <h3 class="first-title">认证管理</h3>
+
             <h4 class="second-title">用户端认证</h4>
             <el-form 
                 :model="authSettings.user" 
@@ -20,6 +21,7 @@
                     </el-form-item>
                 </transition>
             </el-form>
+            
             <h4 class="second-title">管理端认证</h4>
             <el-form 
                 :model="authSettings.admin"
@@ -40,6 +42,61 @@
                     </el-form-item>
                 </transition>
             </el-form>
+
+            <h4 class="second-title">API Token 管理
+                <a class="token-actions">
+                    <el-button type="small" @click="showCreateTokenDialog = true" circle>
+                        <font-awesome-icon icon="plus"/>
+                    </el-button>
+                </a>
+            </h4>
+            <div class="token-table-container">
+                <el-table 
+                    :data="apiTokens" 
+                    class="token-table"
+                    v-loading="tokenLoading"
+                >
+                    <el-table-column prop="name" label="名称" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content">{{ scope.row.name }}</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="token" label="Token" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content">
+                                <span class="token-display">{{ scope.row.token }}</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="permissions" label="权限" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content">
+                                <el-tag 
+                                    v-for="perm in scope.row.permissions" 
+                                    :key="perm" 
+                                    size="small" 
+                                    class="permission-tag"
+                                >
+                                    {{ getPermissionText(perm) }}
+                                </el-tag>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="createdAt" label="创建时间" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content">{{ formatDate(scope.row.createdAt) }}</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" fixed="right" header-align="center">
+                        <template #default="scope">
+                            <div class="table-cell-content action-buttons">
+                                <el-button class="action-button" size="small" @click="editToken(scope.row)">编辑</el-button>
+                                <el-button class="action-button" size="small" type="danger" @click="deleteToken(scope.row.id)">删除</el-button>
+                            </div>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
         </div>
 
         <!-- 一级设置：上传管理 -->
@@ -97,63 +154,6 @@
                     <el-switch v-model="accessSettings.whiteListMode"/>
                 </el-form-item>
             </el-form>
-        </div>
-
-        <!-- 一级设置：API Token管理 -->
-        <div class="first-settings">
-            <h3 class="first-title">API Token 管理</h3>
-            
-            <div class="token-actions">
-                <el-button type="small" @click="showCreateTokenDialog = true">新建 Token</el-button>
-            </div>
-
-            <div class="token-table-container">
-                <el-table 
-                    :data="apiTokens" 
-                    class="token-table"
-                    v-loading="tokenLoading"
-                >
-                    <el-table-column prop="name" label="名称" header-align="center">
-                        <template #default="scope">
-                            <div class="table-cell-content">{{ scope.row.name }}</div>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="token" label="Token" header-align="center">
-                        <template #default="scope">
-                            <div class="table-cell-content">
-                                <span class="token-display">{{ scope.row.token }}</span>
-                            </div>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="permissions" label="权限" header-align="center">
-                        <template #default="scope">
-                            <div class="table-cell-content">
-                                <el-tag 
-                                    v-for="perm in scope.row.permissions" 
-                                    :key="perm" 
-                                    size="small" 
-                                    class="permission-tag"
-                                >
-                                    {{ getPermissionText(perm) }}
-                                </el-tag>
-                            </div>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="createdAt" label="创建时间" header-align="center">
-                        <template #default="scope">
-                            <div class="table-cell-content">{{ formatDate(scope.row.createdAt) }}</div>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="操作" fixed="right" header-align="center">
-                        <template #default="scope">
-                            <div class="table-cell-content action-buttons">
-                                <el-button class="action-button" size="small" @click="editToken(scope.row)">编辑</el-button>
-                                <el-button class="action-button" size="small" type="danger" @click="deleteToken(scope.row.id)">删除</el-button>
-                            </div>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </div>
         </div>
 
         <!-- 保存按钮 -->
@@ -589,9 +589,7 @@ mounted() {
 }
 
 .token-actions {
-    text-align: right;
-    margin-bottom: 20px;
-    margin-right: 2%;
+    margin-left: 5px;
 }
 
 .token-table-container {
@@ -603,7 +601,8 @@ mounted() {
 }
 
 .token-table {
-    width: 96%;
+    width: 98%;
+    margin-left: 2%;
     border-radius: 12px !important;
     overflow: hidden;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
