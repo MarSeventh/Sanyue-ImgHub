@@ -43,9 +43,9 @@
                 </transition>
             </el-form>
 
-            <h4 class="second-title">API Token 管理
+            <h4 class="second-title token-title">API Token 管理
                 <a class="token-actions">
-                    <el-button type="small" @click="showCreateTokenDialog = true" circle>
+                    <el-button type="primary" size="small" @click="showCreateTokenDialog = true" circle>
                         <font-awesome-icon icon="plus"/>
                     </el-button>
                 </a>
@@ -586,6 +586,12 @@ mounted() {
 .actions {
     margin-top: 20px;
     text-align: right;
+}
+
+.token-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .token-actions {
