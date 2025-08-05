@@ -18,10 +18,10 @@
                             <h3 style="text-align: center;">上传文件列表</h3>
                             <el-table :data="props.row.data" style="width: 100%" :default-sort="{ prop: 'metadata.TimeStamp', order: 'descending' }" table-layout="fixed" :max-height="400">
                                 <el-table-column prop="metadata.FileName" label="文件名"></el-table-column>
-                                <el-table-column prop="name" label="文件预览">
+                                <el-table-column label="文件预览">
                                     <template v-slot="{ row }">
-                                        <el-image v-if="row.metadata?.FileType?.includes('image')" :src="'/file/' + row.name + '?from=admin'" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
-                                        <video v-else-if="row.metadata?.FileType?.includes('video')" :src="'/file/' + row.name + '?from=admin'" controls style="width: 100px; height: 100px;"></video>
+                                        <el-image v-if="row.metadata?.FileType?.includes('image')" :src="'/file/' + row.id + '?from=admin'" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
+                                        <video v-else-if="row.metadata?.FileType?.includes('video')" :src="'/file/' + row.id + '?from=admin'" controls style="width: 100px; height: 100px;"></video>
                                         <div v-else style="width: 100px; height: 100px; display: flex; justify-content: center; align-items: center;">
                                             <font-awesome-icon icon="file" style="font-size: 2em;"></font-awesome-icon>
                                         </div>
