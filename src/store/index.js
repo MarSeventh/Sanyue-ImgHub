@@ -27,6 +27,8 @@ export default createStore({
       useCustomUrl: 'false',
       customUrlPrefix: '',
     },
+    autoReUpload: true,
+    // 深色模式
     useDarkMode: null,
     cusDarkMode: false,
   },
@@ -42,11 +44,12 @@ export default createStore({
     customUrlSettings: state => state.customUrlSettings,
     storeAutoRetry: state => state.storeAutoRetry,
     adminUrlSettings: state => state.adminUrlSettings,
-    useDarkMode: state => state.useDarkMode,
-    cusDarkMode: state => state.cusDarkMode,
     storeUploadFolder: (state) => {
       return state.uploadFolder || localStorage.getItem('uploadFolder') || ''
-    }
+    },
+    useDarkMode: state => state.useDarkMode,
+    cusDarkMode: state => state.cusDarkMode,
+    storeAutoReUpload: state => state.autoReUpload,
   },
   mutations: {
     setUserConfig(state, userConfig) {
@@ -91,6 +94,9 @@ export default createStore({
     setStoreUploadFolder(state, folder) {
       state.uploadFolder = folder
       localStorage.setItem('uploadFolder', folder)
+    },
+    setStoreAutoReUpload(state, autoReUpload) {
+      state.autoReUpload = autoReUpload;
     }
   },
   actions: {

@@ -1,5 +1,6 @@
 // 文件管理器工具类
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import { ElMessage } from 'element-plus';
 
 class FileManager {
     constructor() {
@@ -141,6 +142,9 @@ class FileManager {
                 method: 'GET',
             });
             const newFileList = await response.json();
+            if (!newFileList.isIndexedResponse) {
+                ElMessage.warning('索引构建中，当前搜索和排序结果可能不准确，请稍后再试。');
+            }
             return this.saveFileList(newFileList);
         } catch (error) {
             console.error('Error refreshing file list:', error);

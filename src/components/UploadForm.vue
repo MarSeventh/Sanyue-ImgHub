@@ -68,9 +68,18 @@
                                     </el-button>
                                 </el-tooltip>
                                 <el-tooltip :disabled="disableTooltip" content="失败重试" placement="top">
-                                    <el-button type="primary" @click="retryError">
-                                        <font-awesome-icon icon="redo" />
-                                    </el-button>
+                                    <el-dropdown>
+                                        <el-button type="primary" style="outline: none; border-right: none; border-radius: 0;" @click="retryError">
+                                            <font-awesome-icon icon="redo" />
+                                        </el-button>
+                                        <template #dropdown>
+                                            <el-dropdown-menu>
+                                                <el-dropdown-item @click="toggleAutoRetry">
+                                                    {{ autoReUpload ? '关闭自动重试' : '开启自动重试' }}
+                                                </el-dropdown-item>
+                                            </el-dropdown-menu>
+                                        </template>
+                                    </el-dropdown>
                                 </el-tooltip>
                                 <el-tooltip :disabled="disableTooltip" content="清空列表" placement="top" style="border: none;">
                                     <el-dropdown>
@@ -156,6 +165,7 @@
 <script>
 import axios from '@/utils/axios'
 import * as imageConversion from 'image-conversion'
+import { mapGetters } from 'vuex'
 
 export default {
 name: 'UploadForm',
@@ -238,6 +248,11 @@ data() {
         uploadCount: 0,
         pastedUrls: '',
         pasteUploadMethod: 'save',
+        // 失败文件自动重试相关
+        autoReUpload: true,
+        maxRetryCount: 10, // 最大重试次数
+        retryTimer: null, // 自动重试定时器
+        retryDelay: 12000, // 重试延迟时间（毫秒）
     }
 },
 watch: {
@@ -298,9 +313,15 @@ watch: {
             }
         },
         immediate: true
+    },
+    autoReUpload(val) {
+        this.$store.commit('setStoreAutoReUpload', val)
     }
 },
 computed: {
+    ...mapGetters([
+        'storeAutoReUpload'
+    ]),
     uploadSuccessCount() {
         return this.fileList.filter(item => item.status === 'done' || item.status === 'success').length
     },
@@ -334,6 +355,7 @@ computed: {
 },
 mounted() {
     document.addEventListener('paste', this.handlePaste)
+    this.autoReUpload = this.storeAutoReUpload
 },
 beforeUnmount() {
     document.removeEventListener('paste', this.handlePaste)
@@ -719,6 +741,12 @@ methods: {
     handleError(err, file) {
         this.$message.error(file.name + '上传失败')
         this.fileList.find(item => item.uid === file.uid).status = 'exception'
+        
+        // 如果开启了自动重试，安排自动重试
+        if (this.autoReUpload) {
+            this.scheduleAutoRetry();
+        }
+        
         if (this.waitingList.length) {
             const file = this.waitingList.shift()
             this.uploadFile(file)
@@ -771,7 +799,8 @@ methods: {
                     srcID: '',
                     status: 'uploading',
                     progreess: 0,
-                    serverCompress: serverCompress
+                    serverCompress: serverCompress,
+                    retryCount: 0,
                 })
                 resolve(file)
             }
@@ -954,7 +983,8 @@ methods: {
                     status: 'uploading',
                     progreess: 0,
                     serverCompress: false,
-                    uploadChannel: 'external'
+                    uploadChannel: 'external',
+                    retryCount: 0,
                 });
                 // 上传
                 this.uploadFile({ file: file, 
@@ -1110,12 +1140,7 @@ methods: {
     },
     retryError() {
         if (this.exceptionList.length > 0) {
-            this.exceptionList.forEach(file => {
-                this.uploadFile({ file: file.file, 
-                    onProgress: (evt) => this.handleProgress(evt), 
-                    onSuccess: (response, file) => this.handleSuccess(response, file), 
-                    onError: (error, file) => this.handleError(error, file) });
-            });
+            this.retryFailedFiles(this.exceptionList);
             this.exceptionList = []
         } else {
             this.$message({
@@ -1123,6 +1148,56 @@ methods: {
                 message: '无上传失败文件'
             })
         }
+    },
+    toggleAutoRetry() {
+        this.autoReUpload = !this.autoReUpload;
+        this.$message({
+            type: this.autoReUpload ? 'success' : 'info',
+            message: this.autoReUpload ? '自动重试已开启' : '自动重试已关闭'
+        });
+        
+        // 如果开启自动重试且有失败文件，立即开始重试
+        if (this.autoReUpload && this.exceptionList.length > 0) {
+            this.scheduleAutoRetry();
+        }
+    },
+    retryFailedFiles(files) {
+        files.forEach(file => {
+            const retryCount = file.retryCount || 0;
+            if (retryCount < this.maxRetryCount) {
+                file.retryCount = retryCount + 1;
+                this.uploadFile({ 
+                    file: file.file, 
+                    onProgress: (evt) => this.handleProgress(evt), 
+                    onSuccess: (response, file) => this.handleSuccess(response, file), 
+                    onError: (error, file) => this.handleError(error, file) 
+                });
+            } else {
+                this.$message({
+                    type: 'warning',
+                    message: `${file.name} 已达到最大重试次数(${this.maxRetryCount})，停止重试`
+                });
+            }
+        });
+    },
+    scheduleAutoRetry() {
+        if (this.retryTimer) {
+            clearTimeout(this.retryTimer);
+        }
+        
+        this.retryTimer = setTimeout(() => {
+            if (this.autoReUpload && this.exceptionList.length > 0) {
+                const filesToRetry = [...this.exceptionList];
+                this.exceptionList = [];
+                this.retryFailedFiles(filesToRetry);
+            }
+        }, this.retryDelay);
+    },
+},
+beforeDestroy() {
+    // 清理定时器
+    if (this.retryTimer) {
+        clearTimeout(this.retryTimer);
     }
 }
 }
