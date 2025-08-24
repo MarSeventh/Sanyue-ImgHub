@@ -522,13 +522,16 @@ methods: {
                             throw new Error(`分块 ${i + 1}/${totalChunks} 上传失败: ${err.message}`)
                         }
                         // 等待后重试
-                        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+                        await new Promise(resolve => setTimeout(resolve, 5000 * retryCount))
                     }
                 }
                 
                 if (retryCount === maxRetries) {
                     throw new Error(`分块 ${i + 1}/${totalChunks} 上传失败，已重试 ${maxRetries} 次`)
                 }
+
+                // 等待 5s
+                await new Promise(resolve => setTimeout(resolve, 5000))
             }
 
             // 第三步：所有分块上传完成，发送合并请求
