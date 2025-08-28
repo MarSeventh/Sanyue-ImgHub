@@ -31,7 +31,7 @@
                     <font-awesome-icon icon="link" class="link-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
-            <el-tooltip :disabled="disableTooltip" content="管理页面" placement="left">
+            <el-tooltip :disabled="disableTooltip" content="系统管理" placement="left">
                 <el-button class="toolbar-button config-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleManage" circle>
                     <font-awesome-icon icon="cog" class="config-icon" size="lg"/>
                 </el-button>

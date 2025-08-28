@@ -17,20 +17,20 @@
             <template #dropdown>
                 <el-dropdown-menu>
                     <el-dropdown-item command="dashboard" v-if="activeTab !== 'dashboard'">
-                        <font-awesome-icon icon="images" style="margin-right: 5px;"></font-awesome-icon>
+                        <font-awesome-icon icon="images" style="margin-right: 5px; width: 16px;"></font-awesome-icon>
                         Gallery
                     </el-dropdown-item>
                     <el-dropdown-item command="customerConfig" v-if="activeTab !== 'customerConfig'">
-                        <font-awesome-icon icon="user-cog" style="margin-right: 5px;"></font-awesome-icon>
+                        <font-awesome-icon icon="user-cog" style="margin-right: 5px; width: 16px;"></font-awesome-icon>
                         用户管理
                     </el-dropdown-item>
                     <el-dropdown-item command="systemConfig" v-if="activeTab !== 'systemConfig'">
-                        <font-awesome-icon icon="cogs" style="margin-right: 5px;"></font-awesome-icon>
+                        <font-awesome-icon icon="cogs" style="margin-right: 5px; width: 16px;"></font-awesome-icon>
                         系统设置
                     </el-dropdown-item>
                     <el-dropdown-item command="">
-                        <font-awesome-icon icon="upload" style="margin-right: 5px;"></font-awesome-icon>
-                        上传页面
+                        <font-awesome-icon icon="upload" style="margin-right: 5px; width: 16px;"></font-awesome-icon>
+                        文件上传
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </template>

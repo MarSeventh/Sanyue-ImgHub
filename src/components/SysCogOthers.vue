@@ -48,6 +48,22 @@
                     <el-input v-model="settings.cloudflareApiToken.CF_API_KEY" :disabled="settings.cloudflareApiToken.fixed" type="password" show-password autocomplete="new-password"></el-input>
                 </el-form-item>
             </el-form>
+            <h4 class="second-title">WebDAV
+                <el-tooltip content="启用后，可以通过WebDAV协议访问和管理图片" placement="right" raw-content>
+                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                </el-tooltip>
+            </h4>
+            <el-form :model="settings.webDAV" label-width="120px">
+                <el-form-item label="启用">
+                    <el-switch v-model="settings.webDAV.enabled" :disabled="settings.webDAV.fixed"></el-switch>
+                </el-form-item>
+                <el-form-item label="用户名">
+                    <el-input v-model="settings.webDAV.username" :disabled="settings.webDAV.fixed"></el-input>
+                </el-form-item>
+                <el-form-item label="密码">
+                    <el-input v-model="settings.webDAV.password" :disabled="settings.webDAV.fixed" type="password" show-password autocomplete="new-password"></el-input>
+                </el-form-item>
+            </el-form>
         </div>
 
     
@@ -68,6 +84,7 @@ data() {
             telemetry: {},
             randomImageAPI: {},
             cloudflareApiToken: {},
+            webDAV: {}
         },
         // 加载状态
         loading: false
