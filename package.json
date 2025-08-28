@@ -1,6 +1,6 @@
 {
   "name": "sanyue_imghub",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
