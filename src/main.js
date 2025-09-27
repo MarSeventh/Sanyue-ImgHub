@@ -67,16 +67,30 @@ const presetSiteTitle = (userConfig) => {
 
 // 预设网站图标的函数
 const presetSiteIcon = (isDarkMode, userConfig) => { 
-    const link = document.createElement('link');
-    link.rel = 'icon';
-    
+    // 同时更改 icon apple-touch-icon 和 mask-icon
+    const existingIcons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"], link[rel="mask-icon"]');
+    existingIcons.forEach(icon => icon.remove());
+
+    const iconLink = document.createElement('link');
+    const appleIconLink = document.createElement('link');
+    const maskIconLink = document.createElement('link');
+    iconLink.rel = 'icon';
+    appleIconLink.rel = 'apple-touch-icon';
+    maskIconLink.rel = 'mask-icon';
+
     if (isDarkMode) {
-        link.href = userConfig?.siteIcon || '/logo-dark.png';
+        iconLink.href = userConfig?.siteIcon || '/logo-dark.png';
+        appleIconLink.href = userConfig?.siteIcon || '/logo-dark.png';
+        maskIconLink.href = userConfig?.siteIcon || '/logo-dark.png';
     } else {
-        link.href = userConfig?.siteIcon || '/logo.png';
+        iconLink.href = userConfig?.siteIcon || '/logo.png';
+        appleIconLink.href = userConfig?.siteIcon || '/logo.png';
+        maskIconLink.href = userConfig?.siteIcon || '/logo.png';
     }
-    
-    document.head.appendChild(link);
+
+    document.head.appendChild(iconLink);
+    document.head.appendChild(appleIconLink);
+    document.head.appendChild(maskIconLink);
 };
 
 store.dispatch('fetchUserConfig').then(() => {
