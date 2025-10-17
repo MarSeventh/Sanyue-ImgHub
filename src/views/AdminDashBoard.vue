@@ -5,7 +5,7 @@
             <div class="header-content">
                 <DashboardTabs activeTab="dashboard"></DashboardTabs>
                 <div class="search-card">
-                    <el-input v-model="tempSearch" size="mini" placeholder="输入关键字搜索" @keyup.enter="handleSearch">
+                    <el-input v-model="tempSearch" size="mini" placeholder="输入关键字或标签搜索 (如: tag:nature -tag:adult)" @keyup.enter="handleSearch">
                         <template #suffix>
                             <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
                         </template>
@@ -50,6 +50,10 @@
                             <el-dropdown-item command="move">
                                 <font-awesome-icon icon="file-export" class="batch-action-item-icon"></font-awesome-icon>
                                 移动
+                            </el-dropdown-item>
+                            <el-dropdown-item command="tagManagement">
+                                <font-awesome-icon icon="tags" class="batch-action-item-icon"></font-awesome-icon>
+                                批量标签管理
                             </el-dropdown-item>
                             <el-dropdown-item command="ban">
                                 <font-awesome-icon icon="ban" class="batch-action-item-icon"></font-awesome-icon>
@@ -134,6 +138,11 @@
                                             <font-awesome-icon icon="copy"></font-awesome-icon>
                                         </el-button>
                                     </el-tooltip>
+                                    <el-tooltip :disabled="disableTooltip" content="标签" placement="top">
+                                        <el-button size="mini" type="primary" @click.stop="handleTagManagement(item.name)">
+                                            <font-awesome-icon icon="tag"></font-awesome-icon>
+                                        </el-button>
+                                    </el-tooltip>
                                     <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
                                         <el-button size="mini" type="primary" @click.stop="handleDownload(item.name)">
                                             <font-awesome-icon icon="download"></font-awesome-icon>
@@ -164,12 +173,12 @@
                 </template>
             </div>
             <div class="pagination-container">
-                <el-pagination 
-                    background 
-                    layout="prev, pager, next" 
-                    :total="tableData.length" 
-                    :page-size="pageSize" 
-                    :current-page="currentPage" 
+                <el-pagination
+                    background
+                    layout="prev, pager, next"
+                    :total="filteredTableData.length"
+                    :page-size="pageSize"
+                    :current-page="currentPage"
                     @current-change="handlePageChange">
                 </el-pagination>
                 <div class="pagination-right">
@@ -179,8 +188,8 @@
                         class="refresh-btn">
                         <font-awesome-icon icon="sync" :class="{ 'fa-spin': refreshLoading }"/>
                     </el-button>
-                    <el-button 
-                        v-if="currentPage === Math.ceil(tableData.length / pageSize)" 
+                    <el-button
+                        v-if="currentPage === Math.ceil(filteredTableData.length / pageSize)" 
                         type="primary" 
                         @click="loadMoreData" 
                         :loading="loading" 
@@ -278,6 +287,20 @@
                 <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
             </div>
         </el-dialog>
+
+        <!-- Tag Management Dialog -->
+        <TagManagementDialog
+            v-model="showTagDialog"
+            :fileId="currentTagFile"
+            @tagsUpdated="handleTagsUpdated"
+        />
+
+        <!-- Batch Tag Management Dialog -->
+        <BatchTagDialog
+            v-model="showBatchTagDialog"
+            :selectedFiles="selectedFiles"
+            @tagsUpdated="handleBatchTagsUpdated"
+        />
     </div>
 </template>
 
@@ -285,6 +308,8 @@
 import { mapGetters } from 'vuex';
 import JSZip from 'jszip';
 import DashboardTabs from '@/components/DashboardTabs.vue';
+import TagManagementDialog from '@/components/TagManagementDialog.vue';
+import BatchTagDialog from '@/components/BatchTagDialog.vue';
 import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import WhiteListOn from './WhiteListOn.vue';
@@ -297,6 +322,7 @@ data() {
         tableData: [],
         tempSearch: '',
         search: '',
+        searchKeywords: '', // Keywords only (without tag filters) for backend search
         isSearchMode: false,
         currentPage: 1,
         pageSize: 15,
@@ -313,15 +339,80 @@ data() {
         loading: false, // 加载状态
         currentPath: '', // 当前文件夹路径
         refreshLoading: false,
+        showTagDialog: false, // 标签管理对话框
+        showBatchTagDialog: false, // 批量标签管理对话框
+        currentTagFile: '', // 当前标签管理的文件
     }
 },
 components: {
-    DashboardTabs
+    DashboardTabs,
+    TagManagementDialog,
+    BatchTagDialog
 },
 computed: {
     ...mapGetters(['adminUrlSettings', 'userConfig']),
+    filteredTableData() {
+        let data = [...this.tableData];
+
+        // 解析搜索字符串，提取标签过滤器
+        const tagFilters = {
+            include: [],
+            exclude: []
+        };
+        let keywordSearch = this.search;
+
+        if (this.search && this.search.trim()) {
+            const searchParts = this.search.trim().split(/\s+/);
+            const keywords = [];
+
+            searchParts.forEach(part => {
+                if (part.startsWith('tag:')) {
+                    // 包含标签
+                    const tag = part.substring(4).toLowerCase();
+                    if (tag) tagFilters.include.push(tag);
+                } else if (part.startsWith('-tag:')) {
+                    // 排除标签
+                    const tag = part.substring(5).toLowerCase();
+                    if (tag) tagFilters.exclude.push(tag);
+                } else {
+                    // 普通关键字
+                    keywords.push(part);
+                }
+            });
+
+            keywordSearch = keywords.join(' ');
+
+            // 应用标签过滤
+            if (tagFilters.include.length > 0 || tagFilters.exclude.length > 0) {
+                data = data.filter(file => {
+                    const fileTags = (file.metadata?.Tags || []).map(t => t.toLowerCase());
+
+                    // 检查包含过滤器
+                    const includeMatch = tagFilters.include.length === 0 ||
+                        tagFilters.include.every(tag => fileTags.includes(tag));
+
+                    // 检查排除过滤器
+                    const excludeMatch = tagFilters.exclude.length === 0 ||
+                        !tagFilters.exclude.some(tag => fileTags.includes(tag));
+
+                    return includeMatch && excludeMatch;
+                });
+            }
+
+            // 应用关键字搜索（如果有）
+            if (keywordSearch && keywordSearch.trim()) {
+                const keyword = keywordSearch.toLowerCase();
+                data = data.filter(file => {
+                    const fileName = (file.metadata?.FileName || file.name || '').toLowerCase();
+                    return fileName.includes(keyword);
+                });
+            }
+        }
+
+        return data;
+    },
     paginatedTableData() {
-        const sortedData = this.sortData(this.tableData);
+        const sortedData = this.sortData(this.filteredTableData);
         const start = (this.currentPage - 1) * this.pageSize;
         const end = start + this.pageSize;
         let data = sortedData.slice(start, end);
@@ -451,6 +542,20 @@ methods: {
         this.search = this.tempSearch;
         this.isSearchMode = this.search.trim() !== '';
         this.currentPage = 1; // 重置到第一页
+
+        // Parse search string to extract keywords (remove tag filters)
+        // Tag filters like 'tag:xxx' and '-tag:xxx' are handled by frontend filtering
+        if (this.search && this.search.trim()) {
+            const searchParts = this.search.trim().split(/\s+/);
+            const keywords = searchParts.filter(part => {
+                // Filter out tag syntax: tag:xxx or -tag:xxx
+                return !part.startsWith('tag:') && !part.startsWith('-tag:');
+            });
+            this.searchKeywords = keywords.join(' ');
+        } else {
+            this.searchKeywords = '';
+        }
+
         this.refreshFileList();
     },
     handleDownload(key) {
@@ -743,9 +848,10 @@ methods: {
     },
     async loadMoreData() {
         this.loading = true;
-        
+
         try {
-            await fileManager.loadMoreFiles(this.currentPath, this.search);
+            // Send only keywords to backend (not tag filters)
+            await fileManager.loadMoreFiles(this.currentPath, this.searchKeywords);
             // 获取新的文件列表后
             await this.fetchFileList();
         } catch (error) {
@@ -816,6 +922,8 @@ methods: {
             this.handleBatchDownload();
         } else if (command === 'move') {
             this.handleBatchMove();
+        } else if (command === 'tagManagement') {
+            this.handleBatchTagManagement();
         } else if (command === 'ban') {
             this.handleBatchBlock();
         } else if (command === 'white') {
@@ -1192,7 +1300,8 @@ methods: {
         this.refreshLoading = true;
         this.loading = true;
         try {
-            const success = await fileManager.refreshFileList(this.currentPath, this.search);
+            // Send only keywords to backend (not tag filters)
+            const success = await fileManager.refreshFileList(this.currentPath, this.searchKeywords);
             if (success) {
                 await this.fetchFileList();
             } else {
@@ -1219,6 +1328,26 @@ methods: {
             this.refreshLoading = false;
             this.loading = false;
         }
+    },
+    // Tag management methods
+    handleTagManagement(fileId) {
+        this.currentTagFile = fileId;
+        this.showTagDialog = true;
+    },
+    handleBatchTagManagement() {
+        if (this.selectedFiles.length === 0) {
+            this.$message.warning('请先选择文件');
+            return;
+        }
+        this.showBatchTagDialog = true;
+    },
+    handleTagsUpdated(tags) {
+        // 刷新文件列表以显示更新后的标签
+        this.refreshLocalFileList();
+    },
+    handleBatchTagsUpdated() {
+        // 刷新文件列表以显示更新后的标签
+        this.refreshLocalFileList();
     },
 },
 mounted() {
