@@ -103,12 +103,12 @@
                         <p class="tab-description">清空选中的 {{ fileCount }} 个文件的所有标签</p>
 
                         <el-alert
-                            title="警告"
+                            title="⚠️警告"
                             type="warning"
                             description="此操作将清空所有选中文件的标签，且不可恢复"
                             :closable="false"
-                            show-icon
                             style="margin-bottom: 20px;"
+                            center
                         />
 
                         <div class="action-buttons">
@@ -169,11 +169,15 @@ export default {
         dialogWidth() {
             return window.innerWidth < 768 ? '90%' : '600px';
         },
+        selectedFilesOnly() {
+            // 排除文件夹，只保留文件
+            return this.selectedFiles.filter(file => !file.isFolder);
+        },
         fileCount() {
-            return this.selectedFiles.length;
+            return this.selectedFilesOnly.length;
         },
         fileIds() {
-            return this.selectedFiles.map(file => file.name);
+            return this.selectedFilesOnly.map(file => file.name);
         }
     },
     watch: {
@@ -199,14 +203,14 @@ export default {
         },
 
         async loadCommonTags() {
-            if (this.selectedFiles.length === 0) {
+            if (this.selectedFilesOnly.length === 0) {
                 this.commonTags = [];
                 return;
             }
 
             try {
                 // 获取所有文件的标签
-                const tagPromises = this.selectedFiles.map(file =>
+                const tagPromises = this.selectedFilesOnly.map(file =>
                     fetchWithAuth(`/api/manage/tags/${encodeURIComponent(file.name)}`, {
                         method: 'GET'
                     })

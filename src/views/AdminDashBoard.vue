@@ -5,7 +5,7 @@
             <div class="header-content">
                 <DashboardTabs activeTab="dashboard"></DashboardTabs>
                 <div class="search-card">
-                    <el-input v-model="tempSearch" size="mini" placeholder="输入关键字或标签搜索 (如: tag:nature -tag:adult)" @keyup.enter="handleSearch">
+                    <el-input v-model="tempSearch" size="mini" placeholder="搜索：#标签 -#排除标签 关键字" @keyup.enter="handleSearch">
                         <template #suffix>
                             <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
                         </template>
@@ -53,7 +53,7 @@
                             </el-dropdown-item>
                             <el-dropdown-item command="tagManagement">
                                 <font-awesome-icon icon="tags" class="batch-action-item-icon"></font-awesome-icon>
-                                批量标签管理
+                                标签管理
                             </el-dropdown-item>
                             <el-dropdown-item command="ban">
                                 <font-awesome-icon icon="ban" class="batch-action-item-icon"></font-awesome-icon>
@@ -124,6 +124,13 @@
                             <div v-if="item.metadata?.ListType === 'White'" class="success-tag">{{ item.channelTag }}</div>
                             <div v-else-if="item.metadata?.ListType === 'Block' || item.metadata?.Label === 'adult'" class="fail-tag">{{ item.channelTag }}</div>
                             <div v-else class="success-tag">{{ item.channelTag }}</div>
+                            <div v-if="item.metadata?.Tags && item.metadata?.Tags.length > 0" class="primary-tag">
+                                <font-awesome-icon icon="tag" style="margin-right: 3px; font-size: 12px;"></font-awesome-icon>
+                                {{ item.metadata.Tags[0] }}
+                                <span v-if="item.metadata.Tags.length > 1" style="margin-left: 2px;">
+                                    (+{{ item.metadata.Tags.length - 1 }})
+                                </span>
+                            </div>
                         </div>
                         <video v-if="isVideo(item)" :src="getFileLink(item.name)" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
                         <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="getFileLink(item.name)" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
@@ -134,34 +141,29 @@
                             <div class="overlay-buttons">
                                 <div class="button-row">
                                     <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
-                                        <el-button size="mini" type="primary" @click.stop="handleCopy(index, item.name)">
+                                        <el-button style="width: 10px;" type="primary" @click.stop="handleCopy(index, item.name)">
                                             <font-awesome-icon icon="copy"></font-awesome-icon>
                                         </el-button>
                                     </el-tooltip>
-                                    <el-tooltip :disabled="disableTooltip" content="标签" placement="top">
-                                        <el-button size="mini" type="primary" @click.stop="handleTagManagement(item.name)">
-                                            <font-awesome-icon icon="tag"></font-awesome-icon>
+                                    <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
+                                        <el-button style="width: 10px;" type="primary" @click.stop="handleDownload(item.name)">
+                                            <font-awesome-icon icon="download"></font-awesome-icon>
                                         </el-button>
                                     </el-tooltip>
-                                    <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
-                                        <el-button size="mini" type="primary" @click.stop="handleDownload(item.name)">
-                                            <font-awesome-icon icon="download"></font-awesome-icon>
+                                    <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
+                                        <el-button style="width: 10px;" type="primary" @click.stop="openDetailDialog(index, item.name)">
+                                            <font-awesome-icon icon="info"></font-awesome-icon>
                                         </el-button>
                                     </el-tooltip>
                                 </div>
                                 <div class="button-row">
-                                    <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
-                                        <el-button size="mini" type="primary" @click.stop="openDetailDialog(index, item.name)">
-                                            <font-awesome-icon icon="info"></font-awesome-icon>
-                                        </el-button>
-                                    </el-tooltip>
                                     <el-tooltip :disabled="disableTooltip" content="移动" placement="top">
-                                        <el-button size="mini" type="primary" @click.stop="handleMove(index, item.name)">
+                                        <el-button style="width: 10px;" type="primary" @click.stop="handleMove(index, item.name)">
                                             <font-awesome-icon icon="file-export"></font-awesome-icon>
                                         </el-button>
                                     </el-tooltip>
                                     <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
-                                        <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
+                                        <el-button style="width: 10px;" type="danger" @click.stop="handleDelete(index, item.name)">
                                             <font-awesome-icon icon="trash-alt"></font-awesome-icon>
                                         </el-button>
                                     </el-tooltip>
@@ -204,6 +206,9 @@
             <div class="detail-actions">
                 <el-button type="primary" @click="handleDownload(detailFile?.name)" round size="small" class="detail-action">
                     <font-awesome-icon icon="download" style="margin-right: 3px;"></font-awesome-icon> 下载
+                </el-button>
+                <el-button type="primary" @click="handleTagManagement(detailFile?.name)" round size="small" class="detail-action">
+                    <font-awesome-icon icon="tags" style="margin-right: 3px;"></font-awesome-icon> 标签
                 </el-button>
                 <el-button type="primary" @click="handleBlock(detailFile?.name)" round size="small" class="detail-action">
                     <font-awesome-icon icon="ban" style="margin-right: 3px;"></font-awesome-icon> 黑名单
@@ -255,6 +260,18 @@
                 <el-descriptions-item label="审查结果" class-name="description-item">{{ detailFile?.metadata?.Label || '无' }}</el-descriptions-item>
                 <el-descriptions-item label="上传IP" class-name="description-item">{{ detailFile?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
                 <el-descriptions-item label="上传地址" class-name="description-item">{{ detailFile?.metadata?.UploadAddress || '未知' }}</el-descriptions-item>
+                <el-descriptions-item label="文件标签" class-name="description-item">
+                    <div v-if="detailFile?.metadata?.Tags && detailFile?.metadata?.Tags.length > 0" style="display: flex; flex-wrap: wrap; gap: 5px;">
+                        <el-tag 
+                            v-for="tag in detailFile?.metadata?.Tags" 
+                            :key="tag"
+                            size="small"
+                        >
+                            {{ tag }}
+                        </el-tag>
+                    </div>
+                    <span v-else style="color: #909399;">暂无标签</span>
+                </el-descriptions-item>
             </el-descriptions>
         </el-dialog>
         <el-dialog title="链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
@@ -312,7 +329,6 @@ import TagManagementDialog from '@/components/TagManagementDialog.vue';
 import BatchTagDialog from '@/components/BatchTagDialog.vue';
 import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
-import WhiteListOn from './WhiteListOn.vue';
 
 export default {
 data() {
@@ -323,6 +339,8 @@ data() {
         tempSearch: '',
         search: '',
         searchKeywords: '', // Keywords only (without tag filters) for backend search
+        searchIncludeTags: '', // 包含的标签，逗号分隔
+        searchExcludeTags: '', // 排除的标签，逗号分隔
         isSearchMode: false,
         currentPage: 1,
         pageSize: 15,
@@ -352,64 +370,7 @@ components: {
 computed: {
     ...mapGetters(['adminUrlSettings', 'userConfig']),
     filteredTableData() {
-        let data = [...this.tableData];
-
-        // 解析搜索字符串，提取标签过滤器
-        const tagFilters = {
-            include: [],
-            exclude: []
-        };
-        let keywordSearch = this.search;
-
-        if (this.search && this.search.trim()) {
-            const searchParts = this.search.trim().split(/\s+/);
-            const keywords = [];
-
-            searchParts.forEach(part => {
-                if (part.startsWith('tag:')) {
-                    // 包含标签
-                    const tag = part.substring(4).toLowerCase();
-                    if (tag) tagFilters.include.push(tag);
-                } else if (part.startsWith('-tag:')) {
-                    // 排除标签
-                    const tag = part.substring(5).toLowerCase();
-                    if (tag) tagFilters.exclude.push(tag);
-                } else {
-                    // 普通关键字
-                    keywords.push(part);
-                }
-            });
-
-            keywordSearch = keywords.join(' ');
-
-            // 应用标签过滤
-            if (tagFilters.include.length > 0 || tagFilters.exclude.length > 0) {
-                data = data.filter(file => {
-                    const fileTags = (file.metadata?.Tags || []).map(t => t.toLowerCase());
-
-                    // 检查包含过滤器
-                    const includeMatch = tagFilters.include.length === 0 ||
-                        tagFilters.include.every(tag => fileTags.includes(tag));
-
-                    // 检查排除过滤器
-                    const excludeMatch = tagFilters.exclude.length === 0 ||
-                        !tagFilters.exclude.some(tag => fileTags.includes(tag));
-
-                    return includeMatch && excludeMatch;
-                });
-            }
-
-            // 应用关键字搜索（如果有）
-            if (keywordSearch && keywordSearch.trim()) {
-                const keyword = keywordSearch.toLowerCase();
-                data = data.filter(file => {
-                    const fileName = (file.metadata?.FileName || file.name || '').toLowerCase();
-                    return fileName.includes(keyword);
-                });
-            }
-        }
-
-        return data;
+        return this.tableData;
     },
     paginatedTableData() {
         const sortedData = this.sortData(this.filteredTableData);
@@ -543,17 +504,43 @@ methods: {
         this.isSearchMode = this.search.trim() !== '';
         this.currentPage = 1; // 重置到第一页
 
-        // Parse search string to extract keywords (remove tag filters)
-        // Tag filters like 'tag:xxx' and '-tag:xxx' are handled by frontend filtering
+        // 解析搜索字符串，提取标签和关键字
+        // 支持 #tag 表示包含标签，-#tag 表示排除标签
         if (this.search && this.search.trim()) {
-            const searchParts = this.search.trim().split(/\s+/);
-            const keywords = searchParts.filter(part => {
-                // Filter out tag syntax: tag:xxx or -tag:xxx
-                return !part.startsWith('tag:') && !part.startsWith('-tag:');
+            const includeTags = [];
+            const excludeTags = [];
+            
+            // 匹配 -#tag 和 #tag
+            let searchText = this.search;
+            
+            // 先匹配排除标签 -#tag
+            const excludeTagRegex = /-#([\w\u4e00-\u9fa5\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af\.\+\-]+)/g;
+            searchText = searchText.replace(excludeTagRegex, (match, tag) => {
+                excludeTags.push(tag.toLowerCase());
+                return ' ';
             });
-            this.searchKeywords = keywords.join(' ');
+            
+            // 再匹配包含标签 #tag
+            const includeTagRegex = /#([\w\u4e00-\u9fa5\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af\.\+\-]+)/g;
+            searchText = searchText.replace(includeTagRegex, (match, tag) => {
+                includeTags.push(tag.toLowerCase());
+                return ' ';
+            });
+            
+            // 清理剩余的关键字（去除多余空格）
+            this.searchKeywords = searchText.replace(/\s+/g, ' ').trim();
+            
+            // 构建标签查询字符串
+            this.searchIncludeTags = includeTags.join(',');
+            this.searchExcludeTags = excludeTags.join(',');
+            
+            console.log('Search keywords:', this.searchKeywords);
+            console.log('Include tags:', this.searchIncludeTags);
+            console.log('Exclude tags:', this.searchExcludeTags);
         } else {
             this.searchKeywords = '';
+            this.searchIncludeTags = '';
+            this.searchExcludeTags = '';
         }
 
         this.refreshFileList();
@@ -850,8 +837,13 @@ methods: {
         this.loading = true;
 
         try {
-            // Send only keywords to backend (not tag filters)
-            await fileManager.loadMoreFiles(this.currentPath, this.searchKeywords);
+            // 传递标签参数到后端
+            await fileManager.loadMoreFiles(
+                this.currentPath, 
+                this.searchKeywords,
+                this.searchIncludeTags,
+                this.searchExcludeTags
+            );
             // 获取新的文件列表后
             await this.fetchFileList();
         } catch (error) {
@@ -1300,8 +1292,13 @@ methods: {
         this.refreshLoading = true;
         this.loading = true;
         try {
-            // Send only keywords to backend (not tag filters)
-            const success = await fileManager.refreshFileList(this.currentPath, this.searchKeywords);
+            // 传递标签参数到后端
+            const success = await fileManager.refreshFileList(
+                this.currentPath, 
+                this.searchKeywords,
+                this.searchIncludeTags,
+                this.searchExcludeTags
+            );
             if (success) {
                 await this.fetchFileList();
             } else {
@@ -1341,13 +1338,28 @@ methods: {
         }
         this.showBatchTagDialog = true;
     },
-    handleTagsUpdated(tags) {
-        // 刷新文件列表以显示更新后的标签
-        this.refreshLocalFileList();
+    async handleTagsUpdated(tags) {
+        // 更新本地文件数据中的标签
+        const fileIndex = this.tableData.findIndex(file => file.name === this.currentTagFile);
+        if (fileIndex !== -1) {
+            // 更新 tableData 中的标签
+            if (!this.tableData[fileIndex].metadata) {
+                this.tableData[fileIndex].metadata = {};
+            }
+            this.tableData[fileIndex].metadata.Tags = tags;
+            
+            // 如果详情对话框正在显示这个文件，也更新详情数据
+            if (this.showdetailDialog && this.detailFile?.name === this.currentTagFile) {
+                if (!this.detailFile.metadata) {
+                    this.detailFile.metadata = {};
+                }
+                this.detailFile.metadata.Tags = tags;
+            }
+        }
     },
-    handleBatchTagsUpdated() {
+    async handleBatchTagsUpdated() {
         // 刷新文件列表以显示更新后的标签
-        this.refreshLocalFileList();
+        await this.refreshLocalFileList();
     },
 },
 mounted() {
@@ -1671,7 +1683,8 @@ mounted() {
     border: 0.5px solid rgba(60, 255, 0, 0.1);
     padding: 2px 5px;
     border-radius: 5px;
-    font-size: 0.6em;
+    font-size: 12px;
+    height: 14px;
 }
 .fail-tag {
     background-color: rgba(255, 0, 0, 0.3);
@@ -1679,15 +1692,19 @@ mounted() {
     border: 0.5px solid rgba(255, 0, 0, 0.1);
     padding: 2px 5px;
     border-radius: 5px;
-    font-size: 0.6em;
+    font-size: 12px;
+    height: 14px;
 }
-.info-tag {
-    background-color: rgba(110, 110, 110, 0.3);
-    color: rgba(110, 110, 110, 0.8);
-    border: 0.5px solid rgba(110, 110, 110, 0.1);
+.primary-tag {
+    background-color: rgba(255, 182, 193, 0.5);
+    color: rgba(255, 105, 180, 0.9);
+    border: 0.5px solid rgba(255, 182, 193, 0.3);
     padding: 2px 5px;
     border-radius: 5px;
-    font-size: 0.6em;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    height: 14px;
 }
 
 .file-preview {
@@ -1749,6 +1766,10 @@ mounted() {
     display: flex;
     justify-content: center; /* 按钮居中 */
     gap: 8px; /* 按钮间距 */
+}
+
+.button-row .el-button {
+    min-width: 36px; /* 统一按钮最小宽度 */
 }
 
 .pagination-container {

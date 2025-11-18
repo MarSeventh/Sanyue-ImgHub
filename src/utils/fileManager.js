@@ -135,10 +135,18 @@ class FileManager {
     }
 
     // 更新文件列表
-    async refreshFileList(dir, search = '') {
+    async refreshFileList(dir, search = '', includeTags = '', excludeTags = '') {
         search = search.trim();
         try {
-            const response = await fetchWithAuth(`/api/manage/list?count=60&dir=${dir}&search=${search}`, {
+            let url = `/api/manage/list?count=60&dir=${dir}&search=${encodeURIComponent(search)}`;
+            if (includeTags) {
+                url += `&includeTags=${encodeURIComponent(includeTags)}`;
+            }
+            if (excludeTags) {
+                url += `&excludeTags=${encodeURIComponent(excludeTags)}`;
+            }
+            
+            const response = await fetchWithAuth(url, {
                 method: 'GET',
             });
             const newFileList = await response.json();
@@ -153,13 +161,21 @@ class FileManager {
     }
 
     // 读取更多数据
-    async loadMoreFiles(dir, search = '') {
+    async loadMoreFiles(dir, search = '', includeTags = '', excludeTags = '') {
         search = search.trim();
         try {
             const fileList = this.getLocalFileList();
             const start = fileList.files.length;
 
-            const response = await fetchWithAuth(`/api/manage/list?dir=${dir}&start=${start}&count=60&search=${search}`, {
+            let url = `/api/manage/list?dir=${dir}&start=${start}&count=60&search=${encodeURIComponent(search)}`;
+            if (includeTags) {
+                url += `&includeTags=${encodeURIComponent(includeTags)}`;
+            }
+            if (excludeTags) {
+                url += `&excludeTags=${encodeURIComponent(excludeTags)}`;
+            }
+
+            const response = await fetchWithAuth(url, {
                 method: 'GET',
             });
            

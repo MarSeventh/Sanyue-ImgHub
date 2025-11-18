@@ -68,9 +68,12 @@
                         {{ tag }}
                     </el-tag>
                 </div>
-                <div v-else class="empty-message">
+                <div v-else-if="loadingPopularTags" class="empty-message">
                     <el-icon class="is-loading"><Loading /></el-icon>
                     加载中...
+                </div>
+                <div v-else class="empty-message">
+                    暂无常用标签
                 </div>
             </div>
         </div>
@@ -112,6 +115,7 @@ export default {
             popularTags: [],
             showSuggestions: false,
             loading: false,
+            loadingPopularTags: false,
             debounceTimer: null
         };
     },
@@ -156,6 +160,7 @@ export default {
         },
 
         async loadPopularTags() {
+            this.loadingPopularTags = true;
             try {
                 const response = await fetchWithAuth('/api/manage/tags/autocomplete?limit=20', {
                     method: 'GET'
@@ -167,6 +172,8 @@ export default {
                 }
             } catch (error) {
                 console.error('Error loading popular tags:', error);
+            } finally {
+                this.loadingPopularTags = false;
             }
         },
 
