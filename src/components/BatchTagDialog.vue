@@ -464,10 +464,10 @@ export default {
     top: 100%;
     left: 0;
     right: 0;
-    background: white;
-    border: 1px solid #dcdfe6;
+    background: var(--admin-dashboard-tag-suggestion-bg-color);
+    border: 1px solid var(--admin-dashboard-tag-suggestion-border-color);
     border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: var(--admin-dashboard-tag-suggestion-box-shadow);
     max-height: 200px;
     overflow-y: auto;
     z-index: 1000;
@@ -481,7 +481,7 @@ export default {
 }
 
 .suggestion-item:hover {
-    background-color: #f5f7fa;
+    background-color: var(--admin-dashboard-tag-suggestion-item-hover-bg-color);
 }
 
 .tags-to-add-section,
@@ -517,15 +517,5 @@ export default {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
-}
-
-/* 暗色模式支持 */
-:deep(.dark) .suggestions-panel {
-    background: #1d1e1f;
-    border-color: #4c4d4f;
-}
-
-:deep(.dark) .suggestion-item:hover {
-    background-color: #2a2b2c;
 }
 </style>

@@ -85,6 +85,10 @@
     --admin-dashboard-btn-hover-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* admin-dashboard翻页按钮悬浮阴影 */
     --admin-dashboard-imgcard-bg-color: rgba(255, 255, 255, 0.6); /* admin-dashboard-imgcard背景 */
     --admin-dashboard-imgcard-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); /* admin-dashboard-imgcard阴影 */
+    --admin-dashboard-tag-suggestion-bg-color: #ffffff; /* admin-dashboard tag搜索建议背景颜色 */
+    --admin-dashboard-tag-suggestion-border-color: #dcdfe6; /* admin-dashboard tag搜索建议边框颜色 */
+    --admin-dashboard-tag-suggestion-box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); /* admin-dashboard tag搜索建议阴影 */
+    --admin-dashboard-tag-suggestion-item-hover-bg-color: #f5f7fa; /* admin-dashboard tag搜索建议项悬浮背景颜色 */
 
 
     --admin-cuscfg-table-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* admin 用户管理页面 table阴影 */
@@ -193,6 +197,10 @@
     --admin-dashboard-btn-hover-shadow: 0 4px 6px rgba(255, 255, 255, 0.3); /* admin-dashboard翻页按钮悬浮阴影 */
     --admin-dashboard-imgcard-bg-color: rgba(0, 0, 0, 0.6); /* admin-dashboard-imgcard背景 */
     --admin-dashboard-imgcard-shadow: 0 2px 12px rgba(255, 255, 255, 0.1); /* admin-dashboard-imgcard阴影 */
+    --admin-dashboard-tag-suggestion-bg-color: #2d2d2d; /* admin-dashboard tag搜索建议背景颜色 */
+    --admin-dashboard-tag-suggestion-border-color: #555555; /* admin-dashboard tag搜索建议边框颜色 */
+    --admin-dashboard-tag-suggestion-box-shadow: 0 2px 12px rgba(255, 255, 255, 0.1); /* admin-dashboard tag搜索建议阴影 */
+    --admin-dashboard-tag-suggestion-item-hover-bg-color: #3a3a3a; /* admin-dashboard tag搜索建议项悬浮背景颜色 */
 
 
     --admin-cuscfg-table-shadow: 0 4px 6px rgba(255, 255, 255, 0.1); /* admin 用户管理页面 table阴影 */
