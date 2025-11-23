@@ -721,6 +721,10 @@ methods: {
             }
             this.fileList.find(item => item.uid === file.uid).progreess = 100
             this.fileList.find(item => item.uid === file.uid).status = 'success'
+            
+            // Save to history
+            this.saveToHistory(this.fileList.find(item => item.uid === file.uid))
+
             this.$message({
                 type: 'success',
                 message: file.name + '上传成功'
@@ -739,6 +743,21 @@ methods: {
                 const file = this.waitingList.shift()
                 this.uploadFile(file)
             }
+        }
+    },
+    saveToHistory(fileItem) {
+        try {
+            const history = JSON.parse(localStorage.getItem('uploadHistory') || '[]')
+            const newRecord = {
+                name: fileItem.name,
+                url: fileItem.finalURL,
+                time: Date.now(),
+                type: fileItem.name.split('.').pop().toLowerCase()
+            }
+            history.push(newRecord)
+            localStorage.setItem('uploadHistory', JSON.stringify(history))
+        } catch (e) {
+            console.error('Failed to save history', e)
         }
     },
     handleError(err, file) {

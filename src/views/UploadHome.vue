@@ -14,6 +14,11 @@
                 <font-awesome-icon v-else-if="uploadMethod === 'paste'" icon="paste" class="upload-method-icon" size="lg"/>
             </el-button>
         </el-tooltip>
+        <el-tooltip content="上传记录" placement="bottom" :disabled="disableTooltip">
+            <el-button class="history-button" @click="showHistory = true">
+                <font-awesome-icon icon="history" class="history-icon" size="lg"/>
+            </el-button>
+        </el-tooltip>
         <div class="toolbar-manage">
             <el-button class="toolbar-manage-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleOpenToolbar" circle>
                 <font-awesome-icon v-if="!isToolBarOpen"  icon="bars" class="manage-icon" size="lg"/>
@@ -179,6 +184,7 @@
             </span>
         </template>
     </el-dialog>
+    <UploadHistory :show="showHistory" @close="showHistory = false" />
     </div>
 </template>
 
@@ -187,6 +193,7 @@ import UploadForm from '@/components/UploadForm.vue'
 import Footer from '@/components/Footer.vue'
 import ToggleDark from '@/components/ToggleDark.vue'
 import Logo from '@/components/Logo.vue'
+import UploadHistory from '@/components/UploadHistory.vue'
 import backgroundManager from '@/mixins/backgroundManager'
 import { ref } from 'vue'
 import cookies from 'vue-cookies'
@@ -216,6 +223,7 @@ export default {
             isFolderInputActive: false,
             showAnnouncementDialog: false, // 控制公告弹窗的显示
             announcementContent: '', // 公告内容
+            showHistory: false,
         }
     },
     watch: {
@@ -311,7 +319,8 @@ export default {
         UploadForm,
         Footer,
         ToggleDark,
-        Logo
+        Logo,
+        UploadHistory
     },
     methods: {
         // 验证上传文件夹路径的合法性
@@ -511,13 +520,44 @@ export default {
     outline: none;
 }
 
+.history-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 30px;
+    right: 180px;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    color: var(--theme-toggle-color);
+    z-index: 100;
+    border-radius: 12px;
+    outline: none;
+}
+@media (max-width: 768px) {
+    .history-button {
+        width: 2rem;
+        height: 2rem;
+        right: 130px;
+    }
+}
+.history-button:hover {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
+}
+
 /* 上传文件输入框样式 */
 .upload-folder {
     width: 100px;
     height: 2.5rem;
     position: fixed;
     top: 30px;
-    right: 180px;
+    right: 230px;
     z-index: 100;
     border-radius: 12px;
     transition: all 0.3s ease, width 0.4s ease;
@@ -529,6 +569,7 @@ export default {
     .upload-folder {
         width: 80px;
         height: 2rem;
+        right: 180px;
     }
     .upload-folder.active {
         width: 120px;
