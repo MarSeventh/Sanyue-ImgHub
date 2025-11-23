@@ -1,7 +1,8 @@
 <template>
     <div class="container">
     <div class="upload-home">
-        <ToggleDark class="toggle-dark-button"/>
+        <!-- 桌面端按钮 -->
+        <ToggleDark class="toggle-dark-button desktop-only"/>
         <el-tooltip content="1. 支持多文件上传，支持所有常见文件格式 <br> 2. Telegram 渠道上传的文件大小不支持超过1GB" raw-content placement="bottom">
             <div class="info-container">
                 <font-awesome-icon icon="question" class="info-icon" size="lg"/>
@@ -9,16 +10,39 @@
         </el-tooltip>
         <el-input class="upload-folder" :class="{ 'active': isFolderInputActive }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="isFolderInputActive = false"/>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
-            <el-button class="upload-method-button" @click="handleChangeUploadMethod">
+            <el-button class="upload-method-button desktop-only" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
                 <font-awesome-icon v-else-if="uploadMethod === 'paste'" icon="paste" class="upload-method-icon" size="lg"/>
             </el-button>
         </el-tooltip>
         <el-tooltip content="上传记录" placement="bottom" :disabled="disableTooltip">
-            <el-button class="history-button" @click="showHistory = true">
+            <el-button class="history-button desktop-only" @click="showHistory = true">
                 <font-awesome-icon icon="history" class="history-icon" size="lg"/>
             </el-button>
         </el-tooltip>
+
+        <!-- 移动端更多按钮 -->
+        <el-dropdown class="mobile-more-dropdown mobile-only" trigger="click" @command="handleMobileMenuCommand">
+            <el-button class="mobile-more-button">
+                <font-awesome-icon icon="ellipsis-v" size="lg"/>
+            </el-button>
+            <template #dropdown>
+                <el-dropdown-menu>
+                    <el-dropdown-item command="toggleTheme">
+                        <font-awesome-icon :icon="getThemeIcon()" style="margin-right: 8px;"/>
+                        {{ getThemeText() }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="toggleUploadMethod">
+                        <font-awesome-icon :icon="uploadMethod === 'default' ? 'paste' : 'folder-open'" style="margin-right: 8px;"/>
+                        {{ uploadMethod === 'default' ? '粘贴上传' : '文件上传' }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="showHistory">
+                        <font-awesome-icon icon="history" style="margin-right: 8px;"/>
+                        上传记录
+                    </el-dropdown-item>
+                </el-dropdown-menu>
+            </template>
+        </el-dropdown>
         <div class="toolbar-manage">
             <el-button class="toolbar-manage-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleOpenToolbar" circle>
                 <font-awesome-icon v-if="!isToolBarOpen"  icon="bars" class="manage-icon" size="lg"/>
@@ -224,6 +248,7 @@ export default {
             showAnnouncementDialog: false, // 控制公告弹窗的显示
             announcementContent: '', // 公告内容
             showHistory: false,
+            themeMode: 'auto', // 主题模式：light, dark, auto
         }
     },
     watch: {
@@ -305,6 +330,18 @@ export default {
         this.uploadMethod = this.storeUploadMethod
         // 读取用户设置的上传文件夹
         this.uploadFolder = this.storeUploadFolder || this.userConfig?.defaultUploadFolder || ''
+
+        // 从 Vuex store 读取主题模式状态
+        const cusDarkMode = this.$store.getters.cusDarkMode
+        const useDarkMode = this.$store.getters.useDarkMode
+        
+        if (!cusDarkMode) {
+            this.themeMode = 'auto'
+        } else if (useDarkMode) {
+            this.themeMode = 'dark'
+        } else {
+            this.themeMode = 'light'
+        }
 
         // 首次访问公告
         const visited = localStorage.getItem('visitedUploadHome')
@@ -390,6 +427,42 @@ export default {
         handleChangeUploadMethod() {
             this.uploadMethod = this.uploadMethod === 'default'? 'paste' : 'default'
             this.$store.commit('setUploadMethod', this.uploadMethod)
+        },
+        handleMobileMenuCommand(command) {
+            if (command === 'toggleTheme') {
+                // 循环切换：auto -> light -> dark -> auto
+                if (this.themeMode === 'auto') {
+                    // 切换到亮色
+                    this.themeMode = 'light'
+                    this.$store.commit('setCusDarkMode', true)
+                    this.$store.commit('setUseDarkMode', false)
+                } else if (this.themeMode === 'light') {
+                    // 切换到暗色
+                    this.themeMode = 'dark'
+                    this.$store.commit('setCusDarkMode', true)
+                    this.$store.commit('setUseDarkMode', true)
+                } else {
+                    // 切换到自动
+                    this.themeMode = 'auto'
+                    this.$store.commit('setCusDarkMode', false)
+                }
+            } else if (command === 'toggleUploadMethod') {
+                this.handleChangeUploadMethod()
+            } else if (command === 'showHistory') {
+                this.showHistory = true
+            }
+        },
+        getThemeIcon() {
+            // 显示下一个模式的图标
+            if (this.themeMode === 'auto') return 'sun'  // auto -> light
+            if (this.themeMode === 'light') return 'moon'  // light -> dark
+            return 'adjust'  // dark -> auto
+        },
+        getThemeText() {
+            // 显示下一个模式的文字
+            if (this.themeMode === 'auto') return '浅色模式'
+            if (this.themeMode === 'light') return '深色模式'
+            return '自动模式'
         }
     }
 }
@@ -480,6 +553,22 @@ export default {
 }
 
 
+/* 桌面端和移动端显示控制 */
+.desktop-only {
+    display: inline-block;
+}
+.mobile-only {
+    display: none;
+}
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+    .mobile-only {
+        display: flex !important;
+    }
+}
+
 .toggle-dark-button {
     border: none;
     transition: all 0.3s ease;
@@ -543,10 +632,39 @@ export default {
     .history-button {
         width: 2rem;
         height: 2rem;
-        right: 130px;
+        top: 85px;
+        right: 80px;
     }
 }
 .history-button:hover {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
+}
+
+/* 移动端更多按钮 */
+.mobile-more-dropdown {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 100;
+}
+.mobile-more-button {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    color: var(--theme-toggle-color);
+    border-radius: 12px;
+    outline: none;
+    padding: 0;
+}
+.mobile-more-button:hover {
     transform: scale(1.05);
     box-shadow: var(--toolbar-button-shadow-hover);
 }
@@ -569,7 +687,7 @@ export default {
     .upload-folder {
         width: 80px;
         height: 2rem;
-        right: 180px;
+        right: 110px;
     }
     .upload-folder.active {
         width: 120px;
@@ -609,6 +727,7 @@ export default {
     .info-container {
         width: 2rem;
         height: 2rem;
+        right: 70px;
     }
 }
 
