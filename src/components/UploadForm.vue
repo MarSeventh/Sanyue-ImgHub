@@ -478,15 +478,23 @@ methods: {
                 fileItem.uploadId = uploadId
             }
 
-            // 第二步：上传所有分块
-            for (let i = 0; i < totalChunks; i++) {
-                const start = i * CHUNK_SIZE
+            // 第二步：并发上传所有分块
+            const maxConcurrency = 3 // 最大并发数
+            const chunkProgress = new Array(totalChunks).fill(0)
+            let nextChunkIndex = 0
+            let hasError = false
+            let errorMsg = ''
+
+            const uploadChunk = async (chunkIndex) => {
+                if (hasError) return
+
+                const start = chunkIndex * CHUNK_SIZE
                 const end = Math.min(start + CHUNK_SIZE, fileSize)
                 const chunk = file.file.slice(start, end)
                 
                 const formData = new FormData()
-                formData.append('file', chunk, `${file.file.name}.part${i.toString().padStart(3, '0')}`)
-                formData.append('chunkIndex', i.toString())
+                formData.append('file', chunk, `${file.file.name}.part${chunkIndex.toString().padStart(3, '0')}`)
+                formData.append('chunkIndex', chunkIndex.toString())
                 formData.append('totalChunks', totalChunks.toString())
                 formData.append('uploadId', uploadId)
                 formData.append('originalFileName', file.file.name)
@@ -496,6 +504,7 @@ methods: {
                 const maxRetries = 3
 
                 while (retryCount < maxRetries) {
+                    if (hasError) return
                     try {
                         await axios({
                             url: '/upload' + 
@@ -509,32 +518,58 @@ methods: {
                             data: formData,
                             withAuthCode: true,
                             onUploadProgress: (progressEvent) => {
-                                // 计算总体上传进度
-                                const chunkProgress = Math.round((progressEvent.loaded / progressEvent.total) * 100)
-                                const totalProgress = Math.round(((i * 100 + chunkProgress) / totalChunks))
-                                file.onProgress({ percent: totalProgress, file: file.file })
+                                if (hasError) return
+                                const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100)
+                                chunkProgress[chunkIndex] = percent
+                                const totalPercent = Math.round(chunkProgress.reduce((a, b) => a + b, 0) / totalChunks)
+                                file.onProgress({ percent: totalPercent, file: file.file })
                             }
                         })
-                        break // 成功，跳出重试循环
+                        return // Success
                     } catch (err) {
                         retryCount++
+                        console.warn(`分块 ${chunkIndex + 1}/${totalChunks} 上传失败 (重试 ${retryCount}/${maxRetries}):`, err)
                         if (retryCount >= maxRetries) {
-                            throw new Error(`分块 ${i + 1}/${totalChunks} 上传失败: ${err.message}`)
+                            hasError = true
+                            errorMsg = `分块 ${chunkIndex + 1}/${totalChunks} 上传失败: ${err.message}`
+                            throw new Error(errorMsg)
                         }
                         // 等待后重试
-                        await new Promise(resolve => setTimeout(resolve, 5000 * retryCount))
+                        await new Promise(resolve => setTimeout(resolve, 2000 * retryCount))
                     }
                 }
-                
-                if (retryCount === maxRetries) {
-                    throw new Error(`分块 ${i + 1}/${totalChunks} 上传失败，已重试 ${maxRetries} 次`)
-                }
+            }
 
-                // 等待 5s
-                await new Promise(resolve => setTimeout(resolve, 5000))
+            // 创建并发池
+            const pool = []
+            for (let i = 0; i < maxConcurrency; i++) {
+                pool.push((async () => {
+                    while (nextChunkIndex < totalChunks && !hasError) {
+                        const currentIndex = nextChunkIndex++
+                        try {
+                            await uploadChunk(currentIndex)
+                        } catch (e) {
+                            hasError = true
+                            errorMsg = e.message
+                            break
+                        }
+                    }
+                })())
+            }
+
+            await Promise.all(pool)
+
+            if (hasError) {
+                throw new Error(errorMsg || '上传过程中发生错误')
             }
 
             // 第三步：所有分块上传完成，发送合并请求
+            this.$message({
+                type: 'info',
+                message: '分块上传完成，正在合并文件，请耐心等待...',
+                duration: 0 // 不自动关闭
+            })
+
             const mergeFormData = new FormData()
             mergeFormData.append('uploadId', uploadId)
             mergeFormData.append('totalChunks', totalChunks.toString())
@@ -553,15 +588,12 @@ methods: {
                 data: mergeFormData,
                 withAuthCode: true
             })
+            
+            // 关闭提示
+            this.$message.closeAll()
 
-            // 检查是否为异步处理
-            if (response.status === 202) {
-                // 异步处理，开始轮询状态
-                await this.pollMergeStatus(response.data.uploadId, response.data.statusCheckUrl, file)
-            } else {
-                // 同步处理完成
-                file.onSuccess(response, file.file)
-            }
+            // 同步处理完成
+            file.onSuccess(response, file.file)
         } catch (err) {
             console.error('分块上传失败:', err)
             
@@ -586,102 +618,6 @@ methods: {
                 this.uploading = false
             }
         }
-    },
-    // 轮询合并状态
-    async pollMergeStatus(uploadId, statusCheckUrl, file) {
-        const maxPollingTime = 10 * 60 * 1000 // 10分钟最大轮询时间
-        const pollInterval = 2000 // 2秒轮询间隔
-        const startTime = Date.now()
-        
-        // 显示异步处理提示
-        const fileItem = this.fileList.find(item => item.uid === file.file.uid)
-
-        this.$message({
-            type: 'info',
-            message: `${file.file.name} 文件较大，正在后台处理中...`,
-            duration: 5000
-        })
-
-        const poll = async () => {
-            try {
-                // 检查是否超时
-                if (Date.now() - startTime > maxPollingTime) {
-                    throw new Error('合并处理超时，请稍后刷新页面查看结果')
-                }
-
-                const response = await axios({
-                    url: statusCheckUrl,
-                    method: 'get',
-                    withAuthCode: true
-                })
-
-                const status = response.data
-
-                switch (status.status) {
-                    case 'processing':
-                    case 'merging':
-                    case 'uploading':
-                        // 继续轮询
-                        setTimeout(poll, pollInterval)
-                        break
-                        
-                    case 'success':
-                        // 处理成功
-                        if (status.result) {
-                            const mockResponse = {
-                                data: status.result,
-                                status: 200
-                            }
-                            file.onSuccess(mockResponse, file.file)
-                        } else {
-                            throw new Error('处理完成但未返回结果')
-                        }
-                        break
-                        
-                    case 'error':
-                        throw new Error(status.message || status.error || '后台处理失败')
-                        
-                    default:
-                        // 继续轮询
-                        setTimeout(poll, pollInterval)
-                }
-
-            } catch (error) {
-                console.error('轮询状态失败:', error)
-                
-                // 检查是否为网络错误，如果是则继续重试
-                if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
-                    if (Date.now() - startTime < maxPollingTime) {
-                        setTimeout(poll, pollInterval * 2) // 网络错误时延长轮询间隔
-                        return
-                    }
-                }
-
-                // 处理失败
-                console.error('轮询处理失败:', error)
-                
-                // 发送清理请求以清理后台资源
-                if (fileItem && fileItem.uploadId) {
-                    this.cleanupUploadResources(fileItem.uploadId, fileItem.totalChunks)
-                        .then(() => {
-                            console.log(`已清理失败上传的资源: ${fileItem.uploadId}`)
-                        })
-                        .catch(cleanupError => {
-                            console.warn('清理失败上传资源时出错:', cleanupError)
-                        })
-                }
-                
-                this.$message.error(`${file.file.name} 后台处理失败: ${error.message}`)
-                if (fileItem) {
-                    fileItem.status = 'exception'
-                }
-                this.exceptionList.push(file)
-                file.onError(error, file.file)
-            }
-        }
-
-        // 开始轮询
-        setTimeout(poll, pollInterval)
     },
     handleRemove(file) {
         this.fileList = this.fileList.filter(item => item.uid !== file.uid)
