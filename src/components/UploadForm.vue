@@ -74,8 +74,11 @@
                                         </el-button>
                                         <template #dropdown>
                                             <el-dropdown-menu>
-                                                <el-dropdown-item @click="toggleAutoRetry">
-                                                    {{ autoReUpload ? '关闭自动重试' : '开启自动重试' }}
+                                                <el-dropdown-item>
+                                                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                                        <span style="margin-right: 10px;">自动重试</span>
+                                                        <el-switch v-model="autoReUpload" @change="handleAutoRetryChange" size="small" />
+                                                    </div>
                                                 </el-dropdown-item>
                                             </el-dropdown-menu>
                                         </template>
@@ -1107,15 +1110,14 @@ methods: {
             })
         }
     },
-    toggleAutoRetry() {
-        this.autoReUpload = !this.autoReUpload;
+    handleAutoRetryChange(val) {
         this.$message({
-            type: this.autoReUpload ? 'success' : 'info',
-            message: this.autoReUpload ? '自动重试已开启' : '自动重试已关闭'
+            type: val ? 'success' : 'info',
+            message: val ? '自动重试已开启' : '自动重试已关闭'
         });
         
         // 如果开启自动重试且有失败文件，立即开始重试
-        if (this.autoReUpload && this.exceptionList.length > 0) {
+        if (val && this.exceptionList.length > 0) {
             this.scheduleAutoRetry();
         }
     },
@@ -1189,6 +1191,10 @@ beforeDestroy() {
     backdrop-filter: blur(10px);
     border: var(--upload-list-card-border);
     box-shadow: var(--upload-list-card-box-shadow) !important;
+}
+.upload-list-card :deep(.el-card__body) {
+    padding: 0;
+    width: 100%;
 }
 .upload-list-container {
     width: 55vw;
@@ -1445,45 +1451,70 @@ beforeDestroy() {
     color: var(--upload-list-file-icon-color);
 }
 
-/* Added for flickering light points effect */
+/* Enhanced Starry Sky Effect */
+:deep(.el-upload-dragger) {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Layer 1: Distant stars (Small, slow, dense) */
+:deep(.el-upload-dragger::before) {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: 
+        radial-gradient(2px 2px at 10% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 20% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 30% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 40% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 50% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 60% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 70% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 80% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 90% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2px 2px at 15% 70%, var(--el-upload-dragger-uniform-color) 50%, transparent 0);
+    background-size: 200px 200px;
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.6s ease;
+}
+
+/* Layer 2: Close stars (Larger, faster, sparse) */
 :deep(.el-upload-dragger::after) {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none; /* Important: allows interaction with dragger content */
-  background-image: radial-gradient(circle, var(--el-upload-dragger-uniform-color) 0.8px, transparent 1.2px); /* Small, semi-transparent dots */
-  background-size: 30px 30px; /* Adjust for density of dots */
-  opacity: 0; /* Initially hidden */
-  transition: opacity 0.4s ease-in-out; /* Smooth appearance/disappearance of the effect layer */
-  z-index: 0; /* Positioned above the dragger's background but below its content */
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: 
+        radial-gradient(3px 3px at 15% 15%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(3px 3px at 50% 50%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(3px 3px at 85% 85%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2.5px 2.5px at 35% 65%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
+        radial-gradient(2.5px 2.5px at 65% 35%, var(--el-upload-dragger-uniform-color) 50%, transparent 0);
+    background-size: 150px 150px;
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.6s ease;
+}
+
+.upload-card:hover :deep(.el-upload-dragger::before) {
+    opacity: 0.3;
+    animation: starScroll 60s linear infinite;
 }
 
 .upload-card:hover :deep(.el-upload-dragger::after) {
-  opacity: 1; /* Make the dot layer visible on hover */
-  animation: flickerAnimation 2s infinite linear; /* Start flickering animation */
+    opacity: 0.6;
+    animation: starScroll 40s linear infinite, starPulse 4s ease-in-out infinite;
 }
 
-@keyframes flickerAnimation {
-  0% {
-    background-position: 0 0;
-    opacity: 0.7; /* Base opacity for visible dots */
-  }
-  25% {
-    opacity: 0.4; /* Dimming part of flicker */
-  }
-  50% {
-    background-position: 15px 15px; /* Shift dot positions for a twinkling movement */
-    opacity: 0.8; /* Brighter part of flicker */
-  }
-  75% {
-    opacity: 0.3; /* Further dimming */
-  }
-  100% {
-    background-position: 30px 30px; /* Continue dot movement */
-    opacity: 0.7; /* Return to base opacity */
-  }
+@keyframes starScroll {
+    from { background-position: 0 0; }
+    to { background-position: 100px 100px; }
+}
+
+@keyframes starPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.3; }
 }
 </style>

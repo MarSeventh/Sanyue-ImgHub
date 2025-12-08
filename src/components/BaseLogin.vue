@@ -1,5 +1,5 @@
 <template>
-    <div class="login">
+    <div class="login" :class="{ 'is-focused': isFocused }">
         <ToggleDark class="toggle-dark"/>
         <Logo />
         <div class="login-container">
@@ -74,7 +74,8 @@ export default {
     data() {
         return {
             formData: {},
-            labelUnderlineWidths: []
+            labelUnderlineWidths: [],
+            isFocused: false
         }
     },
     computed: {
@@ -147,6 +148,7 @@ export default {
             this.$emit('submit', { ...this.formData });
         },
         handleInputFocus(event) {
+            this.isFocused = true;
             const container = event.target.closest('.input-container');
             if (container) {
                 const wrapper = container.querySelector('.input-wrapper');
@@ -156,6 +158,7 @@ export default {
             }
         },
         handleInputBlur(event) {
+            this.isFocused = false;
             const container = event.target.closest('.input-container');
             if (container) {
                 const wrapper = container.querySelector('.input-wrapper');
@@ -174,8 +177,12 @@ export default {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     background: var(--admin-container-bg-color, var(--bg-color));
+    overflow-y: auto;
+    padding: 20px 0;
+    box-sizing: border-box;
 }
 
 .login-title {
@@ -190,6 +197,10 @@ export default {
     .login-title {
         font-size: 1.5rem;
     }
+    .login.is-focused {
+        justify-content: flex-start;
+        padding-top: 10vh;
+    }
 }
 
 .login-title:hover,
@@ -201,15 +212,18 @@ export default {
 .login-container {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
-    height: 45vh;
+    min-height: auto;
+    height: auto;
     width: 40vw;
     border-radius: 12px;
     box-shadow: var(--login-container-box-shadow);
     background-color: var(--login-container-bg-color);
     backdrop-filter: blur(8px);
     transition: all 0.3s ease;
+    padding: 40px 0;
+    gap: 20px;
 }
 @media (max-width: 768px) {
     .login-container {
@@ -313,12 +327,21 @@ export default {
 
 .submit {
     margin-bottom: 10px;
-    width: 40%;
-    height: 15%;
+    width: 50%;
+    height: 48px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
     border-radius: 12px;
     background-color: var(--login-submit-btn-bg-color);
     transition: all 0.3s ease;
     border: none;
+}
+
+@media (max-width: 768px) {
+    .submit {
+        width: 50%;
+    }
 }
 
 .submit:hover,
