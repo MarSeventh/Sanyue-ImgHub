@@ -11,7 +11,9 @@
                     class="input-name" 
                     :ref="`inputLabel${index}`"
                     :style="{ '--underline-width': labelUnderlineWidths[index] + 'px' }"
-                >{{ field.label }}</label>
+                >
+                    {{ field.label }}
+                </label>
                 <div class="input-wrapper">
                     <el-input
                         v-model="formData[field.key]"
@@ -22,8 +24,11 @@
                         @keyup.enter.native="handleSubmit"
                         @focus="handleInputFocus"
                         @blur="handleInputBlur"
-                    ></el-input>
-                    <div class="input-underline"></div>
+                    >
+                        <template #prefix v-if="field.icon">
+                            <el-icon class="el-input__icon"><component :is="field.icon" /></el-icon>
+                        </template>
+                    </el-input>
                 </div>
             </div>
             
@@ -197,9 +202,20 @@ export default {
     .login-title {
         font-size: 1.5rem;
     }
+    .login {
+        transition: background-color 0.4s ease-out;
+    }
     .login.is-focused {
         justify-content: flex-start;
         padding-top: 10vh;
+    }
+    .login-container {
+        transition: transform 0.4s ease-out, 
+                    box-shadow 0.4s ease-out;
+    }
+    .login.is-focused .login-container {
+        transform: translateY(-20px);
+        box-shadow: var(--login-container-hover-box-shadow), 0 20px 40px rgba(0, 0, 0, 0.15);
     }
 }
 
@@ -237,91 +253,72 @@ export default {
 
 .input-container {
     display: flex;
-    align-items: center;
-    width: 35vw;
-    margin-bottom: 25px;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 80%;
+    margin-bottom: 15px;
     position: relative;
-    gap: 15px;
+    gap: 8px;
 }
 @media (max-width: 768px) {
     .input-container {
-        width: 75vw;
-        gap: 10px;
+        width: 85%;
+        gap: 6px;
     }
 }
 
 .input-wrapper {
     position: relative;
-    flex: 1;
+    width: 100%;
     display: flex;
     flex-direction: column;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.input-name {
+.input-icon {
+    margin-right: 6px;
     font-size: 1rem;
+}
+
+.input-name {
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--login-title-color);
-    text-align: right;
-    width: 80px;
-    min-width: 60px;
+    text-align: left;
     transition: all 0.3s ease;
     letter-spacing: 0.5px;
     position: relative;
-    flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    height: 50px;
+    justify-content: flex-start;
+    padding-left: 2px;
 }
 
-.input-name::before {
+.input-name::after {
     content: '';
     position: absolute;
-    right: 0;
-    bottom: 12px;
+    left: 0;
+    bottom: -2px;
     width: 0;
     height: 2px;
     background: linear-gradient(90deg, var(--login-input-underline-color, #5b9bd3), var(--login-input-underline-secondary-color, #7ba9d8));
-    transition: width 0.3s ease;
+    transition: width 0.3s linear;
+    border-radius: 1px;
 }
 
-.input-container:has(.input-wrapper.focused) .input-name::before,
-.input-container:hover .input-name::before {
+.input-container:has(.input-wrapper.focused) .input-name::after,
+.input-container:hover .input-name::after {
     width: var(--underline-width, 50px);
 }
 
 .input-container:has(.input-wrapper.focused) .input-name,
 .input-container:hover .input-name {
     color: var(--login-input-label-focus-color, #5b9bd3);
-    transform: translateX(-3px);
-}
-
-.input-underline {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--login-input-underline-color, #5b9bd3), var(--login-input-underline-secondary-color, #7ba9d8));
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 2;
-}
-
-.input-wrapper.focused .input-underline {
-    width: 90%;
 }
 
 @media (max-width: 768px) {
     .input-name {
-        font-size: 0.9rem;
-        width: 60px;
-        min-width: 50px;
-        height: 45px;
-    }
-    
-    .input-wrapper.focused .input-underline {
-        width: 95%;
+        font-size: 0.85rem;
     }
 }
 
@@ -351,10 +348,19 @@ export default {
 }
 
 .password-input {
-    width: 90%;
+    width: 100%;
     height: 50px;
     position: relative;
-    margin-bottom: 4px;
+}
+
+.password-input:deep(.el-input__prefix) {
+    color: var(--login-input-icon-color, #909399);
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.password-input:deep(.el-input__wrapper):focus-within .el-input__prefix {
+    color: var(--login-input-label-focus-color, #5b9bd3);
 }
 
 .password-input:deep(.el-input__wrapper) {

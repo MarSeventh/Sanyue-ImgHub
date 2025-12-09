@@ -24,7 +24,8 @@ export default {
                     label: '密码',
                     placeholder: '请输入认证码',
                     type: 'password',
-                    showPassword: true
+                    showPassword: true,
+                    icon: 'Lock'
                 }
             ]
         }

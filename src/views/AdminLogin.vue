@@ -21,14 +21,16 @@ export default {
                     key: 'username',
                     label: '用户名',
                     placeholder: '请输入用户名',
-                    type: 'text'
+                    type: 'text',
+                    icon: 'User'
                 },
                 {
                     key: 'password',
                     label: '密码',
                     placeholder: '请输入密码',
                     type: 'password',
-                    showPassword: true
+                    showPassword: true,
+                    icon: 'Lock'
                 }
             ]
         }
