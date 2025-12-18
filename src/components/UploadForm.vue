@@ -1191,14 +1191,19 @@ beforeDestroy() {
     backdrop-filter: blur(10px);
     border: var(--upload-list-card-border);
     box-shadow: var(--upload-list-card-box-shadow) !important;
+    transition: height 0.3s ease;
+    overflow: hidden;
 }
 .upload-list-card :deep(.el-card__body) {
     padding: 0;
     width: 100%;
+    overflow: hidden;
 }
 .upload-list-container {
     width: 55vw;
     height: 7vh;
+    transition: height 0.3s ease;
+    overflow: hidden;
 }
 @media (max-width: 768px) {
     .upload-list-card {
@@ -1239,6 +1244,15 @@ beforeDestroy() {
     flex-direction: row;
     align-items: center;
     width: 38vw;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.upload-list-item-url-row:last-child {
+    margin-bottom: 0;
+}
+.upload-list-item-url {
+    display: flex;
+    flex-direction: column;
 }
 .upload-list-item-progress {
     margin-top: 3px;
@@ -1255,6 +1269,7 @@ beforeDestroy() {
     .upload-list-item-url-row {
         width: 42vw;
         flex-direction: column;
+        gap: 6px;
     }
     .upload-list-item-progress {
         width: 32vw;
@@ -1449,6 +1464,152 @@ beforeDestroy() {
 .file-icon {
     font-size: 30px;
     color: var(--upload-list-file-icon-color);
+}
+
+/* Modern URL Input Styles */
+.upload-list-item-url :deep(.el-input) {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.upload-list-item-url :deep(.el-input:hover) {
+    transform: translateY(-1px);
+}
+
+.upload-list-item-url :deep(.el-input__wrapper) {
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--el-fill-color-blank);
+    border: 1px solid var(--el-border-color-lighter);
+    overflow: hidden;
+    position: relative;
+    padding: 0;
+}
+
+.upload-list-item-url :deep(.el-input-group > .el-input__wrapper) {
+    border-radius: 0 9px 9px 0 !important;
+}
+
+.upload-list-item-url :deep(.el-input__wrapper:hover) {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    border-color: var(--el-color-primary-light-5);
+}
+
+.upload-list-item-url :deep(.el-input__wrapper.is-focus) {
+    box-shadow: 0 0 0 2px var(--el-color-primary-light-8),
+                0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--el-color-primary);
+}
+
+/* Gradient animation on focus */
+.upload-list-item-url :deep(.el-input__wrapper.is-focus::before) {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(64, 158, 255, 0.08), 
+        transparent);
+    animation: shimmer 2s infinite;
+    z-index: 0;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.upload-list-item-url :deep(.el-input__inner) {
+    font-size: 13px;
+    font-family: 'Courier New', Monaco, monospace;
+    color: var(--el-text-color-regular);
+    transition: all 0.3s ease;
+    padding-left: 12px;
+    position: relative;
+    z-index: 1;
+    border-radius: 0 10px 10px 0;
+}
+
+.upload-list-item-url :deep(.el-input__inner::selection) {
+    background-color: var(--el-color-primary-light-7);
+}
+
+.upload-list-item-url :deep(.el-input-group__prepend) {
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    font-weight: 600;
+    font-size: 12px;
+    border: none;
+    padding: 0 14px;
+    margin: 0;
+    border-radius: 9px 0 0 9px;
+    box-shadow: none;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+}
+
+/* 去除prepend和input之间的分隔 */
+.upload-list-item-url :deep(.el-input-group__prepend::after) {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 1px;
+    background: var(--el-color-primary-light-7);
+    opacity: 0.3;
+    transition: all 0.3s ease;
+}
+
+.upload-list-item-url :deep(.el-input:hover .el-input-group__prepend) {
+    background: var(--el-color-primary-light-8);
+}
+
+.upload-list-item-url :deep(.el-input:hover .el-input-group__prepend::after) {
+    opacity: 0.5;
+}
+
+.upload-list-item-url :deep(.el-input.is-focus .el-input-group__prepend) {
+    background: var(--el-color-primary);
+    color: white;
+}
+
+.upload-list-item-url :deep(.el-input.is-focus .el-input-group__prepend::after) {
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+}
+
+/* Add subtle pulse animation to focused prepend */
+.upload-list-item-url :deep(.el-input.is-focus .el-input-group__prepend) {
+    animation: prependPulse 2s ease-in-out infinite;
+}
+
+@keyframes prependPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.95; }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .upload-list-item-url :deep(.el-input__wrapper) {
+        border-radius: 8px;
+    }
+    
+    .upload-list-item-url :deep(.el-input__inner) {
+        font-size: 12px;
+    }
+    
+    .upload-list-item-url :deep(.el-input-group__prepend) {
+        font-size: 11px;
+        padding: 0 8px;
+        border-radius: 8px 0 0 8px;
+    }
 }
 
 /* Enhanced Starry Sky Effect */

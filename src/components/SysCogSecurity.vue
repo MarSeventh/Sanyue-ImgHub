@@ -113,7 +113,6 @@
                 </el-form-item>
                 <el-form-item label="审查渠道">
                     <el-select v-model="uploadSettings.moderate.channel" placeholder="请选择审查渠道">
-                        <el-option label="默认（官方提供）" value="default"></el-option>
                         <el-option label="moderatecontent.com" value="moderatecontent.com"></el-option>
                         <el-option label="nsfwjs" value="nsfwjs"></el-option>
                     </el-select>
