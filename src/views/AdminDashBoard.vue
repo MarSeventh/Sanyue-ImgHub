@@ -71,6 +71,9 @@
                         <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
                     </span>
                 </el-tooltip>
+                <el-tooltip :disabled="disableTooltip" :content="viewMode === 'card' ? '列表视图' : '卡片视图'" placement="bottom">
+                    <font-awesome-icon :icon="viewMode === 'card' ? 'list' : 'th-large'" class="header-icon" @click="toggleViewMode"></font-awesome-icon>
+                </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" content="退出登录" placement="bottom">
                     <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                 </el-tooltip>
@@ -85,40 +88,59 @@
                     <el-breadcrumb-item 
                         v-for="(folder, index) in currentPath.split('/').filter(Boolean)" 
                         :key="index"
-                        @click="navigateToFolder(currentPath.split('/').slice(0, index + 1).join('/'))"
-                    >
+                        @click="navigateToFolder(currentPath.split('/').filter(Boolean).slice(0, index + 1).join('/'))">
                         {{ folder }}
                     </el-breadcrumb-item>
                 </el-breadcrumb>
             </div>
-            <div class="content" v-loading="loading">
+            
+            <!-- 卡片视图 -->
+            <div v-if="viewMode === 'card'" class="content" v-loading="loading">
                 <!-- 文件夹和文件列表 -->
                 <template v-for="(item, index) in paginatedTableData" :key="index">
                     <!-- 文件夹卡片 -->
-                    <el-card v-if="isFolder(item)" class="img-card folder-card">
+                    <el-card 
+                        v-if="isFolder(item)" 
+                        class="img-card folder-card"
+                        @touchstart="handleFolderTouchStart(item, index)"
+                        @touchend="handleTouchEnd"
+                        @touchmove="handleTouchEnd"
+                    >
                         <el-checkbox v-model="item.selected"></el-checkbox>
                         <div class="folder-icon" @click="enterFolder(item.name)">
                             <font-awesome-icon icon="folder-open" size="4x"/>
                         </div>
-                        <div class="folder-overlay">
-                            <div v-if="!isSearchMode" class="folder-actions">
-                                <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
-                                    <el-button size="mini" type="danger" @click.stop="handleDelete(index, item.name)">
-                                        <font-awesome-icon icon="trash-alt"></font-awesome-icon>
-                                    </el-button>
-                                </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" content="移动" placement="top">
-                                    <el-button size="mini" type="primary" @click.stop="handleMove(index, item.name)">
-                                        <font-awesome-icon icon="file-export"></font-awesome-icon>
-                                    </el-button>
-                                </el-tooltip>  
+                        <!-- 底部统一覆盖层：文件夹名 + 操作栏 -->
+                        <div class="card-bottom-overlay">
+                            <div class="file-name-row">
+                                <span class="file-name">{{ getFolderName(item.name) }}</span>
+                            </div>
+                            <div v-if="!isSearchMode" class="action-bar">
+                                <div class="action-bar-left"></div>
+                                <div class="action-bar-right">
+                                    <el-tooltip :disabled="disableTooltip" content="移动" placement="top">
+                                        <button class="action-btn" @click.stop="handleMove(index, item.name)">
+                                            <font-awesome-icon icon="file-export"></font-awesome-icon>
+                                        </button>
+                                    </el-tooltip>
+                                    <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
+                                        <button class="action-btn action-btn-danger" @click.stop="handleDelete(index, item.name)">
+                                            <font-awesome-icon icon="trash-alt"></font-awesome-icon>
+                                        </button>
+                                    </el-tooltip>
+                                </div>
                             </div>
                         </div>
-                        <div class="file-info">{{ getFolderName(item.name) }}</div>
                     </el-card>
                     
                     <!-- 文件卡片 -->
-                    <el-card v-else class="img-card">
+                    <el-card 
+                        v-else 
+                        class="img-card"
+                        @touchstart="handleTouchStart(item, index)"
+                        @touchend="handleTouchEnd"
+                        @touchmove="handleTouchEnd"
+                    >
                         <el-checkbox v-model="item.selected"></el-checkbox>
                         <div class="file-short-info">
                             <div v-if="item.metadata?.ListType === 'White'" class="success-tag">{{ item.channelTag }}</div>
@@ -132,48 +154,155 @@
                                 </span>
                             </div>
                         </div>
-                        <video v-if="isVideo(item)" :src="getFileLink(item.name)" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                        <video v-if="isVideo(item)" :src="getFileLink(item.name)" muted loop class="video-preview" @click="handleVideoClick" @mouseenter="handleVideoHover($event, true)" @mouseleave="handleVideoHover($event, false)"></video>
                         <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="getFileLink(item.name)" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
                         <div v-else class="file-preview">
                             <font-awesome-icon icon="file" class="file-icon" size="4x"></font-awesome-icon>
                         </div>
-                        <div class="image-overlay">
-                            <div class="overlay-buttons">
-                                <div class="button-row">
-                                    <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
-                                        <el-button style="width: 10px;" type="primary" @click.stop="handleCopy(index, item.name)">
-                                            <font-awesome-icon icon="copy"></font-awesome-icon>
-                                        </el-button>
-                                    </el-tooltip>
-                                    <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
-                                        <el-button style="width: 10px;" type="primary" @click.stop="handleDownload(item.name)">
-                                            <font-awesome-icon icon="download"></font-awesome-icon>
-                                        </el-button>
-                                    </el-tooltip>
+                        <!-- 底部统一覆盖层：文件名 + 操作栏 -->
+                        <div class="card-bottom-overlay">
+                            <div class="file-name-row">
+                                <span class="file-name">{{ getFileName(item.metadata?.FileName || item.name) }}</span>
+                            </div>
+                            <div class="action-bar">
+                                <div class="action-bar-left">
                                     <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
-                                        <el-button style="width: 10px;" type="primary" @click.stop="openDetailDialog(index, item.name)">
-                                            <font-awesome-icon icon="info"></font-awesome-icon>
-                                        </el-button>
+                                        <button class="action-btn" @click.stop="openDetailDialog(index, item.name)">
+                                            <font-awesome-icon icon="info-circle"></font-awesome-icon>
+                                        </button>
                                     </el-tooltip>
                                 </div>
-                                <div class="button-row">
+                                <div class="action-bar-right">
                                     <el-tooltip :disabled="disableTooltip" content="移动" placement="top">
-                                        <el-button style="width: 10px;" type="primary" @click.stop="handleMove(index, item.name)">
+                                        <button class="action-btn" @click.stop="handleMove(index, item.name)">
                                             <font-awesome-icon icon="file-export"></font-awesome-icon>
-                                        </el-button>
+                                        </button>
                                     </el-tooltip>
                                     <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
-                                        <el-button style="width: 10px;" type="danger" @click.stop="handleDelete(index, item.name)">
+                                        <button class="action-btn action-btn-danger" @click.stop="handleDelete(index, item.name)">
                                             <font-awesome-icon icon="trash-alt"></font-awesome-icon>
-                                        </el-button>
+                                        </button>
+                                    </el-tooltip>
+                                    <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
+                                        <button class="action-btn" @click.stop="handleDownload(item.name)">
+                                            <font-awesome-icon icon="download"></font-awesome-icon>
+                                        </button>
+                                    </el-tooltip>
+                                    <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
+                                        <button class="action-btn" @click.stop="handleCopy(index, item.name)">
+                                            <font-awesome-icon icon="copy"></font-awesome-icon>
+                                        </button>
                                     </el-tooltip>
                                 </div>
                             </div>
                         </div>
-                        <div class="file-info">{{ getFileName(item.metadata?.FileName || item.name) }}</div>
                     </el-card>
                 </template>
             </div>
+            <!-- 列表视图 -->
+            <div v-else class="list-view" v-loading="loading">
+                <div class="list-header">
+                    <div class="list-col list-col-checkbox">
+                        <span class="custom-checkbox" :class="{ 'checked': isSelectAll, 'indeterminate': isIndeterminate }" @click="handleSelectAllPage(!isSelectAll)">
+                            <font-awesome-icon v-if="isSelectAll" icon="check" class="check-icon"/>
+                            <font-awesome-icon v-else-if="isIndeterminate" icon="minus" class="check-icon"/>
+                        </span>
+                    </div>
+                    <div class="list-col list-col-preview">预览</div>
+                    <div class="list-col list-col-name">文件名</div>
+                    <div class="list-col list-col-tags">标签</div>
+                    <div class="list-col list-col-channel">上传渠道</div>
+                    <div class="list-col list-col-address">上传地址</div>
+                    <div class="list-col list-col-size">大小</div>
+                    <div class="list-col list-col-date">上传时间</div>
+                    <div class="list-col list-col-actions">操作</div>
+                </div>
+                <div 
+                    v-for="(item, index) in paginatedTableData" 
+                    :key="index" 
+                    class="list-item"
+                    @touchstart="isFolder(item) ? handleFolderTouchStart(item, index) : handleTouchStart(item, index)"
+                    @touchend="handleTouchEnd"
+                    @touchmove="handleTouchEnd"
+                >
+                    <div class="list-col list-col-checkbox">
+                        <span class="custom-checkbox" :class="{ 'checked': item.selected }" @click.stop="item.selected = !item.selected">
+                            <font-awesome-icon v-if="item.selected" icon="check" class="check-icon"/>
+                        </span>
+                    </div>
+                    <div class="list-col list-col-preview" @click="isFolder(item) ? enterFolder(item.name) : openDetailDialog(index, item.name)">
+                        <template v-if="isFolder(item)">
+                            <font-awesome-icon icon="folder-open" class="list-folder-icon"/>
+                        </template>
+                        <template v-else-if="isVideo(item)">
+                            <video :src="getFileLink(item.name)" class="list-preview-img" muted></video>
+                        </template>
+                        <template v-else-if="isImage(item)">
+                            <img :src="getFileLink(item.name)" class="list-preview-img" />
+                        </template>
+                        <template v-else>
+                            <font-awesome-icon icon="file" class="list-file-icon"/>
+                        </template>
+                    </div>
+                    <div class="list-col list-col-name" @click="isFolder(item) ? enterFolder(item.name) : openDetailDialog(index, item.name)">
+                        {{ isFolder(item) ? getFolderName(item.name) : (item.metadata?.FileName || getFileName(item.name)) }}
+                    </div>
+                    <div class="list-col list-col-tags">
+                        <template v-if="!isFolder(item) && item.metadata?.Tags && item.metadata.Tags.length > 0">
+                            <span 
+                                v-for="(tag, tagIndex) in item.metadata.Tags.slice(0, 3)" 
+                                :key="tagIndex" 
+                                class="color-tag"
+                                :style="{ background: getTagColor(tagIndex) }"
+                            >{{ tag }}</span>
+                            <span v-if="item.metadata.Tags.length > 3" class="color-tag color-tag-more" :style="{ background: getTagColor(3) }">+{{ item.metadata.Tags.length - 3 }}</span>
+                        </template>
+                        <span v-else class="list-empty">-</span>
+                    </div>
+                    <div class="list-col list-col-channel">
+                        {{ isFolder(item) ? '-' : (item.metadata?.Channel || item.channelTag || '-') }}
+                    </div>
+                    <div class="list-col list-col-address">
+                        {{ isFolder(item) ? '-' : (item.metadata?.UploadIP || '-') }}
+                    </div>
+                    <div class="list-col list-col-size">
+                        {{ isFolder(item) ? '-' : (item.metadata?.FileSize ? item.metadata.FileSize + ' MB' : '-') }}
+                    </div>
+                    <div class="list-col list-col-date">
+                        {{ item.uploaded ? new Date(item.uploaded).toLocaleDateString() : (item.metadata?.TimeStamp ? new Date(item.metadata.TimeStamp).toLocaleDateString() : '-') }}
+                    </div>
+                    <div class="list-col list-col-actions">
+                        <template v-if="!isFolder(item)">
+                            <el-tooltip content="复制链接" placement="top">
+                                <button class="list-action-btn" @click.stop="handleCopy(index, item.name)">
+                                    <font-awesome-icon icon="copy"/>
+                                </button>
+                            </el-tooltip>
+                            <el-tooltip content="下载" placement="top">
+                                <button class="list-action-btn" @click.stop="handleDownload(item.name)">
+                                    <font-awesome-icon icon="download"/>
+                                </button>
+                            </el-tooltip>
+                            <el-tooltip content="移动" placement="top">
+                                <button class="list-action-btn" @click.stop="handleMoveFile(item.name)">
+                                    <font-awesome-icon icon="file-export"/>
+                                </button>
+                            </el-tooltip>
+                        </template>
+                        <el-tooltip v-else content="移动" placement="top">
+                            <button class="list-action-btn" @click.stop="handleMoveFile(item.name)">
+                                <font-awesome-icon icon="file-export"/>
+                            </button>
+                        </el-tooltip>
+                        <el-tooltip content="删除" placement="top">
+                            <button class="list-action-btn list-action-danger" @click.stop="handleDelete(index, item.name)">
+                                <font-awesome-icon icon="trash-alt"/>
+                            </button>
+                        </el-tooltip>
+                    </div>
+                </div>
+            </div>
+            
             <div class="pagination-container">
                 <el-pagination
                     background
@@ -181,6 +310,7 @@
                     :total="filteredTableData.length"
                     :page-size="pageSize"
                     :current-page="currentPage"
+                    :pager-count="pagerCount"
                     @current-change="handlePageChange">
                 </el-pagination>
                 <div class="pagination-right">
@@ -318,6 +448,56 @@
             :selectedFiles="selectedFiles"
             @tagsUpdated="handleBatchTagsUpdated"
         />
+        <!-- 移动端操作模态框 - 自定义底部弹出 -->
+        <Teleport to="body">
+            <Transition name="bottom-sheet">
+                <div v-if="showMobileActionModal" class="bottom-sheet-overlay" @click="showMobileActionModal = false">
+                    <div class="bottom-sheet" @click.stop>
+                        <div class="bottom-sheet-header">
+                            <div class="bottom-sheet-handle"></div>
+                            <span class="bottom-sheet-title">{{ mobileActionIsFolder ? getFolderName(mobileActionFile?.name || '') : (mobileActionFile?.metadata?.FileName || getFileName(mobileActionFile?.name || '')) }}</span>
+                        </div>
+                        <div class="bottom-sheet-content">
+                            <!-- 文件操作 -->
+                            <template v-if="!mobileActionIsFolder">
+                                <div class="bottom-sheet-item" @click="handleMobileAction('detail')">
+                                    <font-awesome-icon icon="info-circle" class="bottom-sheet-icon"></font-awesome-icon>
+                                    <span>查看详情</span>
+                                </div>
+                                <div class="bottom-sheet-item" @click="handleMobileAction('copy')">
+                                    <font-awesome-icon icon="copy" class="bottom-sheet-icon"></font-awesome-icon>
+                                    <span>复制链接</span>
+                                </div>
+                                <div class="bottom-sheet-item" @click="handleMobileAction('download')">
+                                    <font-awesome-icon icon="download" class="bottom-sheet-icon"></font-awesome-icon>
+                                    <span>下载文件</span>
+                                </div>
+                                <div class="bottom-sheet-item" @click="handleMobileAction('move')">
+                                    <font-awesome-icon icon="file-export" class="bottom-sheet-icon"></font-awesome-icon>
+                                    <span>移动文件</span>
+                                </div>
+                                <div class="bottom-sheet-item" @click="handleMobileAction('tag')">
+                                    <font-awesome-icon icon="tags" class="bottom-sheet-icon"></font-awesome-icon>
+                                    <span>标签管理</span>
+                                </div>
+                            </template>
+                            <!-- 文件夹操作 -->
+                            <template v-else>
+                                <div class="bottom-sheet-item" @click="handleMobileAction('move')">
+                                    <font-awesome-icon icon="file-export" class="bottom-sheet-icon"></font-awesome-icon>
+                                    <span>移动文件夹</span>
+                                </div>
+                            </template>
+                            <!-- 删除操作（通用） -->
+                            <div class="bottom-sheet-item bottom-sheet-danger" @click="handleMobileAction('delete')">
+                                <font-awesome-icon icon="trash-alt" class="bottom-sheet-icon"></font-awesome-icon>
+                                <span>{{ mobileActionIsFolder ? '删除文件夹' : '删除文件' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
@@ -360,6 +540,12 @@ data() {
         showTagDialog: false, // 标签管理对话框
         showBatchTagDialog: false, // 批量标签管理对话框
         currentTagFile: '', // 当前标签管理的文件
+        viewMode: 'card', // 视图模式：card 或 list
+        showMobileActionModal: false, // 移动端操作模态框
+        mobileActionFile: null, // 当前移动端操作的文件
+        mobileActionIndex: -1, // 当前移动端操作的文件索引
+        mobileActionIsFolder: false, // 是否为文件夹操作
+        longPressTimer: null, // 长按计时器
     }
 },
 components: {
@@ -462,6 +648,21 @@ computed: {
     rootUrl() {
         // 链接前缀，优先级：用户自定义 > urlPrefix > 默认
         return this.useCustomUrl === 'true' ? this.customUrlPrefix : this.userConfig?.urlPrefix || `${document.location.origin}/file/`
+    },
+    isSelectAll: {
+        get() {
+            return this.paginatedTableData.length > 0 && this.paginatedTableData.every(file => file.selected);
+        },
+        set(val) {
+            this.paginatedTableData.forEach(file => file.selected = val);
+        }
+    },
+    isIndeterminate() {
+        const selectedCount = this.paginatedTableData.filter(file => file.selected).length;
+        return selectedCount > 0 && selectedCount < this.paginatedTableData.length;
+    },
+    pagerCount() {
+        return window.innerWidth < 768 ? 3 : 7;
     }
 },
 watch: {
@@ -499,6 +700,104 @@ watch: {
     }
 },
 methods: {
+    // 切换视图模式
+    toggleViewMode() {
+        this.viewMode = this.viewMode === 'card' ? 'list' : 'card';
+        localStorage.setItem('viewMode', this.viewMode);
+    },
+    // 列表视图全选当前页
+    handleSelectAllPage(val) {
+        this.paginatedTableData.forEach(file => file.selected = val);
+    },
+    // 移动端长按开始
+    handleTouchStart(item, index) {
+        this.longPressTimer = setTimeout(() => {
+            this.mobileActionFile = item;
+            this.mobileActionIndex = index;
+            this.mobileActionIsFolder = false;
+            this.showMobileActionModal = true;
+        }, 500); // 500ms 长按触发
+    },
+    // 移动端长按结束/取消
+    handleTouchEnd() {
+        if (this.longPressTimer) {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = null;
+        }
+    },
+    // 文件夹长按开始
+    handleFolderTouchStart(item, index) {
+        this.longPressTimer = setTimeout(() => {
+            this.mobileActionFile = item;
+            this.mobileActionIndex = index;
+            this.mobileActionIsFolder = true;
+            this.showMobileActionModal = true;
+        }, 500);
+    },
+    // 处理移动端操作
+    handleMobileAction(action) {
+        const file = this.mobileActionFile;
+        const index = this.mobileActionIndex;
+        this.showMobileActionModal = false;
+        
+        if (!file) return;
+        
+        switch (action) {
+            case 'detail':
+                this.openDetailDialog(index, file.name);
+                break;
+            case 'copy':
+                this.handleCopy(index, file.name);
+                break;
+            case 'download':
+                this.handleDownload(file.name);
+                break;
+            case 'move':
+                this.handleMove(index, file.name);
+                break;
+            case 'delete':
+                this.handleDelete(index, file.name);
+                break;
+            case 'tag':
+                this.handleTagManagement(file.name);
+                break;
+        }
+    },
+    // 获取标签颜色
+    getTagColor(index) {
+        const colors = [
+            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+            'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+            'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+        ];
+        return colors[index % colors.length];
+    },
+    // 视频hover播放控制
+    handleVideoHover(event, isEnter) {
+        const video = event.target;
+        if (isEnter) {
+            video.play().catch(() => {});
+        } else {
+            video.pause();
+            video.currentTime = 0;
+        }
+    },
+    // 格式化文件大小
+    formatFileSize(bytes) {
+        if (!bytes || bytes === 0) return '-';
+        bytes = Number(bytes);
+        if (isNaN(bytes)) return '-';
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let i = 0;
+        while (bytes >= 1024 && i < units.length - 1) {
+            bytes /= 1024;
+            i++;
+        }
+        return bytes.toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+    },
     handleSearch() {
         this.search = this.tempSearch;
         this.isSearchMode = this.search.trim() !== '';
@@ -1407,6 +1706,15 @@ mounted() {
     padding: 0;
 }
 
+/* 确保el-container和el-main不裁剪内容 */
+:deep(.el-container) {
+    overflow: visible;
+}
+
+:deep(.el-main) {
+    overflow: visible;
+}
+
 :deep(.el-dialog) {
     border-radius: 12px;
     background-color: var(--dialog-bg-color);
@@ -1643,6 +1951,7 @@ mounted() {
 
 .img-card {
     width: 100%;
+    height: 22vh;
     background: var(--admin-dashboard-imgcard-bg-color);
     border-radius: 8px;
     box-shadow: var(--admin-dashboard-imgcard-shadow);
@@ -1651,13 +1960,19 @@ mounted() {
     transition: transform 0.3s ease;
 }
 
+.img-card :deep(.el-card__body) {
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
 .img-card:hover {
     transform: scale(1.05);
 }
 
 .image-preview {
     width: 100%;
-    height: 18vh;
+    height: 100%;
     object-fit: cover;
     transition: opacity 0.3s ease;
     filter: var(--image-preview-filter);
@@ -1712,7 +2027,7 @@ mounted() {
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 18vh;
+    height: 100%;
 }
 .file-icon {
     opacity: 0.6;
@@ -1721,80 +2036,454 @@ mounted() {
     height: 40px;
 }
 
-.file-info {
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    text-align: center;
+/* 卡片底部统一覆盖层 */
+.card-bottom-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 100%;
-    box-sizing: border-box;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    padding: 30px 12px 10px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 10;
 }
 
-.image-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+.file-name-row {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.6);
+}
+
+.file-name {
+    color: white;
+    font-size: 13px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* 新版操作栏样式 */
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transform: translateY(4px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
 }
 
-.el-card:hover .image-overlay {
+.el-card:hover .action-bar {
     opacity: 1;
-}
-
-.overlay-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 8px; /* 行间距 */
+    transform: translateY(0);
     pointer-events: auto;
 }
 
-.button-row {
+.action-bar-left,
+.action-bar-right {
     display: flex;
-    justify-content: center; /* 按钮居中 */
-    gap: 8px; /* 按钮间距 */
+    align-items: center;
+    gap: 6px;
 }
 
-.button-row .el-button {
-    min-width: 36px; /* 统一按钮最小宽度 */
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.08);
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+.action-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.6);
+}
+
+/* 移动端隐藏操作栏 */
+@media (max-width: 768px) {
+    .action-bar {
+        display: none !important;
+    }
+}
+
+/* 列表视图样式 */
+.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--admin-dashboard-imgcard-bg-color);
+    border-radius: 12px;
+    overflow-x: auto;
+    overflow-y: visible;
+    box-shadow: var(--admin-dashboard-imgcard-shadow);
+    margin-top: 15px;
+}
+
+.list-header {
+    display: grid;
+    grid-template-columns: 50px 60px minmax(180px, 1fr) 130px 100px 120px 80px 100px 120px;
+    padding: 12px 20px;
+    background: var(--admin-dashboard-stats-bg);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    min-width: fit-content;
+}
+
+.list-item {
+    display: grid;
+    grid-template-columns: 50px 60px minmax(180px, 1fr) 130px 100px 120px 80px 100px 120px;
+    padding: 12px 20px;
+    align-items: center;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    min-width: fit-content;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.list-item:hover {
+    background: var(--el-fill-color-light);
+}
+
+.list-col {
+    display: flex;
+    align-items: center;
+}
+
+.list-col-checkbox {
+    justify-content: center;
+    min-width: 40px;
+}
+
+.list-col-preview {
+    justify-content: center;
+    cursor: pointer;
+}
+
+.list-col-name {
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 16px;
+}
+
+.list-col-name:hover {
+    color: #38bdf8;
+}
+
+.list-col-size,
+.list-col-date,
+.list-col-channel,
+.list-col-address {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+}
+
+.list-col-tags {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+
+/* 自定义复选框 */
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--el-border-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.custom-checkbox:hover {
+    border-color: #38bdf8;
+}
+
+.custom-checkbox.checked {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    border-color: #38bdf8;
+}
+
+.custom-checkbox.indeterminate {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    border-color: #38bdf8;
+}
+
+.custom-checkbox .check-icon {
+    font-size: 10px;
+    color: white;
+}
+
+/* 彩色标签 */
+.color-tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    color: white;
+    white-space: nowrap;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.color-tag-more {
+    min-width: 30px;
+    text-align: center;
+}
+
+.list-empty {
+    color: var(--el-text-color-placeholder);
+}
+
+.list-col-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.list-preview-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.list-folder-icon {
+    font-size: 28px;
+    color: var(--el-color-primary);
+}
+
+.list-file-icon {
+    font-size: 24px;
+    color: var(--el-text-color-secondary);
+}
+
+.list-action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: var(--el-fill-color);
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.list-action-btn:hover {
+    background: #38bdf8;
+    color: white;
+}
+
+.list-action-danger:hover {
+    background: var(--el-color-danger);
+}
+
+/* 移动端列表视图简化 */
+@media (max-width: 768px) {
+    .list-header {
+        display: none;
+    }
+    
+    .list-item {
+        grid-template-columns: 28px 40px 1fr auto;
+        padding: 10px 8px;
+        gap: 8px;
+    }
+    
+    .list-col-size,
+    .list-col-date,
+    .list-col-tags,
+    .list-col-channel,
+    .list-col-address {
+        display: none;
+    }
+    
+    .list-col-actions {
+        gap: 4px;
+    }
+    
+    .list-action-btn {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .list-col-checkbox {
+        width: 24px;
+        min-width: 24px;
+    }
+    
+    .custom-checkbox {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .custom-checkbox .check-icon {
+        font-size: 8px;
+    }
+    
+    .list-preview-img {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .list-col-name {
+        font-size: 12px;
+    }
 }
 
 .pagination-container {
     display: flex;
     justify-content: center;
+    align-items: center;
     margin-top: 20px;
     padding-bottom: 20px;
+    gap: 15px;
 }
-.load-more {
-    cursor: pointer;
-    background-color: var(--admin-dashboard-btn-bg-color);
-    box-shadow: var(--admin-dashboard-btn-shadow);
-    color: var(--admin-dashboard-btn-color);
+
+/* 页码按钮美化 */
+.pagination-container :deep(.el-pagination) {
+    --el-pagination-button-bg-color: var(--admin-dashboard-btn-bg-color);
+    --el-pagination-hover-color: var(--admin-purple);
+}
+
+.pagination-container :deep(.el-pager li) {
+    background: var(--admin-dashboard-btn-bg-color);
+    border-radius: 10px;
+    margin: 0 4px;
+    min-width: 36px;
+    height: 36px;
+    line-height: 36px;
+    font-weight: 500;
     border: none;
-    transition: color 0.3s;
-    margin-left: 20px;
+    box-shadow: var(--admin-dashboard-btn-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.pagination-container :deep(.el-pager li:hover) {
+    color: #38bdf8;
+    transform: translateY(-2px);
+    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+}
+
+.pagination-container :deep(.el-pager li.is-active) {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8) !important;
+    color: white !important;
+    border-radius: 10px;
+    box-shadow: 
+        var(--admin-dashboard-btn-shadow),
+        0 4px 12px rgba(56, 189, 248, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pagination-container :deep(.el-pager li.is-active:hover) {
+    transform: translateY(-2px) !important;
+    box-shadow: 
+        var(--admin-dashboard-btn-hover-shadow),
+        0 6px 16px rgba(56, 189, 248, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.pagination-container :deep(.btn-prev),
+.pagination-container :deep(.btn-next) {
+    background: var(--admin-dashboard-btn-bg-color) !important;
+    border-radius: 10px !important;
+    min-width: 36px;
+    height: 36px;
+    border: none;
+    box-shadow: var(--admin-dashboard-btn-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pagination-container :deep(.btn-prev:hover),
+.pagination-container :deep(.btn-next:hover) {
+    color: #38bdf8;
+    transform: translateY(-2px);
+    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+}
+
+.pagination-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .refresh-btn {
     cursor: pointer;
-    background-color: var(--admin-dashboard-btn-bg-color);
+    background: var(--admin-dashboard-btn-bg-color);
     box-shadow: var(--admin-dashboard-btn-shadow);
-    color: var(--admin-dashboard-btn-color);
+    color: #38bdf8;
     border: none;
-    transition: color 0.3s;
-    margin-left: 20px;
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    color: white;
+}
+
+.load-more {
+    cursor: pointer;
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    height: 36px;
+    padding: 0 16px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.load-more:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
 }
 
 .el-checkbox {
@@ -1807,9 +2496,10 @@ mounted() {
 
 .video-preview {
     width: 100%; 
-    height: 18vh;
+    height: 100%;
     display: block;
     cursor: pointer;
+    object-fit: cover;
 }
 
 :deep(.description-item) {
@@ -1836,16 +2526,16 @@ mounted() {
     border-radius: 100%;
     position: fixed;
     top: 50%;
-    left: 18px;
-    scale: 1.3;
+    left: 8px;
+    scale: 1;
     color: var(--admin-dashboard-btn-color);
 }
 :deep(.btn-next) {
     border-radius: 100%;
     position: fixed;
     top: 50%;
-    right: 18px;
-    scale: 1.3;
+    right: 8px;
+    scale: 1;
     color: var(--admin-dashboard-btn-color);
 }
 @media (min-width: 768px) {
@@ -1881,12 +2571,10 @@ mounted() {
 
 .folder-card {
     cursor: pointer;
-    transition: all 0.3s;
 }
 
 .folder-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: scale(1.05);
 }
 
 .folder-icon {
@@ -1894,7 +2582,7 @@ mounted() {
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 18vh;
+    height: 100%;
     color: var(--el-color-primary);
 }
 
@@ -1929,6 +2617,159 @@ mounted() {
 }
 :deep(.el-breadcrumb__inner:hover) {
     color: var(--el-color-primary);
+}
+
+/* 自定义底部弹出模态框样式 */
+.bottom-sheet-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.bottom-sheet {
+    width: 100%;
+    max-width: 100%;
+    background: var(--bottom-sheet-bg, rgba(255, 255, 255, 0.95));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px 20px 0 0;
+    max-height: 70vh;
+    overflow: hidden;
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.15);
+    border-top: 1px solid var(--bottom-sheet-border, rgba(0, 0, 0, 0.05));
+}
+
+/* 深色模式底部弹框 */
+html.dark .bottom-sheet {
+    --bottom-sheet-bg: rgba(40, 44, 52, 0.95);
+    --bottom-sheet-border: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.4);
+}
+
+.bottom-sheet-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.bottom-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--el-border-color);
+    border-radius: 2px;
+}
+
+.bottom-sheet-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+    text-align: center;
+    max-width: 80%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+html.dark .bottom-sheet-title {
+    color: #f0f0f0;
+}
+
+.bottom-sheet-content {
+    padding: 12px 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bottom-sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bottom-sheet-item-bg, rgba(0, 0, 0, 0.04));
+    color: var(--el-text-color-primary);
+}
+
+html.dark .bottom-sheet-item {
+    --bottom-sheet-item-bg: rgba(255, 255, 255, 0.08);
+}
+
+.bottom-sheet-item:active {
+    transform: scale(0.98);
+    background: var(--bottom-sheet-item-active-bg, rgba(0, 0, 0, 0.08));
+}
+
+html.dark .bottom-sheet-item:active {
+    --bottom-sheet-item-active-bg: rgba(255, 255, 255, 0.15);
+}
+
+.bottom-sheet-icon {
+    font-size: 20px;
+    width: 28px;
+    text-align: center;
+    color: #38bdf8;
+}
+
+.bottom-sheet-danger {
+    color: var(--el-color-danger);
+}
+
+.bottom-sheet-danger .bottom-sheet-icon {
+    color: var(--el-color-danger);
+}
+
+/* 底部弹出动画 */
+.bottom-sheet-enter-active {
+    transition: all 0.3s ease-out;
+}
+.bottom-sheet-leave-active {
+    transition: all 0.2s ease-in;
+}
+.bottom-sheet-enter-active .bottom-sheet {
+    animation: slideUp 0.3s ease-out;
+}
+.bottom-sheet-leave-active .bottom-sheet {
+    animation: slideDown 0.2s ease-in;
+}
+.bottom-sheet-enter-from,
+.bottom-sheet-leave-to {
+    opacity: 0;
+}
+.bottom-sheet-enter-from .bottom-sheet,
+.bottom-sheet-leave-to .bottom-sheet {
+    transform: translateY(100%);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(100%);
+    }
 }
 
 </style>

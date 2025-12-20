@@ -67,6 +67,7 @@
                     :total="dealedData.length"
                     :current-page="currentPage"
                     :page-size="pageSize"
+                    :pager-count="pagerCount"
                     @current-change="handlePageChange"
                 ></el-pagination>
                 <el-button v-if="currentPage === Math.ceil(dealedData.length / pageSize)" type="primary" @click="loadMoreData" :loading="loading" class="load-more">加载更多</el-button>
@@ -100,6 +101,9 @@ export default {
     computed: {
         disableTooltip() {
             return window.innerWidth < 768;
+        },
+        pagerCount() {
+            return window.innerWidth < 768 ? 3 : 7;
         },
         paginatedData() {
             // 计算分页数据
@@ -223,11 +227,13 @@ export default {
 
 <style scoped>
 .main-table {
-    width: 90%;
-    border-radius: 10px;
+    width: 95%;
+    max-width: 1400px;
+    border-radius: 16px;
     box-shadow: var(--admin-cuscfg-table-shadow);
     min-height: 530px;
-    background-color: var(--admin-cuscfg-table-bg-color);
+    overflow: hidden;
+    border: 1px solid var(--el-border-color-lighter);
 }
 
 .container {
@@ -305,8 +311,72 @@ export default {
 .pagination-container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
-    padding-bottom: 20px;
+    align-items: center;
+    margin-top: 24px;
+    padding-bottom: 30px;
+    gap: 15px;
+}
+
+/* 页码按钮美化 */
+.pagination-container :deep(.el-pagination) {
+    --el-pagination-button-bg-color: var(--admin-dashboard-btn-bg-color);
+    --el-pagination-hover-color: var(--admin-purple);
+}
+
+.pagination-container :deep(.el-pager li) {
+    background: var(--admin-dashboard-btn-bg-color);
+    border-radius: 10px;
+    margin: 0 4px;
+    min-width: 36px;
+    height: 36px;
+    line-height: 36px;
+    font-weight: 500;
+    border: none;
+    box-shadow: var(--admin-dashboard-btn-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pagination-container :deep(.el-pager li:hover) {
+    color: #38bdf8;
+    transform: translateY(-2px);
+    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+}
+
+.pagination-container :deep(.el-pager li.is-active) {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8) !important;
+    color: white !important;
+    border-radius: 10px;
+    box-shadow: 
+        var(--admin-dashboard-btn-shadow),
+        0 4px 12px rgba(56, 189, 248, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pagination-container :deep(.el-pager li.is-active:hover) {
+    transform: translateY(-2px) !important;
+    box-shadow: 
+        var(--admin-dashboard-btn-hover-shadow),
+        0 6px 16px rgba(56, 189, 248, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.pagination-container :deep(.btn-prev),
+.pagination-container :deep(.btn-next) {
+    background: var(--admin-dashboard-btn-bg-color) !important;
+    border-radius: 10px !important;
+    min-width: 36px;
+    height: 36px;
+    border: none;
+    box-shadow: var(--admin-dashboard-btn-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pagination-container :deep(.btn-prev:hover),
+.pagination-container :deep(.btn-next:hover) {
+    color: #38bdf8;
+    transform: translateY(-2px);
+    box-shadow: var(--admin-dashboard-btn-hover-shadow);
 }
 
 .load-more {
@@ -315,7 +385,15 @@ export default {
     box-shadow: var(--admin-dashboard-btn-shadow);
     color: var(--admin-dashboard-btn-color);
     border: none;
-    transition: color 0.3s;
-    margin-left: 20px;
+    transition: all 0.3s ease;
+    margin-left: 0;
+    border-radius: 8px;
+    padding: 8px 20px;
+    height: 36px;
+}
+
+.load-more:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 </style>
