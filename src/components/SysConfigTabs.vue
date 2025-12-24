@@ -1,32 +1,17 @@
 <template>
-<div class="sidebar-container">
-    <el-menu
-    :default-active="activeIndex"
-    class="el-menu-vertical"
-    :collapse="isCollapse"
-    @select="handleSelect"
-    >
-        <el-menu-item index="status" class="menu-item">
-            <font-awesome-icon icon="chart-bar" style="width: 18px;"></font-awesome-icon>
-            <span slot="title">系统状态</span>
-        </el-menu-item>
-        <el-menu-item index="upload" class="menu-item">
-            <font-awesome-icon icon="cloud-upload" style="width: 18px;"></font-awesome-icon>
-            <span slot="title">上传设置</span>
-        </el-menu-item>
-        <el-menu-item index="security" class="menu-item">
-            <font-awesome-icon icon="shield" style="width: 18px;"></font-awesome-icon>
-            <span slot="title">安全设置</span>
-        </el-menu-item>
-        <el-menu-item index="page" class="menu-item">
-            <font-awesome-icon icon="pager" style="width: 18px;"></font-awesome-icon>
-            <span slot="title">网页设置</span>
-        </el-menu-item>
-        <el-menu-item index="others" class="menu-item">
-            <font-awesome-icon icon="cog" style="width: 18px;"></font-awesome-icon>
-            <span slot="title">其他设置</span>
-        </el-menu-item>
-    </el-menu>
+<div class="sidebar-container" :class="{ 'is-collapsed': isCollapse }">
+    <div class="menu-list">
+        <div 
+            v-for="item in menuItems" 
+            :key="item.index"
+            class="menu-item"
+            :class="{ 'is-active': activeIndex === item.index }"
+            @click="handleSelect(item.index)"
+        >
+            <font-awesome-icon :icon="item.icon" class="menu-icon" />
+            <span class="menu-text" v-show="!isCollapse">{{ item.title }}</span>
+        </div>
+    </div>
 
     <div class="toggle-button" @click="toggleCollapse">
         <font-awesome-icon :icon="isCollapse ? 'angle-double-right' : 'angle-double-left'"></font-awesome-icon>
@@ -49,18 +34,22 @@ props: {
 },
 data() {
     return {
-        isCollapse: false
+        menuItems: [
+            { index: 'status', icon: 'chart-bar', title: '系统状态' },
+            { index: 'upload', icon: 'cloud-upload', title: '上传设置' },
+            { index: 'security', icon: 'shield', title: '安全设置' },
+            { index: 'page', icon: 'pager', title: '网页设置' },
+            { index: 'others', icon: 'cog', title: '其他设置' }
+        ]
     };
 },
 methods: {
     toggleCollapse() {
-        this.isCollapse = !this.isCollapse;
-        this.$emit('update:isCollapse', this.isCollapse);
+        this.$emit('update:isCollapse', !this.isCollapse);
     },
     checkMobile() {
-        const isMobile = window.innerWidth <= 768; // 假设移动端宽度小于等于768px
-        this.isCollapse = isMobile;
-        this.$emit('update:isCollapse', this.isCollapse);
+        const isMobile = window.innerWidth <= 768;
+        this.$emit('update:isCollapse', isMobile);
     },
     handleSelect(index) {
         this.$emit('update:activeIndex', index);
@@ -81,34 +70,132 @@ beforeDestroy() {
     display: flex;
     flex-direction: column;
     position: fixed;
-    top: 30vh;
-    left: 0;
-    border-right: 1px dashed var(--admin-syscfg-tabs-border-color);
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+    z-index: 1001;
+    width: 150px;
+    /* macOS 风格毛玻璃效果 */
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.1),
+        0 1px 3px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: width 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
 }
 
-.el-menu-vertical {
-    background: none;
-    border: none;
-    width: 64px;
-    min-height: 300px;
+.sidebar-container.is-collapsed {
+    width: 56px;
 }
-.el-menu-vertical:not(.el-menu--collapse) {
-    width: 140px;
-    min-height: 300px;
+
+/* 深色模式 */
+html.dark .sidebar-container {
+    background: rgba(30, 30, 30, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-container:hover {
+    box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.12),
+        0 2px 6px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+html.dark .sidebar-container:hover {
+    box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.menu-list {
+    padding: 8px;
 }
 
 .menu-item {
-    gap: 10px;
-    border-radius: 0 20px 20px 0;
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--admin-container-color, #333);
+    gap: 12px;
+}
+
+.sidebar-container.is-collapsed .menu-item {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.menu-item:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+html.dark .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item.is-active {
+    background: linear-gradient(135deg, rgba(64, 158, 255, 0.15), rgba(56, 189, 248, 0.25));
+    color: #409EFF;
+}
+
+html.dark .menu-item.is-active {
+    background: linear-gradient(135deg, rgba(64, 158, 255, 0.2), rgba(56, 189, 248, 0.35));
+}
+
+.menu-icon {
+    width: 18px;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.menu-text {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .toggle-button {
-    padding: 10px;
+    padding: 12px;
     text-align: center;
     cursor: pointer;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    color: var(--admin-container-color, #333);
 }
 
-.toggle-button i {
-    font-size: 20px;
+html.dark .toggle-button {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.toggle-button:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+html.dark .toggle-button:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* 移动端 */
+@media (max-width: 768px) {
+    .sidebar-container {
+        left: 4px;
+        width: 140px;
+    }
+    
+    .sidebar-container.is-collapsed {
+        width: 50px;
+    }
 }
 </style>

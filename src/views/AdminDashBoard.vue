@@ -5,7 +5,7 @@
             <div class="header-content">
                 <DashboardTabs activeTab="dashboard"></DashboardTabs>
                 <div class="search-card">
-                    <el-input v-model="tempSearch" size="mini" placeholder="搜索：#标签 -#排除标签 关键字" @keyup.enter="handleSearch">
+                    <el-input v-model="tempSearch" size="mini" placeholder="搜索：#标签 -#排除标签" @keyup.enter="handleSearch">
                         <template #suffix>
                             <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
                         </template>
@@ -108,7 +108,7 @@
                     >
                         <el-checkbox v-model="item.selected"></el-checkbox>
                         <div class="folder-icon" @click="enterFolder(item.name)">
-                            <font-awesome-icon icon="folder-open" size="4x"/>
+                            <font-awesome-icon icon="folder-open" class="folder-icon-svg"/>
                         </div>
                         <!-- 底部统一覆盖层：文件夹名 + 操作栏 -->
                         <div class="card-bottom-overlay">
@@ -155,9 +155,12 @@
                             </div>
                         </div>
                         <video v-if="isVideo(item)" :src="getFileLink(item.name)" muted loop class="video-preview" @click="handleVideoClick" @mouseenter="handleVideoHover($event, true)" @mouseleave="handleVideoHover($event, false)"></video>
+                        <div v-else-if="isAudio(item)" class="file-preview audio-card-preview" @click="openDetailDialog(index, item.name)">
+                            <font-awesome-icon icon="music" class="file-icon audio-icon"/>
+                        </div>
                         <el-image v-else-if="isImage(item)" :preview-teleported="true" :src="getFileLink(item.name)" :preview-src-list="item.previewSrcList" fit="cover" lazy class="image-preview"></el-image>
                         <div v-else class="file-preview">
-                            <font-awesome-icon icon="file" class="file-icon" size="4x"></font-awesome-icon>
+                            <font-awesome-icon icon="file" class="file-icon"/>
                         </div>
                         <!-- 底部统一覆盖层：文件名 + 操作栏 -->
                         <div class="card-bottom-overlay">
@@ -245,7 +248,10 @@
                         </template>
                     </div>
                     <div class="list-col list-col-name" @click="isFolder(item) ? enterFolder(item.name) : openDetailDialog(index, item.name)">
-                        {{ isFolder(item) ? getFolderName(item.name) : (item.metadata?.FileName || getFileName(item.name)) }}
+                        <span class="filename-ellipsis" :title="isFolder(item) ? getFolderName(item.name) : (item.metadata?.FileName || getFileName(item.name))">
+                            <span class="filename-start">{{ getFileNameStart(isFolder(item) ? getFolderName(item.name) : (item.metadata?.FileName || getFileName(item.name))) }}</span>
+                            <span class="filename-end">{{ getFileNameEnd(isFolder(item) ? getFolderName(item.name) : (item.metadata?.FileName || getFileName(item.name))) }}</span>
+                        </span>
                     </div>
                     <div class="list-col list-col-tags">
                         <template v-if="!isFolder(item) && item.metadata?.Tags && item.metadata.Tags.length > 0">
@@ -263,7 +269,8 @@
                         {{ isFolder(item) ? '-' : (item.metadata?.Channel || item.channelTag || '-') }}
                     </div>
                     <div class="list-col list-col-address">
-                        {{ isFolder(item) ? '-' : (item.metadata?.UploadIP || '-') }}
+                        <div v-if="!isFolder(item) && item.metadata?.UploadIP" class="address-box">{{ item.metadata.UploadIP }}</div>
+                        <span v-else class="list-empty">-</span>
                     </div>
                     <div class="list-col list-col-size">
                         {{ isFolder(item) ? '-' : (item.metadata?.FileSize ? item.metadata.FileSize + ' MB' : '-') }}
@@ -378,6 +385,7 @@
                     align="center"
                     >
                     <video v-if="isVideo(detailFile)" :src="getFileLink(detailFile?.name)" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+                    <audio v-else-if="isAudio(detailFile)" :src="getFileLink(detailFile?.name)" controls autoplay class="audio-preview"></audio>
                     <el-image v-else-if="isImage(detailFile)" :src="getFileLink(detailFile?.name)" fit="cover" lazy class="image-preview"></el-image>
                     <font-awesome-icon v-else icon="file" class="file-icon-detail"></font-awesome-icon>
                 </el-descriptions-item>
@@ -1429,12 +1437,24 @@ methods: {
             });
     },
     isVideo(file) {
-        let flag = file.metadata?.FileType?.includes('video') || file.metadata?.FileType?.includes('audio');
+        // 排除音频文件
+        if (this.isAudio(file)) return false;
+        let flag = file.metadata?.FileType?.includes('video');
         // 用文件名后缀判断是否为视频文件
         if (!flag) {
-            const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'flv', 'wmv', 'mkv', 'rmvb', '3gp', 'mpg', 'mpeg', 'm4v', 'f4v', 'rm', 'asf', 'dat', 'ts', 'vob', 'swf', 'divx', 'xvid', 'm2ts', 'mts', 'm2v', '3g2', '3gp2', '3gpp', '3gpp2', 'mpe', 'm1v', 'mpv', 'mpv2', 'mp2v', 'm2t', 'm2ts', 'm2v', 'm4b', 'm4p', 'm4v', 'm4r'];
+            const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'flv', 'wmv', 'mkv', 'rmvb', '3gp', 'mpg', 'mpeg', 'm4v', 'f4v', 'rm', 'asf', 'dat', 'ts', 'vob', 'swf', 'divx', 'xvid', 'm2ts', 'mts', 'm2v', '3g2', '3gp2', '3gpp', '3gpp2', 'mpe', 'm1v', 'mpv', 'mpv2', 'mp2v', 'm2t', 'm2ts', 'm2v', 'm4v'];
             const extension = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
             flag = videoExtensions.includes(extension);
+        }
+        return flag;
+    },
+    isAudio(file) {
+        let flag = file.metadata?.FileType?.includes('audio');
+        // 用文件名后缀判断是否为音频文件
+        if (!flag) {
+            const audioExtensions = ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a', 'ape', 'aiff', 'alac', 'opus', 'mid', 'midi', 'm4b', 'm4p', 'm4r', 'amr', 'au', 'ra', 'ram'];
+            const extension = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
+            flag = audioExtensions.includes(extension);
         }
         return flag;
     },
@@ -1528,6 +1548,42 @@ methods: {
             return `${fileName.substring(0, startLength)}...${fileName.substring(fileName.length - endLength)}`;
         }
         return fileName;
+    },
+    
+    // 获取文件名前半部分（用于中间省略效果）
+    getFileNameStart(name) {
+        if (!name) return '';
+        // 如果文件名较短，返回全部
+        if (name.length <= 30) return name;
+        // 保留开头部分（约60%的长度用于显示前半部分）
+        const dotIndex = name.lastIndexOf('.');
+        if (dotIndex > 0) {
+            // 有扩展名的情况：返回文件名主体部分
+            const baseName = name.substring(0, dotIndex);
+            const keepLength = Math.min(baseName.length, Math.floor(name.length * 0.6));
+            return baseName.substring(0, keepLength);
+        }
+        // 无扩展名的情况
+        return name.substring(0, Math.floor(name.length * 0.6));
+    },
+    
+    // 获取文件名后半部分（用于中间省略效果）
+    getFileNameEnd(name) {
+        if (!name) return '';
+        // 如果文件名较短，返回空
+        if (name.length <= 30) return '';
+        // 保留末尾部分（包含扩展名）
+        const dotIndex = name.lastIndexOf('.');
+        if (dotIndex > 0) {
+            // 有扩展名的情况：返回最后几个字符 + 扩展名
+            const ext = name.substring(dotIndex);
+            const baseName = name.substring(0, dotIndex);
+            const keepLength = Math.min(8, Math.floor(baseName.length * 0.2));
+            return '…' + baseName.substring(baseName.length - keepLength) + ext;
+        }
+        // 无扩展名的情况
+        const keepLength = Math.min(10, Math.floor(name.length * 0.3));
+        return '…' + name.substring(name.length - keepLength);
     },
     
     // 进入文件夹
@@ -1726,32 +1782,66 @@ mounted() {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    background-color: var(--admin-header-content-bg-color);
-    backdrop-filter: blur(10px);
-    border-bottom: var(--admin-header-content-border-bottom);
-    box-shadow: var(--admin-header-content-box-shadow);
-    transition: background-color 0.5s ease, box-shadow 0.5s ease;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
+    padding: 10px 24px;
+    /* macOS 风格毛玻璃效果 */
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    /* 顶部边框形成玻璃边缘光泽 */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    /* 悬浮阴影效果 */
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.1),
+        0 1px 3px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
     position: fixed;
-    top: 0;
-    left: 50%; /* 将左边缘移动到页面中间 */
-    transform: translateX(-50%); /* 向左移动自身宽度的一半 */
-    width: 95%;
-    z-index: 1000;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(95% - 16px);
+    z-index: 1001;
     min-height: 45px;
 }
+
+/* 深色模式毛玻璃效果 */
+html.dark .header-content {
+    background: rgba(30, 30, 30, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
 
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
+        top: 4px;
+        width: calc(100% - 16px);
+        border-radius: 12px;
     }
 }
 
 .header-content:hover {
-    background-color: var(--admin-header-content-hover-bg-color);
-    box-shadow: var(--admin-header-content-hover-box-shadow);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.12),
+        0 2px 6px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transform: translateX(-50%) translateY(-1px);
+}
+
+html.dark .header-content:hover {
+    background: rgba(35, 35, 35, 0.85);
+    box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .header-icon {
@@ -1974,8 +2064,16 @@ mounted() {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: opacity 0.3s ease;
+    transition: transform 0.4s ease, opacity 0.3s ease;
     filter: var(--image-preview-filter);
+}
+
+/* 卡片悬停时图片放大效果 */
+.img-card:hover .image-preview,
+.img-card:hover .video-preview,
+.img-card:hover .file-icon,
+.img-card:hover .folder-icon-svg {
+    transform: scale(1.08);
 }
 
 .image-preview:hover {
@@ -1993,33 +2091,45 @@ mounted() {
 }
 
 .success-tag {
-    background-color: rgba(129, 251, 129, 0.3);
-    color: rgba(57, 174, 21, 0.8);
-    border: 0.5px solid rgba(60, 255, 0, 0.1);
-    padding: 2px 5px;
-    border-radius: 5px;
-    font-size: 12px;
-    height: 14px;
+    background-color: rgba(34, 139, 34, 0.6);
+    color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(34, 139, 34, 0.7);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    height: auto;
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
 }
 .fail-tag {
-    background-color: rgba(255, 0, 0, 0.3);
-    color: rgba(255, 0, 0, 0.8);
-    border: 0.5px solid rgba(255, 0, 0, 0.1);
-    padding: 2px 5px;
-    border-radius: 5px;
-    font-size: 12px;
-    height: 14px;
+    background-color: rgba(220, 53, 69, 0.6);
+    color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(220, 53, 69, 0.7);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    height: auto;
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
 }
 .primary-tag {
-    background-color: rgba(255, 182, 193, 0.5);
-    color: rgba(255, 105, 180, 0.9);
-    border: 0.5px solid rgba(255, 182, 193, 0.3);
-    padding: 2px 5px;
-    border-radius: 5px;
-    font-size: 12px;
+    background-color: rgba(250, 82, 194, 0.6);
+    color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(250, 82, 194, 0.7);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    height: 14px;
+    height: auto;
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
 }
 
 .file-preview {
@@ -2031,9 +2141,27 @@ mounted() {
 }
 .file-icon {
     opacity: 0.6;
+    font-size: clamp(40px, 4vw, 64px);
+    transition: transform 0.4s ease;
+}
+.audio-icon {
+    color: var(--el-color-primary);
+    opacity: 0.8;
+}
+.folder-icon-svg {
+    font-size: clamp(40px, 4vw, 64px);
+    transition: transform 0.4s ease;
 }
 .file-icon-detail {
     height: 40px;
+}
+.audio-card-preview {
+    cursor: pointer;
+}
+.audio-preview {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 8px;
 }
 
 /* 卡片底部统一覆盖层 */
@@ -2043,10 +2171,10 @@ mounted() {
     left: 0;
     right: 0;
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-    padding: 30px 12px 10px;
+    padding: clamp(15px, 2.5vh, 30px) clamp(6px, 1vw, 12px) clamp(5px, 0.8vh, 10px);
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: clamp(3px, 0.5vh, 6px);
     z-index: 10;
 }
 
@@ -2058,7 +2186,7 @@ mounted() {
 
 .file-name {
     color: white;
-    font-size: 13px;
+    font-size: clamp(10px, 1.1vw, 14px);
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2088,14 +2216,14 @@ mounted() {
 .action-bar-right {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: clamp(3px, 0.4vw, 6px);
 }
 
 .action-btn {
-    width: 32px;
-    height: 32px;
+    width: clamp(24px, 2.5vw, 28px);
+    height: clamp(24px, 2.5vw, 28px);
     border: none;
-    border-radius: 8px;
+    border-radius: clamp(5px, 0.6vw, 8px);
     background: rgba(255, 255, 255, 0.15);
     color: white;
     cursor: pointer;
@@ -2103,7 +2231,7 @@ mounted() {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    font-size: 14px;
+    font-size: clamp(11px, 1.1vw, 14px);
 }
 
 .action-btn:hover {
@@ -2187,9 +2315,27 @@ mounted() {
 .list-col-name {
     cursor: pointer;
     overflow: hidden;
+    padding-right: 16px;
+    min-width: 0;
+}
+
+/* 文件名中间省略效果 */
+.filename-ellipsis {
+    display: flex;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.filename-start {
+    flex-shrink: 1;
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding-right: 16px;
+}
+
+.filename-end {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .list-col-name:hover {
@@ -2198,10 +2344,28 @@ mounted() {
 
 .list-col-size,
 .list-col-date,
-.list-col-channel,
-.list-col-address {
+.list-col-channel {
     font-size: 13px;
     color: var(--el-text-color-secondary);
+}
+
+.list-col-address {
+    font-size: 13px;
+}
+
+/* 上传地址文本框样式 */
+.address-box {
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    color: var(--el-text-color-secondary);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .list-col-tags {
@@ -2500,6 +2664,7 @@ mounted() {
     display: block;
     cursor: pointer;
     object-fit: cover;
+    transition: transform 0.4s ease;
 }
 
 :deep(.description-item) {

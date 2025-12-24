@@ -249,32 +249,65 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    background-color: var(--admin-header-content-bg-color);
-    backdrop-filter: blur(10px);
-    border-bottom: var(--admin-header-content-border-bottom);
-    box-shadow: var(--admin-header-content-box-shadow);
-    transition: background-color 0.5s ease, box-shadow 0.5s ease;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
+    padding: 10px 24px;
+    /* macOS 风格毛玻璃效果 */
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    /* 顶部边框形成玻璃边缘光泽 */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    /* 悬浮阴影效果 */
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.1),
+        0 1px 3px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
     position: fixed;
-    top: 0;
-    left: 50%; /* 将左边缘移动到页面中间 */
-    transform: translateX(-50%); /* 向左移动自身宽度的一半 */
-    width: 95%;
-    z-index: 1000;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(95% - 16px);
+    z-index: 1001;
     min-height: 45px;
+}
+
+/* 深色模式毛玻璃效果 */
+html.dark .header-content {
+    background: rgba(30, 30, 30, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
+        top: 4px;
+        width: calc(100% - 16px);
+        border-radius: 12px;
     }
 }
 
 .header-content:hover {
-    background-color: var(--admin-header-content-hover-bg-color);
-    box-shadow: var(--admin-header-content-hover-box-shadow);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.12),
+        0 2px 6px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transform: translateX(-50%) translateY(-1px);
+}
+
+html.dark .header-content:hover {
+    background: rgba(35, 35, 35, 0.85);
+    box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .header-icon {

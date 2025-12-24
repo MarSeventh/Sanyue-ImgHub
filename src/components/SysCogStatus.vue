@@ -38,7 +38,7 @@
 
     <!-- 统计图表区域 -->
     <div class="charts-section">
-      <!-- 渠道统计 -->
+      <!-- 渠道统计 - 饼状图 -->
       <div class="chart-card">
         <div class="chart-header">
           <font-awesome-icon icon="share-alt" />
@@ -49,26 +49,31 @@
             <font-awesome-icon icon="inbox" />
             <span>暂无数据</span>
           </div>
-          <div v-else class="stats-list">
-            <div 
-              v-for="(count, channel) in indexInfo.channelStats" 
-              :key="channel"
-              class="stats-item"
-            >
-              <div class="stats-label">{{ channel }}</div>
-              <div class="stats-bar">
-                <div 
-                  class="stats-fill"
-                  :style="{ width: getPercentage(count, indexInfo.totalFiles) + '%' }"
-                ></div>
+          <div v-else class="pie-chart-container">
+            <div class="pie-chart-wrapper">
+              <Doughnut :data="channelChartData" :options="chartOptions" />
+              <div class="chart-center-text">
+                <div class="center-value">{{ indexInfo.totalFiles?.toLocaleString() || '0' }}</div>
+                <div class="center-label">文件总数</div>
               </div>
-              <div class="stats-value">{{ count.toLocaleString() }}</div>
+            </div>
+            <div class="chart-legend">
+              <div 
+                v-for="(count, channel, index) in indexInfo.channelStats" 
+                :key="channel"
+                class="legend-item"
+              >
+                <span class="legend-color" :style="{ background: getChartColor(index) }"></span>
+                <span class="legend-label">{{ channel }}</span>
+                <span class="legend-value">{{ count.toLocaleString() }}</span>
+                <span class="legend-percent">{{ getPercentage(count, indexInfo.totalFiles) }}%</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 文件类型统计 -->
+      <!-- 文件类型统计 - 饼状图 -->
       <div class="chart-card">
         <div class="chart-header">
           <font-awesome-icon icon="file-alt" />
@@ -79,20 +84,25 @@
             <font-awesome-icon icon="inbox" />
             <span>暂无数据</span>
           </div>
-          <div v-else class="stats-list">
-            <div 
-              v-for="(count, type) in indexInfo.typeStats" 
-              :key="type"
-              class="stats-item"
-            >
-              <div class="stats-label">{{ type || '未知类型' }}</div>
-              <div class="stats-bar">
-                <div 
-                  class="stats-fill type-fill"
-                  :style="{ width: getPercentage(count, indexInfo.totalFiles) + '%' }"
-                ></div>
+          <div v-else class="pie-chart-container">
+            <div class="pie-chart-wrapper">
+              <Doughnut :data="typeChartData" :options="chartOptions" />
+              <div class="chart-center-text">
+                <div class="center-value">{{ Object.keys(indexInfo.typeStats).length }}</div>
+                <div class="center-label">状态类型</div>
               </div>
-              <div class="stats-value">{{ count.toLocaleString() }}</div>
+            </div>
+            <div class="chart-legend">
+              <div 
+                v-for="(count, type, index) in indexInfo.typeStats" 
+                :key="type"
+                class="legend-item"
+              >
+                <span class="legend-color" :style="{ background: getTypeChartColor(index) }"></span>
+                <span class="legend-label">{{ type || '未知类型' }}</span>
+                <span class="legend-value">{{ count.toLocaleString() }}</span>
+                <span class="legend-percent">{{ getPercentage(count, indexInfo.totalFiles) }}%</span>
+              </div>
             </div>
           </div>
         </div>
@@ -163,14 +173,14 @@
       <div class="file-info-card info-card-newest" v-if="indexInfo.newestFile">
         <div class="card-bg-wrapper">
           <el-image 
-            v-if="indexInfo.newestFile.metadata?.FileType?.includes('image') && !loadErrors['newest']"
+            v-if="isImageFile(indexInfo.newestFile) && !loadErrors['newest']"
             :src="'/file/' + indexInfo.newestFile.id + '?from=admin'"
             fit="cover"
             class="card-bg-media"
             @error="handleImageError('newest')"
           ></el-image>
           <video 
-            v-else-if="indexInfo.newestFile.metadata?.FileType?.includes('video') && !loadErrors['newest']"
+            v-else-if="isVideoFile(indexInfo.newestFile) && !loadErrors['newest']"
             :src="'/file/' + indexInfo.newestFile.id + '?from=admin'"
             class="card-bg-media"
             muted
@@ -205,14 +215,14 @@
       <div class="file-info-card info-card-oldest" v-if="indexInfo.oldestFile">
         <div class="card-bg-wrapper">
           <el-image 
-            v-if="indexInfo.oldestFile.metadata?.FileType?.includes('image') && !loadErrors['oldest']"
+            v-if="isImageFile(indexInfo.oldestFile) && !loadErrors['oldest']"
             :src="'/file/' + indexInfo.oldestFile.id + '?from=admin'"
             fit="cover"
             class="card-bg-media"
             @error="handleImageError('oldest')"
           ></el-image>
           <video 
-            v-else-if="indexInfo.oldestFile.metadata?.FileType?.includes('video') && !loadErrors['oldest']"
+            v-else-if="isVideoFile(indexInfo.oldestFile) && !loadErrors['oldest']"
             :src="'/file/' + indexInfo.oldestFile.id + '?from=admin'"
             class="card-bg-media"
             muted
@@ -249,9 +259,16 @@
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth'
 import packageInfo from '../../package.json'
+import { Doughnut } from 'vue-chartjs'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 export default {
   name: 'SysCogStatus',
+  components: {
+    Doughnut
+  },
   data() {
     return {
       loading: false,
@@ -263,6 +280,73 @@ export default {
       loadErrors: {
         newest: false,
         oldest: false
+      },
+      // 渠道图表颜色
+      channelColors: [
+        '#8B5CF6', '#EC4899', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#84CC16'
+      ],
+      // 状态图表颜色
+      typeColors: [
+        '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
+      ]
+    }
+  },
+  computed: {
+    // 渠道分布图表数据
+    channelChartData() {
+      const stats = this.indexInfo.channelStats || {}
+      return {
+        labels: Object.keys(stats),
+        datasets: [{
+          data: Object.values(stats),
+          backgroundColor: this.channelColors.slice(0, Object.keys(stats).length),
+          borderWidth: 0
+        }]
+      }
+    },
+    // 文件状态图表数据
+    typeChartData() {
+      const stats = this.indexInfo.typeStats || {}
+      return {
+        labels: Object.keys(stats).map(k => k || '未知类型'),
+        datasets: [{
+          data: Object.values(stats),
+          backgroundColor: this.typeColors.slice(0, Object.keys(stats).length),
+          borderWidth: 0
+        }]
+      }
+    },
+    // 图表配置
+    chartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: true,
+            callbacks: {
+              label: (context) => {
+                const value = context.raw
+                const total = context.dataset.data.reduce((a, b) => a + b, 0)
+                const percentage = ((value / total) * 100).toFixed(1)
+                return ` ${value.toLocaleString()} (${percentage}%)`
+              }
+            }
+          }
+        },
+        animation: {
+          animateRotate: true,
+          animateScale: true
+        }
       }
     }
   },
@@ -270,6 +354,14 @@ export default {
     this.fetchIndexInfo()
   },
   methods: {
+    // 获取渠道图表颜色
+    getChartColor(index) {
+      return this.channelColors[index % this.channelColors.length]
+    },
+    // 获取状态图表颜色
+    getTypeChartColor(index) {
+      return this.typeColors[index % this.typeColors.length]
+    },
     // 获取索引信息
     async fetchIndexInfo() {
       this.loading = true
@@ -471,6 +563,30 @@ export default {
     // 打开发布页面
     openReleases() {
       window.open('https://github.com/MarSeventh/CloudFlare-ImgBed/releases', '_blank')
+    },
+    
+    // 判断是否为图片文件
+    isImageFile(file) {
+      if (!file) return false
+      // 优先通过 FileType 判断
+      if (file.metadata?.FileType?.includes('image')) return true
+      // 通过文件名后缀判断
+      const fileName = file.metadata?.FileName || file.id || ''
+      const extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase()
+      const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif', 'avif', 'heic', 'heif']
+      return imageExtensions.includes(extension)
+    },
+    
+    // 判断是否为视频文件
+    isVideoFile(file) {
+      if (!file) return false
+      // 优先通过 FileType 判断
+      if (file.metadata?.FileType?.includes('video')) return true
+      // 通过文件名后缀判断
+      const fileName = file.metadata?.FileName || file.id || ''
+      const extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase()
+      const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'flv', 'wmv', 'mkv', 'm4v', '3gp', 'mpeg', 'mpg']
+      return videoExtensions.includes(extension)
     }
   }
 }
@@ -568,6 +684,13 @@ export default {
   box-shadow: var(--admin-dashboard-stats-hover-shadow);
 }
 
+.chart-card,
+.chart-content,
+.pie-chart-container,
+.pie-chart-wrapper {
+  overflow: visible;
+}
+
 .chart-header {
   display: flex;
   gap: 8px;
@@ -585,6 +708,8 @@ export default {
 
 .chart-content {
   min-height: 160px;
+  padding: 10px;
+  margin: -10px;
 }
 
 .empty-state {
@@ -648,6 +773,107 @@ export default {
   color: var(--admin-container-color);
 }
 
+/* 饼状图样式 */
+.pie-chart-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pie-chart-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  padding: 10px;
+  margin: -10px;
+  overflow: visible;
+}
+
+.chart-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.center-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--admin-container-color);
+  line-height: 1.2;
+}
+
+.center-label {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.legend-item:hover {
+  background: rgba(0, 0, 0, 0.06);
+  transform: translateX(4px);
+}
+
+html.dark .legend-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+html.dark .legend-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  flex: 1;
+  font-size: 13px;
+  color: var(--admin-container-color);
+  font-weight: 500;
+}
+
+.legend-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-container-color);
+  min-width: 50px;
+  text-align: right;
+}
+
+.legend-percent {
+  font-size: 12px;
+  color: #888;
+  min-width: 40px;
+  text-align: right;
+}
+
 /* 操作区域 */
 .actions-section {
   margin-bottom: 30px;
@@ -699,7 +925,16 @@ export default {
   font-weight: 600;
   transition: all 0.3s ease;
   min-width: 140px;
+  width: 140px;
   height: 48px;
+}
+
+@media (max-width: 768px) {
+  .action-btn {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
 }
 
 .action-btn:hover {
@@ -736,6 +971,19 @@ export default {
 
 .restore-section {
   display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .action-buttons > .el-tooltip,
+  .action-buttons > .restore-section,
+  .restore-section {
+    flex: 1;
+    width: 100%;
+  }
+  
+  .action-btn {
+    width: 100% !important;
+  }
 }
 
 /* 文件信息区域 */
