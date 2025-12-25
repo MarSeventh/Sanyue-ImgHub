@@ -32,7 +32,16 @@
                 </div>
             </div>
             
-            <el-button class="submit" type="primary" @click="handleSubmit">{{ submitText }}</el-button>
+            <el-button 
+                class="submit" 
+                :class="{ 'is-loading': loading }"
+                type="primary" 
+                @click="handleSubmit"
+                :disabled="loading"
+            >
+                <div v-if="loading" class="loading-ring"></div>
+                <span v-else>{{ submitText }}</span>
+            </el-button>
         </div>
         <Footer class="footer"/>
     </div>
@@ -72,6 +81,11 @@ export default {
         },
         // 是否为管理端登录（影响背景样式）
         isAdmin: {
+            type: Boolean,
+            default: false
+        },
+        // 是否正在加载
+        loading: {
             type: Boolean,
             default: false
         }
@@ -149,6 +163,7 @@ export default {
             });
         },
         handleSubmit() {
+            if (this.loading) return;
             // 触发父组件的提交事件，传递表单数据
             this.$emit('submit', { ...this.formData });
         },
@@ -331,8 +346,38 @@ export default {
     letter-spacing: 2px;
     border-radius: 12px;
     background-color: var(--login-submit-btn-bg-color);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
+    overflow: hidden;
+    position: relative;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.submit.is-loading {
+    width: 48px;
+    border-radius: 50%;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    pointer-events: none;
+}
+
+/* Custom Ring Spinner */
+.loading-ring {
+    display: inline-block;
+    width: 34px;
+    height: 34px;
+    border: 4px solid transparent;
+    border-radius: 50%;
+    border-top-color: var(--login-title-color, #ffffff);
+    animation: spin 1s ease-in-out infinite;
+    box-sizing: border-box;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
@@ -341,10 +386,15 @@ export default {
     }
 }
 
-.submit:hover,
-.submit:focus {
+.submit:not(.is-loading):hover,
+.submit:not(.is-loading):focus {
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.submit:disabled {
+    cursor: default;
+    transform: none;
 }
 
 .password-input {

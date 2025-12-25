@@ -5,6 +5,7 @@
         submit-text="登录"
         background-key="loginBkImg"
         :is-admin="false"
+        :loading="isLoading"
         @submit="handleLogin"
     />
 </template>
@@ -18,6 +19,7 @@ import BaseLogin from '@/components/BaseLogin.vue'
 export default {
     data() {
         return {
+            isLoading: false,
             loginFields: [
                 {
                     key: 'password',
@@ -43,23 +45,33 @@ export default {
         BaseLogin
     },
     methods: {
-        handleLogin(formData) {
+        async handleLogin(formData) {
             const { password } = formData;
             const writtenPass = password === '' ? 'unset' : password;
             
-            axios.post('/api/login', {
+            this.isLoading = true;
+            
+            const minDelayPromise = new Promise(resolve => setTimeout(resolve, 500));
+            const loginPromise = axios.post('/api/login', {
                 authCode: password
-            }).then(res => {
-                if (res.status !== 200) {
+            }).then(res => ({ res })).catch(err => ({ err }));
+
+            try {
+                const [result] = await Promise.all([loginPromise, minDelayPromise]);
+                
+                if (result.res && result.res.status === 200) {
+                    cookies.set('authCode', writtenPass, '14d')
+                    this.$router.push('/')
+                    this.$message.success('登录成功')
+                    // Keep loading true to show animation relative to redirect
+                } else {
+                    this.isLoading = false;
                     this.$message.error('登录失败，请检查密码是否正确')
-                    return
                 }
-                cookies.set('authCode', writtenPass, '14d')
-                this.$router.push('/')
-                this.$message.success('登录成功')
-            }).catch(err => {
-                this.$message.error('登录失败，请检查密码是否正确')
-            })
+            } catch (err) {
+                this.isLoading = false;
+                this.$message.error('系统错误')
+            }
         }
     }
 }

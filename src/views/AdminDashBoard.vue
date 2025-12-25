@@ -422,34 +422,62 @@
                 </el-descriptions-item>
             </el-descriptions>
         </el-dialog>
-        <el-dialog title="链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
-            <p style="font-size: medium; font-weight: bold">默认复制链接</p>
-            <el-radio-group v-model="defaultUrlFormat">
-                <el-radio label="originUrl">原始链接</el-radio>
-                <el-radio label="mdUrl">Markdown</el-radio>
-                <el-radio label="htmlUrl">HTML</el-radio>
-                <el-radio label="bbUrl">BBCode</el-radio>
-                <el-radio label="tgId">TG File ID</el-radio>
-                <el-radio label="s3Location">S3链接</el-radio>
-            </el-radio-group>
-            <p style="font-size: medium; font-weight: bold">自定义链接
-                <el-tooltip content="默认链接为https://your.domain/file/xxx.jpg <br> 如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入" placement="top" raw-content>
-                    <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
-                </el-tooltip>
-            </p>
-            <el-form label-width="25%">
-                <el-form-item label="启用自定义">
-                    <el-radio-group v-model="useCustomUrl">
-                        <el-radio value="true">是</el-radio>
-                        <el-radio value="false">否</el-radio>
+        <el-dialog title="链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
+            <div class="dialog-section">
+                <div class="section-header">
+                    <span class="section-title">默认复制链接</span>
+                </div>
+                <div class="section-content">
+                    <el-radio-group v-model="defaultUrlFormat" class="radio-card-group grid-2x2">
+                        <el-radio label="originUrl" class="radio-card">
+                            <font-awesome-icon icon="link" class="radio-icon"/>
+                            <span>原始链接</span>
+                        </el-radio>
+                        <el-radio label="mdUrl" class="radio-card">
+                            <font-awesome-icon icon="code" class="radio-icon"/>
+                            <span>Markdown</span>
+                        </el-radio>
+                        <el-radio label="htmlUrl" class="radio-card">
+                            <font-awesome-icon icon="code-branch" class="radio-icon"/>
+                            <span>HTML</span>
+                        </el-radio>
+                        <el-radio label="bbUrl" class="radio-card">
+                            <font-awesome-icon icon="quote-right" class="radio-icon"/>
+                            <span>BBCode</span>
+                        </el-radio>
+                        <el-radio label="tgId" class="radio-card">
+                            <font-awesome-icon icon="paper-plane" class="radio-icon"/>
+                            <span>TG File ID</span>
+                        </el-radio>
+                        <el-radio label="s3Location" class="radio-card">
+                            <font-awesome-icon icon="cloud" class="radio-icon"/>
+                            <span>S3链接</span>
+                        </el-radio>
                     </el-radio-group>
-                </el-form-item>
-                <el-form-item label="自定义前缀" v-if="useCustomUrl === 'true'">
-                    <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀"/>
-                </el-form-item>
-            </el-form>
+                </div>
+            </div>
+
+            <div class="dialog-section">
+                <div class="section-header">
+                    <span class="section-title">自定义链接</span>
+                    <el-tooltip content="默认链接为https://your.domain/file/xxx.jpg <br> 如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入" placement="top" raw-content>
+                        <font-awesome-icon icon="question-circle" class="section-help-icon"/>
+                    </el-tooltip>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <span class="setting-label">启用自定义</span>
+                        <el-switch v-model="useCustomUrl" active-value="true" inactive-value="false" />
+                    </div>
+                    <div class="setting-item" v-if="useCustomUrl === 'true'">
+                        <span class="setting-label">自定义前缀</span>
+                        <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀" class="setting-input"/>
+                    </div>
+                </div>
+            </div>
+
             <div class="dialog-action">
-                <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
+                <el-button type="primary" @click="showUrlDialog = false" class="confirm-btn">确定</el-button>
             </div>
         </el-dialog>
 
@@ -962,7 +990,7 @@ methods: {
             this.showdetailDialog = false;
             })
             .catch(() => this.$message.error('删除失败，请检查网络连接'));
-        }).catch(() => this.$message.info('已取消删除'));
+        }).catch(() => console.log('已取消删除'));
     },
     handleBlock(key) {
         this.$confirm('此操作将把该文件加入黑名单, 是否继续?', '提示', {
@@ -1040,7 +1068,7 @@ methods: {
                 this.$message.success('删除成功!');
             })
             .catch(() => this.$message.error('删除失败，请检查网络连接'));
-        }).catch(() => this.$message.info('已取消删除'));
+        }).catch(() => console.log('已取消删除'));
     },
     handleBatchDelete() {
         this.$confirm('此操作将永久删除选中的文件及文件夹, 是否继续?', '提示', {
@@ -1071,7 +1099,7 @@ methods: {
                 this.$message.success('批量删除成功!');
             })
             .catch(() => this.$message.error('批量删除失败，请检查网络连接'));
-        }).catch(() => this.$message.info('已取消批量删除'));
+        }).catch(() => console.log('已取消批量删除'));
     },
     handleBatchCopy() {
         let tmpLinks = '';
@@ -1336,7 +1364,7 @@ methods: {
                     this.refreshLocalFileList();
                 })
                 .catch(() => this.$message.error('移动失败，请检查网络连接'));
-        }).catch(() => this.$message.info('已取消移动文件'));
+        }).catch(() => console.log('已取消移动文件'));
     },
     handleBatchMove() {
         // 弹窗输入新的文件夹路径
@@ -1395,7 +1423,7 @@ methods: {
                     this.refreshLocalFileList();
                 })
                 .catch(() => this.$message.error('移动失败，请检查网络连接'));
-        }).catch(() => this.$message.info('已取消移动文件'));
+        }).catch(() => console.log('已取消移动文件'));
     },
     handleBatchBlock(){
         this.$confirm('此操作将把选中的文件加入黑名单, 是否继续?', '提示', {
@@ -1424,7 +1452,7 @@ methods: {
                     this.$message.success('批量加入黑名单成功!');
                 })
                 .catch(() => this.$message.error('批量加入黑名单失败，请检查网络连接'));
-        }).catch(() => this.$message.info('已取消批量加入黑名单'));
+        }).catch(() => console.log('已取消批量加入黑名单'));
     },
     handleBatchWhite(){
         this.$confirm('此操作将把选中的文件加入白名单, 是否继续?', '提示', {
@@ -1453,7 +1481,7 @@ methods: {
                     this.$message.success('批量加入白名单成功!');
                 })
                 .catch(() => this.$message.error('批量加入白名单失败，请检查网络连接'));
-        }).catch(() => this.$message.info('已取消批量加入白名单'));
+        }).catch(() => console.log('已取消批量加入白名单'));
     },
     handleBatchDownload() {
         // 将选中文件打包成 zip 文件下载
