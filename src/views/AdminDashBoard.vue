@@ -301,13 +301,13 @@
                                 </button>
                             </el-tooltip>
                             <el-tooltip content="移动" placement="top">
-                                <button class="list-action-btn" @click.stop="handleMoveFile(item.name)">
+                                <button class="list-action-btn" @click.stop="handleMove(index, item.name)">
                                     <font-awesome-icon icon="file-export"/>
                                 </button>
                             </el-tooltip>
                         </template>
                         <el-tooltip v-else content="移动" placement="top">
-                            <button class="list-action-btn" @click.stop="handleMoveFile(item.name)">
+                            <button class="list-action-btn" @click.stop="handleMove(index, item.name)">
                                 <font-awesome-icon icon="file-export"/>
                             </button>
                         </el-tooltip>

@@ -717,24 +717,25 @@
 }
 
 /* Header Styling */
+/* Header Styling */
 .el-dialog__header,
 .el-message-box__header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    padding: 20px 24px !important;
+    padding: 16px 20px !important;
     margin-right: 0 !important;
 }
 
 /* Body Styling */
 .el-dialog__body,
 .el-message-box__content {
-    padding: 24px !important;
+    padding: 20px !important;
 }
 
 /* Footer Styling */
 .el-dialog__footer,
 .el-message-box__btns {
     border-top: 1px solid rgba(0, 0, 0, 0.06);
-    padding: 16px 24px !important;
+    padding: 12px 20px !important;
     background-color: rgba(0, 0, 0, 0.02);
     /* Slight contrast for footer */
 }
