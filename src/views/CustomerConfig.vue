@@ -269,7 +269,7 @@ export default {
     left: 50%;
     transform: translateX(-50%);
     width: calc(95% - 16px);
-    z-index: 9999;
+    z-index: 2001;
     min-height: 45px;
 }
 

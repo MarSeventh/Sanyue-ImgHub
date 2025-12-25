@@ -934,6 +934,7 @@ html.dark .legend-item:hover {
     flex: 1;
     width: auto;
     min-width: 0;
+    height: auto;
   }
 }
 
@@ -983,6 +984,8 @@ html.dark .legend-item:hover {
   
   .action-btn {
     width: 100% !important;
+    padding: 10px 20px !important;
+    box-sizing: border-box;
   }
 }
 

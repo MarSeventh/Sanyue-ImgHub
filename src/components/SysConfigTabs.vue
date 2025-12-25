@@ -73,7 +73,7 @@ beforeDestroy() {
     top: 50%;
     left: 8px;
     transform: translateY(-50%);
-    z-index: 9999;
+    z-index: 2001;
     width: 150px;
     /* macOS 风格毛玻璃效果 */
     background: rgba(255, 255, 255, 0.72);

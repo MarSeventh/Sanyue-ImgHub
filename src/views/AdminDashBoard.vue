@@ -1860,7 +1860,7 @@ mounted() {
     left: 50%;
     transform: translateX(-50%);
     width: calc(95% - 16px);
-    z-index: 9999;
+    z-index: 2001;
     min-height: 45px;
 }
 
@@ -2442,6 +2442,7 @@ html.dark .header-content:hover {
     display: flex;
     max-width: 100%;
     overflow: hidden;
+    align-items: center;
 }
 
 .filename-start {

@@ -91,112 +91,179 @@
             :uploadFolder="uploadFolder"
             class="upload"
         />
-        <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false">
-            <p style="font-size: medium; font-weight: bold">默认复制链接</p>
-            <el-radio-group v-model="selectedUrlForm" @change="changeUrlForm">
-                <el-radio value="url">原始链接</el-radio>
-                <el-radio value="md">MarkDown</el-radio>
-                <el-radio value="html">HTML</el-radio>
-                <el-radio value="ubb">BBCode</el-radio>
-            </el-radio-group>
-            <p style="font-size: medium; font-weight: bold">自定义链接
-                <el-tooltip content="默认链接为https://your.domain/file/xxx.jpg <br> 如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入" placement="top" raw-content>
-                    <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
-                </el-tooltip>
-            </p>
-            <el-form label-width="25%">
-                <el-form-item label="启用自定义">
-                    <el-radio-group v-model="useCustomUrl">
-                        <el-radio value="true">是</el-radio>
-                        <el-radio value="false">否</el-radio>
+        <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
+            <div class="dialog-section">
+                <div class="section-header">
+                    <span class="section-title">默认复制链接</span>
+                </div>
+                <div class="section-content">
+                    <el-radio-group v-model="selectedUrlForm" @change="changeUrlForm" class="radio-card-group grid-2x2">
+                        <el-radio value="url" class="radio-card">
+                            <font-awesome-icon icon="link" class="radio-icon"/>
+                            <span>原始链接</span>
+                        </el-radio>
+                        <el-radio value="md" class="radio-card">
+                            <font-awesome-icon icon="code" class="radio-icon"/>
+                            <span>MarkDown</span>
+                        </el-radio>
+                        <el-radio value="html" class="radio-card">
+                            <font-awesome-icon icon="code-branch" class="radio-icon"/>
+                            <span>HTML</span>
+                        </el-radio>
+                        <el-radio value="ubb" class="radio-card">
+                            <font-awesome-icon icon="quote-right" class="radio-icon"/>
+                            <span>BBCode</span>
+                        </el-radio>
                     </el-radio-group>
-                </el-form-item>
-                <el-form-item label="自定义前缀" v-if="useCustomUrl === 'true'">
-                    <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀"/>
-                </el-form-item>
-            </el-form>
+                </div>
+            </div>
+            
+            <div class="dialog-section">
+                <div class="section-header">
+                    <span class="section-title">自定义链接</span>
+                    <el-tooltip content="默认链接为https://your.domain/file/xxx.jpg <br> 如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入" placement="top" raw-content>
+                        <font-awesome-icon icon="question-circle" class="section-help-icon"/>
+                    </el-tooltip>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <span class="setting-label">启用自定义</span>
+                        <el-switch v-model="useCustomUrl" active-value="true" inactive-value="false" />
+                    </div>
+                    <div class="setting-item" v-if="useCustomUrl === 'true'">
+                        <span class="setting-label">自定义前缀</span>
+                        <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀" class="setting-input"/>
+                    </div>
+                </div>
+            </div>
+            
             <div class="dialog-action">
-                <el-button type="primary" @click="showUrlDialog = false">确定</el-button>
+                <el-button type="primary" @click="showUrlDialog = false" class="confirm-btn">确定</el-button>
             </div>
         </el-dialog>
-        <el-dialog title="上传设置" v-model="showCompressDialog" :width="dialogWidth" :show-close="false">
-            <el-form label-width="25%">
-                <p style="font-size: medium; font-weight: bold">上传渠道</p>
-                <el-form-item label="上传渠道">
-                    <el-radio-group v-model="uploadChannel">
-                        <el-radio label="telegram">Telegram</el-radio>
-                        <el-radio label="cfr2">Cloudflare R2</el-radio>
-                        <el-radio label="s3">S3</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-                <el-form-item label="上传目录">
-                    <el-input style="width: 300px;" v-model="uploadFolder" placeholder="请输入上传目录路径"/>
-                </el-form-item>
-                <el-form-item label="自动切换">
-                    <el-tooltip content="对于非分块上传文件，上传失败自动切换到其他渠道上传" placement="top">
-                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
-                    </el-tooltip>
-                    <el-switch
-                        v-model="autoRetry"
-                        active-text="开启"
-                        inactive-text="关闭"
-                        active-color="#13ce66"
-                        inactive-color="#ff4949"
-                    />
-                </el-form-item>
-                <p style="font-size: medium; font-weight: bold">文件命名方式</p>
-                <el-form-item label="命名方式">
-                    <el-radio-group v-model="uploadNameType">
-                        <el-radio label="default">默认</el-radio>
-                        <el-radio label="index">仅前缀</el-radio>
-                        <el-radio label="origin">仅原名</el-radio>
-                        <el-radio label="short">短链接</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-                <p style="font-size: medium; font-weight: bold">客户端压缩
-                    <el-tooltip content="上传前在本地进行压缩，仅对图片文件生效" placement="top" raw-content>
-                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
-                    </el-tooltip>
-                </p>
-                <el-form-item label="开启压缩">
-                    <el-switch
-                        v-model="customerCompress"
-                        active-text="开启"
-                        inactive-text="关闭"
-                        active-color="#13ce66"
-                        inactive-color="#ff4949"
-                    />
-                </el-form-item>
-                <el-form-item label="压缩阈值" v-if="customerCompress">
-                    <el-tooltip content="设置图片大小阈值，超过此值将自动压缩，单位MB" placement="top">
-                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
-                    </el-tooltip>
-                    <el-slider class="compress-slider" v-model="compressBar" :min="1" :max="20" show-input :format-tooltip="(value) => `${value} MB`"/>
-                </el-form-item>
-                <el-form-item label="期望大小" v-if="customerCompress">
-                    <el-tooltip content="设置压缩后图片大小期望值，单位MB" placement="top">
-                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
-                    </el-tooltip>
-                    <el-slider class="compress-slider" v-model="compressQuality" :min="1" :max="compressBar" :format-tooltip="(value) => `${value} MB`" show-input/>
-                </el-form-item>
-                <p style="font-size: medium; font-weight: bold" v-if="uploadChannel === 'telegram'">服务端压缩
-                    <el-tooltip content="1. 在 Telegram 端进行压缩，仅对上传渠道为 Telegram 的图片文件生效 <br> 2. 若图片大小（本地压缩后大小）大于10MB，本设置自动失效 <br> 3. 若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题" placement="top" raw-content>
-                        <font-awesome-icon icon="question-circle" class="question-icon" size="me"/>
-                    </el-tooltip>
-                </p>
-                <el-form-item label="开启压缩" v-if="uploadChannel === 'telegram'">
-                    <el-switch
-                        v-model="serverCompress"
-                        active-text="开启"
-                        inactive-text="关闭"
-                        active-color="#13ce66"
-                        inactive-color="#ff4949"
-                    />
-                </el-form-item>
-                <div class="dialog-action">
-                    <el-button type="primary" @click="showCompressDialog = false">确定</el-button>
+        <el-dialog title="上传设置" v-model="showCompressDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
+            <!-- 上传渠道 -->
+            <div class="dialog-section">
+                <div class="section-header">
+                    <span class="section-title">上传渠道</span>
                 </div>
-            </el-form>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <span class="setting-label">上传渠道</span>
+                        <el-radio-group v-model="uploadChannel" class="radio-card-group compact">
+                            <el-radio label="telegram" class="radio-card">Telegram</el-radio>
+                            <el-radio label="cfr2" class="radio-card">R2</el-radio>
+                            <el-radio label="s3" class="radio-card">S3</el-radio>
+                        </el-radio-group>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">上传目录</span>
+                        <el-input v-model="uploadFolder" placeholder="请输入上传目录路径" class="setting-input"/>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">
+                            自动切换
+                            <el-tooltip content="对于非分块上传文件，上传失败自动切换到其他渠道上传" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </span>
+                        <el-switch v-model="autoRetry" />
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 文件命名方式 -->
+            <div class="dialog-section">
+                <div class="section-header">
+                    <span class="section-title">文件命名方式</span>
+                </div>
+                <div class="section-content">
+                    <el-radio-group v-model="uploadNameType" class="radio-card-group grid-2x2">
+                        <el-radio label="default" class="radio-card">
+                            <font-awesome-icon icon="cog" class="radio-icon"/>
+                            <span>默认</span>
+                        </el-radio>
+                        <el-radio label="index" class="radio-card">
+                            <font-awesome-icon icon="hashtag" class="radio-icon"/>
+                            <span>仅前缀</span>
+                        </el-radio>
+                        <el-radio label="origin" class="radio-card">
+                            <font-awesome-icon icon="file-signature" class="radio-icon"/>
+                            <span>仅原名</span>
+                        </el-radio>
+                        <el-radio label="short" class="radio-card">
+                            <font-awesome-icon icon="compress-alt" class="radio-icon"/>
+                            <span>短链接</span>
+                        </el-radio>
+                    </el-radio-group>
+                </div>
+            </div>
+            
+            <!-- 客户端压缩 -->
+            <div class="dialog-section">
+                <div class="section-header">
+                    <span class="section-title">客户端压缩</span>
+                    <el-tooltip content="上传前在本地进行压缩，仅对图片文件生效" placement="top">
+                        <font-awesome-icon icon="question-circle" class="section-help-icon"/>
+                    </el-tooltip>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <span class="setting-label">开启压缩</span>
+                        <el-switch v-model="customerCompress" />
+                    </div>
+                    <div class="setting-item slider-item" v-if="customerCompress">
+                        <span class="setting-label">
+                            压缩阈值
+                            <el-tooltip content="设置图片大小阈值，超过此值将自动压缩，单位MB" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </span>
+                        <div class="slider-wrapper">
+                            <el-slider v-model="compressBar" :min="1" :max="20" :format-tooltip="(value) => `${value} MB`"/>
+                            <div class="slider-input-wrapper">
+                                <el-input-number v-model="compressBar" :min="1" :max="20" :step="1" :value-on-clear="1" size="small" class="slider-input" controls-position="right"/>
+                                <span class="slider-unit">MB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-item slider-item" v-if="customerCompress">
+                        <span class="setting-label">
+                            期望大小
+                            <el-tooltip content="设置压缩后图片大小期望值，单位MB" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </span>
+                        <div class="slider-wrapper">
+                            <el-slider v-model="compressQuality" :min="0.5" :max="compressBar" :step="0.1" :format-tooltip="(value) => `${value} MB`"/>
+                            <div class="slider-input-wrapper">
+                                <el-input-number v-model="compressQuality" :min="0.5" :max="compressBar" :step="0.1" :precision="1" :value-on-clear="0.5" size="small" class="slider-input" controls-position="right"/>
+                                <span class="slider-unit">MB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 服务端压缩 - 仅 Telegram -->
+            <div class="dialog-section" v-if="uploadChannel === 'telegram'">
+                <div class="section-header">
+                    <span class="section-title">服务端压缩</span>
+                    <el-tooltip content="1. 在 Telegram 端进行压缩，仅对上传渠道为 Telegram 的图片文件生效 <br> 2. 若图片大小（本地压缩后大小）大于10MB，本设置自动失效 <br> 3. 若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题" placement="top" raw-content>
+                        <font-awesome-icon icon="question-circle" class="section-help-icon"/>
+                    </el-tooltip>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <span class="setting-label">开启压缩</span>
+                        <el-switch v-model="serverCompress" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dialog-action">
+                <el-button type="primary" @click="showCompressDialog = false" class="confirm-btn">确定</el-button>
+            </div>
         </el-dialog>
     </div>
     <Footer class="footer"/>
@@ -259,6 +326,15 @@ export default {
             this.updateCompressConfig('compressQuality', val)
         },
         compressBar(val) {
+            // 确保值在有效范围内
+            if (val === null || val === undefined || val < 1) {
+                this.compressBar = 1
+                return
+            }
+            // 确保期望大小不超过压缩阈值
+            if (this.compressQuality > val) {
+                this.compressQuality = val
+            }
             this.updateCompressConfig('compressBar', val)
         },
         serverCompress(val) {
@@ -960,5 +1036,279 @@ export default {
 
 .footer {
     height: 6vh;
+}
+
+/* 弹窗现代化样式 */
+.dialog-section {
+    margin-bottom: 24px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--el-border-color-lighter);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+}
+
+.section-help-icon {
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.section-help-icon:hover {
+    color: var(--el-color-primary);
+}
+
+.section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 卡片式单选组 */
+.radio-card-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.radio-card-group .radio-card {
+    margin-right: 0;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    transition: all 0.2s ease;
+}
+
+.radio-card-group .radio-card:hover {
+    border-color: var(--el-color-primary-light-5);
+}
+
+.radio-card-group .radio-card.is-checked {
+    background: linear-gradient(135deg, rgba(64, 158, 255, 0.1) 0%, rgba(56, 189, 248, 0.05) 100%);
+    border-color: var(--el-color-primary);
+}
+
+.radio-card-group :deep(.el-radio__input) {
+    display: none;
+}
+
+.radio-card-group :deep(.el-radio__label) {
+    padding-left: 0;
+    font-weight: 500;
+}
+
+/* 设置项布局 */
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--el-bg-color);
+    border-radius: 8px;
+    border: 1px solid var(--el-border-color-lighter);
+}
+
+.setting-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+}
+
+.setting-input {
+    width: 60%;
+    max-width: 250px;
+}
+
+/* 弹窗底部按钮 */
+.dialog-action {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 16px;
+}
+
+.confirm-btn {
+    min-width: 100px;
+    border-radius: 8px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .dialog-section {
+        padding: 12px;
+    }
+    
+    .radio-card-group {
+        flex-direction: column;
+    }
+    
+    .radio-card-group .radio-card {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .setting-input {
+        width: 100%;
+        max-width: none;
+    }
+    
+    .slider-wrapper {
+        width: 100%;
+    }
+    
+    .radio-card-group.compact {
+        flex-direction: row;
+    }
+}
+
+/* 滑动条样式 */
+.slider-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.slider-wrapper .el-slider {
+    flex: 1;
+    min-width: 0;
+}
+
+.slider-input {
+    width: 80px !important;
+    flex-shrink: 0;
+}
+
+.slider-input :deep(.el-input__wrapper) {
+    padding: 0 8px;
+}
+
+.slider-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.slider-unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--el-text-color-secondary);
+}
+
+/* 行内帮助图标 */
+.inline-help-icon {
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    margin-left: 6px;
+    transition: color 0.2s;
+}
+
+.inline-help-icon:hover {
+    color: var(--el-color-primary);
+}
+
+/* 紧凑型单选组 */
+.radio-card-group.compact {
+    gap: 8px;
+}
+
+.radio-card-group.compact .radio-card {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+/* 2x2 网格布局 */
+.radio-card-group.grid-2x2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.radio-card-group.grid-2x2 .radio-card {
+    width: 100%;
+    /* 修复宽度溢出 */
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    /* 防止文本换行导致布局错乱 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 单选按钮图标 */
+.radio-icon {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.radio-card.is-checked .radio-icon {
+    opacity: 1;
+}
+
+/* 移动端滑动条修复 */
+@media (max-width: 768px) {
+    .slider-wrapper {
+        gap: 8px;
+    }
+    
+    .slider-input {
+        width: 80px !important;
+    }
+    
+    .setting-input {
+        width: 100% !important;
+        max-width: none !important;
+    }
+    
+    .dialog-section {
+        overflow: hidden;
+    }
+    
+    /* 移动端网格布局调整 */
+    .radio-card-group.grid-2x2 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .radio-card-group.grid-2x2 .radio-card {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+    
+    .radio-icon {
+        font-size: 12px;
+    }
 }
 </style>
