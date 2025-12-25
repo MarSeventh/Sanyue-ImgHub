@@ -136,7 +136,7 @@ export default {
     left: 50%;
     transform: translateX(-50%);
     width: calc(95% - 16px);
-    z-index: 1001;
+    z-index: 9999;
     min-height: 45px;
 }
 
@@ -154,9 +154,15 @@ html.dark .header-content {
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
-        top: 4px;
-        width: calc(100% - 16px);
-        border-radius: 12px;
+        top: 6px;
+        width: calc(100% - 32px);
+        border-radius: 14px;
+        padding: 6px 12px;
+        gap: 4px;
+    }
+    
+    .header-icon {
+        font-size: 0.95em;
     }
 }
 

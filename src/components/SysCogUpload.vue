@@ -29,7 +29,7 @@
             <!-- 负载均衡配置 -->
             <el-form 
                 :model="telegramSettings" 
-                label-width="120px"
+                label-position="top"
                 class="channel-form"
             >
                 <el-form-item label="负载均衡">
@@ -41,7 +41,7 @@
                 v-for="(channel, index) in telegramSettings.channels"
                 :key="index"
                 :model="channel"
-                label-width="120px"
+                label-position="top"
                 :rules = "tgRules"
                 ref = "tgChannelForm"
                 class="channel-form"
@@ -71,7 +71,7 @@
             <el-form 
                 v-for="(channel, index) in cfr2Settings.channels"
                 :model="channel" 
-                label-width="120px"
+                label-position="top"
                 class="channel-form"
             >
                 <el-form-item label="渠道名">
@@ -96,7 +96,7 @@
             <!-- 负载均衡配置 -->
             <el-form 
                 :model="s3Settings" 
-                label-width="120px"
+                label-position="top"
                 class="channel-form"
             >
                 <el-form-item label="负载均衡">
@@ -107,7 +107,7 @@
             <el-form 
                 v-for="(channel, index) in s3Settings.channels"
                 :model="channel" 
-                label-width="120px"
+                label-position="top"
                 :rules = "s3Rules"
                 ref = "s3ChannelForm"
                 class="channel-form"
@@ -425,21 +425,134 @@ mounted() {
     margin-bottom: 40px;
 }
 
+.first-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+/* 渠道切换按钮组美化 */
+.upload-channel :deep(.el-radio-group) {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.upload-channel :deep(.el-radio) {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    transition: all 0.25s ease;
+    margin-right: 0;
+    height: auto;
+}
+
+.upload-channel :deep(.el-radio:hover) {
+    border-color: var(--el-color-primary-light-5);
+    background: var(--el-fill-color);
+}
+
+.upload-channel :deep(.el-radio.is-checked) {
+    background: linear-gradient(135deg, rgba(64, 158, 255, 0.15) 0%, rgba(56, 189, 248, 0.1) 100%);
+    border-color: var(--el-color-primary);
+    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
+}
+
+.upload-channel :deep(.el-radio__input) {
+    display: none;
+}
+
+.upload-channel :deep(.el-radio__label) {
+    padding-left: 0;
+    font-weight: 500;
+    font-size: 14px;
+}
+
 .second-title {
     text-align: start;
-    margin-left: 20px;
+    margin-left: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
 .channel-settings {
     margin-top: 20px;
 }
 
+/* 表单样式 - 上下排列左对齐 */
 .channel-form {
-  margin-bottom: 40px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 12px;
+    border: 1px solid var(--el-border-color-lighter);
+}
+
+.channel-form :deep(.el-form-item) {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.channel-form :deep(.el-form-item__label) {
+    text-align: left;
+    padding-bottom: 8px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+}
+
+.channel-form :deep(.el-form-item__content) {
+    width: 100%;
+    max-width: 400px;
+}
+
+.channel-form :deep(.el-input) {
+    width: 100%;
+}
+
+.channel-form :deep(.el-switch) {
+    --el-switch-on-color: var(--el-color-primary);
 }
 
 .actions {
     margin-top: 20px;
-    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.actions :deep(.el-button) {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .upload-settings {
+        padding: 15px;
+    }
+    
+    .upload-channel :deep(.el-radio-group) {
+        gap: 8px;
+    }
+    
+    .upload-channel :deep(.el-radio) {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+    
+    .channel-form {
+        padding: 15px;
+    }
+    
+    .channel-form :deep(.el-form-item__content) {
+        max-width: 100%;
+    }
 }
 </style>

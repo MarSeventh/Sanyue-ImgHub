@@ -9,7 +9,7 @@
             @click="handleSelect(item.index)"
         >
             <font-awesome-icon :icon="item.icon" class="menu-icon" />
-            <span class="menu-text" v-show="!isCollapse">{{ item.title }}</span>
+            <span class="menu-text">{{ item.title }}</span>
         </div>
     </div>
 
@@ -73,7 +73,7 @@ beforeDestroy() {
     top: 50%;
     left: 8px;
     transform: translateY(-50%);
-    z-index: 1001;
+    z-index: 9999;
     width: 150px;
     /* macOS 风格毛玻璃效果 */
     background: rgba(255, 255, 255, 0.72);
@@ -125,15 +125,17 @@ html.dark .sidebar-container:hover {
     display: flex;
     align-items: center;
     padding: 12px;
+    height: 42px;
+    box-sizing: border-box;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, padding 0.25s ease;
     color: var(--admin-container-color, #333);
-    gap: 12px;
+    gap: 0;
+    overflow: hidden;
 }
 
 .sidebar-container.is-collapsed .menu-item {
-    justify-content: center;
     padding: 12px 0;
 }
 
@@ -155,15 +157,27 @@ html.dark .menu-item.is-active {
 }
 
 .menu-icon {
-    width: 18px;
+    width: 32px;
+    min-width: 32px;
     font-size: 16px;
     flex-shrink: 0;
+    text-align: center;
 }
 
 .menu-text {
     font-size: 14px;
     font-weight: 500;
     white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    max-width: 100px;
+    transition: opacity 0.2s ease 0.05s, max-width 0.25s ease;
+}
+
+.sidebar-container.is-collapsed .menu-text {
+    opacity: 0;
+    max-width: 0;
+    transition: opacity 0.1s ease, max-width 0.2s ease;
 }
 
 .toggle-button {

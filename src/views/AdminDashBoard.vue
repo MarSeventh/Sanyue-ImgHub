@@ -11,9 +11,6 @@
                         </template>
                     </el-input>
                 </div>
-                <span class="stats">
-                    <font-awesome-icon icon="database" class="fa-database"></font-awesome-icon> 文件数量: {{ Number }}
-                </span>
                 <div class="actions">
                 <el-dropdown @command="sort" :hide-on-click="false">
                     <span class="el-dropdown-link">
@@ -82,16 +79,29 @@
             </el-header>
             <el-main class="main-container">
             <!-- 目录导航 -->
-            <div class="breadcrumb">
-                <el-breadcrumb separator="/">
-                    <el-breadcrumb-item @click="navigateToFolder('')">根目录</el-breadcrumb-item>
-                    <el-breadcrumb-item 
-                        v-for="(folder, index) in currentPath.split('/').filter(Boolean)" 
-                        :key="index"
-                        @click="navigateToFolder(currentPath.split('/').filter(Boolean).slice(0, index + 1).join('/'))">
-                        {{ folder }}
-                    </el-breadcrumb-item>
-                </el-breadcrumb>
+            <div class="breadcrumb-container">
+                <!-- 移动端目录按钮 -->
+                <div class="mobile-directory-trigger" @click="showMobileDirectoryDrawer = true">
+                    <font-awesome-icon icon="folder-open" class="mobile-directory-icon"/>
+                    <span class="mobile-directory-path">{{ currentPath && currentPath.split('/').filter(Boolean).length > 0 ? currentPath.split('/').filter(Boolean).pop() : '根目录' }}</span>
+                    <font-awesome-icon icon="chevron-down" class="mobile-directory-arrow"/>
+                </div>
+                <!-- 桌面端面包屑 -->
+                <div class="breadcrumb desktop-only">
+                    <el-breadcrumb separator="/">
+                        <el-breadcrumb-item @click="navigateToFolder('')">根目录</el-breadcrumb-item>
+                        <el-breadcrumb-item 
+                            v-for="(folder, index) in currentPath.split('/').filter(Boolean)" 
+                            :key="index"
+                            @click="navigateToFolder(currentPath.split('/').filter(Boolean).slice(0, index + 1).join('/'))">
+                            {{ folder }}
+                        </el-breadcrumb-item>
+                    </el-breadcrumb>
+                </div>
+                <span class="stats-badge" :title="`共 ${$data.Number} 个文件`">
+                    <font-awesome-icon icon="database" class="stats-badge-icon"/>
+                    {{ Number }}
+                </span>
             </div>
             
             <!-- 卡片视图 -->
@@ -506,6 +516,43 @@
                 </div>
             </Transition>
         </Teleport>
+        <!-- 移动端目录抽屉 -->
+        <Teleport to="body">
+            <Transition name="drawer-slide">
+                <div v-if="showMobileDirectoryDrawer" class="mobile-drawer-overlay" @click="showMobileDirectoryDrawer = false">
+                    <div class="mobile-drawer" @click.stop>
+                        <div class="mobile-drawer-header">
+                            <span class="mobile-drawer-title">目录导航</span>
+                            <font-awesome-icon icon="times" class="mobile-drawer-close" @click="showMobileDirectoryDrawer = false"/>
+                        </div>
+                        <div class="mobile-drawer-content">
+                            <!-- 根目录 -->
+                            <div class="mobile-drawer-item" :class="{ active: !currentPath }" @click="navigateToFolder(''); showMobileDirectoryDrawer = false;">
+                                <font-awesome-icon icon="home" class="mobile-drawer-item-icon"/>
+                                <span>根目录</span>
+                            </div>
+                            <!-- 当前路径层级 -->
+                            <div 
+                                v-for="(folder, index) in currentPath.split('/').filter(Boolean)" 
+                                :key="index"
+                                class="mobile-drawer-item"
+                                :class="{ active: index === currentPath.split('/').filter(Boolean).length - 1 }"
+                                :style="{ paddingLeft: (index + 1) * 16 + 16 + 'px' }"
+                                @click="navigateToFolder(currentPath.split('/').filter(Boolean).slice(0, index + 1).join('/')); showMobileDirectoryDrawer = false;"
+                            >
+                                <font-awesome-icon icon="folder" class="mobile-drawer-item-icon"/>
+                                <span>{{ folder }}</span>
+                            </div>
+                            <!-- 返回上一级按钮 -->
+                            <div v-if="currentPath" class="mobile-drawer-back" @click="handleGoBack">
+                                <font-awesome-icon icon="arrow-left" class="mobile-drawer-item-icon"/>
+                                <span>返回上一级</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
@@ -554,6 +601,7 @@ data() {
         mobileActionIndex: -1, // 当前移动端操作的文件索引
         mobileActionIsFolder: false, // 是否为文件夹操作
         longPressTimer: null, // 长按计时器
+        showMobileDirectoryDrawer: false, // 移动端目录抽屉
     }
 },
 components: {
@@ -770,6 +818,16 @@ methods: {
                 this.handleTagManagement(file.name);
                 break;
         }
+    },
+    // 返回上一级目录
+    handleGoBack() {
+        const pathParts = this.currentPath.split('/').filter(Boolean);
+        if (pathParts.length > 0) {
+            pathParts.pop();
+            const parentPath = pathParts.join('/');
+            this.navigateToFolder(parentPath);
+        }
+        this.showMobileDirectoryDrawer = false;
     },
     // 获取标签颜色
     getTagColor(index) {
@@ -1802,7 +1860,7 @@ mounted() {
     left: 50%;
     transform: translateX(-50%);
     width: calc(95% - 16px);
-    z-index: 1001;
+    z-index: 9999;
     min-height: 45px;
 }
 
@@ -1821,9 +1879,33 @@ html.dark .header-content {
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
-        top: 4px;
-        width: calc(100% - 16px);
-        border-radius: 12px;
+        top: 6px;
+        width: calc(100% - 32px);
+        border-radius: 14px;
+        padding: 6px 12px;
+        gap: 4px;
+    }
+    
+    .header-icon {
+        font-size: 0.95em;
+    }
+    
+    .header-content .actions {
+        gap: 10px;
+    }
+    
+    .search-card :deep(.el-input__inner) {
+        height: 28px;
+        font-size: 0.85em;
+        width: 50vw;
+    }
+    
+    .search-card :deep(.el-input__wrapper) {
+        padding: 0 10px;
+    }
+    
+    .search-card :deep(.el-input__inner:focus) {
+        width: 65vw;
     }
 }
 
@@ -1858,43 +1940,64 @@ html.dark .header-content:hover {
 }
 
 
-.stats {
-    font-size: 1.2em;
-    margin-right: 20px;
+/* 面包屑容器，包含路径和文件数量 */
+.breadcrumb-container {
     display: flex;
     align-items: center;
-    background: var(--admin-dashborad-stats-bg-color);
-    padding: 5px 10px;
-    border-radius: 10px;
-    box-shadow: var(--admin-dashboard-stats-shadow);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    color: var(--admin-container-color);
-    cursor: pointer;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 10px; /* 与 .content 的 padding 对齐 */
 }
 
 @media (max-width: 768px) {
-    .stats {
-        margin-right: 0;
-        margin-top: 10px;
+    .breadcrumb-container {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        padding: 0 5px;
     }
 }
 
-.stats .fa-database {
-    margin-right: 10px;
-    font-size: 1.5em;
-    transition: color 0.3s ease;
-    color: inherit;
+/* 文件数量小徽章 */
+.stats-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--el-text-color-secondary);
+    background: var(--el-fill-color-light);
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--el-border-color-lighter);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.stats:hover {
-    background-color: var(--admin-dashborad-stats-hover-bg-color);
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
-    color: var(--admin-purple); /* 使用柔和的淡紫色 */
+.stats-badge:hover {
+    background: var(--el-fill-color);
+    color: var(--admin-purple);
+    border-color: var(--admin-purple);
 }
 
-.stats:hover .fa-database {
-    color: var(--admin-purple); /* 使用柔和的淡紫色 */
+.stats-badge-icon {
+    font-size: 11px;
+    opacity: 0.8;
 }
+
+@media (max-width: 768px) {
+    .stats-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 8px;
+    }
+    
+    .stats-badge-icon {
+        font-size: 9px;
+    }
+}
+
 
 .header-content .actions {
     display: flex;
@@ -1968,6 +2071,21 @@ html.dark .header-content:hover {
     border: none;
     transition: width 0.3s;
     background: none;
+}
+
+.search-card :deep(.el-input__inner::placeholder) {
+    color: var(--el-text-color-placeholder);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    opacity: 0.6;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.search-card :deep(.el-input__inner:focus::placeholder) {
+    opacity: 0.4;
+    transform: translateX(5px);
 }
 @media (max-width: 768px) {
     .search-card :deep(.el-input__inner) {
@@ -2363,9 +2481,20 @@ html.dark .header-content:hover {
     font-family: 'Consolas', 'Monaco', monospace;
     color: var(--el-text-color-secondary);
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-x: auto;
+    overflow-y: hidden;
     white-space: nowrap;
+    margin-right: 12px;
+}
+
+/* 隐藏滚动条但保持可滚动 */
+.address-box::-webkit-scrollbar {
+    display: none;
+}
+
+.address-box {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .list-col-tags {
@@ -2934,6 +3063,247 @@ html.dark .bottom-sheet-item:active {
     }
     to {
         transform: translateY(100%);
+    }
+}
+
+/* 移动端目录触发按钮 */
+.mobile-directory-trigger {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--el-fill-color-light);
+    border-radius: 8px;
+    border: 1px solid var(--el-border-color-lighter);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobile-directory-trigger:active {
+    background: var(--el-fill-color);
+}
+
+.mobile-directory-icon {
+    font-size: 12px;
+    color: var(--admin-purple);
+}
+
+.mobile-directory-path {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile-directory-arrow {
+    font-size: 8px;
+    color: var(--el-text-color-secondary);
+}
+
+/* 桌面端显示面包屑，隐藏移动端触发器 */
+.desktop-only {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .mobile-directory-trigger {
+        display: flex;
+    }
+    
+    .desktop-only {
+        display: none !important;
+    }
+    
+    .breadcrumb-container {
+        padding: 0;
+        margin-left: 0;
+    }
+}
+
+/* 移动端目录抽屉 */
+.mobile-drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.mobile-drawer {
+    position: absolute;
+    top: 22vh; /* 在顶栏下方 */
+    left: 8px;
+    bottom: 8px;
+    width: 280px;
+    max-width: calc(85vw - 16px);
+    background: var(--el-bg-color);
+    border-radius: 16px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+html.dark .mobile-drawer {
+    background: rgba(40, 40, 45, 0.98);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.mobile-drawer-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--admin-purple);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mobile-drawer-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(180deg, var(--admin-purple) 0%, rgba(139, 92, 246, 0.5) 100%);
+    border-radius: 2px;
+}
+
+.mobile-drawer-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.mobile-drawer-close:active {
+    background: var(--el-fill-color);
+    color: var(--el-text-color-primary);
+}
+
+.mobile-drawer-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.mobile-drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    margin: 2px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--el-text-color-primary);
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.mobile-drawer-item:active {
+    background: var(--el-fill-color-light);
+    transform: scale(0.98);
+}
+
+.mobile-drawer-item.active {
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.2) 0%, rgba(139, 92, 246, 0.12) 100%);
+    color: var(--admin-purple);
+    font-weight: 600;
+}
+
+.mobile-drawer-item-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.mobile-drawer-item.active .mobile-drawer-item-icon {
+    opacity: 1;
+    color: var(--admin-purple);
+}
+
+.mobile-drawer-back {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    margin: 8px 8px;
+    border-radius: 10px;
+    background: var(--el-fill-color-lighter);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--el-text-color-secondary);
+    font-size: 14px;
+}
+
+.mobile-drawer-back:active {
+    background: var(--el-fill-color);
+    color: var(--el-text-color-primary);
+    transform: scale(0.98);
+}
+
+/* 抽屉滑入动画 */
+.drawer-slide-enter-active {
+    transition: opacity 0.3s ease;
+}
+
+.drawer-slide-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.drawer-slide-enter-active .mobile-drawer {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.drawer-slide-leave-active .mobile-drawer {
+    animation: slideOutLeft 0.2s ease-in;
+}
+
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+    opacity: 0;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-100%);
     }
 }
 

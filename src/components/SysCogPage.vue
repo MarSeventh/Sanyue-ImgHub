@@ -116,13 +116,95 @@ mounted() {
     margin-bottom: 40px;
 }
 
+.first-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--el-color-primary-light-7);
+}
+
 .second-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     text-align: start;
-    margin-left: 20px;
+    margin-left: 0;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+/* 表单样式 - 上下排列左对齐 */
+.first-settings :deep(.el-form) {
+    padding: 16px 20px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 12px;
+    border: 1px solid var(--el-border-color-lighter);
+}
+
+.first-settings :deep(.el-form-item) {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.first-settings :deep(.el-form-item:last-child) {
+    margin-bottom: 0;
+}
+
+.first-settings :deep(.el-form-item__label) {
+    text-align: left;
+    padding-bottom: 8px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+    width: auto !important;
+}
+
+.first-settings :deep(.el-form-item__content) {
+    width: 100%;
+    max-width: 400px;
+    margin-left: 0 !important;
+}
+
+.first-settings :deep(.el-input) {
+    width: 100%;
+}
+
+.first-settings :deep(.el-select) {
+    width: 100%;
+}
+
+.first-settings :deep(.el-switch) {
+    --el-switch-on-color: var(--el-color-primary);
 }
 
 .actions {
     margin-top: 20px;
-    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.actions :deep(.el-button) {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .page-settings {
+        padding: 15px;
+    }
+    
+    .first-settings :deep(.el-form) {
+        padding: 12px 15px;
+    }
+    
+    .first-settings :deep(.el-form-item__content) {
+        max-width: 100%;
+    }
 }
 </style>
