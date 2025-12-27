@@ -29,7 +29,7 @@
                     class="upload-card-textarea"
                     placeholder="粘贴外链上传，多个外链用换行分隔"
                     type="textarea"
-                    :rows="fileList.length ? 3 : 10"
+                    :rows="fileList.length ? 4 : 14"
                 />
                 <div class="paste-card-actions">
                     <el-button
@@ -51,7 +51,7 @@
                 </div>
             </el-card>
         </div>
-        <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
+        <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length, 'is-uploading': uploading}">
             <div class="upload-list-container" :class="{'upload-list-busy': fileList.length}">
                 <el-scrollbar @scroll="handleScroll" ref="scrollContainer">
                     <div class="upload-list-dashboard" :class="{ 'list-scrolled': listScrolled }">
@@ -61,22 +61,22 @@
                             <el-icon><Failed /></el-icon>{{ uploadErrorCount }}
                         </el-text>
                         <div class="upload-list-dashboard-action">
-                            <el-button-group>
+                            <div class="modern-action-group">
                                 <el-tooltip :disabled="disableTooltip" content="整体复制" placement="top">
-                                    <el-button type="primary" round @click="copyAll" alt="整体复制">
+                                    <button class="modern-action-btn" @click="copyAll">
                                         <font-awesome-icon icon="copy" />
-                                    </el-button>
+                                    </button>
                                 </el-tooltip>
                                 <el-tooltip :disabled="disableTooltip" content="失败重试" placement="top">
                                     <el-dropdown>
-                                        <el-button type="primary" style="outline: none; border-right: none; border-radius: 0;" @click="retryError">
+                                        <button class="modern-action-btn" @click="retryError">
                                             <font-awesome-icon icon="redo" />
-                                        </el-button>
+                                        </button>
                                         <template #dropdown>
-                                            <el-dropdown-menu>
+                                            <el-dropdown-menu class="modern-dropdown-menu">
                                                 <el-dropdown-item>
-                                                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                                        <span style="margin-right: 10px;">自动重试</span>
+                                                    <div class="modern-dropdown-item-content">
+                                                        <span>自动重试</span>
                                                         <el-switch v-model="autoReUpload" @change="handleAutoRetryChange" size="small" />
                                                     </div>
                                                 </el-dropdown-item>
@@ -84,20 +84,20 @@
                                         </template>
                                     </el-dropdown>
                                 </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" content="清空列表" placement="top" style="border: none;">
+                                <el-tooltip :disabled="disableTooltip" content="清空列表" placement="top">
                                     <el-dropdown>
-                                        <el-button type="primary" round style="outline: none; border-right: none;">
+                                        <button class="modern-action-btn modern-action-btn-danger">
                                             <font-awesome-icon icon="trash-alt" />
-                                        </el-button>
+                                        </button>
                                         <template #dropdown>
-                                            <el-dropdown-menu>
+                                            <el-dropdown-menu class="modern-dropdown-menu">
                                                 <el-dropdown-item @click="clearFileList">清空全部</el-dropdown-item>
                                                 <el-dropdown-item @click="clearSuccessList">清空已上传</el-dropdown-item>
                                             </el-dropdown-menu>
                                         </template>
                                     </el-dropdown>
                                 </el-tooltip>
-                            </el-button-group>
+                            </div>
                         </div>
                     </div>
                     <div class="upload-list-item" v-for="file in fileList.slice().reverse()" :key="file.name" :span="8">
@@ -127,7 +127,9 @@
                             </div>
                         </a>
                         <div class="upload-list-item-content">
-                            <el-text class="upload-list-item-name" truncated>{{ file.name }}</el-text>
+                            <div class="upload-list-item-name-wrapper">
+                                <el-text class="upload-list-item-name" truncated>{{ truncateFilename(file.name) }}</el-text>
+                            </div>
                             <div class="upload-list-item-url" v-if="file.status==='done'">
                                 <div class="upload-list-item-url-row">
                                     <el-input v-model="file.finalURL" readonly @click="selectAllText" :size="urlSize">
@@ -151,12 +153,12 @@
                             </div>
                         </div>
                         <div class="upload-list-item-action">
-                                <el-button type="primary" circle class="upload-list-item-action-button" @click="handleCopy(file)">
-                                    <el-icon><Link /></el-icon>
-                                </el-button>
-                                <el-button type="danger" circle class="upload-list-item-action-button" @click="handleRemove(file)">
-                                    <el-icon><Delete /></el-icon>
-                                </el-button>
+                            <button class="modern-file-action-btn modern-file-action-btn-primary" @click="handleCopy(file)">
+                                <el-icon><Link /></el-icon>
+                            </button>
+                            <button class="modern-file-action-btn modern-file-action-btn-danger" @click="handleRemove(file)">
+                                <el-icon><Delete /></el-icon>
+                            </button>
                         </div>
                     </div>
                 </el-scrollbar>
@@ -367,6 +369,28 @@ beforeUnmount() {
     this.fileList = []
 },
 methods: {
+    // 文件名中间截断，保留前缀和扩展名
+    truncateFilename(filename, maxLength = 20) {
+        if (!filename || filename.length <= maxLength) {
+            return filename
+        }
+        const lastDotIndex = filename.lastIndexOf('.')
+        let name, ext
+        if (lastDotIndex > 0) {
+            name = filename.substring(0, lastDotIndex)
+            ext = filename.substring(lastDotIndex)
+        } else {
+            name = filename
+            ext = ''
+        }
+        // 保留扩展名和部分前后缀
+        const keepEnd = ext.length + 4 // 扩展名 + 4个字符
+        const keepStart = maxLength - keepEnd - 3 // 3个字符留给...
+        if (keepStart <= 0) {
+            return filename.substring(0, maxLength - 3) + '...'
+        }
+        return name.substring(0, keepStart) + '...' + name.slice(-4) + ext
+    },
     uploadFile(file) {
         // 如果fileList中不存在该文件，说明已被删除，直接返回
         if (!this.fileList.find(item => item.uid === file.file.uid)) {
@@ -626,7 +650,7 @@ methods: {
         this.fileList = this.fileList.filter(item => item.uid !== file.uid)
         this.$message({
             type: 'info',
-            message: file.name + '已删除'
+            message: this.truncateFilename(file.name) + '已删除'
         })
     },
 
@@ -666,13 +690,13 @@ methods: {
 
             this.$message({
                 type: 'success',
-                message: file.name + '上传成功'
+                message: this.truncateFilename(file.name) + '上传成功'
             })
             setTimeout(() => {
                 this.fileList.find(item => item.uid === file.uid).status = 'done'
             }, 1000)
         } catch (error) {
-            this.$message.error(file.name + '上传失败')
+            this.$message.error(this.truncateFilename(file.name) + '上传失败')
             this.fileList.find(item => item.uid === file.uid).status = 'exception'
         } finally {
             if (this.uploadingCount + this.waitingCount === 0) {
@@ -700,7 +724,7 @@ methods: {
         }
     },
     handleError(err, file) {
-        this.$message.error(file.name + '上传失败')
+        this.$message.error(this.truncateFilename(file.name) + '上传失败')
         this.fileList.find(item => item.uid === file.uid).status = 'exception'
         
         // 如果开启了自动重试，安排自动重试
@@ -959,27 +983,20 @@ methods: {
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file') {
                 const file = items[i].getAsFile()
-                // 判断文件类型是否为图片或视频
-                if (file.type.includes('image') || file.type.includes('video')) {
-                    file.uid = Date.now() + i
-                    //接收beforeUpload的Promise对象
-                    const checkResult = this.beforeUpload(file)
-                    if (checkResult instanceof Promise) {
-                        checkResult.then((newFile) => {
-                            if (newFile instanceof File) {
-                                this.uploadFile({ file: newFile, 
-                                    onProgress: (evt) => this.handleProgress(evt), 
-                                    onSuccess: (response, file) => this.handleSuccess(response, file), 
-                                    onError: (error, file) => this.handleError(error, file) })
-                            }
-                        }).catch((err) => {
-                            console.log(err)
-                        })
-                    }
-                } else {
-                    this.$message({
-                        type: 'warning',
-                        message: '粘贴板中的文件不是图片或视频'
+                // 允许上传任意类型的文件
+                file.uid = Date.now() + i
+                //接收beforeUpload的Promise对象
+                const checkResult = this.beforeUpload(file)
+                if (checkResult instanceof Promise) {
+                    checkResult.then((newFile) => {
+                        if (newFile instanceof File) {
+                            this.uploadFile({ file: newFile, 
+                                onProgress: (evt) => this.handleProgress(evt), 
+                                onSuccess: (response, file) => this.handleSuccess(response, file), 
+                                onError: (error, file) => this.handleError(error, file) })
+                        }
+                    }).catch((err) => {
+                        console.log(err)
                     })
                 }
             } else if (items[i].kind === 'string') {
@@ -991,7 +1008,7 @@ methods: {
                             responseType: 'blob'
                         }).then(response => {
                             const contentType = response.headers['content-type'];
-                            if (response.status == 200 && (contentType.includes('image') || contentType.includes('video'))) {
+                            if (response.status == 200) {
                                 // 提取文件名
                                 const disposition = response.headers['content-disposition'];
                                 if (disposition) {
@@ -1025,9 +1042,9 @@ methods: {
                                     // 获取文件后缀
                                     const url = new URL(text);
                                     let extension = url.pathname.split('.').pop();
-                                    // 判断后缀是否有效
-                                    if (!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'mp4', 'webm', 'ogg', 'mkv'].includes(extension)) {
-                                        extension = 'jpeg'; // 默认为jpeg
+                                    // 未能从URL提取有效后缀，使用bin作为默认后缀
+                                    if (!extension || extension === '' || extension.length > 10) {
+                                        extension = 'bin';
                                     }
                                     fileName = 'PastedFile' + Date.now() + i + '.' + extension;
                                 }
@@ -1051,13 +1068,13 @@ methods: {
                                     });
                                 }
                             } else {
-                                throw new Error('URL地址的内容不是图片或视频');
+                                throw new Error('URL地址请求失败');
                             }
                         })
                         .catch(error => {
                             this.$message({
                                 type: 'warning',
-                                message: '粘贴板中的URL地址的内容不是图片或视频'
+                                message: '粘贴板中的URL地址请求失败'
                             });
                         });
                     }
@@ -1164,12 +1181,18 @@ beforeDestroy() {
 </script>
 
 <style scoped> 
-@keyframes breathe {
-    0%, 100% {
+@property --border-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes borderRotate {
+    0% {
+        --border-angle: 0deg;
     }
-    50% {
-        box-shadow: var(--el-upload-dragger-hover-box-shadow);
-        opacity: 0.8;
+    100% {
+        --border-angle: 360deg;
     }
 }
 .upload-form {
@@ -1219,21 +1242,15 @@ beforeDestroy() {
 .upload-list-container.upload-list-busy {
     height: 40vh;
 }
-.upload-list-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 5px;
-    border: var(--upload-list-item-border);
-    padding: 5px;
-    border-radius: 15px;
+
+/* 上传时列表卡片边框效果 - 与流光颜色一致 */
+.upload-list-card.is-uploading {
+    border: 1px solid var(--el-upload-dragger-uniform-color, #409eff) !important;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 30%, transparent),
+                0 0 40px color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 15%, transparent),
+                inset 0 0 20px color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 8%, transparent) !important;
 }
-.upload-list-item-name {
-    font-size: medium;
-    font-weight: bold;
-    width: 28vw;
-    margin-bottom: 5px;
-}
+/* Old upload-list-item styles moved to modern section below */
 .upload-list-item-content {
     display: flex;
     flex-direction: column;
@@ -1254,15 +1271,8 @@ beforeDestroy() {
     display: flex;
     flex-direction: column;
 }
-.upload-list-item-progress {
-    margin-top: 3px;
-    width: 28vw;
-}
+/* .upload-list-item-progress styles moved to modern section below */
 @media (max-width: 768px) {
-    .upload-list-item-name {
-        width: 32vw;
-        font-size: small;
-    }
     .upload-list-item-content {
         margin-left: 2px;
     }
@@ -1271,17 +1281,6 @@ beforeDestroy() {
         flex-direction: column;
         gap: 6px;
     }
-    .upload-list-item-progress {
-        width: 32vw;
-    }
-}
-.upload-list-item-action {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.upload-list-item-action-button {
-    margin: 2px;
 }
 .upload-card {
     width: 55vw;
@@ -1320,8 +1319,45 @@ beforeDestroy() {
     opacity: 0.8;
     box-shadow: var(--el-upload-dragger-hover-box-shadow);
 }
-.is-uploading :deep(.el-upload-dragger){
-    animation: breathe 3s infinite;
+.is-uploading :deep(.el-upload-dragger) {
+    border-color: transparent !important;
+}
+
+/* 上传时的边缘流光旋转效果 */
+.upload-card.is-uploading {
+    position: relative;
+    background: none;
+}
+
+.upload-card.is-uploading::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    border-radius: 15px;
+    padding: 2px;
+    background: conic-gradient(
+        from var(--border-angle),
+        transparent 0deg,
+        transparent 30deg,
+        var(--el-upload-dragger-uniform-color, #409eff) 60deg,
+        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 70%, white) 90deg,
+        transparent 120deg,
+        transparent 180deg,
+        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 70%, white) 210deg,
+        var(--el-upload-dragger-uniform-color, #409eff) 240deg,
+        transparent 270deg,
+        transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    animation: borderRotate 2s linear infinite;
+    pointer-events: none;
+    z-index: 1;
 }
 .el-upload__text {
     font-weight: bold;
@@ -1383,47 +1419,143 @@ beforeDestroy() {
     opacity: 0.8;
     box-shadow: var(--el-upload-dragger-hover-box-shadow);
 }
+
+/* 粘贴卡片上传时的边缘流光效果 */
+.paste-card.is-uploading {
+    position: relative;
+    border-color: transparent !important;
+}
+
+.paste-card.is-uploading::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 15px;
+    padding: 2px;
+    background: conic-gradient(
+        from var(--border-angle),
+        transparent 0deg,
+        transparent 30deg,
+        var(--el-upload-dragger-uniform-color, #409eff) 60deg,
+        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 70%, white) 90deg,
+        transparent 120deg,
+        transparent 180deg,
+        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 70%, white) 210deg,
+        var(--el-upload-dragger-uniform-color, #409eff) 240deg,
+        transparent 270deg,
+        transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    animation: borderRotate 2s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.paste-card :deep(.el-card__body) {
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 .upload-card-busy.paste-card {
     height: 17vh;
 }
 .upload-card-textarea {
     width: 50vw;
-    border-radius: 12px;
-    background-color: var(--el-upload-dragger-bg-color);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    height: 70%;
+    border-radius: 16px;
+    background: var(--textarea-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.03) 0%, rgba(64, 158, 255, 0.01) 100%));
+    backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
     display: flex;
+    position: relative;
 }
+.upload-card-busy .upload-card-textarea {
+    height: 50%;
+}
+
+.upload-card-textarea::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 17px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(64, 158, 255, 0.3) 0%, rgba(64, 158, 255, 0.1) 50%, rgba(64, 158, 255, 0.3) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.upload-card-textarea:hover::before {
+    opacity: 1;
+}
+
+.upload-card-textarea:focus-within::before {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(64, 158, 255, 0.6) 0%, rgba(64, 158, 255, 0.2) 50%, rgba(64, 158, 255, 0.6) 100%);
+}
+
 :deep(.el-textarea__inner) {
-    border-radius: 12px;
-    background-color: var(--el-upload-dragger-bg-color);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    border-radius: 16px;
+    background: var(--textarea-inner-bg, rgba(0, 0, 0, 0.02));
+    backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     resize: none;
+    border: 1px solid transparent;
+    padding: 16px 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--el-text-color-primary);
 }
-:deep(.el-textarea__inner.is-focus) {
-    border-color: var(--paste-card-textarea-border-color);
-    box-shadow: var(--paste-card-textarea-box-shadow);
+
+:deep(.el-textarea__inner::placeholder) {
+    color: var(--el-text-color-placeholder);
+    font-weight: 400;
+    opacity: 0.7;
 }
-/* 修改滚动条的整体样式 */
+
+:deep(.el-textarea__inner:hover) {
+    background: var(--textarea-inner-hover-bg, rgba(64, 158, 255, 0.03));
+}
+
+:deep(.el-textarea__inner:focus) {
+    border-color: transparent;
+    box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.15),
+                0 4px 20px rgba(64, 158, 255, 0.1),
+                inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    background: var(--textarea-inner-focus-bg, rgba(64, 158, 255, 0.02));
+}
+
+/* Modern Scrollbar Styles */
 .upload-card-textarea ::-webkit-scrollbar {
-  width: 8px; /* 滚动条宽度 */
-  height: 8px; /* 滚动条高度（水平滚动条） */
+    width: 6px;
+    height: 6px;
 }
-/* 修改滚动条的轨道样式 */
+
 .upload-card-textarea ::-webkit-scrollbar-track {
-  background: #f1f1f1; /* 轨道背景色 */
-  border-radius: 12px; /* 轨道圆角 */
+    background: transparent;
+    border-radius: 6px;
+    margin: 8px;
 }
-/* 修改滚动条的滑块样式 */
+
 .upload-card-textarea ::-webkit-scrollbar-thumb {
-  background: #888; /* 滑块背景色 */
-  border-radius: 4px; /* 滑块圆角 */
+    background: linear-gradient(180deg, rgba(64, 158, 255, 0.4) 0%, rgba(64, 158, 255, 0.6) 100%);
+    border-radius: 6px;
+    transition: background 0.3s ease;
 }
-/* 修改滚动条滑块在悬停时的样式 */
+
 .upload-card-textarea ::-webkit-scrollbar-thumb:hover {
-  background: #555; /* 滑块悬停时的背景色 */
+    background: linear-gradient(180deg, rgba(64, 158, 255, 0.6) 0%, rgba(64, 158, 255, 0.8) 100%);
 }
 .paste-card-actions {
     display: flex;
@@ -1432,12 +1564,159 @@ beforeDestroy() {
     width: 50vw;
     margin-top: 3%;
 }
+
+/* Modern Paste Card Styles */
 .paste-card-upload-button {
-    border-radius: 12px;
-    transition: all 0.3s ease;
+    min-width: 100px;
+    height: 42px;
+    border-radius: 14px !important;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(64, 158, 255, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.paste-card-upload-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transition: left 0.6s ease;
+}
+
+.paste-card-upload-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(64, 158, 255, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.paste-card-upload-button:hover::before {
+    left: 100%;
+}
+
+.paste-card-upload-button:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+/* 上传状态下缩小按钮 */
+.upload-card-busy .paste-card-upload-button {
+    min-width: 70px;
+    height: 32px;
+    border-radius: 10px !important;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.upload-card-busy .paste-card-actions {
+    margin-top: 2%;
+}
+
+/* Modern Radio Button Group */
+.paste-card-method-group {
+    background: var(--paste-method-group-bg, rgba(64, 158, 255, 0.08));
+    border-radius: 14px;
+    padding: 4px;
+    border: 1px solid var(--paste-method-group-border, rgba(64, 158, 255, 0.15));
 }
 .paste-card-method-group :deep(.el-radio-button__inner) {
-    transition: all 0.3s ease, color 0.1s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 10px !important;
+    border: none !important;
+    background: transparent;
+    font-weight: 500;
+    padding: 10px 20px;
+    color: var(--el-text-color-regular);
+}
+
+.paste-card-method-group :deep(.el-radio-button:first-child .el-radio-button__inner) {
+    border-radius: 10px !important;
+}
+
+.paste-card-method-group :deep(.el-radio-button:last-child .el-radio-button__inner) {
+    border-radius: 10px !important;
+}
+
+.paste-card-method-group :deep(.el-radio-button__inner:hover) {
+    background: var(--paste-method-hover-bg, rgba(64, 158, 255, 0.12));
+    color: var(--el-color-primary);
+}
+
+.paste-card-method-group :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+    background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%) !important;
+    color: white !important;
+    box-shadow: 0 3px 10px rgba(64, 158, 255, 0.35);
+}
+
+/* Mobile responsive for paste card */
+@media (max-width: 768px) {
+    .paste-card {
+        height: auto;
+        min-height: 30vh;
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .upload-card-busy.paste-card {
+        height: auto;
+        min-height: 18vh;
+        padding: 5px;
+    }
+
+    .upload-card-textarea {
+        margin-top: 4px;
+        width: calc(100% - 4px) !important;
+    }
+
+    .upload-card-textarea::before {
+        border-radius: 11px;
+    }
+
+    :deep(.el-textarea__inner) {
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .paste-card-actions {
+        width: 100% !important;
+        margin-top: 6px;
+        gap: 6px;
+    }
+
+    .paste-card-upload-button {
+        height: 30px;
+        min-width: 55px;
+        border-radius: 8px !important;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+        padding: 0 10px;
+    }
+
+    .paste-card-method-group {
+        border-radius: 8px;
+        padding: 2px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+    }
+
+    .paste-card-method-group :deep(.el-radio-button__inner) {
+        padding: 4px 10px;
+        font-size: 11px;
+        border-radius: 6px !important;
+        height: 26px;
+        display: flex;
+        align-items: center;
+    }
 }
 
 .upload-list-dashboard {
@@ -1456,10 +1735,7 @@ beforeDestroy() {
     background-color: var(--upload-list-dashboard-bg-color);
     box-shadow: var(--upload-list-dashboard-shadow);
 }
-.upload-list-dashboard-title {
-    font-size: medium;
-    font-weight: bold;
-}
+/* .upload-list-dashboard-title moved to modern section below */
 
 .file-icon {
     font-size: 30px;
@@ -1678,4 +1954,436 @@ beforeDestroy() {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.3; }
 }
+
+/* ============================================
+   Modern Progress Bar Styles
+   ============================================ */
+.upload-list-item-progress {
+    margin-top: 8px;
+    width: 28vw;
+    padding: 4px 8px;
+    background: var(--progress-wrapper-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.05) 0%, rgba(64, 158, 255, 0.02) 100%));
+    border-radius: 12px;
+    border: 1px solid var(--progress-wrapper-border, rgba(64, 158, 255, 0.1));
+}
+
+.upload-list-item-progress :deep(.el-progress) {
+    --el-color-primary: #409eff;
+}
+
+.upload-list-item-progress :deep(.el-progress-bar) {
+    padding-right: 0;
+    margin-right: 0;
+}
+
+.upload-list-item-progress :deep(.el-progress-bar__outer) {
+    height: 10px !important;
+    border-radius: 8px;
+    background: var(--progress-outer-bg, linear-gradient(135deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.03) 100%));
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.upload-list-item-progress :deep(.el-progress-bar__inner) {
+    border-radius: 8px;
+    background: linear-gradient(90deg, 
+        #409eff 0%, 
+        #66b1ff 50%, 
+        #409eff 100%) !important;
+    box-shadow: 0 0 12px rgba(64, 158, 255, 0.5),
+                0 0 4px rgba(64, 158, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+    transition: width 0.3s ease;
+}
+
+.upload-list-item-progress :deep(.el-progress-bar__inner::after) {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+/* Stripe animation for active upload */
+.upload-list-item-progress :deep(.el-progress-bar__inner::before) {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 300%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 8px,
+        rgba(255, 255, 255, 0.15) 8px,
+        rgba(255, 255, 255, 0.15) 16px
+    );
+    animation: progressStripes 1s linear infinite;
+}
+
+/* Success state */
+.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner) {
+    background: linear-gradient(90deg, 
+        #67c23a 0%, 
+        #85ce61 25%, 
+        #95d475 50%, 
+        #85ce61 75%, 
+        #67c23a 100%) !important;
+    background-size: 200% 100%;
+    box-shadow: 0 0 12px rgba(103, 194, 58, 0.5),
+                0 0 4px rgba(103, 194, 58, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    animation: none;
+}
+
+.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner::before),
+.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner::after) {
+    animation: none;
+    background: none;
+}
+
+/* Exception/Error state */
+.upload-list-item-progress :deep(.el-progress--exception .el-progress-bar__inner) {
+    background: linear-gradient(90deg, 
+        #f56c6c 0%, 
+        #f78989 25%, 
+        #f9a7a7 50%, 
+        #f78989 75%, 
+        #f56c6c 100%) !important;
+    background-size: 200% 100%;
+    box-shadow: 0 0 12px rgba(245, 108, 108, 0.5),
+                0 0 4px rgba(245, 108, 108, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    animation: progressPulse 1s ease-in-out infinite;
+}
+
+.upload-list-item-progress :deep(.el-progress--exception .el-progress-bar__inner::before) {
+    animation: none;
+    background: none;
+}
+
+@keyframes progressShine {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+}
+
+@keyframes progressStripes {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(22.627px); }
+}
+
+@keyframes progressPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .upload-list-item-progress {
+        width: 32vw;
+        padding: 3px 6px;
+    }
+    
+    .upload-list-item-progress :deep(.el-progress-bar__outer) {
+        height: 8px !important;
+    }
+}
+
+/* ============================================
+   Modern Action Button Group Styles
+   ============================================ */
+.modern-action-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    background: var(--modern-action-group-bg, rgba(64, 158, 255, 0.08));
+    border-radius: 14px;
+    border: 1px solid var(--modern-action-group-border, rgba(64, 158, 255, 0.15));
+    box-shadow: 0 2px 8px var(--modern-action-group-shadow, rgba(0, 0, 0, 0.06));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-action-group:hover {
+    background: var(--modern-action-group-hover-bg, rgba(64, 158, 255, 0.12));
+    box-shadow: 0 4px 16px var(--modern-action-group-hover-shadow, rgba(64, 158, 255, 0.15));
+    transform: translateY(-1px);
+}
+
+.modern-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: var(--modern-action-btn-bg, linear-gradient(135deg, #409eff 0%, #66b1ff 100%));
+    color: white;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(64, 158, 255, 0.25);
+    position: relative;
+    overflow: hidden;
+    outline: none !important;
+}
+
+.modern-action-btn:focus,
+.modern-action-btn:focus-visible {
+    outline: none !important;
+}
+
+.modern-action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.modern-action-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
+}
+
+.modern-action-btn:hover::before {
+    left: 100%;
+}
+
+.modern-action-btn:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 1px 4px rgba(64, 158, 255, 0.3);
+}
+
+.modern-action-btn-danger {
+    background: var(--modern-action-btn-danger-bg, linear-gradient(135deg, #f56c6c 0%, #f78989 100%));
+    box-shadow: 0 2px 6px rgba(245, 108, 108, 0.25);
+}
+
+.modern-action-btn-danger:hover {
+    box-shadow: 0 4px 12px rgba(245, 108, 108, 0.4);
+}
+
+/* Dropdown Menu Styles */
+.modern-dropdown-item-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.modern-dropdown-item-content span {
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+}
+
+/* ============================================
+   File Item Name Wrapper Styles
+   ============================================ */
+.upload-list-item-name-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background: var(--file-name-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.08) 0%, rgba(64, 158, 255, 0.03) 100%));
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--file-name-border, rgba(64, 158, 255, 0.12));
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+
+.upload-list-item-name-wrapper:hover {
+    background: var(--file-name-hover-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.12) 0%, rgba(64, 158, 255, 0.06) 100%));
+    border-color: var(--file-name-hover-border, rgba(64, 158, 255, 0.2));
+}
+
+.upload-list-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    max-width: 28vw;
+    color: var(--el-text-color-primary);
+    letter-spacing: 0.3px;
+    text-align: center;
+}
+
+/* ============================================
+   Modern File Action Button Styles
+   ============================================ */
+.modern-file-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+.modern-file-action-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+}
+
+.modern-file-action-btn:active::before {
+    width: 100%;
+    height: 100%;
+}
+
+.modern-file-action-btn-primary {
+    background: var(--file-action-primary-bg, linear-gradient(145deg, #409eff 0%, #53a8ff 50%, #66b1ff 100%));
+    color: white;
+    box-shadow: 0 3px 10px rgba(64, 158, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.modern-file-action-btn-primary:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 6px 20px rgba(64, 158, 255, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.modern-file-action-btn-primary:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+.modern-file-action-btn-danger {
+    background: var(--file-action-danger-bg, linear-gradient(145deg, #f56c6c 0%, #f78989 50%, #f9a7a7 100%));
+    color: white;
+    box-shadow: 0 3px 10px rgba(245, 108, 108, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.modern-file-action-btn-danger:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 6px 20px rgba(245, 108, 108, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.modern-file-action-btn-danger:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+/* ============================================
+   Updated Upload List Item Styles
+   ============================================ */
+.upload-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px 10px;
+    border: 1px solid var(--upload-list-item-border-color, rgba(64, 158, 255, 0.1));
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: var(--upload-list-item-bg, linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%));
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px var(--upload-list-item-shadow, rgba(0, 0, 0, 0.04));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.upload-list-item:hover {
+    border-color: var(--upload-list-item-hover-border, rgba(64, 158, 255, 0.25));
+    box-shadow: 0 4px 16px var(--upload-list-item-hover-shadow, rgba(64, 158, 255, 0.12));
+    transform: translateY(-2px);
+}
+
+.upload-list-item-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ============================================
+   Dashboard Title Enhancement
+   ============================================ */
+.upload-list-dashboard-title {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--dashboard-title-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.06) 0%, transparent 100%));
+    border-radius: 12px;
+    color: var(--el-text-color-primary);
+}
+
+.upload-list-dashboard-title .el-icon {
+    font-size: 16px;
+    margin-right: 4px;
+    opacity: 0.85;
+}
+
+/* ============================================
+   Mobile Responsive Styles
+   ============================================ */
+@media (max-width: 768px) {
+    .modern-action-group {
+        gap: 4px;
+        padding: 3px;
+        border-radius: 12px;
+    }
+
+    .modern-action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .modern-file-action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .upload-list-item-name-wrapper {
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
+
+    .upload-list-item-name {
+        font-size: 12px;
+        width: 32vw;
+    }
+
+    .upload-list-dashboard-title {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+}
+
 </style>

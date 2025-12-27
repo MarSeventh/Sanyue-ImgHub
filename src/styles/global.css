@@ -53,6 +53,39 @@
     --upload-main-title-color: linear-gradient(to right, #a1e3cc, rgb(120, 174, 236));
     /* 上传页主标题颜色 */
 
+    /* 上传页现代化组件 */
+    --modern-action-group-bg: rgba(64, 158, 255, 0.08);
+    /* 操作按钮组背景 */
+    --modern-action-group-border: rgba(64, 158, 255, 0.15);
+    /* 操作按钮组边框 */
+    --logo-glow-color: #409EFF;
+    /* Logo悬停发光颜色 */
+    --modern-action-group-shadow: rgba(0, 0, 0, 0.06);
+    /* 操作按钮组阴影 */
+    --modern-action-group-hover-bg: rgba(64, 158, 255, 0.12);
+    /* 操作按钮组悬浮背景 */
+    --modern-action-group-hover-shadow: rgba(64, 158, 255, 0.15);
+    /* 操作按钮组悬浮阴影 */
+    --file-name-bg: linear-gradient(135deg, rgba(64, 158, 255, 0.08) 0%, rgba(64, 158, 255, 0.03) 100%);
+    /* 文件名背景 */
+    --file-name-border: rgba(64, 158, 255, 0.12);
+    /* 文件名边框 */
+    --file-name-hover-bg: linear-gradient(135deg, rgba(64, 158, 255, 0.12) 0%, rgba(64, 158, 255, 0.06) 100%);
+    /* 文件名悬浮背景 */
+    --file-name-hover-border: rgba(64, 158, 255, 0.2);
+    /* 文件名悬浮边框 */
+    --upload-list-item-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+    /* 上传列表项背景 */
+    --upload-list-item-border-color: rgba(64, 158, 255, 0.1);
+    /* 上传列表项边框颜色 */
+    --upload-list-item-shadow: rgba(0, 0, 0, 0.04);
+    /* 上传列表项阴影 */
+    --upload-list-item-hover-border: rgba(64, 158, 255, 0.25);
+    /* 上传列表项悬浮边框 */
+    --upload-list-item-hover-shadow: rgba(64, 158, 255, 0.12);
+    /* 上传列表项悬浮阴影 */
+    --dashboard-title-bg: linear-gradient(135deg, rgba(64, 158, 255, 0.06) 0%, transparent 100%);
+    /* 仪表盘标题背景 */
     /* 上传页工具栏按钮 */
     --toolbar-button-bg-color: rgba(255, 255, 255, 0.5);
     /* 上传页工具栏按钮背景 */
@@ -250,6 +283,40 @@
     /* 上传页工具栏按钮悬浮阴影 */
     --toolbar-button-color: #bedefd;
     /* 上传页工具栏按钮文字颜色 */
+
+    /* 上传页现代化组件 */
+    --modern-action-group-bg: rgba(64, 158, 255, 0.12);
+    /* 操作按钮组背景 */
+    --modern-action-group-border: rgba(64, 158, 255, 0.2);
+    /* 操作按钮组边框 */
+    --logo-glow-color: #8fadc8;
+    /* Logo悬停发光颜色 */
+    --modern-action-group-shadow: rgba(0, 0, 0, 0.2);
+    /* 操作按钮组阴影 */
+    --modern-action-group-hover-bg: rgba(64, 158, 255, 0.18);
+    /* 操作按钮组悬浮背景 */
+    --modern-action-group-hover-shadow: rgba(64, 158, 255, 0.25);
+    /* 操作按钮组悬浮阴影 */
+    --file-name-bg: linear-gradient(135deg, rgba(64, 158, 255, 0.12) 0%, rgba(64, 158, 255, 0.05) 100%);
+    /* 文件名背景 */
+    --file-name-border: rgba(64, 158, 255, 0.18);
+    /* 文件名边框 */
+    --file-name-hover-bg: linear-gradient(135deg, rgba(64, 158, 255, 0.18) 0%, rgba(64, 158, 255, 0.08) 100%);
+    /* 文件名悬浮背景 */
+    --file-name-hover-border: rgba(64, 158, 255, 0.3);
+    /* 文件名悬浮边框 */
+    --upload-list-item-bg: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(40, 40, 40, 0.7) 100%);
+    /* 上传列表项背景 */
+    --upload-list-item-border-color: rgba(64, 158, 255, 0.15);
+    /* 上传列表项边框颜色 */
+    --upload-list-item-shadow: rgba(0, 0, 0, 0.15);
+    /* 上传列表项阴影 */
+    --upload-list-item-hover-border: rgba(64, 158, 255, 0.35);
+    /* 上传列表项悬浮边框 */
+    --upload-list-item-hover-shadow: rgba(64, 158, 255, 0.2);
+    /* 上传列表项悬浮阴影 */
+    --dashboard-title-bg: linear-gradient(135deg, rgba(64, 158, 255, 0.1) 0%, transparent 100%);
+    /* 仪表盘标题背景 */
 
     /* Footer */
     --page-footer-text-color: aliceblue;

@@ -91,8 +91,8 @@ export default {
 /* 位置样式 */
 .logo--fixed {
   position: fixed;
-  top: 5px;
-  left: 5px;
+  top: 20px;
+  left: 20px;
   z-index: 100;
 }
 
@@ -130,6 +130,7 @@ export default {
 /* 悬停动画 */
 .logo--hover-enabled:hover {
   transform: scale(1.1) rotate(5deg);
+  filter: drop-shadow(0 0 10px var(--logo-glow-color));
 }
 
 /* 响应式设计 */

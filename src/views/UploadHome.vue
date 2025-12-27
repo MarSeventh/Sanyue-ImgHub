@@ -970,45 +970,88 @@ export default {
 }
 .title {
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 800;
     font-family: 'Noto Sans SC', sans-serif;
     position: relative;
-    padding-bottom: 5px;
+    padding-bottom: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: float 4s ease-in-out infinite;
+    letter-spacing: 2px;
 }
 .title:hover {
-    transform: scale(1.05);
+    transform: scale(1.08) translateY(-3px);
+    filter: drop-shadow(0 0 20px var(--el-upload-dragger-uniform-color));
 }
 .title::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 0;
-    height: 2px;
-    background: var(--upload-main-title-color);
-    transition: width 0.4s ease-in-out;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        var(--el-upload-dragger-uniform-color), 
+        transparent);
+    border-radius: 3px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px var(--el-upload-dragger-uniform-color);
 }
 .title:hover::after {
-    width: 100%;
+    width: 80%;
 }
-@media (max-width: 768px) {
-    .title {
-        font-size: 1.8rem;
-    }
-}
+
+/* 动态流光标题 */
 .main-title {
     background: var(--upload-main-title-color);
-    transition: all 0.3s ease;
+    background-size: 200% auto;
     background-clip: text;
+    -webkit-background-clip: text;
     color: transparent;
     text-decoration: none;
     display: inline-block;
+    animation: titleShimmer 3s ease-in-out infinite;
+    position: relative;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
+
+
+
 .title:hover .main-title {
-    background-size: 200% auto;
-    animation: streamer 2s linear infinite;
+    animation: titleShimmer 1s ease-in-out infinite;
+    filter: brightness(1.2);
+}
+
+/* 漂浮动画 */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* 标题流光动画 */
+@keyframes titleShimmer {
+    0% {
+        background-position: 200% center;
+    }
+    100% {
+        background-position: -200% center;
+    }
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+    .title:hover {
+        transform: scale(1.05) translateY(-2px);
+    }
 }
 
 .upload-home {

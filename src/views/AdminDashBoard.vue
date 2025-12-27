@@ -986,10 +986,10 @@ methods: {
             })
             .then(() => {
             this.updateStats(-1, false);
-            this.$message.success('删除成功!');
+            this.$message.success('删除成功');
             this.showdetailDialog = false;
             })
-            .catch(() => this.$message.error('删除失败，请检查网络连接'));
+            .catch(() => this.$message.error('删除失败'));
         }).catch(() => console.log('已取消删除'));
     },
     handleBlock(key) {
@@ -1010,9 +1010,9 @@ methods: {
                 }
             })
             .then(() => {
-                this.$message.success('加入黑名单成功!');
+                this.$message.success('加入黑名单成功');
             })
-            .catch(() => this.$message.error('加入黑名单失败，请检查网络连接'));
+            .catch(() => this.$message.error('加入黑名单失败'));
         }).catch(
             () => console.log('已取消加入黑名单')
         );
@@ -1035,9 +1035,9 @@ methods: {
                 }
             })
             .then(() => {
-                this.$message.success('加入白名单成功!');
+                this.$message.success('加入白名单成功');
             })
-            .catch(() => this.$message.error('加入白名单失败，请检查网络连接'));
+            .catch(() => this.$message.error('加入白名单失败'));
         }).catch(
             () => console.log('已取消加入白名单')
         );
@@ -1065,9 +1065,9 @@ methods: {
             .then(() => {
                 this.updateStats(-1, false);
                 fileManager.removeFile(key);
-                this.$message.success('删除成功!');
+                this.$message.success('删除成功');
             })
-            .catch(() => this.$message.error('删除失败，请检查网络连接'));
+            .catch(() => this.$message.error('删除失败'));
         }).catch(() => console.log('已取消删除'));
     },
     handleBatchDelete() {
@@ -1096,9 +1096,9 @@ methods: {
                 });
                 this.selectedFiles = [];
                 this.updateStats(-successNum, false);
-                this.$message.success('批量删除成功!');
+                this.$message.success('批量删除成功');
             })
-            .catch(() => this.$message.error('批量删除失败，请检查网络连接'));
+            .catch(() => this.$message.error('批量删除失败'));
         }).catch(() => console.log('已取消批量删除'));
     },
     handleBatchCopy() {
@@ -1354,7 +1354,7 @@ methods: {
                             });
                         }
                         this.updateStats(-1, false);
-                        this.$message.success('移动成功!');
+                        this.$message.success('移动成功');
                     } else {
                         return Promise.reject('请求失败');
                     }
@@ -1363,7 +1363,7 @@ methods: {
                     // 刷新本地文件列表
                     this.refreshLocalFileList();
                 })
-                .catch(() => this.$message.error('移动失败，请检查网络连接'));
+                .catch(() => this.$message.error('移动失败'));
         }).catch(() => console.log('已取消移动文件'));
     },
     handleBatchMove() {
@@ -1416,13 +1416,13 @@ methods: {
                         });
                     });
                     this.updateStats(-successNum, false);
-                    this.$message.success('移动成功!');
+                    this.$message.success('移动成功');
                 })
                 .then(() => {
                     // 刷新本地文件列表
                     this.refreshLocalFileList();
                 })
-                .catch(() => this.$message.error('移动失败，请检查网络连接'));
+                .catch(() => this.$message.error('移动失败'));
         }).catch(() => console.log('已取消移动文件'));
     },
     handleBatchBlock(){
@@ -1449,9 +1449,9 @@ methods: {
                             }
                         }
                     });
-                    this.$message.success('批量加入黑名单成功!');
+                    this.$message.success('批量加入黑名单成功');
                 })
-                .catch(() => this.$message.error('批量加入黑名单失败，请检查网络连接'));
+                .catch(() => this.$message.error('批量加入黑名单失败'));
         }).catch(() => console.log('已取消批量加入黑名单'));
     },
     handleBatchWhite(){
@@ -1478,9 +1478,9 @@ methods: {
                             }
                         }
                     });
-                    this.$message.success('批量加入白名单成功!');
+                    this.$message.success('批量加入白名单成功');
                 })
-                .catch(() => this.$message.error('批量加入白名单失败，请检查网络连接'));
+                .catch(() => this.$message.error('批量加入白名单失败'));
         }).catch(() => console.log('已取消批量加入白名单'));
     },
     handleBatchDownload() {
