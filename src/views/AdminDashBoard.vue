@@ -89,7 +89,9 @@
                 <!-- 桌面端面包屑 -->
                 <div class="breadcrumb desktop-only">
                     <el-breadcrumb separator="/">
-                        <el-breadcrumb-item @click="navigateToFolder('')">根目录</el-breadcrumb-item>
+                        <el-breadcrumb-item @click="navigateToFolder('')">
+                            <font-awesome-icon icon="home" class="breadcrumb-home-icon"/>
+                        </el-breadcrumb-item>
                         <el-breadcrumb-item 
                             v-for="(folder, index) in currentPath.split('/').filter(Boolean)" 
                             :key="index"
@@ -1975,6 +1977,7 @@ html.dark .header-content:hover {
     justify-content: space-between;
     gap: 12px;
     padding: 0 10px; /* 与 .content 的 padding 对齐 */
+    margin-bottom: 4px; /* 与下方内容的间距 */
 }
 
 @media (max-width: 768px) {
@@ -1983,6 +1986,7 @@ html.dark .header-content:hover {
         align-items: center;
         gap: 8px;
         padding: 0 5px;
+        margin-bottom: 2px;
     }
 }
 
@@ -2162,7 +2166,7 @@ html.dark .header-content:hover {
 
 @media (max-width: 768px) {
     .main-container {
-        margin-top: 18vh;
+        margin-top: 12vh;
     }
 }
 
@@ -2879,17 +2883,27 @@ html.dark .header-content:hover {
 }
 
 .breadcrumb {
-    padding: 15px;
+    padding: 8px 12px;
     background-color: var(--el-bg-color);
-    border-radius: 8px;
-    font-size: 1.2em;
+    border-radius: 6px;
+    font-size: 0.95em;
     box-shadow: var(--admin-dashboard-stats-shadow);
     transition: all 0.3s ease;
 }
 
 .breadcrumb:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: var(--admin-dashboard-stats-hover-shadow);
+}
+
+.breadcrumb-home-icon {
+    font-size: 14px;
+    color: #38bdf8;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-home-icon:hover {
+    color: var(--admin-purple);
 }
 
 .folder-card {
