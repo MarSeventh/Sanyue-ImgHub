@@ -605,6 +605,21 @@
 
 /* 移动端适配 */
 @media (max-width: 768px) {
+
+    /* 移动端 el-message 样式 */
+    .el-message {
+        padding: 8px 18px !important;
+        border-radius: 30px !important;
+    }
+
+    .el-message .el-message__icon {
+        font-size: 14px !important;
+    }
+
+    .el-message .el-message__content {
+        font-size: 13px !important;
+    }
+
     .dialog-section {
         padding: 12px;
     }
