@@ -491,9 +491,33 @@ methods: {
             });
         });
     },
-    // 获取容量统计
+    // 获取容量统计（重新计算）
     async refreshQuota() {
         this.quotaLoading = true;
+        try {
+            // 使用 POST 请求重新统计容量（会触发索引重建）
+            const response = await fetchWithAuth('/api/manage/quota', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (data.success) {
+                this.quotaStats = data.channelStats || {};
+            } else {
+                // 如果重新统计失败，尝试获取已有数据
+                const getResponse = await fetchWithAuth('/api/manage/quota');
+                const getData = await getResponse.json();
+                if (getData.success) {
+                    this.quotaStats = getData.quotaStats || {};
+                }
+            }
+        } catch (error) {
+            console.error('Failed to refresh quota stats:', error);
+        } finally {
+            this.quotaLoading = false;
+        }
+    },
+    // 获取容量统计（仅读取，不重建索引）
+    async loadQuotaStats() {
         try {
             const response = await fetchWithAuth('/api/manage/quota');
             const data = await response.json();
@@ -501,9 +525,7 @@ methods: {
                 this.quotaStats = data.quotaStats || {};
             }
         } catch (error) {
-            console.error('Failed to fetch quota stats:', error);
-        } finally {
-            this.quotaLoading = false;
+            console.error('Failed to load quota stats:', error);
         }
     },
     // 获取渠道已用容量 (GB)
@@ -621,8 +643,8 @@ mounted() {
             }));
         }
         this.s3Settings = data.s3;
-        // 加载容量统计
-        this.refreshQuota();
+        // 加载容量统计（仅读取，不重建索引）
+        this.loadQuotaStats();
     })
     .finally(() => {
         this.loading = false;
