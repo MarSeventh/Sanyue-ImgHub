@@ -2513,11 +2513,11 @@ html.dark .header-content:hover {
     font-size: 12px;
     font-family: 'Consolas', 'Monaco', monospace;
     color: var(--el-text-color-secondary);
+    width: 120px;
     max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
-    margin-right: 12px;
 }
 
 /* 隐藏滚动条但保持可滚动 */

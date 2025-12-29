@@ -878,3 +878,61 @@
     background: none !important;
     border: none !important;
 }
+
+/* ==============================
+   OverlayScrollbars 悬浮滚动条主题
+   macOS 风格：悬浮、自动隐藏、胶囊滑块
+   ============================== */
+
+/* 隐藏浏览器原生滚动条，但保持滚动能力 */
+html,
+body,
+* {
+    scrollbar-width: none !important;
+    /* Firefox */
+    -ms-overflow-style: none !important;
+    /* IE/Edge */
+}
+
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none !important;
+    /* Chrome/Safari/Opera */
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+/* OverlayScrollbars 主题自定义 */
+.os-theme-dark {
+    --os-handle-bg: rgba(128, 128, 128, 0.5);
+    --os-handle-bg-hover: rgba(128, 128, 128, 0.7);
+    --os-handle-bg-active: rgba(128, 128, 128, 0.85);
+}
+
+/* 深色模式 - 使用 CSS 变量覆盖 */
+html.dark .os-theme-dark,
+.dark .os-theme-dark {
+    --os-handle-bg: rgba(180, 180, 180, 0.6);
+    --os-handle-bg-hover: rgba(180, 180, 180, 0.75);
+    --os-handle-bg-active: rgba(180, 180, 180, 0.9);
+}
+
+/* 滚动条轨道 - 完全透明 */
+.os-theme-dark .os-scrollbar,
+.os-theme-dark .os-scrollbar-horizontal,
+.os-theme-dark .os-scrollbar-vertical {
+    --os-size: 10px;
+    --os-padding-perpendicular: 2px;
+    --os-padding-axis: 2px;
+    --os-track-bg: transparent;
+    --os-track-bg-hover: transparent;
+    --os-track-bg-active: transparent;
+}
+
+/* 滚动条滑块 - macOS 风格胶囊 */
+.os-theme-dark .os-scrollbar .os-scrollbar-handle {
+    border-radius: 10px !important;
+    transition: background-color 0.2s ease, opacity 0.2s ease !important;
+}

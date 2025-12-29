@@ -4,10 +4,17 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { OverlayScrollbars } from 'overlayscrollbars'
 
 export default {
   computed: {
     ...mapGetters(['userConfig', 'useDarkMode'])
+  },
+  mounted() {
+    // 初始化 OverlayScrollbars 悬浮滚动条
+    this.$nextTick(() => {
+      this.initOverlayScrollbars()
+    })
   },
   watch: {
     useDarkMode() {
@@ -15,6 +22,34 @@ export default {
     }
   },
   methods: {
+    initOverlayScrollbars() {
+      try {
+        // 检查是否已经初始化
+        if (OverlayScrollbars.valid(document.body)) {
+          return
+        }
+        
+        // 应用到 body 实现全局悬浮滚动条
+        OverlayScrollbars(document.body, {
+          scrollbars: {
+            theme: 'os-theme-dark',
+            visibility: 'auto',
+            autoHide: 'scroll',
+            autoHideDelay: 600,
+            dragScroll: true,
+            clickScroll: true
+          },
+          overflow: {
+            x: 'hidden',
+            y: 'scroll'
+          }
+        })
+        
+        console.log('OverlayScrollbars initialized successfully')
+      } catch (error) {
+        console.error('Failed to initialize OverlayScrollbars:', error)
+      }
+    },
     setSiteIcon() {
       // 同时更改 icon apple-touch-icon 和 mask-icon
       const existingIcons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"], link[rel="mask-icon"]');

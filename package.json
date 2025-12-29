@@ -1,6 +1,6 @@
 {
   "name": "sanyue_imghub",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -21,6 +21,8 @@
     "http-proxy-middleware": "^3.0.2",
     "image-conversion": "^2.1.1",
     "jszip": "^3.10.1",
+    "overlayscrollbars": "^2.13.0",
+    "overlayscrollbars-vue": "^0.5.9",
     "vue": "^3.2.13",
     "vue-chartjs": "^5.3.2",
     "vue-cookies": "^1.8.4",
