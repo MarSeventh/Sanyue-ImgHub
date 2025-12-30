@@ -151,11 +151,11 @@
                     <div class="setting-item">
                         <span class="setting-label">上传渠道</span>
                         <el-radio-group v-model="uploadChannel" class="radio-card-group compact">
-                            <el-radio label="telegram" class="radio-card">Telegram</el-radio>
+                            <el-radio label="telegram" class="radio-card">TG</el-radio>
                             <el-radio label="cfr2" class="radio-card">R2</el-radio>
                             <el-radio label="s3" class="radio-card">S3</el-radio>
-                            <el-radio label="discord" class="radio-card">Discord</el-radio>
-                            <el-radio label="huggingface" class="radio-card">HuggingFace</el-radio>
+                            <el-radio label="discord" class="radio-card">DC</el-radio>
+                            <el-radio label="huggingface" class="radio-card">HF</el-radio>
                         </el-radio-group>
                     </div>
                     <div class="setting-item">

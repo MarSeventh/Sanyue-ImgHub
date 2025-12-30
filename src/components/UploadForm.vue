@@ -412,6 +412,30 @@ methods: {
             return
         }
 
+        // HuggingFace 渠道：根据文件大小选择上传方式
+        // 小文件（<20MB）：通过 CF Workers 代理上传
+        // 大文件（>=20MB）：前端直传到 HuggingFace S3，绕过 CF Workers 限制
+        if (uploadChannel === 'huggingface') {
+            const HF_DIRECT_THRESHOLD = 20 * 1024 * 1024 // 20MB
+            if (file.file.size >= HF_DIRECT_THRESHOLD) {
+                this.uploadToHuggingFaceDirect(file)
+            } else {
+                this.uploadSingleFile(file)
+            }
+            return
+        }
+
+        // Discord 渠道：限制 10MB，超过 9MB 就用分块上传（留安全余量）
+        if (uploadChannel === 'discord') {
+            const DISCORD_CHUNK_THRESHOLD = 9 * 1024 * 1024 // 9MB
+            if (file.file.size > DISCORD_CHUNK_THRESHOLD) {
+                this.uploadFileInChunks(file)
+            } else {
+                this.uploadSingleFile(file)
+            }
+            return
+        }
+
         // 其他渠道，检查文件大小，决定是否使用分块上传
         const CHUNK_THRESHOLD = 20 * 1024 * 1024 // 20MB
         if (file.file.size > CHUNK_THRESHOLD) {
@@ -421,7 +445,7 @@ methods: {
         }
     },
     // 单文件上传
-    uploadSingleFile(file) {
+    async uploadSingleFile(file) {
         const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
         const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
         const autoRetry = this.autoRetry && uploadChannel !== 'external'
@@ -431,6 +455,19 @@ methods: {
         formData.append('file', file.file)
         if (uploadChannel === 'external') {
             formData.append('url', file.file.url)
+        }
+
+        // HuggingFace 渠道：在前端预计算 SHA256，避免后端 CPU 超时
+        if (uploadChannel === 'huggingface') {
+            try {
+                console.log('Computing SHA256 for HuggingFace upload...')
+                const sha256 = await this.computeSha256(file.file)
+                formData.append('sha256', sha256)
+                console.log('SHA256 computed:', sha256)
+            } catch (err) {
+                console.error('Failed to compute SHA256:', err)
+                // 继续上传，让后端计算（可能会超时）
+            }
         }
 
         axios({
@@ -462,14 +499,33 @@ methods: {
     },
     // 分块上传
     async uploadFileInChunks(file) {
-        const CHUNK_SIZE = 10 * 1024 * 1024 // 10MB
+        const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
+        
+        // Discord 使用 9MB 分块（留安全余量，Discord 限制 10MB）
+        // Telegram 使用 16MB 分块（TG Bot getFile 下载限制 20MB，留 4MB 安全余量）
+        // 其他渠道使用 16MB 分块
+        const CHUNK_SIZE = uploadChannel === 'discord' 
+            ? 9 * 1024 * 1024  // 9MB for Discord
+            : 16 * 1024 * 1024 // 16MB for Telegram and others (TG getFile limit: 20MB)
+        
         const fileSize = file.file.size
         const totalChunks = Math.ceil(fileSize / CHUNK_SIZE)
         
         const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
-        const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
         const autoRetry = this.autoRetry && uploadChannel !== 'external'
         const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
+
+        // HuggingFace 渠道：在前端预计算 SHA256
+        let precomputedSha256 = null
+        if (uploadChannel === 'huggingface') {
+            try {
+                console.log('Computing SHA256 for HuggingFace chunked upload...')
+                precomputedSha256 = await this.computeSha256(file.file)
+                console.log('SHA256 computed:', precomputedSha256)
+            } catch (err) {
+                console.error('Failed to compute SHA256:', err)
+            }
+        }
 
         try {
             // 第一步：初始化分块上传，获取uploadId
@@ -602,6 +658,10 @@ methods: {
             mergeFormData.append('totalChunks', totalChunks.toString())
             mergeFormData.append('originalFileName', file.file.name)
             mergeFormData.append('originalFileType', file.file.type)
+            // HuggingFace 渠道：传递预计算的 SHA256
+            if (precomputedSha256) {
+                mergeFormData.append('sha256', precomputedSha256)
+            }
 
             const response = await axios({
                 url: '/upload' + 
@@ -1169,6 +1229,322 @@ methods: {
                 this.retryFailedFiles(filesToRetry);
             }
         }, this.retryDelay);
+    },
+    // HuggingFace 大文件直传（绕过 CF Workers 限制）
+    // 流程：前端计算 SHA256 → 获取 S3 上传 URL → 直传到 S3 → 提交文件引用
+    async uploadToHuggingFaceDirect(file) {
+        const fileItem = this.fileList.find(item => item.uid === file.file.uid);
+        if (!fileItem) return;
+
+        try {
+            console.log('=== HuggingFace Direct Upload ===');
+            console.log('File:', file.file.name, 'Size:', file.file.size);
+
+            // 1. 计算 SHA256
+            file.onProgress({ percent: 5, file: file.file });
+            console.log('Computing SHA256...');
+            const sha256 = await this.computeSha256(file.file);
+            console.log('SHA256:', sha256);
+
+            // 2. 获取文件样本（前512字节的base64）
+            const sampleBytes = new Uint8Array(await file.file.slice(0, 512).arrayBuffer());
+            const fileSample = btoa(String.fromCharCode(...sampleBytes));
+
+            // 3. 获取 LFS 上传 URL
+            file.onProgress({ percent: 10, file: file.file });
+            console.log('Getting LFS upload URL...');
+            const uploadInfoRes = await axios({
+                url: '/api/huggingface/getUploadUrl',
+                method: 'post',
+                data: {
+                    fileSize: file.file.size,
+                    fileName: file.file.name,
+                    sha256,
+                    fileSample
+                },
+                withAuthCode: true
+            });
+
+            if (!uploadInfoRes.data.success) {
+                throw new Error(uploadInfoRes.data.error || 'Failed to get upload URL');
+            }
+
+            const uploadInfo = uploadInfoRes.data;
+            console.log('Upload info:', uploadInfo);
+
+            // 检查文件是否已存在
+            if (uploadInfo.alreadyExists) {
+                console.log('File already exists in LFS, skipping upload');
+                file.onProgress({ percent: 90, file: file.file });
+            } else if (uploadInfo.needsLfs && uploadInfo.uploadAction) {
+                // 4. 直接上传到 S3
+                const { href, header } = uploadInfo.uploadAction;
+
+                if (header?.chunk_size) {
+                    // 分片上传
+                    await this.uploadToHuggingFaceMultipart(file, uploadInfo);
+                } else {
+                    // 基本上传
+                    console.log('Uploading to S3 (basic)...');
+                    const uploadRes = await fetch(href, {
+                        method: 'PUT',
+                        headers: header || {},
+                        body: file.file
+                    });
+
+                    if (!uploadRes.ok) {
+                        const error = await uploadRes.text();
+                        throw new Error(`S3 upload failed: ${uploadRes.status} - ${error}`);
+                    }
+                    console.log('S3 upload complete');
+                }
+            }
+
+            // 5. 提交文件引用
+            file.onProgress({ percent: 95, file: file.file });
+            console.log('Committing file...');
+            const commitRes = await axios({
+                url: '/api/huggingface/commitUpload',
+                method: 'post',
+                data: {
+                    fullId: uploadInfo.fullId,
+                    filePath: uploadInfo.filePath,
+                    sha256,
+                    fileSize: file.file.size,
+                    fileName: file.file.name,
+                    channelName: uploadInfo.channelName
+                },
+                withAuthCode: true
+            });
+
+            if (!commitRes.data.success) {
+                throw new Error(commitRes.data.error || 'Failed to commit file');
+            }
+
+            console.log('Upload complete:', commitRes.data);
+            // 转换响应格式以匹配 handleSuccess 期望的格式
+            const formattedResponse = {
+                data: [{ src: commitRes.data.src }]
+            };
+            file.onSuccess(formattedResponse, file.file);
+
+        } catch (err) {
+            console.error('HuggingFace direct upload error:', err);
+            this.exceptionList.push(file);
+            file.onError(err, file.file);
+        } finally {
+            if (this.uploadingCount + this.waitingCount === 0) {
+                this.uploading = false;
+            }
+        }
+    },
+    // HuggingFace 分片上传到 S3
+    async uploadToHuggingFaceMultipart(file, uploadInfo) {
+        const { uploadAction } = uploadInfo;
+        const { href: completionUrl, header } = uploadAction;
+        const chunkSize = parseInt(header.chunk_size);
+
+        // 获取所有分片的上传 URL
+        const parts = Object.keys(header).filter(key => /^[0-9]+$/.test(key));
+        console.log(`Multipart upload: ${parts.length} parts, chunk size: ${chunkSize}`);
+
+        const completeParts = [];
+        const totalParts = parts.length;
+
+        for (const part of parts) {
+            const index = parseInt(part) - 1;
+            const start = index * chunkSize;
+            const end = Math.min(start + chunkSize, file.file.size);
+            const chunk = file.file.slice(start, end);
+
+            console.log(`Uploading part ${part}/${totalParts}`);
+            const response = await fetch(header[part], {
+                method: 'PUT',
+                body: chunk
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to upload part ${part}: ${response.status}`);
+            }
+
+            const etag = response.headers.get('ETag');
+            if (!etag) {
+                throw new Error(`No ETag for part ${part}`);
+            }
+
+            completeParts.push({ partNumber: parseInt(part), etag });
+
+            // 更新进度（10% - 90%）
+            const progress = 10 + Math.round((parseInt(part) / totalParts) * 80);
+            file.onProgress({ percent: progress, file: file.file });
+        }
+
+        // 完成分片上传
+        console.log('Completing multipart upload...');
+        const completeResponse = await fetch(completionUrl, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.git-lfs+json',
+                'Content-Type': 'application/vnd.git-lfs+json'
+            },
+            body: JSON.stringify({
+                oid: uploadInfo.oid,
+                parts: completeParts
+            })
+        });
+
+        if (!completeResponse.ok) {
+            const error = await completeResponse.text();
+            throw new Error(`Multipart complete failed: ${completeResponse.status} - ${error}`);
+        }
+
+        console.log('Multipart upload complete');
+    },
+    // 计算文件的 SHA256 哈希（用于 HuggingFace 上传）
+    // 使用增量哈希算法，支持任意大小文件
+    async computeSha256(file) {
+        // 使用纯 JavaScript 实现的增量 SHA256
+        // 这样可以分块处理大文件，避免内存溢出
+        const sha256 = this.createSha256();
+        
+        const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB chunks - 更小的块减少内存压力
+        let offset = 0;
+        
+        while (offset < file.size) {
+            const chunk = file.slice(offset, Math.min(offset + CHUNK_SIZE, file.size));
+            const buffer = await chunk.arrayBuffer();
+            sha256.update(new Uint8Array(buffer));
+            offset += CHUNK_SIZE;
+            
+            // 每处理 20MB 打印一次进度
+            if (offset % (20 * 1024 * 1024) < CHUNK_SIZE) {
+                console.log(`SHA256 progress: ${Math.min(100, Math.round(offset / file.size * 100))}%`);
+            }
+        }
+        
+        return sha256.digest();
+    },
+    // 创建增量 SHA256 哈希器（纯 JavaScript 实现）
+    createSha256() {
+        // SHA256 常量
+        const K = new Uint32Array([
+            0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+            0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+            0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+            0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+            0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+            0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+            0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+        ]);
+
+        let H = new Uint32Array([
+            0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+            0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+        ]);
+
+        let buffer = new Uint8Array(64);
+        let bufferLength = 0;
+        let totalLength = 0;
+
+        const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+
+        const processBlock = (block) => {
+            const W = new Uint32Array(64);
+            
+            for (let i = 0; i < 16; i++) {
+                W[i] = (block[i * 4] << 24) | (block[i * 4 + 1] << 16) | (block[i * 4 + 2] << 8) | block[i * 4 + 3];
+            }
+            
+            for (let i = 16; i < 64; i++) {
+                const s0 = rotr(W[i - 15], 7) ^ rotr(W[i - 15], 18) ^ (W[i - 15] >>> 3);
+                const s1 = rotr(W[i - 2], 17) ^ rotr(W[i - 2], 19) ^ (W[i - 2] >>> 10);
+                W[i] = (W[i - 16] + s0 + W[i - 7] + s1) >>> 0;
+            }
+
+            let [a, b, c, d, e, f, g, h] = H;
+
+            for (let i = 0; i < 64; i++) {
+                const S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+                const ch = (e & f) ^ (~e & g);
+                const temp1 = (h + S1 + ch + K[i] + W[i]) >>> 0;
+                const S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+                const maj = (a & b) ^ (a & c) ^ (b & c);
+                const temp2 = (S0 + maj) >>> 0;
+
+                h = g; g = f; f = e;
+                e = (d + temp1) >>> 0;
+                d = c; c = b; b = a;
+                a = (temp1 + temp2) >>> 0;
+            }
+
+            H[0] = (H[0] + a) >>> 0;
+            H[1] = (H[1] + b) >>> 0;
+            H[2] = (H[2] + c) >>> 0;
+            H[3] = (H[3] + d) >>> 0;
+            H[4] = (H[4] + e) >>> 0;
+            H[5] = (H[5] + f) >>> 0;
+            H[6] = (H[6] + g) >>> 0;
+            H[7] = (H[7] + h) >>> 0;
+        };
+
+        return {
+            update(data) {
+                totalLength += data.length;
+                let offset = 0;
+
+                if (bufferLength > 0) {
+                    const needed = 64 - bufferLength;
+                    const toCopy = Math.min(needed, data.length);
+                    buffer.set(data.subarray(0, toCopy), bufferLength);
+                    bufferLength += toCopy;
+                    offset = toCopy;
+
+                    if (bufferLength === 64) {
+                        processBlock(buffer);
+                        bufferLength = 0;
+                    }
+                }
+
+                while (offset + 64 <= data.length) {
+                    processBlock(data.subarray(offset, offset + 64));
+                    offset += 64;
+                }
+
+                if (offset < data.length) {
+                    buffer.set(data.subarray(offset), 0);
+                    bufferLength = data.length - offset;
+                }
+            },
+            digest() {
+                const bitLength = totalLength * 8;
+                
+                // Padding
+                buffer[bufferLength++] = 0x80;
+                
+                if (bufferLength > 56) {
+                    buffer.fill(0, bufferLength, 64);
+                    processBlock(buffer);
+                    bufferLength = 0;
+                }
+                
+                buffer.fill(0, bufferLength, 56);
+                
+                // Length in bits (big-endian, 64-bit)
+                const view = new DataView(buffer.buffer);
+                view.setUint32(56, Math.floor(bitLength / 0x100000000), false);
+                view.setUint32(60, bitLength >>> 0, false);
+                
+                processBlock(buffer);
+
+                // Convert to hex
+                let hex = '';
+                for (let i = 0; i < 8; i++) {
+                    hex += H[i].toString(16).padStart(8, '0');
+                }
+                return hex;
+            }
+        };
     },
 },
 beforeDestroy() {

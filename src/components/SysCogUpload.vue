@@ -387,7 +387,7 @@ data() {
     // 一级设置：上传渠道
     channels: [
         { value: 'telegram', label: 'Telegram' },
-        { value: 'cfr2', label: 'CloudFlareR2' },
+        { value: 'cfr2', label: 'CloudFlare R2' },
         { value: 's3', label: 'S3' },
         { value: 'discord', label: 'Discord' },
         { value: 'huggingface', label: 'HuggingFace' }
