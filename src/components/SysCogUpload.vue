@@ -303,6 +303,69 @@
             </el-form>
         </div>
 
+        <div v-if="activeChannel === 'huggingface'">
+            <!-- 负载均衡配置 -->
+            <el-form 
+                :model="huggingfaceSettings" 
+                label-position="top"
+                class="channel-form"
+            >
+                <el-form-item label="负载均衡">
+                    <el-switch v-model="huggingfaceSettings.loadBalance.enabled"/>
+                </el-form-item>
+            </el-form>
+
+            <el-form
+                v-for="(channel, index) in huggingfaceSettings.channels"
+                :key="index"
+                :model="channel"
+                label-position="top"
+                :rules="huggingfaceRules"
+                ref="huggingfaceChannelForm"
+                class="channel-form"
+            >
+                <el-form-item label="渠道名" prop="name">
+                    <el-input v-model="channel.name" :disabled="channel.fixed"/>
+                </el-form-item>
+                <el-form-item label="启用渠道" prop="enabled">
+                    <el-switch v-model="channel.enabled"/>
+                </el-form-item>
+                <el-form-item prop="repo">
+                    <template #label>
+                        仓库名
+                        <el-tooltip content="格式：用户名/仓库名，例如 username/my-images" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-input v-model="channel.repo" :disabled="channel.fixed" placeholder="username/repo-name"/>
+                </el-form-item>
+                <el-form-item label="Access Token" prop="token">
+                    <el-input v-model="channel.token" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
+                </el-form-item>
+                <el-form-item>
+                    <template #label>
+                        私有仓库
+                        <el-tooltip content="开启后仓库将设为私有，访问时需要通过服务器代理" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-switch v-model="channel.isPrivate"/>
+                </el-form-item>
+                <el-form-item>
+                    <div class="huggingface-tip">
+                        <font-awesome-icon icon="info-circle" style="margin-right: 5px;"/>
+                        {{ channel.isPrivate ? '私有仓库限制 100GB，访问时服务器会代理请求' : '公开仓库无容量限制，文件可直接访问' }}
+                    </div>
+                </el-form-item>
+                <!-- 删除 -->
+                <el-form-item>
+                    <el-button type="danger" @click="deleteChannel(index)" size="small" :disabled="channel.fixed">
+                        <font-awesome-icon icon="trash-alt" />
+                    </el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+
         </div>
 
         <!-- 操作按钮 -->
@@ -326,7 +389,8 @@ data() {
         { value: 'telegram', label: 'Telegram' },
         { value: 'cfr2', label: 'CloudFlareR2' },
         { value: 's3', label: 'S3' },
-        { value: 'discord', label: 'Discord' }
+        { value: 'discord', label: 'Discord' },
+        { value: 'huggingface', label: 'HuggingFace' }
     ],
     activeChannel: 'telegram', // 当前选中的上传渠道
 
@@ -379,6 +443,39 @@ data() {
     discordSettings: {
         loadBalance: {},
         channels: []
+    },
+
+    // 二级设置：HuggingFace 配置
+    huggingfaceSettings: {
+        loadBalance: {},
+        channels: []
+    },
+
+    huggingfaceRules: {
+        name: [
+            { required: true, message: '请输入渠道名', trigger: 'blur' },
+            { validator: (rule, value, callback) => {
+                const names = this.huggingfaceSettings.channels.map((item) => item.name);
+                if (names.filter((name) => name === value).length > 1) {
+                    callback(new Error('渠道名不能重复'));
+                } else if (value === 'HuggingFace_env') {
+                    const savePath = this.huggingfaceSettings.channels.find((item) => item.name === value).savePath;
+                    if (savePath !== 'environment variable') {
+                        callback(new Error('渠道名不能为保留值'));
+                    } else {
+                        callback();
+                    }
+                } else {
+                    callback();
+                }
+            }, trigger: 'blur' }
+        ],
+        token: [
+            { required: true, message: '请输入 Access Token', trigger: 'blur' }
+        ],
+        repo: [
+            { required: true, message: '请输入仓库名', trigger: 'blur' }
+        ]
     },
 
     discordRules: {
@@ -524,6 +621,19 @@ methods: {
                     fixed: false
                 });
                 break;
+            case 'huggingface':
+                this.huggingfaceSettings.channels.push({
+                    id: this.huggingfaceSettings.channels.length + 1,
+                    name: '',
+                    type: 'huggingface',
+                    savePath: 'database',
+                    token: '',
+                    repo: '',
+                    isPrivate: false,
+                    enabled: true,
+                    fixed: false
+                });
+                break;
         }
     },
     deleteChannel(index) {
@@ -564,6 +674,15 @@ methods: {
                 });
                 this.discordSettings.channels.splice(index, 1);
                 break;
+            case 'huggingface':
+                // 调整 id
+                this.huggingfaceSettings.channels.forEach((item, i) => {
+                    if (i > index) {
+                        item.id -= 1;
+                    }
+                });
+                this.huggingfaceSettings.channels.splice(index, 1);
+                break;
         }
     },
     saveSettings() {
@@ -597,6 +716,15 @@ methods: {
             });
         }
 
+        // HuggingFace
+        if (this.$refs.huggingfaceChannelForm) {
+            this.$refs.huggingfaceChannelForm.forEach((form) => {
+                validationPromises.push(new Promise((resolve) => {
+                    form.validate((valid) => resolve(valid));
+                }));
+            });
+        }
+
         // 等待所有验证完成
         Promise.all(validationPromises).then((results) => {
             const isValid = results.every(valid => valid);
@@ -610,7 +738,8 @@ methods: {
                 telegram: this.telegramSettings,
                 cfr2: this.cfr2Settings,
                 s3: this.s3Settings,
-                discord: this.discordSettings
+                discord: this.discordSettings,
+                huggingface: this.huggingfaceSettings
             };
             fetchWithAuth('/api/manage/sysConfig/upload', {
                 method: 'POST',
@@ -784,6 +913,14 @@ mounted() {
             }));
         }
         this.discordSettings = data.discord || { loadBalance: {}, channels: [] };
+        // 确保 HuggingFace 渠道有默认值
+        if (data.huggingface && data.huggingface.channels) {
+            data.huggingface.channels = data.huggingface.channels.map(channel => ({
+                ...channel,
+                isPrivate: channel.isPrivate || false
+            }));
+        }
+        this.huggingfaceSettings = data.huggingface || { loadBalance: {}, channels: [] };
         // 加载容量统计（仅读取，不重建索引）
         this.loadQuotaStats();
     })
@@ -941,6 +1078,17 @@ mounted() {
 
 /* Discord 限制提示 */
 .discord-limit-tip {
+    font-size: 13px;
+    color: var(--el-color-info);
+    padding: 10px 14px;
+    background: var(--el-color-info-light-9);
+    border-radius: 6px;
+    border-left: 3px solid var(--el-color-info);
+    white-space: nowrap;
+}
+
+/* HuggingFace 提示 */
+.huggingface-tip {
     font-size: 13px;
     color: var(--el-color-info);
     padding: 10px 14px;
