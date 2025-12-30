@@ -665,6 +665,8 @@ computed: {
                 file.channelTag = 'R2';
             } else if (file.metadata?.Channel === 'S3') {
                 file.channelTag = 'S3';
+            } else if (file.metadata?.Channel === 'Discord') {
+                file.channelTag = 'DC';
             } else if (file.metadata?.Channel === 'External') {
                 file.channelTag = '外链';
             } else {

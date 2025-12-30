@@ -154,6 +154,7 @@
                             <el-radio label="telegram" class="radio-card">Telegram</el-radio>
                             <el-radio label="cfr2" class="radio-card">R2</el-radio>
                             <el-radio label="s3" class="radio-card">S3</el-radio>
+                            <el-radio label="discord" class="radio-card">Discord</el-radio>
                         </el-radio-group>
                     </div>
                     <div class="setting-item">

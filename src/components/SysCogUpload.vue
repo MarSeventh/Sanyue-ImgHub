@@ -237,6 +237,72 @@
             </el-form>
         </div>
 
+        <div v-if="activeChannel === 'discord'">
+            <!-- 负载均衡配置 -->
+            <el-form 
+                :model="discordSettings" 
+                label-position="top"
+                class="channel-form"
+            >
+                <el-form-item label="负载均衡">
+                    <el-switch v-model="discordSettings.loadBalance.enabled"/>
+                </el-form-item>
+            </el-form>
+
+            <el-form
+                v-for="(channel, index) in discordSettings.channels"
+                :key="index"
+                :model="channel"
+                label-position="top"
+                :rules="discordRules"
+                ref="discordChannelForm"
+                class="channel-form"
+            >
+                <el-form-item label="渠道名" prop="name">
+                    <el-input v-model="channel.name" :disabled="channel.fixed"/>
+                </el-form-item>
+                <el-form-item label="启用渠道" prop="enabled">
+                    <el-switch v-model="channel.enabled"/>
+                </el-form-item>
+                <el-form-item label="Bot Token" prop="botToken">
+                    <el-input v-model="channel.botToken" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
+                </el-form-item>
+                <el-form-item label="Channel ID" prop="channelId">
+                    <el-input v-model="channel.channelId" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
+                </el-form-item>
+                <el-form-item>
+                    <template #label>
+                        代理域名
+                        <el-tooltip content="可选，用于国内访问 Discord CDN，填写代理域名（不含 https://）" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-input v-model="channel.proxyUrl" placeholder="例如: your-proxy.example.com"/>
+                </el-form-item>
+                <el-form-item>
+                    <template #label>
+                        Nitro 会员
+                        <el-tooltip content="开启后单文件限制提升至 25MB，关闭则为 10MB" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-switch v-model="channel.isNitro"/>
+                </el-form-item>
+                <el-form-item>
+                    <div class="discord-limit-tip">
+                        <font-awesome-icon icon="info-circle" style="margin-right: 5px;"/>
+                        {{ channel.isNitro ? 'Nitro 会员单文件限制 25MB，超过将自动切换其他渠道' : 'Discord 免费用户单文件限制 10MB，超过将自动切换其他渠道' }}
+                    </div>
+                </el-form-item>
+                <!-- 删除 -->
+                <el-form-item>
+                    <el-button type="danger" @click="deleteChannel(index)" size="small" :disabled="channel.fixed">
+                        <font-awesome-icon icon="trash-alt" />
+                    </el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+
         </div>
 
         <!-- 操作按钮 -->
@@ -259,7 +325,8 @@ data() {
     channels: [
         { value: 'telegram', label: 'Telegram' },
         { value: 'cfr2', label: 'CloudFlareR2' },
-        { value: 's3', label: 'S3' }
+        { value: 's3', label: 'S3' },
+        { value: 'discord', label: 'Discord' }
     ],
     activeChannel: 'telegram', // 当前选中的上传渠道
 
@@ -306,6 +373,39 @@ data() {
     s3Settings: {
         loadBalance: {},
         channels: []
+    },
+
+    // 二级设置：Discord 配置
+    discordSettings: {
+        loadBalance: {},
+        channels: []
+    },
+
+    discordRules: {
+        name: [
+            { required: true, message: '请输入渠道名', trigger: 'blur' },
+            { validator: (rule, value, callback) => {
+                const names = this.discordSettings.channels.map((item) => item.name);
+                if (names.filter((name) => name === value).length > 1) {
+                    callback(new Error('渠道名不能重复'));
+                } else if (value === 'Discord_env') {
+                    const savePath = this.discordSettings.channels.find((item) => item.name === value).savePath;
+                    if (savePath !== 'environment variable') {
+                        callback(new Error('渠道名不能为保留值'));
+                    } else {
+                        callback();
+                    }
+                } else {
+                    callback();
+                }
+            }, trigger: 'blur' }
+        ],
+        botToken: [
+            { required: true, message: '请输入 Bot Token', trigger: 'blur' }
+        ],
+        channelId: [
+            { required: true, message: '请输入 Channel ID', trigger: 'blur' }
+        ]
     },
 
     // 容量统计数据
@@ -410,6 +510,20 @@ methods: {
                     }
                 });
                 break;
+            case 'discord':
+                this.discordSettings.channels.push({
+                    id: this.discordSettings.channels.length + 1,
+                    name: '',
+                    type: 'discord',
+                    savePath: 'database',
+                    botToken: '',
+                    channelId: '',
+                    proxyUrl: '',
+                    isNitro: false,
+                    enabled: true,
+                    fixed: false
+                });
+                break;
         }
     },
     deleteChannel(index) {
@@ -441,6 +555,15 @@ methods: {
                 });
                 this.s3Settings.channels.splice(index, 1);
                 break;
+            case 'discord':
+                // 调整 id
+                this.discordSettings.channels.forEach((item, i) => {
+                    if (i > index) {
+                        item.id -= 1;
+                    }
+                });
+                this.discordSettings.channels.splice(index, 1);
+                break;
         }
     },
     saveSettings() {
@@ -465,6 +588,15 @@ methods: {
             });
         }
 
+        // Discord
+        if (this.$refs.discordChannelForm) {
+            this.$refs.discordChannelForm.forEach((form) => {
+                validationPromises.push(new Promise((resolve) => {
+                    form.validate((valid) => resolve(valid));
+                }));
+            });
+        }
+
         // 等待所有验证完成
         Promise.all(validationPromises).then((results) => {
             const isValid = results.every(valid => valid);
@@ -477,7 +609,8 @@ methods: {
             const settings = {
                 telegram: this.telegramSettings,
                 cfr2: this.cfr2Settings,
-                s3: this.s3Settings
+                s3: this.s3Settings,
+                discord: this.discordSettings
             };
             fetchWithAuth('/api/manage/sysConfig/upload', {
                 method: 'POST',
@@ -643,6 +776,14 @@ mounted() {
             }));
         }
         this.s3Settings = data.s3;
+        // 确保 Discord 渠道有默认值
+        if (data.discord && data.discord.channels) {
+            data.discord.channels = data.discord.channels.map(channel => ({
+                ...channel,
+                proxyUrl: channel.proxyUrl || ''
+            }));
+        }
+        this.discordSettings = data.discord || { loadBalance: {}, channels: [] };
         // 加载容量统计（仅读取，不重建索引）
         this.loadQuotaStats();
     })
@@ -796,6 +937,17 @@ mounted() {
     color: var(--el-color-danger);
     background: var(--el-color-danger-light-9);
     font-weight: 500;
+}
+
+/* Discord 限制提示 */
+.discord-limit-tip {
+    font-size: 13px;
+    color: var(--el-color-info);
+    padding: 10px 14px;
+    background: var(--el-color-info-light-9);
+    border-radius: 6px;
+    border-left: 3px solid var(--el-color-info);
+    white-space: nowrap;
 }
 
 /* 移动端适配 */
