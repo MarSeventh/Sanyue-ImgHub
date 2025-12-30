@@ -89,6 +89,49 @@
                     </template>
                     <el-input v-model="channel.publicUrl"/>
                 </el-form-item>
+                <!-- 容量限制配置 -->
+                <el-form-item>
+                    <template #label>
+                        容量限制
+                        <el-tooltip content="启用后，当存储容量达到阈值时，该渠道将自动停止接收新文件，上传会自动切换到其他可用渠道" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-switch v-model="channel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, channel)"/>
+                </el-form-item>
+                <el-form-item v-if="channel.quota.enabled" label="容量上限 (GB)">
+                    <el-input-number v-model="channel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
+                </el-form-item>
+                <el-form-item v-if="channel.quota.enabled">
+                    <template #label>
+                        阈值 (%)
+                        <el-tooltip content="当已用容量达到此百分比时停止写入，默认95%" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-input-number v-model="channel.quota.threshold" :min="50" :max="100" :step="5"/>
+                </el-form-item>
+                <!-- 容量使用情况显示 -->
+                <el-form-item v-if="channel.quota.enabled && channel.name">
+                    <template #label>
+                        当前用量
+                        <el-button link type="primary" @click="refreshQuota" :loading="quotaLoading" style="margin-left: 8px;">
+                            <font-awesome-icon icon="sync-alt" />
+                        </el-button>
+                    </template>
+                    <div class="quota-status">
+                        <el-progress 
+                            :percentage="getQuotaPercentage(channel)" 
+                            :status="getQuotaStatus(channel)"
+                            :stroke-width="20"
+                            :text-inside="true"
+                            :format="() => getQuotaText(channel)"
+                        />
+                        <div class="quota-info" :class="{ 'quota-warning': isQuotaExceeded(channel) }">
+                            {{ getQuotaStatusText(channel) }}
+                        </div>
+                    </div>
+                </el-form-item>
             </el-form>
         </div>
 
@@ -141,6 +184,49 @@
                 </el-form-item>
                 <el-form-item label="机密访问密钥" prop="secretAccessKey">
                     <el-input v-model="channel.secretAccessKey" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
+                </el-form-item>
+                <!-- 容量限制配置 -->
+                <el-form-item>
+                    <template #label>
+                        容量限制
+                        <el-tooltip content="启用后，当存储容量达到阈值时，该渠道将自动停止接收新文件，上传会自动切换到其他可用渠道" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-switch v-model="channel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, channel)"/>
+                </el-form-item>
+                <el-form-item v-if="channel.quota.enabled" label="容量上限 (GB)">
+                    <el-input-number v-model="channel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
+                </el-form-item>
+                <el-form-item v-if="channel.quota.enabled">
+                    <template #label>
+                        阈值 (%)
+                        <el-tooltip content="当已用容量达到此百分比时停止写入，默认95%" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-input-number v-model="channel.quota.threshold" :min="50" :max="100" :step="5"/>
+                </el-form-item>
+                <!-- 容量使用情况显示 -->
+                <el-form-item v-if="channel.quota.enabled && channel.name">
+                    <template #label>
+                        当前用量
+                        <el-button link type="primary" @click="refreshQuota" :loading="quotaLoading" style="margin-left: 8px;">
+                            <font-awesome-icon icon="sync-alt" />
+                        </el-button>
+                    </template>
+                    <div class="quota-status">
+                        <el-progress 
+                            :percentage="getQuotaPercentage(channel)" 
+                            :status="getQuotaStatus(channel)"
+                            :stroke-width="20"
+                            :text-inside="true"
+                            :format="() => getQuotaText(channel)"
+                        />
+                        <div class="quota-info" :class="{ 'quota-warning': isQuotaExceeded(channel) }">
+                            {{ getQuotaStatusText(channel) }}
+                        </div>
+                    </div>
                 </el-form-item>
                 <!-- 删除 -->
                 <el-form-item>
@@ -221,6 +307,10 @@ data() {
         loadBalance: {},
         channels: []
     },
+
+    // 容量统计数据
+    quotaStats: {},
+    quotaLoading: false,
 
     s3Rules: {
         name: [
@@ -312,7 +402,12 @@ methods: {
                     endpoint: '',
                     pathStyle: false,
                     enabled: true,
-                    fixed: false
+                    fixed: false,
+                    quota: {
+                        enabled: false,
+                        limitGB: 10,
+                        threshold: 95
+                    }
                 });
                 break;
         }
@@ -395,6 +490,133 @@ methods: {
                 this.$message.success('设置已保存');
             });
         });
+    },
+    // 获取容量统计（重新计算）
+    async refreshQuota() {
+        this.quotaLoading = true;
+        try {
+            // 使用 POST 请求重新统计容量（会触发索引重建）
+            const response = await fetchWithAuth('/api/manage/quota', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (data.success) {
+                this.quotaStats = data.channelStats || {};
+            } else {
+                // 如果重新统计失败，尝试获取已有数据
+                const getResponse = await fetchWithAuth('/api/manage/quota');
+                const getData = await getResponse.json();
+                if (getData.success) {
+                    this.quotaStats = getData.quotaStats || {};
+                }
+            }
+        } catch (error) {
+            console.error('Failed to refresh quota stats:', error);
+        } finally {
+            this.quotaLoading = false;
+        }
+    },
+    // 获取容量统计（仅读取，不重建索引）
+    async loadQuotaStats() {
+        try {
+            const response = await fetchWithAuth('/api/manage/quota');
+            const data = await response.json();
+            if (data.success) {
+                this.quotaStats = data.quotaStats || {};
+            }
+        } catch (error) {
+            console.error('Failed to load quota stats:', error);
+        }
+    },
+    // 获取渠道已用容量 (GB)
+    getChannelUsedGB(channel) {
+        const stats = this.quotaStats[channel.name];
+        if (!stats) return 0;
+        return (stats.usedMB || 0) / 1024;
+    },
+    // 获取容量百分比
+    getQuotaPercentage(channel) {
+        const usedGB = this.getChannelUsedGB(channel);
+        const limitGB = channel.quota?.limitGB || 10;
+        const percentage = (usedGB / limitGB) * 100;
+        return Math.min(100, Math.round(percentage * 10) / 10);
+    },
+    // 获取进度条状态
+    getQuotaStatus(channel) {
+        const percentage = this.getQuotaPercentage(channel);
+        const threshold = channel.quota?.threshold || 95;
+        if (percentage >= threshold) return 'exception';
+        if (percentage >= 80) return 'warning';
+        return 'success';
+    },
+    // 获取容量文本
+    getQuotaText(channel) {
+        const usedGB = this.getChannelUsedGB(channel);
+        const limitGB = channel.quota?.limitGB || 10;
+        return `${usedGB.toFixed(2)} / ${limitGB} GB`;
+    },
+    // 判断是否超过阈值
+    isQuotaExceeded(channel) {
+        const percentage = this.getQuotaPercentage(channel);
+        const threshold = channel.quota?.threshold || 95;
+        return percentage >= threshold;
+    },
+    // 获取状态文本
+    getQuotaStatusText(channel) {
+        const percentage = this.getQuotaPercentage(channel);
+        const threshold = channel.quota?.threshold || 95;
+        if (percentage >= threshold) {
+            return `⚠️ 已达到容量阈值 (${threshold}%)，渠道写入已暂停`;
+        }
+        if (percentage >= 80) {
+            return `⚡ 容量使用较高，接近阈值`;
+        }
+        return `✓ 容量正常`;
+    },
+    // 容量限制开关变化时
+    async onQuotaEnabledChange(enabled, channel) {
+        if (enabled && channel.name) {
+            // 首次启用时，检查是否有该渠道的统计数据
+            const stats = this.quotaStats[channel.name];
+            if (!stats) {
+                // 没有统计数据，提示用户需要重新统计
+                this.$confirm(
+                    '首次启用容量限制需要统计现有文件容量，这可能需要一些时间。是否立即统计？',
+                    '初始化容量统计',
+                    {
+                        confirmButtonText: '立即统计',
+                        cancelButtonText: '稍后手动统计',
+                        type: 'info'
+                    }
+                ).then(async () => {
+                    await this.recalculateQuota();
+                }).catch(() => {
+                    this.$message.info('您可以稍后点击刷新按钮手动统计');
+                });
+            }
+        }
+    },
+    // 重新统计容量
+    async recalculateQuota() {
+        this.quotaLoading = true;
+        try {
+            this.$message.info('正在统计容量，请稍候...');
+            const response = await fetchWithAuth('/api/manage/quota', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (data.success) {
+                this.quotaStats = data.channelStats || {};
+                this.$message.success('容量统计完成');
+            } else {
+                this.$message.error('统计失败: ' + (data.error || '未知错误'));
+            }
+        } catch (error) {
+            console.error('Failed to recalculate quota:', error);
+            this.$message.error('统计失败');
+        } finally {
+            this.quotaLoading = false;
+        }
     }
 
 },
@@ -405,8 +627,24 @@ mounted() {
     .then((response) => response.json())
     .then((data) => {
         this.telegramSettings = data.telegram;
+        // 确保 R2 渠道有 quota 默认值
+        if (data.cfr2 && data.cfr2.channels) {
+            data.cfr2.channels = data.cfr2.channels.map(channel => ({
+                ...channel,
+                quota: channel.quota || { enabled: false, limitGB: 10, threshold: 95 }
+            }));
+        }
         this.cfr2Settings = data.cfr2;
+        // 确保 S3 渠道有 quota 默认值
+        if (data.s3 && data.s3.channels) {
+            data.s3.channels = data.s3.channels.map(channel => ({
+                ...channel,
+                quota: channel.quota || { enabled: false, limitGB: 10, threshold: 95 }
+            }));
+        }
         this.s3Settings = data.s3;
+        // 加载容量统计（仅读取，不重建索引）
+        this.loadQuotaStats();
     })
     .finally(() => {
         this.loading = false;
@@ -532,6 +770,34 @@ mounted() {
     padding: 10px 20px;
 }
 
+/* 容量状态样式 */
+.quota-status {
+    width: 100%;
+    max-width: 400px;
+}
+
+.quota-status :deep(.el-progress) {
+    margin-bottom: 8px;
+}
+
+.quota-status :deep(.el-progress-bar__inner) {
+    transition: width 0.5s ease;
+}
+
+.quota-info {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+    padding: 8px 12px;
+    background: var(--el-fill-color);
+    border-radius: 6px;
+}
+
+.quota-info.quota-warning {
+    color: var(--el-color-danger);
+    background: var(--el-color-danger-light-9);
+    font-weight: 500;
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
     .upload-settings {
@@ -552,6 +818,10 @@ mounted() {
     }
     
     .channel-form :deep(.el-form-item__content) {
+        max-width: 100%;
+    }
+
+    .quota-status {
         max-width: 100%;
     }
 }
