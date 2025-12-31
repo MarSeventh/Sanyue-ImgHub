@@ -116,6 +116,8 @@ export default {
       this.ty = 0;
       this.pointers.clear();
       this.dragging = false;
+      this.edgeOverflow = 0;
+      this.edgeDir = 0;
       this.$emit("unlock");
     },
 
@@ -310,10 +312,10 @@ export default {
         
         // 检查是否触发边界翻页（超出60px触发）
         if (this.edgeOverflow > 60 && this.edgeDir !== 0) {
-          this.$emit('edge-swipe', this.edgeDir);
-          // 翻页后重置状态
-          this.edgeOverflow = 0;
-          this.edgeDir = 0;
+          const dir = this.edgeDir;
+          // 翻页前先重置自身状态，解除 gestureLocked
+          this.reset();
+          this.$emit('edge-swipe', dir);
           return;
         }
         this.edgeOverflow = 0;
