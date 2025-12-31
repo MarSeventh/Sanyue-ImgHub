@@ -161,6 +161,7 @@
                 :is-video="isVideo(f)"
                 @lock="gestureLocked = true"
                 @unlock="gestureLocked = false"
+                @edge-swipe="onEdgeSwipe"
               />
             </div>
           </div>
@@ -706,6 +707,16 @@ export default {
     // iOS 风格橡皮筋阻尼函数
     rubberBand(distance, dimension, constant = 0.55) {
       return (distance * dimension * constant) / (dimension + constant * distance);
+    },
+
+    // 放大状态下边界滑动翻页
+    onEdgeSwipe(dir) {
+      // dir: +1 下一页, -1 上一页
+      if (dir === +1 && this.previewIndex < this.mediaFiles.length - 1) {
+        this.previewIndex++;
+      } else if (dir === -1 && this.previewIndex > 0) {
+        this.previewIndex--;
+      }
     }
   }
 };

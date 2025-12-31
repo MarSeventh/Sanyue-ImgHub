@@ -66,6 +66,9 @@ export default {
       maxScale: 4,
       // 手势模式锁定：'pinch' | 'rotate' | null
       gestureMode: null,
+      // 边界翻页相关
+      edgeOverflow: 0,  // 超出边界的累计距离
+      edgeDir: 0,       // 超出方向：-1左 +1右
     };
   },
   computed: {
@@ -257,7 +260,7 @@ export default {
         return;
       }
 
-      // 1指：拖拽（只在 scale>1 时）+ 边界阻尼
+      // 1指：拖拽（只在 scale>1 时）+ 边界阻尼 + 边界翻页检测
       if (this.dragging && this.scale > 1.001) {
         e.preventDefault();
         const dx = e.clientX - this.dragStart.x;
@@ -265,6 +268,22 @@ export default {
         const rawX = this.startTx + dx;
         const rawY = this.startTy + dy;
         const { maxX, maxY, vw, vh } = this.getPanBounds();
+        
+        // 检测是否超出左右边界
+        let overflow = 0;
+        let dir = 0;
+        if (rawX > maxX) {
+          overflow = rawX - maxX;
+          dir = -1;  // 往右拖 = 上一页
+        } else if (rawX < -maxX) {
+          overflow = -maxX - rawX;
+          dir = +1;  // 往左拖 = 下一页
+        }
+        
+        // 记录超出状态
+        this.edgeOverflow = overflow;
+        this.edgeDir = dir;
+        
         this.tx = this.applyBoundWithRubber(rawX, maxX, vw);
         this.ty = this.applyBoundWithRubber(rawY, maxY, vh);
       }
@@ -288,6 +307,18 @@ export default {
 
       if (this.pointers.size === 0) {
         this.dragging = false;
+        
+        // 检查是否触发边界翻页（超出60px触发）
+        if (this.edgeOverflow > 60 && this.edgeDir !== 0) {
+          this.$emit('edge-swipe', this.edgeDir);
+          // 翻页后重置状态
+          this.edgeOverflow = 0;
+          this.edgeDir = 0;
+          return;
+        }
+        this.edgeOverflow = 0;
+        this.edgeDir = 0;
+        
         // 缩放回到1附近，自动归位
         if (this.scale <= 1.001) {
           this.scale = 1;
