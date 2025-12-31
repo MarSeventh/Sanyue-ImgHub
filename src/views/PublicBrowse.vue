@@ -1039,6 +1039,7 @@ export default {
   font-size: 12px;
   text-decoration: none;
   transition: color 0.2s;
+  text-align: center;
 }
 
 .credit-link:hover {
