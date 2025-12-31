@@ -258,6 +258,10 @@ data() {
         maxRetryCount: 10, // 最大重试次数
         retryTimer: null, // 自动重试定时器
         retryDelay: 12000, // 重试延迟时间（毫秒）
+        // 批量上传并发控制
+        uploadQueue: [], // 等待上传的文件队列
+        activeUploads: 0, // 当前正在上传的文件数
+        maxConcurrentUploads: 6, // 最大并发上传数（与原版一致）
     }
 },
 watch: {
@@ -337,7 +341,7 @@ computed: {
         return this.fileList.filter(item => item.status === 'uploading').length
     },
     waitingCount() {
-        return this.waitingList.length
+        return this.uploadQueue.length
     },
     urlSize() {
         // 移动端为small
@@ -365,8 +369,10 @@ mounted() {
 beforeUnmount() {
     document.removeEventListener('paste', this.handlePaste)
     // 清理状态
+    this.uploadQueue = []
     this.waitingList = []
     this.fileList = []
+    this.activeUploads = 0
 },
 methods: {
     // 文件名中间截断，保留前缀和扩展名
@@ -396,13 +402,17 @@ methods: {
         if (!this.fileList.find(item => item.uid === file.file.uid)) {
             return
         }
-        if (this.uploadingCount > this.maxUploading) {
-            this.waitingList.push(file)
+        
+        // 并发控制：如果当前上传数已达上限，加入队列等待
+        if (this.activeUploads >= this.maxConcurrentUploads) {
+            this.uploadQueue.push(file)
             this.fileList.find(item => item.uid === file.file.uid).status = 'waiting'
             return
-        } else {
-            this.fileList.find(item => item.uid === file.file.uid).status = 'uploading'
         }
+        
+        // 开始上传，增加计数
+        this.activeUploads++
+        this.fileList.find(item => item.uid === file.file.uid).status = 'uploading'
 
         const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
 
@@ -442,6 +452,34 @@ methods: {
             this.uploadFileInChunks(file)
         } else {
             this.uploadSingleFile(file)
+        }
+    },
+    // 处理上传队列中的下一个文件
+    processUploadQueue() {
+        // 如果队列为空或已达并发上限，不处理
+        if (this.uploadQueue.length === 0 || this.activeUploads >= this.maxConcurrentUploads) {
+            return
+        }
+        
+        // 从队列中取出下一个文件并上传
+        const nextFile = this.uploadQueue.shift()
+        if (nextFile && this.fileList.find(item => item.uid === nextFile.file.uid)) {
+            this.uploadFile(nextFile)
+        } else {
+            // 如果文件已被删除，继续处理下一个
+            this.processUploadQueue()
+        }
+    },
+    // 上传完成后的清理工作（成功或失败都调用）
+    onUploadComplete() {
+        this.activeUploads = Math.max(0, this.activeUploads - 1)
+        
+        // 处理队列中的下一个文件
+        this.processUploadQueue()
+        
+        // 更新上传状态
+        if (this.activeUploads === 0 && this.uploadQueue.length === 0) {
+            this.uploading = false
         }
     },
     // 单文件上传
@@ -490,11 +528,14 @@ methods: {
             if (err.response && err.response.status !== 401) {
                 this.exceptionList.push(file)
                 file.onError(err, file.file)
+            } else if (!err.response) {
+                // 网络错误（如 ERR_HTTP2_PROTOCOL_ERROR），也加入异常列表
+                this.exceptionList.push(file)
+                file.onError(err, file.file)
             }
         }).finally(() => {
-            if (this.uploadingCount + this.waitingCount === 0) {
-                this.uploading = false
-            }
+            // 调用并发控制的完成回调
+            this.onUploadComplete()
         })
     },
     // 分块上传
@@ -699,11 +740,14 @@ methods: {
             if (err.response && err.response.status !== 401) {
                 this.exceptionList.push(file)
                 file.onError(err, file.file)
+            } else if (!err.response) {
+                // 网络错误，也加入异常列表
+                this.exceptionList.push(file)
+                file.onError(err, file.file)
             }
         } finally {
-            if (this.uploadingCount + this.waitingCount === 0) {
-                this.uploading = false
-            }
+            // 调用并发控制的完成回调
+            this.onUploadComplete()
         }
     },
     handleRemove(file) {
@@ -758,15 +802,8 @@ methods: {
         } catch (error) {
             this.$message.error(this.truncateFilename(file.name) + '上传失败')
             this.fileList.find(item => item.uid === file.uid).status = 'exception'
-        } finally {
-            if (this.uploadingCount + this.waitingCount === 0) {
-                this.uploading = false
-            }
-            if (this.waitingList.length) {
-                const file = this.waitingList.shift()
-                this.uploadFile(file)
-            }
         }
+        // 注意：并发控制的 onUploadComplete 已在各上传方法的 finally 中调用
     },
     saveToHistory(fileItem) {
         try {
@@ -791,14 +828,7 @@ methods: {
         if (this.autoReUpload) {
             this.scheduleAutoRetry();
         }
-        
-        if (this.waitingList.length) {
-            const file = this.waitingList.shift()
-            this.uploadFile(file)
-        }
-        if (this.uploadingCount + this.waitingCount === 0) {
-            this.uploading = false
-        }
+        // 注意：并发控制的 onUploadComplete 已在各上传方法的 finally 中调用
     },
     handleCopy(file) {
         const status = this.fileList.find(item => item.uid === file.uid).status
@@ -1333,9 +1363,8 @@ methods: {
             this.exceptionList.push(file);
             file.onError(err, file.file);
         } finally {
-            if (this.uploadingCount + this.waitingCount === 0) {
-                this.uploading = false;
-            }
+            // 调用并发控制的完成回调
+            this.onUploadComplete();
         }
     },
     // HuggingFace 分片上传到 S3
