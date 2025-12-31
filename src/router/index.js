@@ -100,6 +100,11 @@ const routes = [
     component: () => import('../views/WhiteListOn.vue'),
   },
   {
+    path: '/browse/:dir*',
+    name: 'publicBrowse',
+    component: () => import('../views/PublicBrowse.vue'),
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'notFound',
     component: () => import('../views/NotFound.vue'),
