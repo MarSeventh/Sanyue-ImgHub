@@ -246,7 +246,6 @@ data() {
         fileList: [],
         uploading: false,
         maxUploading: 6,
-        waitingList: [],
         exceptionList: [],
         listScrolled: false,
         fileListLength: 0,
@@ -261,7 +260,9 @@ data() {
         // 批量上传并发控制
         uploadQueue: [], // 等待上传的文件队列
         activeUploads: 0, // 当前正在上传的文件数
-        maxConcurrentUploads: 6, // 最大并发上传数（与原版一致）
+        maxConcurrentUploads: 6, // 最大并发上传数
+        // 取消上传控制
+        abortControllers: new Map(), // 存储每个文件的 AbortController
     }
 },
 watch: {
@@ -370,7 +371,6 @@ beforeUnmount() {
     document.removeEventListener('paste', this.handlePaste)
     // 清理状态
     this.uploadQueue = []
-    this.waitingList = []
     this.fileList = []
     this.activeUploads = 0
 },
@@ -484,10 +484,17 @@ methods: {
     },
     // 单文件上传
     async uploadSingleFile(file) {
-        const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
-        const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
+        const fileItem = this.fileList.find(item => item.uid === file.file.uid)
+        if (!fileItem) return // 文件已被删除
+        
+        const needServerCompress = fileItem.serverCompress
+        const uploadChannel = fileItem.uploadChannel || this.uploadChannel
         const autoRetry = this.autoRetry && uploadChannel !== 'external'
         const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
+        
+        // 创建 AbortController 用于取消上传
+        const abortController = new AbortController()
+        this.abortControllers.set(file.file.uid, abortController)
         
         const formData = new FormData()
         formData.append('file', file.file)
@@ -518,6 +525,7 @@ methods: {
             method: 'post',
             data: formData,
             withAuthCode: true,
+            signal: abortController.signal, // 添加取消信号
             onUploadProgress: (progressEvent) => {
                 const percentCompleted = Math.round((progressEvent.loaded / progressEvent.total) * 100)
                 file.onProgress({ percent: percentCompleted, file: file.file })
@@ -525,6 +533,11 @@ methods: {
         }).then(res => {
             file.onSuccess(res, file.file)
         }).catch(err => {
+            // 如果是取消操作，不加入异常列表
+            if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+                console.log('上传已取消:', file.file.name)
+                return
+            }
             if (err.response && err.response.status !== 401) {
                 this.exceptionList.push(file)
                 file.onError(err, file.file)
@@ -534,13 +547,22 @@ methods: {
                 file.onError(err, file.file)
             }
         }).finally(() => {
+            // 清理 AbortController
+            this.abortControllers.delete(file.file.uid)
             // 调用并发控制的完成回调
             this.onUploadComplete()
         })
     },
     // 分块上传
     async uploadFileInChunks(file) {
-        const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
+        const fileItem = this.fileList.find(item => item.uid === file.file.uid)
+        if (!fileItem) return // 文件已被删除
+        
+        const uploadChannel = fileItem.uploadChannel || this.uploadChannel
+        
+        // 创建 AbortController 用于取消上传
+        const abortController = new AbortController()
+        this.abortControllers.set(file.file.uid, abortController)
         
         // Discord 使用 9MB 分块（留安全余量，Discord 限制 10MB）
         // Telegram 使用 16MB 分块（TG Bot getFile 下载限制 20MB，留 4MB 安全余量）
@@ -552,7 +574,7 @@ methods: {
         const fileSize = file.file.size
         const totalChunks = Math.ceil(fileSize / CHUNK_SIZE)
         
-        const needServerCompress = this.fileList.find(item => item.uid === file.file.uid).serverCompress
+        const needServerCompress = fileItem.serverCompress
         const autoRetry = this.autoRetry && uploadChannel !== 'external'
         const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
 
@@ -608,9 +630,10 @@ methods: {
             let nextChunkIndex = 0
             let hasError = false
             let errorMsg = ''
+            let isCancelled = false // 标记是否被取消
 
             const uploadChunk = async (chunkIndex) => {
-                if (hasError) return
+                if (hasError || isCancelled) return
 
                 const start = chunkIndex * CHUNK_SIZE
                 const end = Math.min(start + CHUNK_SIZE, fileSize)
@@ -628,7 +651,7 @@ methods: {
                 const maxRetries = 3
 
                 while (retryCount < maxRetries) {
-                    if (hasError) return
+                    if (hasError || isCancelled) return
                     try {
                         await axios({
                             url: '/upload' + 
@@ -641,8 +664,9 @@ methods: {
                             method: 'post',
                             data: formData,
                             withAuthCode: true,
+                            signal: abortController.signal, // 添加取消信号
                             onUploadProgress: (progressEvent) => {
-                                if (hasError) return
+                                if (hasError || isCancelled) return
                                 const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100)
                                 chunkProgress[chunkIndex] = percent
                                 const totalPercent = Math.round(chunkProgress.reduce((a, b) => a + b, 0) / totalChunks)
@@ -651,6 +675,12 @@ methods: {
                         })
                         return // Success
                     } catch (err) {
+                        // 如果是取消操作，直接返回
+                        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+                            isCancelled = true
+                            console.log('分块上传已取消:', file.file.name)
+                            return
+                        }
                         retryCount++
                         console.warn(`分块 ${chunkIndex + 1}/${totalChunks} 上传失败 (重试 ${retryCount}/${maxRetries}):`, err)
                         if (retryCount >= maxRetries) {
@@ -668,13 +698,15 @@ methods: {
             const pool = []
             for (let i = 0; i < maxConcurrency; i++) {
                 pool.push((async () => {
-                    while (nextChunkIndex < totalChunks && !hasError) {
+                    while (nextChunkIndex < totalChunks && !hasError && !isCancelled) {
                         const currentIndex = nextChunkIndex++
                         try {
                             await uploadChunk(currentIndex)
                         } catch (e) {
-                            hasError = true
-                            errorMsg = e.message
+                            if (!isCancelled) {
+                                hasError = true
+                                errorMsg = e.message
+                            }
                             break
                         }
                     }
@@ -682,6 +714,12 @@ methods: {
             }
 
             await Promise.all(pool)
+
+            // 如果被取消，直接返回
+            if (isCancelled) {
+                console.log('分块上传已取消，跳过合并步骤')
+                return
+            }
 
             if (hasError) {
                 throw new Error(errorMsg || '上传过程中发生错误')
@@ -723,6 +761,12 @@ methods: {
             // 同步处理完成
             file.onSuccess(response, file.file)
         } catch (err) {
+            // 如果是取消操作，不加入异常列表
+            if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+                console.log('分块上传已取消:', file.file.name)
+                return
+            }
+            
             console.error('分块上传失败:', err)
             
             // 如果有uploadId，清理相关资源
@@ -746,11 +790,21 @@ methods: {
                 file.onError(err, file.file)
             }
         } finally {
+            // 清理 AbortController
+            this.abortControllers.delete(file.file.uid)
             // 调用并发控制的完成回调
             this.onUploadComplete()
         }
     },
     handleRemove(file) {
+        // 如果文件正在上传，取消上传
+        if (this.abortControllers.has(file.uid)) {
+            this.abortControllers.get(file.uid).abort()
+            this.abortControllers.delete(file.uid)
+        }
+        // 从上传队列中移除（如果在等待中）
+        this.uploadQueue = this.uploadQueue.filter(item => item.file.uid !== file.uid)
+        // 从文件列表中移除
         this.fileList = this.fileList.filter(item => item.uid !== file.uid)
         this.$message({
             type: 'info',
@@ -979,6 +1033,14 @@ methods: {
     },
     clearFileList() {
         if (this.fileList.length > 0) {
+            // 取消所有正在上传的文件
+            this.abortControllers.forEach((controller, uid) => {
+                controller.abort()
+            })
+            this.abortControllers.clear()
+            // 清空上传队列
+            this.uploadQueue = []
+            // 清空文件列表
             this.fileList = []
             this.$message({
                 type: 'success',
@@ -1266,6 +1328,10 @@ methods: {
         const fileItem = this.fileList.find(item => item.uid === file.file.uid);
         if (!fileItem) return;
 
+        // 创建 AbortController 用于取消上传
+        const abortController = new AbortController();
+        this.abortControllers.set(file.file.uid, abortController);
+
         try {
             console.log('=== HuggingFace Direct Upload ===');
             console.log('File:', file.file.name, 'Size:', file.file.size);
@@ -1275,6 +1341,12 @@ methods: {
             console.log('Computing SHA256...');
             const sha256 = await this.computeSha256(file.file);
             console.log('SHA256:', sha256);
+
+            // 检查是否已取消
+            if (abortController.signal.aborted) {
+                console.log('HuggingFace 上传已取消:', file.file.name);
+                return;
+            }
 
             // 2. 获取文件样本（前512字节的base64）
             const sampleBytes = new Uint8Array(await file.file.slice(0, 512).arrayBuffer());
@@ -1292,7 +1364,8 @@ methods: {
                     sha256,
                     fileSample
                 },
-                withAuthCode: true
+                withAuthCode: true,
+                signal: abortController.signal
             });
 
             if (!uploadInfoRes.data.success) {
@@ -1312,14 +1385,15 @@ methods: {
 
                 if (header?.chunk_size) {
                     // 分片上传
-                    await this.uploadToHuggingFaceMultipart(file, uploadInfo);
+                    await this.uploadToHuggingFaceMultipart(file, uploadInfo, abortController);
                 } else {
                     // 基本上传
                     console.log('Uploading to S3 (basic)...');
                     const uploadRes = await fetch(href, {
                         method: 'PUT',
                         headers: header || {},
-                        body: file.file
+                        body: file.file,
+                        signal: abortController.signal
                     });
 
                     if (!uploadRes.ok) {
@@ -1328,6 +1402,12 @@ methods: {
                     }
                     console.log('S3 upload complete');
                 }
+            }
+
+            // 检查是否已取消
+            if (abortController.signal.aborted) {
+                console.log('HuggingFace 上传已取消:', file.file.name);
+                return;
             }
 
             // 5. 提交文件引用
@@ -1344,7 +1424,8 @@ methods: {
                     fileName: file.file.name,
                     channelName: uploadInfo.channelName
                 },
-                withAuthCode: true
+                withAuthCode: true,
+                signal: abortController.signal
             });
 
             if (!commitRes.data.success) {
@@ -1359,16 +1440,23 @@ methods: {
             file.onSuccess(formattedResponse, file.file);
 
         } catch (err) {
+            // 如果是取消操作，不加入异常列表
+            if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED' || err.name === 'AbortError') {
+                console.log('HuggingFace 上传已取消:', file.file.name);
+                return;
+            }
             console.error('HuggingFace direct upload error:', err);
             this.exceptionList.push(file);
             file.onError(err, file.file);
         } finally {
+            // 清理 AbortController
+            this.abortControllers.delete(file.file.uid);
             // 调用并发控制的完成回调
             this.onUploadComplete();
         }
     },
     // HuggingFace 分片上传到 S3
-    async uploadToHuggingFaceMultipart(file, uploadInfo) {
+    async uploadToHuggingFaceMultipart(file, uploadInfo, abortController) {
         const { uploadAction } = uploadInfo;
         const { href: completionUrl, header } = uploadAction;
         const chunkSize = parseInt(header.chunk_size);
@@ -1381,6 +1469,12 @@ methods: {
         const totalParts = parts.length;
 
         for (const part of parts) {
+            // 检查是否已取消
+            if (abortController && abortController.signal.aborted) {
+                console.log('HuggingFace 分片上传已取消');
+                throw new DOMException('Upload cancelled', 'AbortError');
+            }
+
             const index = parseInt(part) - 1;
             const start = index * chunkSize;
             const end = Math.min(start + chunkSize, file.file.size);
@@ -1389,7 +1483,8 @@ methods: {
             console.log(`Uploading part ${part}/${totalParts}`);
             const response = await fetch(header[part], {
                 method: 'PUT',
-                body: chunk
+                body: chunk,
+                signal: abortController ? abortController.signal : undefined
             });
 
             if (!response.ok) {
@@ -1408,6 +1503,12 @@ methods: {
             file.onProgress({ percent: progress, file: file.file });
         }
 
+        // 检查是否已取消
+        if (abortController && abortController.signal.aborted) {
+            console.log('HuggingFace 分片上传已取消');
+            throw new DOMException('Upload cancelled', 'AbortError');
+        }
+
         // 完成分片上传
         console.log('Completing multipart upload...');
         const completeResponse = await fetch(completionUrl, {
@@ -1419,7 +1520,8 @@ methods: {
             body: JSON.stringify({
                 oid: uploadInfo.oid,
                 parts: completeParts
-            })
+            }),
+            signal: abortController ? abortController.signal : undefined
         });
 
         if (!completeResponse.ok) {
