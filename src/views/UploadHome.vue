@@ -3,10 +3,10 @@
     <div class="upload-home">
         <!-- 桌面端按钮 -->
         <ToggleDark class="toggle-dark-button desktop-only"/>
-        <el-tooltip content="1. 支持多文件上传，支持所有常见文件格式 <br> 2. Telegram 渠道上传的文件大小不支持超过1GB" raw-content placement="bottom">
-            <div class="info-container">
-                <font-awesome-icon icon="question" class="info-icon" size="lg"/>
-            </div>
+        <el-tooltip content="查看文档" placement="bottom" :disabled="disableTooltip">
+            <a href="https://cfbed.sanyue.de/qa/" target="_blank" class="info-container">
+                <font-awesome-icon icon="book" class="info-icon" size="lg"/>
+            </a>
         </el-tooltip>
         <el-input class="upload-folder" :class="{ 'active': isFolderInputActive }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="isFolderInputActive = false"/>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
