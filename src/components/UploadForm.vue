@@ -406,15 +406,18 @@ methods: {
         // 并发控制：如果当前上传数已达上限，加入队列等待
         if (this.activeUploads >= this.maxConcurrentUploads) {
             this.uploadQueue.push(file)
-            this.fileList.find(item => item.uid === file.file.uid).status = 'waiting'
+            const waitingItem = this.fileList.find(item => item.uid === file.file.uid)
+            if (waitingItem) waitingItem.status = 'waiting'
             return
         }
         
         // 开始上传，增加计数
         this.activeUploads++
-        this.fileList.find(item => item.uid === file.file.uid).status = 'uploading'
+        const uploadingItem = this.fileList.find(item => item.uid === file.file.uid)
+        if (uploadingItem) uploadingItem.status = 'uploading'
 
-        const uploadChannel = this.fileList.find(item => item.uid === file.file.uid).uploadChannel || this.uploadChannel
+        const fileItem = this.fileList.find(item => item.uid === file.file.uid)
+        const uploadChannel = fileItem?.uploadChannel || this.uploadChannel
 
         // 如果上传渠道为外链，直接使用外链上传
         if (uploadChannel === 'external') {
@@ -827,35 +830,39 @@ methods: {
         }
     },
     handleSuccess(response, file) {
+        const fileItem = this.fileList.find(item => item.uid === file.uid)
+        if (!fileItem) return // 文件已被删除
+        
         try {     
             // 对上传渠道为外链的，不修改链接
-            const uploadChannel = this.fileList.find(item => item.uid === file.uid).uploadChannel || this.uploadChannel
+            const uploadChannel = fileItem.uploadChannel || this.uploadChannel
             if (uploadChannel !== 'external') {
                 // 从response.data[0].src中去除/file/前缀
                 const srcID = response.data[0].src.replace('/file/', '')
-                this.fileList.find(item => item.uid === file.uid).url = `${window.location.protocol}//${window.location.host}/file/` + srcID
-                this.fileList.find(item => item.uid === file.uid).finalURL = this.rootUrl + srcID
-                this.fileList.find(item => item.uid === file.uid).mdURL = `![${file.name}](${this.rootUrl + srcID})`
-                this.fileList.find(item => item.uid === file.uid).htmlURL = `<img src="${this.rootUrl + srcID}" alt="${file.name}" width=100% />`
-                this.fileList.find(item => item.uid === file.uid).ubbURL = `[img]${this.rootUrl + srcID}[/img]`
-                this.fileList.find(item => item.uid === file.uid).srcID = srcID
+                fileItem.url = `${window.location.protocol}//${window.location.host}/file/` + srcID
+                fileItem.finalURL = this.rootUrl + srcID
+                fileItem.mdURL = `![${file.name}](${this.rootUrl + srcID})`
+                fileItem.htmlURL = `<img src="${this.rootUrl + srcID}" alt="${file.name}" width=100% />`
+                fileItem.ubbURL = `[img]${this.rootUrl + srcID}[/img]`
+                fileItem.srcID = srcID
             }
-            this.fileList.find(item => item.uid === file.uid).progreess = 100
-            this.fileList.find(item => item.uid === file.uid).status = 'success'
+            fileItem.progreess = 100
+            fileItem.status = 'success'
             
             // Save to history
-            this.saveToHistory(this.fileList.find(item => item.uid === file.uid))
+            this.saveToHistory(fileItem)
 
             this.$message({
                 type: 'success',
                 message: this.truncateFilename(file.name) + '上传成功'
             })
             setTimeout(() => {
-                this.fileList.find(item => item.uid === file.uid).status = 'done'
+                const item = this.fileList.find(item => item.uid === file.uid)
+                if (item) item.status = 'done'
             }, 1000)
         } catch (error) {
             this.$message.error(this.truncateFilename(file.name) + '上传失败')
-            this.fileList.find(item => item.uid === file.uid).status = 'exception'
+            fileItem.status = 'exception'
         }
         // 注意：并发控制的 onUploadComplete 已在各上传方法的 finally 中调用
     },
@@ -875,8 +882,11 @@ methods: {
         }
     },
     handleError(err, file) {
+        const fileItem = this.fileList.find(item => item.uid === file.uid)
+        if (!fileItem) return // 文件已被删除
+        
         this.$message.error(this.truncateFilename(file.name) + '上传失败')
-        this.fileList.find(item => item.uid === file.uid).status = 'exception'
+        fileItem.status = 'exception'
         
         // 如果开启了自动重试，安排自动重试
         if (this.autoReUpload) {
@@ -987,7 +997,10 @@ methods: {
         })
     },
     handleProgress(event) {
-        this.fileList.find(item => item.uid === event.file.uid).progreess = event.percent
+        const fileItem = this.fileList.find(item => item.uid === event.file.uid)
+        if (fileItem) {
+            fileItem.progreess = event.percent
+        }
     },
     copyAll() {
         if (this.selectedUrlForm === 'url') {
