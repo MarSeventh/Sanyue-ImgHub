@@ -110,6 +110,9 @@
         <div v-else-if="!hasMore && mediaFiles.length > 0" class="no-more">
           已加载全部
         </div>
+        <a v-if="!hasMore && mediaFiles.length > 0" class="credit-link" href="https://github.com/axibayuit-a11y" target="_blank" rel="noopener">
+          林酱贡献
+        </a>
       </div>
     </div>
 
@@ -1027,6 +1030,19 @@ export default {
 .no-more {
   color: #444;
   font-size: 14px;
+}
+
+.credit-link {
+  display: block;
+  margin-top: 8px;
+  color: #555;
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.credit-link:hover {
+  color: #888;
 }
 
 /* 预览弹窗 */
