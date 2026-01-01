@@ -399,8 +399,11 @@ export default {
   methods: {
     // 检测是否为移动设备（用 JS 判断，避免全屏时 CSS 媒体查询失效）
     checkMobile() {
-      // 优先用 touch 事件检测，其次用屏幕宽度
-      this.isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 768;
+      // 用 pointer: coarse 检测（触摸屏主输入），结合屏幕宽度
+      // 不单独用 ontouchstart，因为很多电脑也支持触摸
+      const isCoarse = window.matchMedia?.('(pointer: coarse)').matches;
+      const isSmall = window.innerWidth <= 768;
+      this.isMobile = isCoarse || isSmall;
     },
 
     // 初始化主题：10:00-18:00 默认白天，其他时间默认黑夜
