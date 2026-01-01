@@ -140,6 +140,7 @@
         <!-- 桌面端视频：加 key 强制切换时重新挂载，避免混播 -->
         <video 
           v-else-if="currentPreviewFile && isVideo(currentPreviewFile)"
+          ref="desktopVideo"
           :key="'video-' + currentPreviewFile.name"
           :src="getFileUrl(currentPreviewFile.name)"
           controls
@@ -150,6 +151,7 @@
         <!-- 桌面端音频：加 key 强制切换时重新挂载 -->
         <TransformMedia
           v-else-if="currentPreviewFile && isAudio(currentPreviewFile)"
+          ref="desktopAudio"
           :key="'audio-' + currentPreviewFile.name"
           :file="currentPreviewFile"
           :src="getFileUrl(currentPreviewFile.name)"
@@ -683,13 +685,34 @@ export default {
     },
 
     closePreview() {
+      this.stopDesktopMedia();
       this.previewVisible = false;
       this.imageRotation = 0;
       this.gestureLocked = false;
       document.body.style.overflow = '';
     },
 
+    // 停止当前桌面端媒体播放
+    stopDesktopMedia() {
+      // 停止视频
+      const video = this.$refs.desktopVideo;
+      if (video) {
+        try {
+          video.pause();
+          video.currentTime = 0;
+          video.src = '';
+          video.load();
+        } catch (e) {}
+      }
+      // 停止音频组件
+      const audio = this.$refs.desktopAudio;
+      if (audio && audio.stopAndCleanMedia) {
+        audio.stopAndCleanMedia();
+      }
+    },
+
     prevImage() {
+      this.stopDesktopMedia();
       if (this.previewIndex > 0) {
         this.previewIndex--;
         this.imageRotation = 0;
@@ -697,6 +720,7 @@ export default {
     },
 
     nextImage() {
+      this.stopDesktopMedia();
       if (this.previewIndex < this.mediaFiles.length - 1) {
         this.previewIndex++;
         this.imageRotation = 0;
