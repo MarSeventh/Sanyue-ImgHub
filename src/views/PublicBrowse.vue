@@ -341,7 +341,7 @@ export default {
   computed: {
     ...mapGetters(['userConfig']),
     siteName() {
-      return this.userConfig?.siteTitle || '公开相册';
+      return this.userConfig?.siteTitle || 'Sanyue ImgHub';
     },
     rootDirName() {
       return this.rootDir.split('/').filter(Boolean).pop() || '根目录';
@@ -1397,6 +1397,7 @@ export default {
 
 .load-trigger {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 48px;
