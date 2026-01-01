@@ -57,6 +57,7 @@
 <script>
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
+import { getAudioPlayMode, setAudioPlayMode } from '@/utils/mediaManager';
 
 export default {
   name: "TransformMedia",
@@ -100,6 +101,8 @@ export default {
       audioCover: null,
       audioTitle: '',
       audioArtist: '',
+      // 菜单是否已添加
+      menuAdded: false,
     };
   },
   computed: {
@@ -159,11 +162,218 @@ export default {
       const el = this.$refs.videoEl || this.$refs.audioEl;
       if (!el) return;
       
+      // 音频不需要全屏按钮
+      const controls = this.isAudio
+        ? ['play', 'progress', 'current-time', 'mute', 'volume']
+        : ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'];
+      
       this.player = new Plyr(el, {
-        controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-        autoplay: this.isVideo, // 视频自动播放
+        controls,
+        autoplay: this.isVideo,
         resetOnEnd: true,
       });
+      
+      // 等待 Plyr ready 后添加自定义菜单
+      this.player.on('ready', () => {
+        this.tryAddCustomMenu();
+      });
+      
+      // 备用方案：多次尝试
+      this.scheduleMenuRetry();
+      
+      // 音频播放结束事件
+      if (this.isAudio) {
+        this.player.on('ended', this.onAudioEnded);
+      }
+    },
+    
+    // 多次尝试添加菜单
+    scheduleMenuRetry() {
+      const tryAdd = (attempt) => {
+        if (attempt >= 5 || this.menuAdded) return;
+        setTimeout(() => {
+          if (!this.menuAdded) {
+            this.tryAddCustomMenu();
+            tryAdd(attempt + 1);
+          }
+        }, 200 * (attempt + 1));
+      };
+      tryAdd(0);
+    },
+    
+    // 尝试添加自定义菜单
+    tryAddCustomMenu() {
+      if (this.menuAdded) return;
+      if (!this.player?.elements?.controls) return;
+      
+      const controls = this.player.elements.controls;
+      if (!controls || controls.querySelector('.plyr-custom-menu')) return;
+      
+      this.addCustomMenu(controls);
+      this.menuAdded = true;
+    },
+    
+    // 添加自定义三点菜单
+    addCustomMenu(controls) {
+      const currentMode = getAudioPlayMode();
+      
+      // 播放模式选项（仅音频）
+      const playModeHtml = this.isAudio ? `
+        <div class="plyr-menu-item plyr-menu-playmode">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+          </svg>
+          <span>播放模式</span>
+          <svg class="arrow" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+          </svg>
+        </div>
+        <div class="plyr-playmode-submenu">
+          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'stop' ? 'active' : ''}" data-mode="stop">播完停止</div>
+          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'sequence' ? 'active' : ''}" data-mode="sequence">顺序播放</div>
+          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'loop' ? 'active' : ''}" data-mode="loop">单曲循环</div>
+        </div>
+      ` : '';
+      
+      // 创建菜单容器
+      const menuContainer = document.createElement('div');
+      menuContainer.className = 'plyr-custom-menu';
+      menuContainer.innerHTML = `
+        <button type="button" class="plyr__controls__item plyr__control plyr-menu-btn" aria-label="更多">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <circle cx="12" cy="5" r="2"/>
+            <circle cx="12" cy="12" r="2"/>
+            <circle cx="12" cy="19" r="2"/>
+          </svg>
+        </button>
+        <div class="plyr-menu-dropdown">
+          <div class="plyr-menu-item" data-action="download">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+            <span>下载</span>
+          </div>
+          <div class="plyr-menu-item plyr-menu-speed">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M10 8v8l6-4-6-4zm1.5 4l2-1.33v2.67l-2-1.34z"/>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            </svg>
+            <span>播放速度</span>
+            <svg class="arrow" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+          </div>
+          <div class="plyr-speed-submenu">
+            <div class="plyr-menu-item plyr-speed-option" data-speed="0.5">0.5x</div>
+            <div class="plyr-menu-item plyr-speed-option" data-speed="0.75">0.75x</div>
+            <div class="plyr-menu-item plyr-speed-option active" data-speed="1">正常</div>
+            <div class="plyr-menu-item plyr-speed-option" data-speed="1.25">1.25x</div>
+            <div class="plyr-menu-item plyr-speed-option" data-speed="1.5">1.5x</div>
+            <div class="plyr-menu-item plyr-speed-option" data-speed="2">2x</div>
+          </div>
+          ${playModeHtml}
+        </div>
+      `;
+      
+      controls.appendChild(menuContainer);
+      this.bindMenuEvents(menuContainer);
+    },
+    
+    // 绑定菜单事件
+    bindMenuEvents(menuContainer) {
+      const menuBtn = menuContainer.querySelector('.plyr-menu-btn');
+      const dropdown = menuContainer.querySelector('.plyr-menu-dropdown');
+      const speedItem = menuContainer.querySelector('.plyr-menu-speed');
+      const speedSubmenu = menuContainer.querySelector('.plyr-speed-submenu');
+      const downloadItem = menuContainer.querySelector('[data-action="download"]');
+      const playModeItem = menuContainer.querySelector('.plyr-menu-playmode');
+      const playModeSubmenu = menuContainer.querySelector('.plyr-playmode-submenu');
+      
+      // 点击三点按钮切换菜单
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('show');
+        speedSubmenu.classList.remove('show');
+        if (playModeSubmenu) playModeSubmenu.classList.remove('show');
+      });
+      
+      // 下载
+      downloadItem.addEventListener('click', () => {
+        this.downloadMedia();
+        dropdown.classList.remove('show');
+      });
+      
+      // 播放速度子菜单
+      speedItem.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speedSubmenu.classList.toggle('show');
+        if (playModeSubmenu) playModeSubmenu.classList.remove('show');
+      });
+      
+      // 选择速度
+      menuContainer.querySelectorAll('.plyr-speed-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const speed = parseFloat(opt.dataset.speed);
+          if (this.player?.media) {
+            this.player.media.playbackRate = speed;
+          }
+          menuContainer.querySelectorAll('.plyr-speed-option').forEach(o => o.classList.remove('active'));
+          opt.classList.add('active');
+          dropdown.classList.remove('show');
+          speedSubmenu.classList.remove('show');
+        });
+      });
+      
+      // 播放模式（仅音频）
+      if (playModeItem && playModeSubmenu) {
+        playModeItem.addEventListener('click', (e) => {
+          e.stopPropagation();
+          playModeSubmenu.classList.toggle('show');
+          speedSubmenu.classList.remove('show');
+        });
+        
+        menuContainer.querySelectorAll('.plyr-playmode-option').forEach(opt => {
+          opt.addEventListener('click', () => {
+            const mode = opt.dataset.mode;
+            setAudioPlayMode(mode);
+            menuContainer.querySelectorAll('.plyr-playmode-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            dropdown.classList.remove('show');
+            playModeSubmenu.classList.remove('show');
+          });
+        });
+      }
+      
+      // 点击外部关闭菜单
+      document.addEventListener('click', () => {
+        dropdown.classList.remove('show');
+        speedSubmenu.classList.remove('show');
+        if (playModeSubmenu) playModeSubmenu.classList.remove('show');
+      });
+    },
+    
+    // 下载媒体文件
+    downloadMedia() {
+      const link = document.createElement('a');
+      link.href = this.src;
+      link.download = this.file?.name?.split('/').pop() || 'download';
+      link.click();
+    },
+    
+    // 音频播放结束
+    onAudioEnded() {
+      const mode = getAudioPlayMode();
+      if (mode === 'loop') {
+        // 单曲循环
+        if (this.player?.media) {
+          this.player.media.currentTime = 0;
+          this.player.play();
+        }
+      } else if (mode === 'sequence') {
+        // 顺序播放：通知父组件
+        this.$emit('audio-ended', 'next');
+      }
+      // stop 模式不做任何操作
     },
     
     destroyPlayer() {
@@ -597,5 +807,98 @@ export default {
 .plyr--audio .plyr__controls {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
+}
+
+/* 自定义三点菜单 */
+.plyr-custom-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.plyr-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plyr-menu-btn:hover {
+  opacity: 0.8;
+}
+
+.plyr-menu-dropdown {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  min-width: 160px;
+  display: none;
+  z-index: 100;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.plyr-menu-dropdown.show {
+  display: block;
+}
+
+.plyr-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  color: #333;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+
+.plyr-menu-item:hover {
+  background: #f5f5f5;
+}
+
+.plyr-menu-item svg {
+  flex-shrink: 0;
+}
+
+.plyr-menu-item .arrow {
+  margin-left: auto;
+}
+
+.plyr-speed-submenu,
+.plyr-playmode-submenu {
+  display: none;
+  border-top: 1px solid #eee;
+}
+
+.plyr-speed-submenu.show,
+.plyr-playmode-submenu.show {
+  display: block;
+}
+
+.plyr-speed-option,
+.plyr-playmode-option {
+  padding-left: 32px;
+  position: relative;
+}
+
+.plyr-speed-option.active,
+.plyr-playmode-option.active {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.plyr-speed-option.active::before,
+.plyr-playmode-option.active::before {
+  content: '✓';
+  position: absolute;
+  left: 12px;
 }
 </style>
