@@ -3,8 +3,7 @@
     <!-- 顶部导航栏 -->
     <header class="header">
       <div class="header-left">
-        <span class="logo">{{ siteName }}</span>
-        <ToggleDark class="theme-toggle-btn" />
+        <a class="logo" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank" rel="noopener">{{ siteName }}</a>
       </div>
       <div class="header-center">
         <div class="breadcrumb">
@@ -16,6 +15,7 @@
         </div>
       </div>
       <div class="header-right">
+        <ToggleDark class="theme-toggle-btn" />
         <span class="file-count">{{ totalCount }} 个文件</span>
       </div>
     </header>
@@ -1031,6 +1031,9 @@ export default {
 .header-right {
   flex: 0 0 auto;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-center {
@@ -1044,6 +1047,7 @@ export default {
   font-size: 20px;
   font-weight: 600;
   color: #fff;
+  text-decoration: none;
   cursor: pointer;
   transition: opacity 0.2s;
 }
