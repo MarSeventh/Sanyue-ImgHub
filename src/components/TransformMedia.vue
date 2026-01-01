@@ -174,48 +174,6 @@ export default {
     isActiveTransform(v) {
       this.$emit(v ? "lock" : "unlock");
     },
-    /**
-     * 核心：监听 isActive 变化，控制播放/暂停
-     * 
-     * 为什么需要这个？
-     * 手机端三页轮播会同时挂载3个 TransformMedia (prev/current/next)
-     * 如果不控制，prev/next 虽然不可见但也会播放，导致"音乐大杂汇"
-     * 
-     * 关键：isActive 变 false 时要"立刻 pause"，不能 nextTick！
-     * 因为 v-if="isActive" 会立刻删除 DOM，nextTick 时 ref 已经没了
-     */
-    isActive: {
-      immediate: true,
-      handler(active) {
-        // 先拿当前 mediaEl（这时 DOM 还没被 v-if 删掉）
-        const el = this.$refs.mediaEl;
-        
-        if (!active) {
-          // 非激活：立刻 pause，不要 nextTick
-          if (el) {
-            try { el.pause(); } catch (e) {}
-            // 这两句对 iOS/Safari 特别有效：彻底"熄火"音轨
-            try { el.removeAttribute('src'); } catch (e) {}
-            try { el.load?.(); } catch (e) {}
-          }
-          this.audioPlaying = false;
-          return;
-        }
-        
-        // 激活：等渲染完成再处理
-        this.$nextTick(() => {
-          const el2 = this.$refs.mediaEl;
-          if (!el2) return;
-          
-          // 只自动播放音频，视频不自动 play（避免滑动时体验乱）
-          if (this.isAudio) {
-            el2.play?.().then(() => {
-              this.audioPlaying = true;
-            }).catch(() => {});
-          }
-        });
-      }
-    }
   },
   mounted() {
     // 初始化音频信息（只读取元数据，不播放）

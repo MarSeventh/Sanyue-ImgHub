@@ -156,9 +156,22 @@
         />
       </div>
       
-      <!-- 手机端：三页轨道轮播 + TransformMedia -->
+      <!-- 手机端预览 -->
       <div class="preview-content mobile-only" @click.stop>
+        <!-- 只有图片走轮播，其他文件（视频/音频/其他）直接单独渲染 -->
+        <template v-if="currentPreviewFile && !isImage(currentPreviewFile)">
+          <TransformMedia
+            :file="currentPreviewFile"
+            :src="getFileUrl(currentPreviewFile.name)"
+            :is-image="false"
+            :is-video="isVideo(currentPreviewFile)"
+            :is-audio="isAudio(currentPreviewFile)"
+            :is-active="true"
+          />
+        </template>
+        <!-- 图片：三页轨道轮播 -->
         <div
+          v-else
           class="swipe-viewport"
           ref="mobileViewport"
           @touchstart="onSwipeStart"
@@ -176,9 +189,9 @@
                 :file="f"
                 :src="getFileUrl(f.name)"
                 :is-image="isImage(f)"
-                :is-video="isVideo(f)"
-                :is-audio="isAudio(f)"
-                :is-active="i === activeSlideIndex"
+                :is-video="false"
+                :is-audio="false"
+                :is-active="i === 1"
                 @lock="gestureLocked = true"
                 @unlock="gestureLocked = false"
                 @edge-swipe="onEdgeSwipe"
@@ -251,8 +264,6 @@ export default {
       gestureLocked: false,
       // 日夜模式
       isLightMode: false,
-      // 当前激活的 slide 索引（0=prev, 1=current, 2=next）
-      activeSlideIndex: 1,
     };
   },
   computed: {
@@ -742,9 +753,6 @@ export default {
       this.swipeDir = dir;
       this.swipeAnimating = true;
       
-      // 关键：动画开始就切换 active（旧的立刻 pause）
-      this.activeSlideIndex = dir === 0 ? 1 : (1 + dir);
-      
       if (dir === +1) this.swipeX = -this.viewportW;
       else if (dir === -1) this.swipeX = +this.viewportW;
       else this.swipeX = 0;
@@ -759,9 +767,6 @@ export default {
       this.swipeAnimating = false;
       this.swipeDir = 0;
       this.swipeX = 0;
-      
-      // window 重算后，中间页又是 1
-      this.activeSlideIndex = 1;
     },
 
     // iOS 风格橡皮筋阻尼函数
@@ -780,9 +785,6 @@ export default {
       // 触发轮播动画
       this.swipeDir = dir;
       this.swipeAnimating = true;
-      
-      // 动画开始就切换 active（旧的立刻 pause）
-      this.activeSlideIndex = 1 + dir;
       
       if (dir === +1) this.swipeX = -this.viewportW;
       else if (dir === -1) this.swipeX = +this.viewportW;
