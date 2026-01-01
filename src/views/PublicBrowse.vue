@@ -914,6 +914,23 @@ export default {
     // 手机端媒体播放时，硬停其他所有媒体
     onMobileMediaPlay(e) {
       hardStopAll(e.target);
+    },
+
+    // 音频播放结束：顺序播放模式下切换下一首
+    onAudioEnded(action) {
+      if (action === 'next') {
+        // 顺序播放：切换到下一首
+        if (this.previewIndex < this.mediaFiles.length - 1) {
+          this.previewIndex++;
+          // 等待 DOM 更新后自动播放下一首
+          this.$nextTick(() => {
+            const audioRef = this.$refs.desktopAudio;
+            if (audioRef?.player?.media) {
+              audioRef.player.play();
+            }
+          });
+        }
+      }
     }
   }
 };
