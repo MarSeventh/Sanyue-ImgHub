@@ -25,6 +25,10 @@
       playsinline
       :style="mediaStyle"
     />
+    <div v-else-if="isAudio" class="tm-audio">
+      <svg class="audio-icon-large" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+      <audio :src="src" controls autoplay class="audio-player"></audio>
+    </div>
   </div>
 </template>
 
@@ -36,6 +40,7 @@ export default {
     src: { type: String, required: true },
     isImage: { type: Boolean, default: true },
     isVideo: { type: Boolean, default: false },
+    isAudio: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -140,8 +145,15 @@ export default {
       if (!rect) return { maxX: 0, maxY: 0, vw: 0, vh: 0 };
       const vw = rect.width, vh = rect.height;
       const img = this.$el.querySelector('img, video');
-      const iw = img?.clientWidth || vw;
-      const ih = img?.clientHeight || vh;
+      let iw = img?.clientWidth || vw;
+      let ih = img?.clientHeight || vh;
+      
+      // 90°/270° 旋转时，图片宽高交换
+      const rot = this.rotation % 360;
+      if (rot === 90 || rot === 270) {
+        [iw, ih] = [ih, iw];
+      }
+      
       const sw = iw * this.scale;
       const sh = ih * this.scale;
       const maxX = Math.max(0, (sw - vw) / 2);
@@ -162,7 +174,9 @@ export default {
 
     calcTwoPointer() {
       const pts = Array.from(this.pointers.values());
-      const p0 = pts[0], p1 = pts[1];
+      // 按 pointerId 排序确保顺序一致
+      const sorted = Array.from(this.pointers.entries()).sort((a, b) => a[0] - b[0]);
+      const p0 = sorted[0][1], p1 = sorted[1][1];
       const dx = p1.x - p0.x;
       const dy = p1.y - p0.y;
       const dist = Math.hypot(dx, dy);
@@ -403,5 +417,25 @@ export default {
   max-height: 100%;
   object-fit: contain;
   -webkit-user-drag: none;
+}
+
+.tm-audio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 20px;
+}
+
+.audio-icon-large {
+  width: 120px;
+  height: 120px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.audio-player {
+  width: 100%;
+  max-width: 400px;
 }
 </style>
