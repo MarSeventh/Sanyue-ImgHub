@@ -25,9 +25,37 @@
       playsinline
       :style="mediaStyle"
     />
-    <div v-else-if="isAudio" class="tm-audio">
-      <svg class="audio-icon-large" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-      <audio :src="src" controls autoplay class="audio-player"></audio>
+    <div v-else-if="isAudio" class="tm-audio" @pointerdown.stop @pointermove.stop>
+      <div class="audio-cover">
+        <img v-if="audioCover" :src="audioCover" class="cover-img" />
+        <svg v-else class="audio-icon-large" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+      </div>
+      <div class="audio-info">
+        <div class="audio-title">{{ audioTitle }}</div>
+        <div class="audio-artist" v-if="audioArtist">{{ audioArtist }}</div>
+      </div>
+      <div class="audio-controls">
+        <button class="ctrl-btn" @click="togglePlay">
+          <svg v-if="!audioPlaying" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg v-else viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <div class="progress-wrap" @click="seekAudio">
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: audioProgress + '%' }"></div>
+          </div>
+          <div class="time-display">
+            <span>{{ formatTime(audioCurrentTime) }}</span>
+            <span>{{ formatTime(audioDuration) }}</span>
+          </div>
+        </div>
+      </div>
+      <audio 
+        ref="audioEl"
+        :src="src" 
+        @loadedmetadata="onAudioLoaded"
+        @timeupdate="onTimeUpdate"
+        @ended="audioPlaying = false"
+      ></audio>
     </div>
   </div>
 </template>
@@ -60,6 +88,14 @@ export default {
       startTx: 0,
       startTy: 0,
       startCenter: null,
+      // 音频播放状态
+      audioPlaying: false,
+      audioCurrentTime: 0,
+      audioDuration: 0,
+      audioProgress: 0,
+      audioCover: null,
+      audioTitle: '',
+      audioArtist: '',
       startDist: 0,
       startAngle: 0,
       // drag
@@ -104,8 +140,173 @@ export default {
     isActiveTransform(v) {
       this.$emit(v ? "lock" : "unlock");
     },
+    src: {
+      immediate: true,
+      handler(newSrc) {
+        if (this.isAudio && newSrc) {
+          this.initAudioInfo();
+        }
+      }
+    }
+  },
+  mounted() {
+    if (this.isAudio) {
+      this.initAudioInfo();
+      this.$nextTick(() => {
+        if (this.$refs.audioEl) {
+          this.$refs.audioEl.play().catch(() => {});
+          this.audioPlaying = true;
+        }
+      });
+    }
   },
   methods: {
+    // 初始化音频信息
+    initAudioInfo() {
+      // 从文件名提取标题
+      const fileName = this.file?.name || this.src;
+      const name = fileName.split('/').pop().replace(/\.[^.]+$/, '');
+      this.audioTitle = name;
+      this.audioArtist = '';
+      this.audioCover = null;
+      
+      // 尝试读取 ID3 标签（如果浏览器支持）
+      this.tryReadMetadata();
+    },
+
+    async tryReadMetadata() {
+      try {
+        const response = await fetch(this.src);
+        const blob = await response.blob();
+        const arrayBuffer = await blob.slice(0, 128 * 1024).arrayBuffer(); // 只读前128KB
+        const dataView = new DataView(arrayBuffer);
+        
+        // 检查 ID3v2 标签
+        if (dataView.getUint8(0) === 0x49 && dataView.getUint8(1) === 0x44 && dataView.getUint8(2) === 0x33) {
+          this.parseID3v2(dataView, arrayBuffer);
+        }
+      } catch (e) {
+        // 忽略错误，使用默认信息
+      }
+    },
+
+    parseID3v2(dataView, arrayBuffer) {
+      const size = ((dataView.getUint8(6) & 0x7f) << 21) |
+                   ((dataView.getUint8(7) & 0x7f) << 14) |
+                   ((dataView.getUint8(8) & 0x7f) << 7) |
+                   (dataView.getUint8(9) & 0x7f);
+      
+      let offset = 10;
+      const decoder = new TextDecoder('utf-8');
+      
+      while (offset < Math.min(size + 10, arrayBuffer.byteLength - 10)) {
+        const frameId = String.fromCharCode(
+          dataView.getUint8(offset),
+          dataView.getUint8(offset + 1),
+          dataView.getUint8(offset + 2),
+          dataView.getUint8(offset + 3)
+        );
+        
+        if (frameId === '\0\0\0\0') break;
+        
+        const frameSize = (dataView.getUint8(offset + 4) << 24) |
+                         (dataView.getUint8(offset + 5) << 16) |
+                         (dataView.getUint8(offset + 6) << 8) |
+                         dataView.getUint8(offset + 7);
+        
+        if (frameSize <= 0 || frameSize > arrayBuffer.byteLength) break;
+        
+        const frameData = new Uint8Array(arrayBuffer, offset + 10, Math.min(frameSize, arrayBuffer.byteLength - offset - 10));
+        
+        if (frameId === 'TIT2') {
+          // 标题
+          this.audioTitle = this.decodeText(frameData) || this.audioTitle;
+        } else if (frameId === 'TPE1') {
+          // 艺术家
+          this.audioArtist = this.decodeText(frameData);
+        } else if (frameId === 'APIC') {
+          // 封面图片
+          this.extractCover(frameData);
+        }
+        
+        offset += 10 + frameSize;
+      }
+    },
+
+    decodeText(data) {
+      if (data.length < 2) return '';
+      const encoding = data[0];
+      const textData = data.slice(1);
+      
+      try {
+        if (encoding === 0) {
+          return new TextDecoder('iso-8859-1').decode(textData).replace(/\0/g, '');
+        } else if (encoding === 1) {
+          return new TextDecoder('utf-16').decode(textData).replace(/\0/g, '');
+        } else if (encoding === 3) {
+          return new TextDecoder('utf-8').decode(textData).replace(/\0/g, '');
+        }
+      } catch (e) {}
+      return '';
+    },
+
+    extractCover(data) {
+      try {
+        let offset = 1; // 跳过编码字节
+        // 跳过 MIME 类型
+        while (offset < data.length && data[offset] !== 0) offset++;
+        offset++; // 跳过 null
+        offset++; // 跳过图片类型
+        // 跳过描述
+        while (offset < data.length && data[offset] !== 0) offset++;
+        offset++;
+        
+        if (offset < data.length) {
+          const imageData = data.slice(offset);
+          const blob = new Blob([imageData], { type: 'image/jpeg' });
+          this.audioCover = URL.createObjectURL(blob);
+        }
+      } catch (e) {}
+    },
+
+    onAudioLoaded() {
+      if (this.$refs.audioEl) {
+        this.audioDuration = this.$refs.audioEl.duration;
+      }
+    },
+
+    onTimeUpdate() {
+      if (this.$refs.audioEl) {
+        this.audioCurrentTime = this.$refs.audioEl.currentTime;
+        this.audioProgress = (this.audioCurrentTime / this.audioDuration) * 100 || 0;
+      }
+    },
+
+    togglePlay() {
+      if (!this.$refs.audioEl) return;
+      if (this.audioPlaying) {
+        this.$refs.audioEl.pause();
+      } else {
+        this.$refs.audioEl.play();
+      }
+      this.audioPlaying = !this.audioPlaying;
+    },
+
+    seekAudio(e) {
+      if (!this.$refs.audioEl || !this.audioDuration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = x / rect.width;
+      this.$refs.audioEl.currentTime = percent * this.audioDuration;
+    },
+
+    formatTime(seconds) {
+      if (!seconds || isNaN(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    },
+
     onLoad(e) {
       // 记录图片原始尺寸
       const img = e.target;
@@ -424,18 +625,115 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  padding: 20px;
+  gap: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.audio-cover {
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .audio-icon-large {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.audio-info {
+  text-align: center;
+  width: 100%;
+}
+
+.audio-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audio-artist {
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.6);
 }
 
-.audio-player {
+.audio-controls {
   width: 100%;
-  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ctrl-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.ctrl-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.progress-wrap {
+  flex: 1;
+  cursor: pointer;
+}
+
+.progress-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.time-display {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tm-audio audio {
+  display: none;
 }
 </style>

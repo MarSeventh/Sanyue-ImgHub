@@ -88,6 +88,7 @@
               </div>
               <div v-else class="file-placeholder">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+                <span class="file-name">{{ getFileName(file.name) }}</span>
               </div>
               <!-- 悬浮操作层 -->
               <div class="overlay">
@@ -382,8 +383,8 @@ export default {
       const colIndex = this.getShortestColumn();
       file.columnIndex = colIndex;
       this.columnHeights[colIndex] += height;
-      // 音频文件直接标记为已加载（没有 load 事件）
-      if (this.isAudio(file)) {
+      // 音频和其他文件直接标记为已加载（没有 load 事件）
+      if (this.isAudio(file) || (!this.isImage(file) && !this.isVideo(file))) {
         file.loaded = true;
       }
     },
@@ -1018,15 +1019,32 @@ export default {
   width: 100%;
   height: 200px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: #141414;
-  color: #333;
+  color: #555;
+  gap: 12px;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .file-placeholder svg {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
+}
+
+.file-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  word-break: break-all;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .audio-placeholder {
@@ -1498,6 +1516,15 @@ export default {
 .light-mode .file-placeholder {
   background: #f5f5f5;
   color: #ccc;
+}
+
+.light-mode .file-placeholder {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.light-mode .file-name {
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .light-mode .audio-placeholder {
