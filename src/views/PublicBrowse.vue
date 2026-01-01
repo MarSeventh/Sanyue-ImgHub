@@ -268,7 +268,7 @@
       
       <!-- 桌面端旋转按钮 -->
       <button class="rotate-btn" @click.stop="rotateImage" v-if="!isMobile" title="旋转90°">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.9c-.87-.15-1.71-.49-2.46-1.03L7.1 18.32zM13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93z"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.89 8.53l1.41-1.42C19.2 8.27 19.76 9.61 19.93 11h-2.02c-.14-.87-.49-1.72-1.02-2.47zM17.91 13h2.02c-.17 1.39-.72 2.73-1.62 3.89l-1.41-1.42c.52-.75.87-1.59 1.01-2.47zm-1.01 5.32c-1.16.9-2.51 1.44-3.9 1.61V17.9c.87-.15 1.71-.49 2.46-1.03l1.44 1.45zM11 4.07V1l4.55 4.55L11 10V6.09c-2.84.48-5 2.94-5 5.91s2.16 5.43 5 5.91v2.02c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93z"/></svg>
       </button>
       
       <!-- 页码指示器 -->
@@ -528,14 +528,9 @@ export default {
       const dirParam = this.$route.params.dir || '';
       const dirPath = Array.isArray(dirParam) ? dirParam.join('/') : dirParam;
       
-      if (!dirPath) {
-        this.error = '请指定要浏览的目录，例如: /browse/landscape';
-        this.canRetry = false;
-        return;
-      }
-      
+      // 支持根目录访问（dirPath 可以为空）
       const parts = dirPath.split('/').filter(Boolean);
-      this.rootDir = parts[0];
+      this.rootDir = parts[0] || '';
       this.currentPath = dirPath;
       this.files = [];
       this.hasMore = true;
