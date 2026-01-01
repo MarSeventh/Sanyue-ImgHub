@@ -131,22 +131,26 @@
       <div class="preview-content desktop-only" @click.stop>
         <img 
           v-if="currentPreviewFile && isImage(currentPreviewFile)"
+          :key="'img-' + currentPreviewFile.name"
           :src="getFileUrl(currentPreviewFile.name)" 
           class="preview-image"
           :style="desktopImageStyle"
           draggable="false"
         />
+        <!-- 桌面端视频：加 key 强制切换时重新挂载，避免混播 -->
         <video 
           v-else-if="currentPreviewFile && isVideo(currentPreviewFile)"
+          :key="'video-' + currentPreviewFile.name"
           :src="getFileUrl(currentPreviewFile.name)"
           controls
           autoplay
           class="preview-video"
           :style="desktopImageStyle"
         ></video>
-        <!-- 桌面端音频：复用 TransformMedia 组件 -->
+        <!-- 桌面端音频：加 key 强制切换时重新挂载 -->
         <TransformMedia
           v-else-if="currentPreviewFile && isAudio(currentPreviewFile)"
+          :key="'audio-' + currentPreviewFile.name"
           :file="currentPreviewFile"
           :src="getFileUrl(currentPreviewFile.name)"
           :is-image="false"
@@ -156,36 +160,42 @@
         />
       </div>
       
-      <!-- 手机端预览 -->
+      <!-- 手机端预览：视频和音频完全独立，不受网页UI影响 -->
       <div class="preview-content mobile-only" @click.stop>
-        <!-- 视频：直接用原生 video，让浏览器处理全屏 -->
+        <!-- 视频：纯原生播放，不包裹任何额外UI -->
         <video
           v-if="currentPreviewFile && isVideo(currentPreviewFile)"
-          :key="currentPreviewFile.name"
+          :key="'m-video-' + currentPreviewFile.name"
           :src="getFileUrl(currentPreviewFile.name)"
           controls
           autoplay
           playsinline
-          class="mobile-video"
+          webkit-playsinline
+          x5-video-player-type="h5"
+          x5-video-player-fullscreen="true"
+          class="mobile-video-native"
         ></video>
         
-        <!-- 音频：支持滑动切换 -->
+        <!-- 音频：简单原生播放 + 滑动切换 -->
         <div
           v-else-if="currentPreviewFile && isAudio(currentPreviewFile)"
-          class="mobile-audio-wrap"
+          class="mobile-audio-native"
           @touchstart="onAudioSwipeStart"
           @touchmove="onAudioSwipeMove"
           @touchend="onAudioSwipeEnd"
         >
-          <TransformMedia
-            :key="currentPreviewFile.name"
-            :file="currentPreviewFile"
+          <div class="audio-cover-simple">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="audio-name-simple">{{ getFileName(currentPreviewFile.name) }}</div>
+          <audio
+            :key="'m-audio-' + currentPreviewFile.name"
             :src="getFileUrl(currentPreviewFile.name)"
-            :is-image="false"
-            :is-video="false"
-            :is-audio="true"
-            :is-active="true"
-          />
+            controls
+            autoplay
+            class="mobile-audio-player"
+          ></audio>
+          <div class="swipe-hint">← 滑动切换 →</div>
         </div>
         
         <!-- 其他文件：直接显示 -->
@@ -1403,7 +1413,10 @@ export default {
   }
   
   .preview-content.mobile-only {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     padding: 0;
     width: 100%;
     height: 100%;
@@ -1412,22 +1425,62 @@ export default {
     left: 0;
   }
   
-  /* 手机端视频：全屏原生播放 */
-  .mobile-video {
+  /* 手机端视频：完全原生，占满屏幕 */
+  .mobile-video-native {
     width: 100%;
     height: 100%;
     object-fit: contain;
     background: #000;
   }
   
-  /* 手机端音频容器：支持滑动切换 */
-  .mobile-audio-wrap {
+  /* 手机端音频：简单原生UI */
+  .mobile-audio-native {
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    touch-action: pan-y;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .audio-cover-simple {
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .audio-cover-simple svg {
+    width: 60px;
+    height: 60px;
+    color: rgba(255,255,255,0.6);
+  }
+  
+  .audio-name-simple {
+    font-size: 16px;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    margin-bottom: 30px;
+    max-width: 80%;
+    word-break: break-all;
+  }
+  
+  .mobile-audio-player {
+    width: 90%;
+    max-width: 320px;
+    margin-bottom: 20px;
+  }
+  
+  .swipe-hint {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
   }
   
   /* 手机端其他文件预览 */
