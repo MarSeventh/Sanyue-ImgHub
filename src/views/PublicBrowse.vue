@@ -776,24 +776,26 @@ export default {
       const nextRotation = this.imageRotation + 90;
       
       if (nextRotation >= 360) {
-        // 第4次点击：270° → 0°，需要特殊处理避免逆向动画
-        const el = this.$el.querySelector('.preview-image, .preview-video');
-        if (el) {
-          // 先禁用动画
-          el.style.transition = 'none';
-          // 设置为360°（视觉上和0°一样）
-          this.imageRotation = 360;
-          // 强制重绘
-          void el.offsetWidth;
-          // 立即设置为0°
-          this.imageRotation = 0;
-          // 下一帧恢复动画
-          requestAnimationFrame(() => {
-            el.style.transition = '';
-          });
-        } else {
-          this.imageRotation = 0;
-        }
+        // 第4次点击：270° → 360°(0°)
+        // 先正常动画到 360°
+        this.imageRotation = 360;
+        
+        // 动画结束后（0.3s）无动画重置为 0°
+        setTimeout(() => {
+          const el = this.$el.querySelector('.preview-image, .preview-video');
+          if (el) {
+            el.style.transition = 'none';
+            this.imageRotation = 0;
+            // 强制重绘
+            void el.offsetWidth;
+            // 下一帧恢复动画
+            requestAnimationFrame(() => {
+              el.style.transition = '';
+            });
+          } else {
+            this.imageRotation = 0;
+          }
+        }, 320);
       } else {
         // 正常旋转：0→90, 90→180, 180→270
         this.imageRotation = nextRotation;
