@@ -71,6 +71,20 @@
 </template>
 
 <script>
+/**
+ * TransformMedia - 媒体预览组件（支持图片/视频/音频）
+ * 
+ * 核心功能：
+ * 1. 双指缩放 (pinch-to-zoom)
+ * 2. 双指旋转 (90°步进，小米相册风格)
+ * 3. 单指拖拽平移 (放大状态下)
+ * 4. iOS风格橡皮筋阻尼效果
+ * 5. 边界滑动翻页 (edge-swipe)
+ * 6. 音频播放器 (ID3标签解析、封面、进度条)
+ * 
+ * 重要：手机端三页轮播会同时挂载3个此组件(prev/current/next)
+ * 只有 isActive=true 的才渲染真实 <video>/<audio>，防止多个媒体同时播放
+ */
 export default {
   name: "TransformMedia",
   props: {
@@ -79,86 +93,126 @@ export default {
     isImage: { type: Boolean, default: true },
     isVideo: { type: Boolean, default: false },
     isAudio: { type: Boolean, default: false },
+    // 是否为当前激活页（只有激活页才渲染真实media标签，防止音视频大杂汇）
     isActive: { type: Boolean, default: false },
   },
   data() {
     return {
-      pointers: new Map(),
-      scale: 1,
-      rotation: 0,
-      rotatePreview: 0,
-      tx: 0,
-      ty: 0,
-      naturalWidth: 0,
-      naturalHeight: 0,
+      // ===== 手势状态 =====
+      pointers: new Map(),        // 当前触点 Map<pointerId, {x, y}>
+      scale: 1,                   // 当前缩放比例
+      rotation: 0,                // 已确认的旋转角度 (0/90/180/270)
+      rotatePreview: 0,           // 旋转预览角度 (手势中实时变化，松手后归零)
+      tx: 0,                      // X轴平移
+      ty: 0,                      // Y轴平移
+      naturalWidth: 0,            // 图片原始宽度
+      naturalHeight: 0,           // 图片原始高度
+      
+      // ===== 手势起始状态（用于计算增量） =====
       startScale: 1,
       startRotation: 0,
       startTx: 0,
       startTy: 0,
-      startCenter: null,
+      startCenter: null,          // 双指中心点
+      startDist: 0,               // 双指起始距离
+      startAngle: 0,              // 双指起始角度
+      
+      // ===== 音频播放器状态 =====
       audioPlaying: false,
       audioCurrentTime: 0,
       audioDuration: 0,
       audioProgress: 0,
-      audioCover: null,
-      audioTitle: '',
-      audioArtist: '',
-      startDist: 0,
-      startAngle: 0,
+      audioCover: null,           // ID3封面 (blob URL)
+      audioTitle: '',             // ID3标题
+      audioArtist: '',            // ID3艺术家
+      
+      // ===== 拖拽状态 =====
       dragging: false,
       dragStart: null,
       viewportRect: null,
       minScale: 1,
       maxScale: 4,
-      gestureMode: null,
-      edgeOverflow: 0,
-      edgeDir: 0,
+      
+      // ===== 手势模式判定 =====
+      gestureMode: null,          // 'pinch' | 'rotate' | null (先到阈值的优先)
+      
+      // ===== 边界滑动翻页 =====
+      edgeOverflow: 0,            // 超出边界的距离
+      edgeDir: 0,                 // 翻页方向 (-1:上一页, +1:下一页)
     };
   },
   computed: {
+    // 是否处于变换状态（放大/双指/拖拽中），用于通知父组件锁定轮播
     isActiveTransform() {
       return this.scale > 1.001 || this.pointers.size >= 2 || this.dragging;
     },
+    // 显示用旋转角度 = 已确认角度 + 预览角度
     displayRotation() {
       return this.rotation + this.rotatePreview;
     },
+    // 旋转时的缩小效果（小米相册风格：旋转过程中图片略微缩小）
+    // 使用 sin 曲线让缩放更自然，最大缩小12%
     rotateShrink() {
       const p = Math.min(1, Math.abs(this.rotatePreview) / 90);
       const k = Math.sin(Math.PI * p);
       return 1 - 0.12 * k;
     },
+    // 媒体元素的 transform 样式
     mediaStyle() {
       const finalScale = this.scale * this.rotateShrink;
       const inGesture = this.pointers.size > 0;
       return {
         transform: `translate3d(${this.tx}px, ${this.ty}px, 0) scale(${finalScale}) rotate(${this.displayRotation}deg)`,
+        // 手势中禁用过渡，松手后启用平滑过渡
         transition: inGesture ? "none" : "transform 0.25s ease",
         transformOrigin: "center center",
       };
     },
   },
   watch: {
+    // 变换状态变化时通知父组件锁定/解锁轮播
     isActiveTransform(v) {
       this.$emit(v ? "lock" : "unlock");
     },
-    // 核心：监听 isActive 变化，控制播放/暂停
+    /**
+     * 核心：监听 isActive 变化，控制播放/暂停
+     * 
+     * 为什么需要这个？
+     * 手机端三页轮播会同时挂载3个 TransformMedia (prev/current/next)
+     * 如果不控制，prev/next 虽然不可见但也会播放，导致"音乐大杂汇"
+     * 
+     * 关键：isActive 变 false 时要"立刻 pause"，不能 nextTick！
+     * 因为 v-if="isActive" 会立刻删除 DOM，nextTick 时 ref 已经没了
+     */
     isActive: {
       immediate: true,
       handler(active) {
-        this.$nextTick(() => {
-          const el = this.$refs.mediaEl;
-          if (!el) return;
-          
-          if (!active) {
+        // 先拿当前 mediaEl（这时 DOM 还没被 v-if 删掉）
+        const el = this.$refs.mediaEl;
+        
+        if (!active) {
+          // 非激活：立刻 pause，不要 nextTick
+          if (el) {
             try { el.pause(); } catch (e) {}
-            try { el.currentTime = 0; } catch (e) {}
-            this.audioPlaying = false;
-            return;
+            // 这两句对 iOS/Safari 特别有效：彻底"熄火"音轨
+            try { el.removeAttribute('src'); } catch (e) {}
+            try { el.load?.(); } catch (e) {}
           }
+          this.audioPlaying = false;
+          return;
+        }
+        
+        // 激活：等渲染完成再处理
+        this.$nextTick(() => {
+          const el2 = this.$refs.mediaEl;
+          if (!el2) return;
           
-          // 激活时自动播放
-          el.play?.().catch(() => {});
-          if (this.isAudio) this.audioPlaying = true;
+          // 只自动播放音频，视频不自动 play（避免滑动时体验乱）
+          if (this.isAudio) {
+            el2.play?.().then(() => {
+              this.audioPlaying = true;
+            }).catch(() => {});
+          }
         });
       }
     }
@@ -170,6 +224,7 @@ export default {
     }
   },
   beforeUnmount() {
+    // 组件销毁前清理：暂停播放、释放封面 blob URL
     const el = this.$refs.mediaEl;
     if (el) {
       try { el.pause(); } catch (e) {}
@@ -179,6 +234,12 @@ export default {
     }
   },
   methods: {
+    // ===== 音频相关方法 =====
+    
+    /**
+     * 初始化音频信息
+     * 先用文件名作为标题，然后尝试读取 ID3 标签获取真实信息
+     */
     initAudioInfo() {
       const fileName = this.file?.name || this.src;
       const name = fileName.split('/').pop().replace(/\.[^.]+$/, '');
@@ -186,12 +247,16 @@ export default {
       this.audioArtist = '';
       this.audioCover = null;
       
-      // 只有激活页才读取 ID3
+      // 只有激活页才读取 ID3（避免 prev/next 页浪费请求）
       if (this.isActive) {
         this.tryReadMetadata();
       }
     },
 
+    /**
+     * 尝试读取 ID3v2 元数据
+     * 只读取文件前 128KB，足够解析大部分 ID3 标签
+     */
     async tryReadMetadata() {
       try {
         const response = await fetch(this.src);
@@ -199,21 +264,28 @@ export default {
         const arrayBuffer = await blob.slice(0, 128 * 1024).arrayBuffer();
         const dataView = new DataView(arrayBuffer);
         
+        // ID3v2 标识：'ID3' (0x49 0x44 0x33)
         if (dataView.getUint8(0) === 0x49 && dataView.getUint8(1) === 0x44 && dataView.getUint8(2) === 0x33) {
           this.parseID3v2(dataView, arrayBuffer);
         }
       } catch (e) {}
     },
 
+    /**
+     * 解析 ID3v2 标签
+     * 支持 TIT2(标题)、TPE1(艺术家)、APIC(封面)
+     */
     parseID3v2(dataView, arrayBuffer) {
+      // ID3v2 size 使用 syncsafe integer (每字节只用7位)
       const size = ((dataView.getUint8(6) & 0x7f) << 21) |
                    ((dataView.getUint8(7) & 0x7f) << 14) |
                    ((dataView.getUint8(8) & 0x7f) << 7) |
                    (dataView.getUint8(9) & 0x7f);
       
-      let offset = 10;
+      let offset = 10; // 跳过 ID3v2 header
       
       while (offset < Math.min(size + 10, arrayBuffer.byteLength - 10)) {
+        // 读取 frame ID (4字节)
         const frameId = String.fromCharCode(
           dataView.getUint8(offset),
           dataView.getUint8(offset + 1),
@@ -221,8 +293,9 @@ export default {
           dataView.getUint8(offset + 3)
         );
         
-        if (frameId === '\0\0\0\0') break;
+        if (frameId === '\0\0\0\0') break; // 遇到空帧，结束
         
+        // frame size (4字节)
         const frameSize = (dataView.getUint8(offset + 4) << 24) |
                          (dataView.getUint8(offset + 5) << 16) |
                          (dataView.getUint8(offset + 6) << 8) |
@@ -244,6 +317,10 @@ export default {
       }
     },
 
+    /**
+     * 解码 ID3 文本帧
+     * 第一个字节是编码标识：0=ISO-8859-1, 1=UTF-16, 3=UTF-8
+     */
     decodeText(data) {
       if (data.length < 2) return '';
       const encoding = data[0];
@@ -261,14 +338,18 @@ export default {
       return '';
     },
 
+    /**
+     * 从 APIC 帧提取封面图片
+     * APIC 结构：encoding(1) + MIME(null-terminated) + type(1) + desc(null-terminated) + data
+     */
     extractCover(data) {
       try {
-        let offset = 1;
-        while (offset < data.length && data[offset] !== 0) offset++;
-        offset++;
-        offset++;
-        while (offset < data.length && data[offset] !== 0) offset++;
-        offset++;
+        let offset = 1; // 跳过 encoding
+        while (offset < data.length && data[offset] !== 0) offset++; // 跳过 MIME
+        offset++; // 跳过 null
+        offset++; // 跳过 picture type
+        while (offset < data.length && data[offset] !== 0) offset++; // 跳过 description
+        offset++; // 跳过 null
         
         if (offset < data.length) {
           const imageData = data.slice(offset);
@@ -316,12 +397,15 @@ export default {
       return `${mins}:${secs.toString().padStart(2, '0')}`;
     },
 
+    // ===== 图片/视频相关方法 =====
+
     onLoad(e) {
       const img = e.target;
       this.naturalWidth = img.naturalWidth;
       this.naturalHeight = img.naturalHeight;
     },
 
+    /** 重置所有变换状态 */
     reset() {
       this.scale = 1;
       this.rotation = 0;
@@ -335,10 +419,19 @@ export default {
       this.$emit("unlock");
     },
 
+    // ===== 工具函数 =====
+
     clamp(v, min, max) {
       return Math.max(min, Math.min(max, v));
     },
 
+    /**
+     * iOS 风格橡皮筋阻尼函数
+     * 越拉越难拉，松手后回弹
+     * @param distance 拉动距离
+     * @param dimension 容器尺寸
+     * @param constant 阻尼系数 (默认0.55)
+     */
     rubberBand(distance, dimension, constant = 0.55) {
       return (distance * dimension * constant) / (dimension + constant * distance);
     },
@@ -347,6 +440,11 @@ export default {
       return this.$refs.viewport?.getBoundingClientRect();
     },
 
+    /**
+     * 计算平移边界
+     * 放大后图片可以平移的最大范围
+     * 注意：90°/270° 旋转时需要交换宽高
+     */
     getPanBounds() {
       const rect = this.$refs.viewport?.getBoundingClientRect();
       if (!rect) return { maxX: 0, maxY: 0, vw: 0, vh: 0 };
@@ -355,6 +453,7 @@ export default {
       let iw = img?.clientWidth || vw;
       let ih = img?.clientHeight || vh;
       
+      // 90°/270° 旋转时交换宽高
       const rot = this.rotation % 360;
       if (rot === 90 || rot === 270) {
         [iw, ih] = [ih, iw];
@@ -367,6 +466,7 @@ export default {
       return { maxX, maxY, vw, vh };
     },
 
+    /** 应用橡皮筋阻尼的边界限制 */
     applyBoundWithRubber(value, max, dimension) {
       if (value > max) {
         return max + this.rubberBand(value - max, dimension, 0.55);
@@ -377,6 +477,10 @@ export default {
       return value;
     },
 
+    /**
+     * 计算双指手势参数
+     * 按 pointerId 排序确保手指顺序一致，避免逆时针旋转问题
+     */
     calcTwoPointer() {
       const sorted = Array.from(this.pointers.entries()).sort((a, b) => a[0] - b[0]);
       const p0 = sorted[0][1], p1 = sorted[1][1];
@@ -388,16 +492,20 @@ export default {
       return { dist, angle, center };
     },
 
+    /** 将角度归一化到 -180 ~ 180 */
     normalizeAngle(deg) {
       deg = ((deg % 360) + 360) % 360;
       return deg > 180 ? deg - 360 : deg;
     },
+
+    // ===== 手势事件处理 =====
 
     onPointerDown(e) {
       e.currentTarget.setPointerCapture?.(e.pointerId);
       this.viewportRect = this.getViewportRect();
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
+      // 双指：初始化缩放/旋转手势
       if (this.pointers.size === 2) {
         const { dist, angle, center } = this.calcTwoPointer();
         this.startDist = dist;
@@ -408,11 +516,12 @@ export default {
         this.startTx = this.tx;
         this.startTy = this.ty;
         this.dragging = false;
-        this.gestureMode = null;
+        this.gestureMode = null;  // 等待判定是 pinch 还是 rotate
         this.rotatePreview = 0;
         return;
       }
 
+      // 单指 + 已放大：开始拖拽
       if (this.scale > 1.001) {
         this.dragging = true;
         this.dragStart = { x: e.clientX, y: e.clientY };
@@ -425,6 +534,7 @@ export default {
       if (!this.pointers.has(e.pointerId)) return;
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
+      // 双指手势处理
       if (this.pointers.size === 2) {
         e.preventDefault();
         const { dist, angle, center } = this.calcTwoPointer();
@@ -434,30 +544,35 @@ export default {
         const deltaAngle = this.normalizeAngle(angle - this.startAngle);
         const angleChange = Math.abs(deltaAngle);
 
-        const rotateStartDeg = 8;
-        const pinchStartScale = 0.08;
+        // 手势模式判定阈值
+        const rotateStartDeg = 8;    // 旋转超过8°才进入旋转模式
+        const pinchStartScale = 0.08; // 缩放超过8%才进入缩放模式
 
+        // 首次判定手势模式（先到阈值的优先）
         if (!this.gestureMode) {
           if (angleChange >= rotateStartDeg) {
             this.gestureMode = 'rotate';
           } else if (scaleChange >= pinchStartScale) {
             this.gestureMode = 'pinch';
           } else {
-            return;
+            return; // 还没到阈值，不处理
           }
         }
 
+        // 旋转模式：只旋转，不缩放
         if (this.gestureMode === 'rotate') {
           this.scale = this.startScale;
-          this.rotatePreview = this.clamp(deltaAngle, -90, 90);
+          this.rotatePreview = this.clamp(deltaAngle, -90, 90); // 限制在 ±90°
           return;
         }
 
+        // 缩放模式：只缩放，不旋转
         if (this.gestureMode === 'pinch') {
           this.scale = this.clamp(this.startScale * scaleFactor, this.minScale, this.maxScale);
           this.rotatePreview = 0;
         }
 
+        // 跟随双指中心点移动
         if (this.startCenter && this.viewportRect) {
           const cx0 = this.startCenter.x - this.viewportRect.left - this.viewportRect.width / 2;
           const cy0 = this.startCenter.y - this.viewportRect.top - this.viewportRect.height / 2;
@@ -469,6 +584,7 @@ export default {
         return;
       }
 
+      // 单指拖拽（放大状态下）
       if (this.dragging && this.scale > 1.001) {
         e.preventDefault();
         const dx = e.clientX - this.dragStart.x;
@@ -477,19 +593,21 @@ export default {
         const rawY = this.startTy + dy;
         const { maxX, maxY, vw, vh } = this.getPanBounds();
         
+        // 检测边界溢出（用于边界滑动翻页）
         let overflow = 0;
         let dir = 0;
         if (rawX > maxX) {
           overflow = rawX - maxX;
-          dir = -1;
+          dir = -1; // 向右拉 = 上一页
         } else if (rawX < -maxX) {
           overflow = -maxX - rawX;
-          dir = +1;
+          dir = +1; // 向左拉 = 下一页
         }
         
         this.edgeOverflow = overflow;
         this.edgeDir = dir;
         
+        // 应用橡皮筋阻尼
         this.tx = this.applyBoundWithRubber(rawX, maxX, vw);
         this.ty = this.applyBoundWithRubber(rawY, maxY, vh);
       }
@@ -498,6 +616,7 @@ export default {
     onPointerUp(e) {
       if (this.pointers.has(e.pointerId)) this.pointers.delete(e.pointerId);
 
+      // 旋转手势结束：判定是否提交旋转
       if (this.pointers.size < 2 && this.gestureMode === 'rotate') {
         this.finishRotate();
         this.gestureMode = null;
@@ -510,9 +629,11 @@ export default {
         this.gestureMode = null;
       }
 
+      // 所有手指抬起
       if (this.pointers.size === 0) {
         this.dragging = false;
         
+        // 边界滑动翻页：溢出超过60px触发
         if (this.edgeOverflow > 60 && this.edgeDir !== 0) {
           const dir = this.edgeDir;
           this.reset();
@@ -522,6 +643,7 @@ export default {
         this.edgeOverflow = 0;
         this.edgeDir = 0;
         
+        // 回弹到边界内
         if (this.scale <= 1.001) {
           this.scale = 1;
           this.tx = 0;
@@ -534,9 +656,14 @@ export default {
       }
     },
 
+    /**
+     * 完成旋转手势
+     * 超过30°提交旋转，否则回弹
+     * 90°/270° 旋转后自动放大2倍以填充屏幕
+     */
     finishRotate() {
       const d = this.rotatePreview;
-      const commitDeg = 30;
+      const commitDeg = 30; // 提交阈值
       
       let target = 0;
       if (Math.abs(d) >= commitDeg) {
@@ -549,6 +676,10 @@ export default {
       this.updateFillScale();
     },
 
+    /**
+     * 根据旋转角度更新缩放
+     * 90°/270° 时自动放大2倍，让图片填充屏幕
+     */
     updateFillScale() {
       const rot = this.rotation % 360;
       const isRotated = (rot === 90 || rot === 270);
@@ -564,6 +695,7 @@ export default {
       }
     },
 
+    /** 双击切换放大/还原 */
     onDblClick() {
       if (this.scale > 1.001) {
         this.scale = 1;
