@@ -128,7 +128,7 @@
       </button>
       
       <!-- 桌面端：简单单图显示（用 v-if 而非 CSS 隐藏，避免全屏时问题） -->
-      <div v-if="!isMobile" class="preview-content" @click.stop>
+      <div v-if="!isMobile" class="preview-content" @click.stop @wheel.prevent="handleWheel">
         <img 
           v-if="currentPreviewFile && isImage(currentPreviewFile)"
           :key="'img-' + currentPreviewFile.name"
@@ -289,8 +289,9 @@ export default {
       pageSize: 24,
       columnCount: 4,
       columnHeights: [0, 0, 0, 0],
-      // 桌面端旋转
+      // 桌面端旋转和缩放
       imageRotation: 0,
+      imageScale: 1,
       // 手机端滑动
       swipeX: 0,
       swipeStartX: 0,
@@ -354,7 +355,7 @@ export default {
     },
     desktopImageStyle() {
       return {
-        transform: `rotate(${this.imageRotation}deg)`,
+        transform: `rotate(${this.imageRotation}deg) scale(${this.imageScale})`,
         transition: 'transform 0.3s ease'
       };
     },
@@ -698,6 +699,7 @@ export default {
         this.previewIndex = mediaIndex;
         this.previewVisible = true;
         this.imageRotation = 0;
+        this.imageScale = 1;
         this.gestureLocked = false;
         document.body.style.overflow = 'hidden';
         this.$nextTick(() => {
@@ -711,6 +713,7 @@ export default {
       hardStopAll(null);
       this.previewVisible = false;
       this.imageRotation = 0;
+      this.imageScale = 1;
       this.gestureLocked = false;
       document.body.style.overflow = '';
     },
@@ -721,6 +724,7 @@ export default {
       if (this.previewIndex > 0) {
         this.previewIndex--;
         this.imageRotation = 0;
+        this.imageScale = 1;
       }
     },
 
@@ -730,6 +734,7 @@ export default {
       if (this.previewIndex < this.mediaFiles.length - 1) {
         this.previewIndex++;
         this.imageRotation = 0;
+        this.imageScale = 1;
       }
     },
 
@@ -759,6 +764,19 @@ export default {
         // 正常旋转：0→90, 90→180, 180→270
         this.imageRotation = nextRotation;
       }
+    },
+
+    // 桌面端滚轮缩放
+    handleWheel(e) {
+      // 只对图片生效
+      if (!this.currentPreviewFile || !this.isImage(this.currentPreviewFile)) return;
+      
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      let newScale = this.imageScale + delta;
+      
+      // 限制缩放范围 0.5 ~ 4
+      newScale = Math.max(0.5, Math.min(4, newScale));
+      this.imageScale = newScale;
     },
 
     // 手机端滑动：开始
