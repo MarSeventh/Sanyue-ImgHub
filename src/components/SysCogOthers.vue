@@ -31,6 +31,33 @@
                     <el-input v-model="settings.randomImageAPI.allowedDir" :disabled="settings.randomImageAPI.fixed"></el-input>
                 </el-form-item>
             </el-form>
+            <h3 class="first-title">访客图库
+                <el-tooltip content="启用后，访客可通过 /browse 路径浏览指定目录的图片（只读，无法删除/移动）" placement="right" raw-content>
+                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                </el-tooltip>
+            </h3>
+            <el-form :model="settings.publicBrowse" label-width="120px">
+                <el-form-item label="启用">
+                    <el-switch v-model="settings.publicBrowse.enabled" :disabled="settings.publicBrowse.fixed"></el-switch>
+                </el-form-item>
+                <el-form-item prop="publicBrowse.allowedDir">
+                    <template #label>
+                        <span>开放目录</span>
+                        <el-tooltip placement="right" raw-content>
+                            <template #content>
+                                <div style="max-width: 320px; line-height: 1.6;">
+                                    <p style="margin: 0 0 8px 0;"><b>允许公开浏览的目录，多个目录用逗号分隔</b></p>
+                                    <p style="margin: 0 0 8px 0;">示例：wallpaper,photos,album</p>
+                                    <p style="margin: 0 0 8px 0; color: #909399;">支持子目录：2026/lucky,2026/rich</p>
+                                    <p style="margin: 0; color: #67c23a;">访问链接：https://你的域名/browse/2026/lucky</p>
+                                </div>
+                            </template>
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-input v-model="settings.publicBrowse.allowedDir" :disabled="settings.publicBrowse.fixed" placeholder="wallpaper,photos,album"></el-input>
+                </el-form-item>
+            </el-form>
             <h3 class="first-title">CloudFlare API Token
                 <el-tooltip content="设置后可以使后端拉黑、删除等操作不受CDN缓存限制 <br/> 建议设置,设置方式请查阅文档" placement="right" raw-content>
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
@@ -61,33 +88,6 @@
                 </el-form-item>
                 <el-form-item label="密码">
                     <el-input v-model="settings.webDAV.password" :disabled="settings.webDAV.fixed" type="password" show-password autocomplete="new-password"></el-input>
-                </el-form-item>
-            </el-form>
-            <h3 class="first-title">公开浏览
-                <el-tooltip content="启用后，访客可通过 /browse 路径浏览指定目录的图片（只读，无法删除/移动）" placement="right" raw-content>
-                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                </el-tooltip>
-            </h3>
-            <el-form :model="settings.publicBrowse" label-width="120px">
-                <el-form-item label="启用">
-                    <el-switch v-model="settings.publicBrowse.enabled" :disabled="settings.publicBrowse.fixed"></el-switch>
-                </el-form-item>
-                <el-form-item prop="publicBrowse.allowedDir">
-                    <template #label>
-                        <span>开放目录</span>
-                        <el-tooltip placement="right" raw-content>
-                            <template #content>
-                                <div style="max-width: 320px; line-height: 1.6;">
-                                    <p style="margin: 0 0 8px 0;"><b>允许公开浏览的目录，多个目录用逗号分隔</b></p>
-                                    <p style="margin: 0 0 8px 0;">示例：wallpaper,photos,album</p>
-                                    <p style="margin: 0 0 8px 0; color: #909399;">支持子目录：2026/lucky,2026/rich</p>
-                                    <p style="margin: 0; color: #67c23a;">访问链接：https://你的域名/browse/2026/lucky</p>
-                                </div>
-                            </template>
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-input v-model="settings.publicBrowse.allowedDir" :disabled="settings.publicBrowse.fixed" placeholder="wallpaper,photos,album"></el-input>
                 </el-form-item>
             </el-form>
         </div>
