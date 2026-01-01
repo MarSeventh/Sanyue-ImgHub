@@ -159,6 +159,7 @@
           :is-video="false"
           :is-audio="true"
           :is-active="true"
+          @audio-ended="onAudioEnded"
         />
       </div>
       

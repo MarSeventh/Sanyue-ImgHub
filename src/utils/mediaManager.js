@@ -4,6 +4,9 @@
 const registry = new Set(); // Set<HTMLMediaElement>
 let current = null;
 
+// 音频播放模式：'stop' | 'sequence' | 'loop'
+let audioPlayMode = 'stop';
+
 function isMediaEl(el) {
   return el && (el.tagName === 'AUDIO' || el.tagName === 'VIDEO');
 }
@@ -86,4 +89,15 @@ export function installGlobalMediaGuards() {
   });
   
   window.addEventListener('pagehide', () => hardStopAll(null));
+}
+
+// 音频播放模式管理
+export function getAudioPlayMode() {
+  return audioPlayMode;
+}
+
+export function setAudioPlayMode(mode) {
+  if (['stop', 'sequence', 'loop'].includes(mode)) {
+    audioPlayMode = mode;
+  }
 }
