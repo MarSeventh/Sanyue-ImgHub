@@ -1,9 +1,10 @@
 <template>
-  <div class="public-browse" :class="{ 'light-mode': isLightMode }">
+  <div class="public-browse">
     <!-- 顶部导航栏 -->
     <header class="header">
       <div class="header-left">
-        <span class="logo" @click="toggleTheme" title="切换日夜模式">{{ siteName }}</span>
+        <span class="logo">{{ siteName }}</span>
+        <ToggleDark class="theme-toggle-btn" />
       </div>
       <div class="header-center">
         <div class="breadcrumb">
@@ -282,12 +283,14 @@
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 import TransformMedia from '@/components/TransformMedia.vue';
+import ToggleDark from '@/components/ToggleDark.vue';
 import { hardStopAll, installGlobalMediaGuards } from '@/utils/mediaManager';
 
 export default {
   name: 'PublicBrowse',
   components: {
-    TransformMedia
+    TransformMedia,
+    ToggleDark
   },
   data() {
     return {
@@ -327,8 +330,6 @@ export default {
       viewportW: 0,
       // 手势锁定（子组件缩放/旋转时锁住轮播）
       gestureLocked: false,
-      // 日夜模式
-      isLightMode: false,
       // 音频滑动切换
       audioSwipeStartX: 0,
       audioSwipeStartT: 0,
@@ -409,7 +410,6 @@ export default {
     // 安装全局媒体守卫
     installGlobalMediaGuards();
     this.checkMobile();
-    this.initTheme();
     this.initFromRoute();
     this.setupIntersectionObserver();
     this.updateColumnCount();
@@ -431,22 +431,6 @@ export default {
       const isCoarse = window.matchMedia?.('(pointer: coarse)').matches;
       const isSmall = window.innerWidth <= 768;
       this.isMobile = isCoarse || isSmall;
-    },
-
-    // 初始化主题：10:00-18:00 默认白天，其他时间默认黑夜
-    initTheme() {
-      const saved = localStorage.getItem('publicBrowseTheme');
-      if (saved !== null) {
-        this.isLightMode = saved === 'light';
-      } else {
-        const hour = new Date().getHours();
-        this.isLightMode = hour >= 10 && hour < 18;
-      }
-    },
-
-    toggleTheme() {
-      this.isLightMode = !this.isLightMode;
-      localStorage.setItem('publicBrowseTheme', this.isLightMode ? 'light' : 'dark');
     },
 
     // 生成 slide key，切换时让子组件重新挂载以重置 transform
@@ -773,33 +757,9 @@ export default {
     },
 
     rotateImage() {
-      const nextRotation = this.imageRotation + 90;
-      
-      if (nextRotation >= 360) {
-        // 第4次点击：270° → 360°(0°)
-        // 先正常动画到 360°
-        this.imageRotation = 360;
-        
-        // 动画结束后（0.3s）无动画重置为 0°
-        setTimeout(() => {
-          const el = this.$el.querySelector('.preview-image, .preview-video');
-          if (el) {
-            el.style.transition = 'none';
-            this.imageRotation = 0;
-            // 强制重绘
-            void el.offsetWidth;
-            // 下一帧恢复动画
-            requestAnimationFrame(() => {
-              el.style.transition = '';
-            });
-          } else {
-            this.imageRotation = 0;
-          }
-        }, 320);
-      } else {
-        // 正常旋转：0→90, 90→180, 180→270
-        this.imageRotation = nextRotation;
-      }
+      // 持续累加旋转角度，不重置，这样动画永远是顺时针
+      // 0 → 90 → 180 → 270 → 360 → 450 → ...
+      this.imageRotation += 90;
     },
 
     // 桌面端滚轮缩放
@@ -1058,6 +1018,19 @@ export default {
 .header-left {
   flex: 0 0 auto;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .header-right {
@@ -1794,131 +1767,130 @@ export default {
   transform: translateX(-50%) translateY(0);
 }
 
-/* 白天模式 */
-.public-browse.light-mode {
+/* 白天模式（跟随全局 dark class） */
+:root:not(.dark) .public-browse {
   background: #f5f5f5;
   color: #333;
 }
 
-.light-mode .header {
+:root:not(.dark) .header {
   background: rgba(255, 255, 255, 0.95);
   border-bottom-color: #e0e0e0;
 }
 
-.light-mode .logo {
+:root:not(.dark) .logo {
   color: #333;
 }
 
-.light-mode .breadcrumb-item {
+:root:not(.dark) .breadcrumb-item {
   color: #666;
 }
 
-.light-mode .breadcrumb-item:hover {
+:root:not(.dark) .breadcrumb-item:hover {
   background: #e8e8e8;
   color: #333;
 }
 
-.light-mode .breadcrumb-sep {
+:root:not(.dark) .breadcrumb-sep {
   color: #ccc;
 }
 
-.light-mode .file-count {
+:root:not(.dark) .file-count {
   color: #999;
 }
 
-.light-mode .loading-container,
-.light-mode .error-container {
+:root:not(.dark) .loading-container,
+:root:not(.dark) .error-container {
   color: #999;
 }
 
-.light-mode .error-credit {
+:root:not(.dark) .error-credit {
   color: rgba(0, 0, 0, 0.4);
 }
 
-.light-mode .error-credit-links a {
+:root:not(.dark) .error-credit-links a {
   color: rgba(0, 0, 0, 0.5);
 }
 
-.light-mode .loading-spinner {
+:root:not(.dark) .loading-spinner {
   border-color: #ddd;
   border-top-color: #3b82f6;
 }
 
-.light-mode .loading-spinner-small {
+:root:not(.dark) .loading-spinner-small {
   border-color: #ddd;
   border-top-color: #3b82f6;
 }
 
-.light-mode .folder-card {
+:root:not(.dark) .folder-card {
   background: #fff;
   border-color: #e0e0e0;
 }
 
-.light-mode .folder-card:hover {
+:root:not(.dark) .folder-card:hover {
   background: #fafafa;
   border-color: #ccc;
 }
 
-.light-mode .folder-icon {
+:root:not(.dark) .folder-icon {
   color: #999;
 }
 
-.light-mode .folder-name {
+:root:not(.dark) .folder-name {
   color: #666;
 }
 
-.light-mode .image-wrapper {
+:root:not(.dark) .image-wrapper {
   background: #fff;
   border-color: #e0e0e0;
 }
 
-.light-mode .image-wrapper::before {
+:root:not(.dark) .image-wrapper::before {
   background: linear-gradient(90deg, #f5f5f5 25%, #fff 50%, #f5f5f5 75%);
 }
 
-.light-mode .image-wrapper:hover {
+:root:not(.dark) .image-wrapper:hover {
   border-color: #ccc;
 }
 
-.light-mode .file-placeholder {
-  background: #f5f5f5;
-  color: #ccc;
-}
-
-.light-mode .file-placeholder {
+:root:not(.dark) .file-placeholder {
   background: #f5f5f5;
   color: #999;
 }
 
-.light-mode .file-name {
+:root:not(.dark) .file-name {
   color: rgba(0, 0, 0, 0.6);
 }
 
-.light-mode .audio-placeholder {
+:root:not(.dark) .audio-placeholder {
   background: linear-gradient(135deg, #e8f4f8 0%, #d4e5f7 100%);
 }
 
-.light-mode .audio-icon {
+:root:not(.dark) .audio-icon {
   color: rgba(0, 0, 0, 0.4);
 }
 
-.light-mode .audio-name {
+:root:not(.dark) .audio-name {
   color: rgba(0, 0, 0, 0.6);
 }
 
-.light-mode .no-more {
+:root:not(.dark) .no-more {
   color: #bbb;
 }
 
-.light-mode .credit-link {
+:root:not(.dark) .credit-link {
   color: #aaa;
 }
 
-.light-mode .credit-link:hover {
+:root:not(.dark) .credit-link:hover {
   color: #666;
 }
 
-.light-mode .loading-more {
+:root:not(.dark) .loading-more {
   color: #999;
+}
+
+:root:not(.dark) .theme-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 </style>
