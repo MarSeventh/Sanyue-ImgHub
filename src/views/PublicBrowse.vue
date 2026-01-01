@@ -79,10 +79,10 @@
                 loop
                 preload="metadata"
                 @loadedmetadata="onVideoLoad($event, file)"
-                @mouseenter="$event.target.play()"
-                @mouseleave="$event.target.pause()"
+                @pointerenter="e => e.pointerType === 'mouse' && e.target.play()"
+                @pointerleave="e => e.pointerType === 'mouse' && e.target.pause()"
               ></video>
-              <div v-else-if="isAudio(file)" class="audio-placeholder" @click.stop>
+              <div v-else-if="isAudio(file)" class="audio-placeholder">
                 <svg class="audio-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
                 <span class="audio-name">{{ getFileName(file.name) }}</span>
               </div>
@@ -168,6 +168,7 @@
                 :is-image="isImage(f)"
                 :is-video="isVideo(f)"
                 :is-audio="isAudio(f)"
+                :is-active="i === 1"
                 @lock="gestureLocked = true"
                 @unlock="gestureLocked = false"
                 @edge-swipe="onEdgeSwipe"
@@ -540,7 +541,7 @@ export default {
     },
 
     getFileUrl(name) {
-      return `${window.location.origin}/file/${name}`;
+      return `${window.location.origin}/file/${encodeURI(name)}`;
     },
 
     isImage(file) {
