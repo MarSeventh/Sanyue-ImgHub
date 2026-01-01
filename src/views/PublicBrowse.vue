@@ -158,17 +158,42 @@
       
       <!-- 手机端预览 -->
       <div class="preview-content mobile-only" @click.stop>
-        <!-- 只有图片走轮播，其他文件（视频/音频/其他）直接单独渲染 -->
-        <template v-if="currentPreviewFile && !isImage(currentPreviewFile)">
+        <!-- 视频：直接用原生 video，让浏览器处理全屏 -->
+        <video
+          v-if="currentPreviewFile && isVideo(currentPreviewFile)"
+          :key="currentPreviewFile.name"
+          :src="getFileUrl(currentPreviewFile.name)"
+          controls
+          autoplay
+          playsinline
+          class="mobile-video"
+        ></video>
+        
+        <!-- 音频：支持滑动切换 -->
+        <div
+          v-else-if="currentPreviewFile && isAudio(currentPreviewFile)"
+          class="mobile-audio-wrap"
+          @touchstart="onAudioSwipeStart"
+          @touchmove="onAudioSwipeMove"
+          @touchend="onAudioSwipeEnd"
+        >
           <TransformMedia
+            :key="currentPreviewFile.name"
             :file="currentPreviewFile"
             :src="getFileUrl(currentPreviewFile.name)"
             :is-image="false"
-            :is-video="isVideo(currentPreviewFile)"
-            :is-audio="isAudio(currentPreviewFile)"
+            :is-video="false"
+            :is-audio="true"
             :is-active="true"
           />
-        </template>
+        </div>
+        
+        <!-- 其他文件：直接显示 -->
+        <div v-else-if="currentPreviewFile && !isImage(currentPreviewFile)" class="other-file-preview">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+          <span class="file-name">{{ getFileName(currentPreviewFile.name) }}</span>
+        </div>
+        
         <!-- 图片：三页轨道轮播 -->
         <div
           v-else
@@ -264,6 +289,10 @@ export default {
       gestureLocked: false,
       // 日夜模式
       isLightMode: false,
+      // 音频滑动切换
+      audioSwipeStartX: 0,
+      audioSwipeStartT: 0,
+      audioSwipeActive: false,
     };
   },
   computed: {
@@ -788,6 +817,52 @@ export default {
       
       if (dir === +1) this.swipeX = -this.viewportW;
       else if (dir === -1) this.swipeX = +this.viewportW;
+    },
+
+    // ========== 音频滑动切换 ==========
+    // 音频滑动开始
+    onAudioSwipeStart(e) {
+      const t = e.touches[0];
+      this.audioSwipeStartX = t.clientX;
+      this.audioSwipeStartT = performance.now();
+      this.audioSwipeActive = false;
+    },
+
+    // 音频滑动移动
+    onAudioSwipeMove(e) {
+      if (!this.audioSwipeStartX) return;
+      const t = e.touches[0];
+      const dx = t.clientX - this.audioSwipeStartX;
+      // 水平滑动超过 30px 才激活
+      if (Math.abs(dx) > 30) {
+        this.audioSwipeActive = true;
+      }
+    },
+
+    // 音频滑动结束：切换上一首/下一首
+    onAudioSwipeEnd(e) {
+      if (!this.audioSwipeActive) {
+        this.audioSwipeStartX = 0;
+        return;
+      }
+      
+      const t = e.changedTouches[0];
+      const dx = t.clientX - this.audioSwipeStartX;
+      const dt = Math.max(1, performance.now() - this.audioSwipeStartT);
+      const vx = dx / dt;
+      
+      // 滑动距离超过 80px 或速度超过 0.5 触发切换
+      const threshold = 80;
+      if (dx > threshold || vx > 0.5) {
+        // 右滑 → 上一首
+        this.prevImage();
+      } else if (dx < -threshold || vx < -0.5) {
+        // 左滑 → 下一首
+        this.nextImage();
+      }
+      
+      this.audioSwipeStartX = 0;
+      this.audioSwipeActive = false;
     }
   }
 };
@@ -1335,6 +1410,49 @@ export default {
     position: absolute;
     top: 0;
     left: 0;
+  }
+  
+  /* 手机端视频：全屏原生播放 */
+  .mobile-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+  }
+  
+  /* 手机端音频容器：支持滑动切换 */
+  .mobile-audio-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: pan-y;
+  }
+  
+  /* 手机端其他文件预览 */
+  .other-file-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    gap: 16px;
+  }
+  
+  .other-file-preview svg {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .other-file-preview .file-name {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    padding: 0 20px;
+    word-break: break-all;
   }
   
   .page-indicator {
