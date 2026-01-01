@@ -167,12 +167,26 @@ export default {
     },
     
     destroyPlayer() {
+      // 先获取原生媒体元素
+      const mediaEl = this.$refs.videoEl || this.$refs.audioEl;
+      
+      // 销毁 Plyr 实例
       if (this.player) {
         try {
           this.player.pause();
           this.player.destroy();
         } catch (e) {}
         this.player = null;
+      }
+      
+      // 彻底清理原生媒体元素（防止后台继续播放）
+      if (mediaEl) {
+        try {
+          mediaEl.pause();
+          mediaEl.currentTime = 0;
+          mediaEl.src = '';
+          mediaEl.load();
+        } catch (e) {}
       }
     },
     

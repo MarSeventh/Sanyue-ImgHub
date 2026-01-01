@@ -127,8 +127,8 @@
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
       
-      <!-- 桌面端：简单单图显示 -->
-      <div class="preview-content desktop-only" @click.stop>
+      <!-- 桌面端：简单单图显示（用 v-if 而非 CSS 隐藏，避免全屏时问题） -->
+      <div v-if="!isMobile" class="preview-content" @click.stop>
         <img 
           v-if="currentPreviewFile && isImage(currentPreviewFile)"
           :key="'img-' + currentPreviewFile.name"
@@ -144,9 +144,9 @@
           :key="'video-' + currentPreviewFile.name"
           :src="getFileUrl(currentPreviewFile.name)"
           controls
-          autoplay
           class="preview-video"
           :style="desktopImageStyle"
+          @play="onDesktopVideoPlay"
         ></video>
         <!-- 桌面端音频：加 key 强制切换时重新挂载 -->
         <TransformMedia
@@ -162,20 +162,21 @@
         />
       </div>
       
-      <!-- 手机端预览：视频和音频完全独立，不受网页UI影响 -->
-      <div class="preview-content mobile-only" @click.stop>
+      <!-- 手机端预览：视频和音频完全独立（用 v-if 确保只渲染一个） -->
+      <div v-if="isMobile" class="preview-content preview-content-mobile" @click.stop>
         <!-- 视频：纯原生播放，不包裹任何额外UI -->
         <video
           v-if="currentPreviewFile && isVideo(currentPreviewFile)"
+          ref="mobileVideo"
           :key="'m-video-' + currentPreviewFile.name"
           :src="getFileUrl(currentPreviewFile.name)"
           controls
-          autoplay
           playsinline
           webkit-playsinline
           x5-video-player-type="h5"
           x5-video-player-fullscreen="true"
           class="mobile-video-native"
+          @play="onMobileMediaPlay"
         ></video>
         
         <!-- 音频：简单原生播放 + 滑动切换 -->
@@ -191,11 +192,12 @@
           </div>
           <div class="audio-name-simple">{{ getFileName(currentPreviewFile.name) }}</div>
           <audio
+            ref="mobileAudio"
             :key="'m-audio-' + currentPreviewFile.name"
             :src="getFileUrl(currentPreviewFile.name)"
             controls
-            autoplay
             class="mobile-audio-player"
+            @play="onMobileMediaPlay"
           ></audio>
           <div class="swipe-hint">← 滑动切换 →</div>
         </div>
@@ -239,15 +241,15 @@
       </div>
       
       <!-- 桌面端按钮 -->
-      <button class="preview-prev desktop-only" @click.stop="prevImage" v-if="previewIndex > 0">
+      <button class="preview-prev" @click.stop="prevImage" v-if="!isMobile && previewIndex > 0">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
       </button>
-      <button class="preview-next desktop-only" @click.stop="nextImage" v-if="previewIndex < mediaFiles.length - 1">
+      <button class="preview-next" @click.stop="nextImage" v-if="!isMobile && previewIndex < mediaFiles.length - 1">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
       </button>
       
       <!-- 桌面端旋转按钮 -->
-      <button class="rotate-btn desktop-only" @click.stop="rotateImage" title="旋转90°">
+      <button class="rotate-btn" @click.stop="rotateImage" v-if="!isMobile" title="旋转90°">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.9c-.87-.15-1.71-.49-2.46-1.03L7.1 18.32zM13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93z"/></svg>
       </button>
       
@@ -263,6 +265,7 @@
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 import TransformMedia from '@/components/TransformMedia.vue';
+import { hardStopAll, installGlobalMediaGuards } from '@/utils/mediaManager';
 
 export default {
   name: 'PublicBrowse',
@@ -305,6 +308,8 @@ export default {
       audioSwipeStartX: 0,
       audioSwipeStartT: 0,
       audioSwipeActive: false,
+      // 设备类型判断（用 JS 而非纯 CSS，避免全屏时媒体查询失效）
+      isMobile: false,
     };
   },
   computed: {
@@ -374,19 +379,30 @@ export default {
     }
   },
   mounted() {
+    // 安装全局媒体守卫
+    installGlobalMediaGuards();
+    this.checkMobile();
     this.initTheme();
     this.initFromRoute();
     this.setupIntersectionObserver();
     this.updateColumnCount();
     window.addEventListener('resize', this.updateColumnCount);
+    window.addEventListener('resize', this.checkMobile);
   },
   beforeUnmount() {
     if (this.observer) {
       this.observer.disconnect();
     }
     window.removeEventListener('resize', this.updateColumnCount);
+    window.removeEventListener('resize', this.checkMobile);
   },
   methods: {
+    // 检测是否为移动设备（用 JS 判断，避免全屏时 CSS 媒体查询失效）
+    checkMobile() {
+      // 优先用 touch 事件检测，其次用屏幕宽度
+      this.isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 768;
+    },
+
     // 初始化主题：10:00-18:00 默认白天，其他时间默认黑夜
     initTheme() {
       const saved = localStorage.getItem('publicBrowseTheme');
@@ -671,6 +687,9 @@ export default {
 
     openPreview(file) {
       if (file.isFolder) return;
+      // 打开预览前先硬停全站（防止瀑布流 hover video 或旧实例残留）
+      hardStopAll(null);
+      
       const mediaIndex = this.mediaFiles.findIndex(f => f.name === file.name);
       if (mediaIndex >= 0) {
         this.previewIndex = mediaIndex;
@@ -685,34 +704,17 @@ export default {
     },
 
     closePreview() {
-      this.stopDesktopMedia();
+      // 关闭预览先硬停全站，再关弹窗
+      hardStopAll(null);
       this.previewVisible = false;
       this.imageRotation = 0;
       this.gestureLocked = false;
       document.body.style.overflow = '';
     },
 
-    // 停止当前桌面端媒体播放
-    stopDesktopMedia() {
-      // 停止视频
-      const video = this.$refs.desktopVideo;
-      if (video) {
-        try {
-          video.pause();
-          video.currentTime = 0;
-          video.src = '';
-          video.load();
-        } catch (e) {}
-      }
-      // 停止音频组件
-      const audio = this.$refs.desktopAudio;
-      if (audio && audio.stopAndCleanMedia) {
-        audio.stopAndCleanMedia();
-      }
-    },
-
     prevImage() {
-      this.stopDesktopMedia();
+      // 切换前硬停全站
+      hardStopAll(null);
       if (this.previewIndex > 0) {
         this.previewIndex--;
         this.imageRotation = 0;
@@ -720,7 +722,8 @@ export default {
     },
 
     nextImage() {
-      this.stopDesktopMedia();
+      // 切换前硬停全站
+      hardStopAll(null);
       if (this.previewIndex < this.mediaFiles.length - 1) {
         this.previewIndex++;
         this.imageRotation = 0;
@@ -897,6 +900,16 @@ export default {
       
       this.audioSwipeStartX = 0;
       this.audioSwipeActive = false;
+    },
+
+    // 桌面端视频播放时，硬停其他所有媒体
+    onDesktopVideoPlay(e) {
+      hardStopAll(e.target);
+    },
+
+    // 手机端媒体播放时，硬停其他所有媒体
+    onMobileMediaPlay(e) {
+      hardStopAll(e.target);
     }
   }
 };
@@ -1301,6 +1314,103 @@ export default {
   overflow: hidden;
 }
 
+/* 手机端预览容器 */
+.preview-content-mobile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* 手机端视频：完全原生，占满屏幕 */
+.mobile-video-native {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* 手机端音频：简单原生UI */
+.mobile-audio-native {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.audio-cover-simple {
+  width: 120px;
+  height: 120px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.audio-cover-simple svg {
+  width: 60px;
+  height: 60px;
+  color: rgba(255,255,255,0.6);
+}
+
+.audio-name-simple {
+  font-size: 16px;
+  color: rgba(255,255,255,0.9);
+  text-align: center;
+  margin-bottom: 30px;
+  max-width: 80%;
+  word-break: break-all;
+}
+
+.mobile-audio-player {
+  width: 90%;
+  max-width: 320px;
+  margin-bottom: 20px;
+}
+
+.swipe-hint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+
+/* 手机端其他文件预览 */
+.other-file-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  gap: 16px;
+}
+
+.other-file-preview svg {
+  width: 64px;
+  height: 64px;
+}
+
+.other-file-preview .file-name {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  padding: 0 20px;
+  word-break: break-all;
+}
+
 .swipe-viewport {
   width: 100%;
   height: 100%;
@@ -1430,117 +1540,10 @@ export default {
   height: 24px;
 }
 
-/* 桌面端显示，手机端隐藏 */
+/* 手机端响应式调整 */
 @media (max-width: 768px) {
-  .desktop-only {
-    display: none !important;
-  }
-  
-  .preview-content.mobile-only {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-  
-  /* 手机端视频：完全原生，占满屏幕 */
-  .mobile-video-native {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background: #000;
-  }
-  
-  /* 手机端音频：简单原生UI */
-  .mobile-audio-native {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    padding: 20px;
-    box-sizing: border-box;
-  }
-  
-  .audio-cover-simple {
-    width: 120px;
-    height: 120px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  
-  .audio-cover-simple svg {
-    width: 60px;
-    height: 60px;
-    color: rgba(255,255,255,0.6);
-  }
-  
-  .audio-name-simple {
-    font-size: 16px;
-    color: rgba(255,255,255,0.9);
-    text-align: center;
-    margin-bottom: 30px;
-    max-width: 80%;
-    word-break: break-all;
-  }
-  
-  .mobile-audio-player {
-    width: 90%;
-    max-width: 320px;
-    margin-bottom: 20px;
-  }
-  
-  .swipe-hint {
-    font-size: 12px;
-    color: rgba(255,255,255,0.4);
-  }
-  
-  /* 手机端其他文件预览 */
-  .other-file-preview {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.6);
-    gap: 16px;
-  }
-  
-  .other-file-preview svg {
-    width: 64px;
-    height: 64px;
-  }
-  
-  .other-file-preview .file-name {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
-    text-align: center;
-    padding: 0 20px;
-    word-break: break-all;
-  }
-  
   .page-indicator {
     bottom: 40px;
-  }
-}
-
-/* 手机端显示，桌面端隐藏 */
-@media (min-width: 769px) {
-  .mobile-only {
-    display: none !important;
   }
 }
 
