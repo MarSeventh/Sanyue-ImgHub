@@ -180,26 +180,25 @@
           @play="onMobileMediaPlay"
         ></video>
         
-        <!-- 音频：简单原生播放 + 滑动切换 -->
+        <!-- 音频：使用 TransformMedia 组件（带 Plyr 和三点菜单） -->
         <div
           v-else-if="currentPreviewFile && isAudio(currentPreviewFile)"
-          class="mobile-audio-native"
+          class="mobile-audio-wrap"
           @touchstart="onAudioSwipeStart"
           @touchmove="onAudioSwipeMove"
           @touchend="onAudioSwipeEnd"
         >
-          <div class="audio-cover-simple">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-          </div>
-          <div class="audio-name-simple">{{ getFileName(currentPreviewFile.name) }}</div>
-          <audio
+          <TransformMedia
             ref="mobileAudio"
             :key="'m-audio-' + currentPreviewFile.name"
+            :file="currentPreviewFile"
             :src="getFileUrl(currentPreviewFile.name)"
-            controls
-            class="mobile-audio-player"
-            @play="onMobileMediaPlay"
-          ></audio>
+            :is-image="false"
+            :is-video="false"
+            :is-audio="true"
+            :is-active="true"
+            @audio-ended="onAudioEnded"
+          />
           <div class="swipe-hint">← 滑动切换 →</div>
         </div>
         
@@ -1357,49 +1356,20 @@ export default {
   background: #000;
 }
 
-/* 手机端音频：简单原生UI */
-.mobile-audio-native {
+/* 手机端音频容器 */
+.mobile-audio-wrap {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   padding: 20px;
   box-sizing: border-box;
 }
 
-.audio-cover-simple {
-  width: 120px;
-  height: 120px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.audio-cover-simple svg {
-  width: 60px;
-  height: 60px;
-  color: rgba(255,255,255,0.6);
-}
-
-.audio-name-simple {
-  font-size: 16px;
-  color: rgba(255,255,255,0.9);
-  text-align: center;
-  margin-bottom: 30px;
-  max-width: 80%;
-  word-break: break-all;
-}
-
-.mobile-audio-player {
-  width: 90%;
-  max-width: 320px;
-  margin-bottom: 20px;
+.mobile-audio-wrap .swipe-hint {
+  margin-top: 20px;
 }
 
 .swipe-hint {
