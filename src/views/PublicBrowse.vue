@@ -149,6 +149,10 @@
           class="preview-image"
           :style="desktopImageStyle"
           draggable="false"
+          @mousedown="onImageMouseDown"
+          @mousemove="onImageMouseMove"
+          @mouseup="onImageMouseUp"
+          @mouseleave="onImageMouseUp"
         />
         <!-- 桌面端视频：加 key 强制切换时重新挂载，避免混播 -->
         <video 
@@ -305,6 +309,13 @@ export default {
       // 桌面端旋转和缩放
       imageRotation: 0,
       imageScale: 1,
+      // 桌面端拖拽
+      imageTx: 0,
+      imageTy: 0,
+      imageDragging: false,
+      imageDragStart: null,
+      imageStartTx: 0,
+      imageStartTy: 0,
       // 手机端滑动
       swipeX: 0,
       swipeStartX: 0,
@@ -367,9 +378,11 @@ export default {
       return this.previewIndex < this.mediaFiles.length - 1 ? this.mediaFiles[this.previewIndex + 1] : null;
     },
     desktopImageStyle() {
+      const inDrag = this.imageDragging;
       return {
-        transform: `rotate(${this.imageRotation}deg) scale(${this.imageScale})`,
-        transition: 'transform 0.3s ease'
+        transform: `translate(${this.imageTx}px, ${this.imageTy}px) rotate(${this.imageRotation}deg) scale(${this.imageScale})`,
+        transition: inDrag ? 'none' : 'transform 0.3s ease',
+        cursor: this.imageScale > 1 ? (this.imageDragging ? 'grabbing' : 'grab') : 'default'
       };
     },
     swipeWindow() {
@@ -713,6 +726,8 @@ export default {
         this.previewVisible = true;
         this.imageRotation = 0;
         this.imageScale = 1;
+        this.imageTx = 0;
+        this.imageTy = 0;
         this.gestureLocked = false;
         document.body.style.overflow = 'hidden';
         this.$nextTick(() => {
@@ -727,6 +742,8 @@ export default {
       this.previewVisible = false;
       this.imageRotation = 0;
       this.imageScale = 1;
+      this.imageTx = 0;
+      this.imageTy = 0;
       this.gestureLocked = false;
       document.body.style.overflow = '';
     },
@@ -738,6 +755,8 @@ export default {
         this.previewIndex--;
         this.imageRotation = 0;
         this.imageScale = 1;
+        this.imageTx = 0;
+        this.imageTy = 0;
       }
     },
 
@@ -748,6 +767,8 @@ export default {
         this.previewIndex++;
         this.imageRotation = 0;
         this.imageScale = 1;
+        this.imageTx = 0;
+        this.imageTy = 0;
       }
     },
 
@@ -790,6 +811,40 @@ export default {
       // 限制缩放范围 0.5 ~ 4
       newScale = Math.max(0.5, Math.min(4, newScale));
       this.imageScale = newScale;
+      
+      // 缩放到1以下时重置位移
+      if (newScale <= 1) {
+        this.imageTx = 0;
+        this.imageTy = 0;
+      }
+    },
+
+    // 桌面端鼠标拖拽：开始
+    onImageMouseDown(e) {
+      // 只有放大时才能拖拽
+      if (this.imageScale <= 1) return;
+      
+      e.preventDefault();
+      this.imageDragging = true;
+      this.imageDragStart = { x: e.clientX, y: e.clientY };
+      this.imageStartTx = this.imageTx;
+      this.imageStartTy = this.imageTy;
+    },
+
+    // 桌面端鼠标拖拽：移动
+    onImageMouseMove(e) {
+      if (!this.imageDragging) return;
+      
+      const dx = e.clientX - this.imageDragStart.x;
+      const dy = e.clientY - this.imageDragStart.y;
+      
+      this.imageTx = this.imageStartTx + dx;
+      this.imageTy = this.imageStartTy + dy;
+    },
+
+    // 桌面端鼠标拖拽：结束
+    onImageMouseUp() {
+      this.imageDragging = false;
     },
 
     // 手机端滑动：开始
@@ -991,22 +1046,20 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
+  padding: 16px 24px;
   background: rgba(15, 15, 15, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid #1a1a1a;
+  position: relative;
 }
 
 .header-left {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 auto;
   z-index: 1;
 }
 
 .header-right {
-  flex: 1;
-  min-width: 0;
-  text-align: right;
+  flex: 0 0 auto;
   z-index: 1;
 }
 
