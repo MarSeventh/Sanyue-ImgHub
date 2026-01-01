@@ -901,4 +901,47 @@ export default {
   position: absolute;
   left: 12px;
 }
+
+/* 手机端音量条向上显示 */
+@media (pointer: coarse), (max-width: 768px) {
+  .plyr--audio .plyr__volume {
+    position: relative;
+  }
+  
+  .plyr--audio .plyr__volume input[type="range"] {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) rotate(-90deg);
+    transform-origin: center center;
+    width: 80px;
+    margin-bottom: 40px;
+    display: none;
+  }
+  
+  .plyr--audio .plyr__volume:hover input[type="range"],
+  .plyr--audio .plyr__volume:focus-within input[type="range"] {
+    display: block;
+  }
+  
+  /* 音量滑块容器背景 */
+  .plyr--audio .plyr__volume::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 100px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    display: none;
+    margin-bottom: 8px;
+  }
+  
+  .plyr--audio .plyr__volume:hover::before,
+  .plyr--audio .plyr__volume:focus-within::before {
+    display: block;
+  }
+}
 </style>

@@ -949,10 +949,12 @@ export default {
           this.previewIndex++;
           // 等待 DOM 更新后自动播放下一首
           this.$nextTick(() => {
-            const audioRef = this.$refs.desktopAudio;
-            if (audioRef?.player?.media) {
-              audioRef.player.play();
-            }
+            setTimeout(() => {
+              const audioRef = this.isMobile ? this.$refs.mobileAudio : this.$refs.desktopAudio;
+              if (audioRef?.player) {
+                audioRef.player.play();
+              }
+            }, 100);
           });
         }
       }
@@ -980,6 +982,22 @@ export default {
   background: rgba(15, 15, 15, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid #1a1a1a;
+}
+
+.header-left,
+.header-right {
+  flex: 1;
+}
+
+.header-right {
+  text-align: right;
+}
+
+.header-center {
+  flex: 0 0 auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .logo {
