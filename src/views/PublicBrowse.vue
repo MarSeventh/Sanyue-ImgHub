@@ -15,17 +15,24 @@
         </div>
       </div>
       <div class="header-right">
-        <div class="search-box">
-          <input 
-            type="text" 
-            v-model="searchInput" 
-            @keyup.enter="handleSearch"
-            placeholder="搜索文件名 或 #页码"
-            class="search-input"
-          />
-          <span class="search-icon" @click="handleSearch">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <!-- 搜索框：默认只显示放大镜，点击展开 -->
+        <div class="search-box" :class="{ expanded: searchExpanded }">
+          <span class="search-icon" @click="toggleSearch" v-if="!searchExpanded">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           </span>
+          <template v-else>
+            <input 
+              type="text" 
+              v-model="searchInput" 
+              @keyup.enter="handleSearch"
+              placeholder="搜索文件名 或 #页码"
+              class="search-input"
+              ref="searchInputRef"
+            />
+            <span class="search-icon" @click="handleSearch">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </span>
+          </template>
         </div>
         <ToggleDark class="theme-toggle-btn" />
         <span class="file-count">{{ totalCount }} 个文件</span>
@@ -322,6 +329,8 @@ export default {
       searchInput: '',
       searchKeyword: '',
       currentStartIndex: 0,
+      searchExpanded: false,
+      lastScrollY: 0,
       columnCount: 4,
       columnHeights: [0, 0, 0, 0],
       // 桌面端旋转和缩放
@@ -430,6 +439,7 @@ export default {
     this.updateColumnCount();
     window.addEventListener('resize', this.updateColumnCount);
     window.addEventListener('resize', this.checkMobile);
+    window.addEventListener('scroll', this.handleScroll);
   },
   beforeUnmount() {
     if (this.observer) {
@@ -437,6 +447,7 @@ export default {
     }
     window.removeEventListener('resize', this.updateColumnCount);
     window.removeEventListener('resize', this.checkMobile);
+    window.removeEventListener('scroll', this.handleScroll);
   },
   methods: {
     // 搜索处理
@@ -477,13 +488,32 @@ export default {
       this.loadFiles();
     },
     
+    // 搜索框展开/收起
+    toggleSearch() {
+      this.searchExpanded = !this.searchExpanded;
+      if (this.searchExpanded) {
+        this.$nextTick(() => {
+          this.$refs.searchInputRef?.focus();
+        });
+      }
+    },
+    
+    // 监听滚动收起搜索框
+    handleScroll() {
+      if (this.searchExpanded) {
+        const currentScrollY = window.scrollY;
+        if (currentScrollY > this.lastScrollY + 20) {
+          this.searchExpanded = false;
+        }
+        this.lastScrollY = currentScrollY;
+      }
+    },
+    
     // 检测是否为移动设备（用 JS 判断，避免全屏时 CSS 媒体查询失效）
     checkMobile() {
-      // 用 pointer: coarse 检测（触摸屏主输入），结合屏幕宽度
-      // 不单独用 ontouchstart，因为很多电脑也支持触摸
-      const isCoarse = window.matchMedia?.('(pointer: coarse)').matches;
-      const isSmall = window.innerWidth <= 768;
-      this.isMobile = isCoarse || isSmall;
+      // 只有屏幕宽度 ≤600px 才算手机端（与瀑布流2列的断点一致）
+      // 不用 pointer: coarse，因为很多电脑也有触摸屏
+      this.isMobile = window.innerWidth <= 600;
     },
 
     // 生成 slide key，切换时让子组件重新挂载以重置 transform
@@ -628,7 +658,7 @@ export default {
         
         this.files = [...dirs, ...files];
         this.totalCount = res.data.totalCount || this.files.length;
-        this.hasMore = this.mediaFiles.length < this.totalCount;
+        this.hasMore = (this.currentStartIndex + this.mediaFiles.length) < this.totalCount;
       } catch (err) {
         if (err.response?.status === 403) {
           const msg = err.response?.data?.error || '';
@@ -667,7 +697,7 @@ export default {
         
         moreFiles.forEach(f => this.assignToColumn(f));
         this.files.push(...moreFiles);
-        this.hasMore = this.mediaFiles.length < this.totalCount;
+        this.hasMore = (this.currentStartIndex + this.mediaFiles.length) < this.totalCount;
       } catch (err) {
         console.error('加载更多失败', err);
       } finally {
@@ -1101,38 +1131,6 @@ export default {
   gap: 12px;
 }
 
-.search-box {
-  display: flex;
-  align-items: center;
-  background: rgba(255,255,255,0.1);
-  border-radius: 20px;
-  padding: 4px 12px;
-  transition: all 0.3s;
-}
-
-.search-box:focus-within {
-  background: rgba(255,255,255,0.15);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-}
-
-.search-input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #fff;
-  font-size: 14px;
-  width: 120px;
-  transition: width 0.3s;
-}
-
-.search-input::placeholder {
-  color: rgba(255,255,255,0.5);
-}
-
-.search-input:focus {
-  width: 160px;
-}
-
 .search-icon {
   cursor: pointer;
   color: rgba(255,255,255,0.6);
@@ -1143,6 +1141,56 @@ export default {
 
 .search-icon:hover {
   color: #fff;
+}
+
+/* 搜索框：默认只显示放大镜图标 */
+.search-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.search-box .search-icon {
+  color: rgba(255,255,255,0.8);
+}
+
+/* 搜索框展开状态 */
+.search-box.expanded {
+  width: auto;
+  min-width: 200px;
+  border-radius: 20px;
+  padding: 4px 12px;
+  background: rgba(30, 30, 30, 0.98);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.search-box.expanded .search-input {
+  width: 140px;
+  font-size: 14px;
+}
+
+.search-box:focus-within {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  transition: width 0.3s;
+}
+
+.search-input::placeholder {
+  color: rgba(255,255,255,0.5);
 }
 
 .header-center {
@@ -1912,23 +1960,24 @@ export default {
   background: rgba(0,0,0,0.08);
 }
 
-:root:not(.dark) .search-box:focus-within {
-  background: rgba(0,0,0,0.12);
+:root:not(.dark) .search-box.expanded {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
-:root:not(.dark) .search-input {
+:root:not(.dark) .search-box.expanded .search-input {
   color: #333;
 }
 
-:root:not(.dark) .search-input::placeholder {
+:root:not(.dark) .search-box.expanded .search-input::placeholder {
   color: rgba(0,0,0,0.4);
 }
 
-:root:not(.dark) .search-icon {
-  color: rgba(0,0,0,0.5);
+:root:not(.dark) .search-box .search-icon {
+  color: rgba(0,0,0,0.6);
 }
 
-:root:not(.dark) .search-icon:hover {
+:root:not(.dark) .search-box .search-icon:hover {
   color: #333;
 }
 
