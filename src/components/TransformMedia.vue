@@ -162,6 +162,10 @@ export default {
       const el = this.$refs.videoEl || this.$refs.audioEl;
       if (!el) return;
       
+      // 重置重试计数器
+      this.retryCount = 0;
+      this.maxRetries = 3;
+      
       // 音频不需要全屏按钮
       const controls = this.isAudio
         ? ['play', 'progress', 'current-time', 'mute', 'volume']
@@ -171,6 +175,22 @@ export default {
         controls,
         autoplay: this.isVideo,
         resetOnEnd: true,
+      });
+      
+      // 监听加载错误，自动重试
+      el.addEventListener('error', () => {
+        if (this.retryCount < this.maxRetries) {
+          this.retryCount++;
+          console.warn(`Media load failed, retrying (${this.retryCount}/${this.maxRetries})...`);
+          setTimeout(() => {
+            if (el && this.src && this.player) {
+              const baseSrc = this.src.split('?_retry=')[0];
+              const retrySrc = baseSrc + (baseSrc.includes('?') ? '&' : '?') + '_retry=' + Date.now();
+              el.src = retrySrc;
+              el.load();
+            }
+          }, 500 * this.retryCount);
+        }
       });
       
       // 等待 Plyr ready 后添加自定义菜单

@@ -812,7 +812,21 @@ export default {
     },
 
     handleImageError(e) {
-      e.target.style.display = 'none';
+      const img = e.target;
+      const retryCount = parseInt(img.dataset.retryCount || '0');
+      const maxRetries = 3;
+      
+      if (retryCount < maxRetries) {
+        // 重试：添加时间戳避免缓存
+        img.dataset.retryCount = retryCount + 1;
+        const originalSrc = img.src.split('?_retry=')[0];
+        setTimeout(() => {
+          img.src = originalSrc + '?_retry=' + Date.now();
+        }, 500 * (retryCount + 1));
+      } else {
+        // 重试次数用完，隐藏图片
+        img.style.display = 'none';
+      }
     },
 
     copyLink(name) {
