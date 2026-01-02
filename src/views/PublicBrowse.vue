@@ -35,9 +35,18 @@
           </template>
         </div>
         <ToggleDark class="theme-toggle-btn" />
-        <span class="file-count">{{ totalCount }} 个文件</span>
+        <span class="file-count">
+          <template v-if="currentStartIndex > 0">第{{ currentPage }}页起 · </template>
+          {{ totalCount }} 个文件
+        </span>
       </div>
     </header>
+
+    <!-- 页码跳转提示 -->
+    <div v-if="currentStartIndex > 0 && mediaFiles.length > 0" class="page-jump-hint">
+      <span>从第 {{ currentPage }} 页开始浏览</span>
+      <button class="back-to-first" @click="goToFirstPage">返回第1页</button>
+    </div>
 
     <!-- 加载状态 -->
     <div v-if="loading && files.length === 0" class="loading-container">
@@ -381,6 +390,9 @@ export default {
     mediaFiles() {
       return this.files.filter(f => !f.isFolder);
     },
+    currentPage() {
+      return Math.floor(this.currentStartIndex / this.pageSize) + 1;
+    },
     columns() {
       const cols = Array.from({ length: this.columnCount }, () => []);
       for (const file of this.mediaFiles) {
@@ -489,6 +501,14 @@ export default {
         // 重新观察加载触发器，确保无限滚动继续工作
         this.observeLoadTrigger();
       });
+    },
+    
+    // 返回第一页
+    goToFirstPage() {
+      this.currentStartIndex = 0;
+      this.searchKeyword = '';
+      this.searchInput = '';
+      this.resetAndLoad();
     },
     
     // 搜索框展开/收起
@@ -1280,7 +1300,36 @@ export default {
 
 .file-count {
   color: #666;
-  font-size: 14px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* 页码跳转提示条 */
+.page-jump-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  font-size: 13px;
+  color: #3b82f6;
+}
+
+.back-to-first {
+  padding: 4px 10px;
+  background: rgba(59, 130, 246, 0.2);
+  border: none;
+  border-radius: 12px;
+  color: #3b82f6;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.back-to-first:hover {
+  background: rgba(59, 130, 246, 0.3);
 }
 
 .loading-container, .error-container {
@@ -1995,6 +2044,19 @@ export default {
 
 :root:not(.dark) .file-count {
   color: #999;
+}
+
+:root:not(.dark) .page-jump-hint {
+  background: rgba(59, 130, 246, 0.08);
+  border-bottom-color: rgba(59, 130, 246, 0.15);
+}
+
+:root:not(.dark) .back-to-first {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+:root:not(.dark) .back-to-first:hover {
+  background: rgba(59, 130, 246, 0.25);
 }
 
 :root:not(.dark) .search-box {
