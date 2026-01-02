@@ -297,7 +297,13 @@
                 <el-form-item>
                     <div class="discord-limit-tip">
                         <font-awesome-icon icon="info-circle" style="margin-right: 5px;"/>
-                        {{ channel.isNitro ? 'Nitro 会员单文件限制 25MB，超过将自动切换其他渠道' : 'Discord 免费用户单文件限制 10MB，超过将自动切换其他渠道' }}
+                        {{ channel.isNitro ? 'Nitro 会员单文件限制 25MB' : 'Discord 免费用户单文件限制 10MB' }}
+                    </div>
+                </el-form-item>
+                <el-form-item>
+                    <div class="discord-rate-limit-tip">
+                        <font-awesome-icon icon="exclamation-triangle" style="margin-right: 5px;"/>
+                        Discord 有接口频率限制，不建议将其用作大规模并发场景
                     </div>
                 </el-form-item>
                 <!-- 删除 -->
@@ -1090,7 +1096,16 @@ mounted() {
     background: var(--el-color-info-light-9);
     border-radius: 6px;
     border-left: 3px solid var(--el-color-info);
-    white-space: nowrap;
+}
+
+/* Discord 频率限制警告 */
+.discord-rate-limit-tip {
+    font-size: 13px;
+    color: var(--el-color-warning);
+    padding: 10px 14px;
+    background: var(--el-color-warning-light-9);
+    border-radius: 6px;
+    border-left: 3px solid var(--el-color-warning);
 }
 
 /* HuggingFace 提示 */
