@@ -335,6 +335,7 @@ export default {
       searchKeyword: '',
       currentStartIndex: 0,
       searchExpanded: false,
+      filterType: '',
       lastScrollY: 0,
       scrollPage: 0,
       columnCount: 4,
@@ -472,6 +473,7 @@ export default {
       if (!input) {
         // 清空搜索，重置
         this.searchKeyword = '';
+        this.filterType = '';
         this.currentStartIndex = 0;
         this.resetAndLoad();
         return;
@@ -485,12 +487,30 @@ export default {
         const targetPage = Math.min(Math.max(1, page), maxPage || 1);
         this.currentStartIndex = (targetPage - 1) * this.pageSize;
         this.searchKeyword = '';
+        this.filterType = '';
         this.searchInput = '';
         this.resetAndLoad();
         return;
       }
       
-      // 文件名搜索
+      // 检查是否是类型关键词
+      const typeKeywords = {
+        '图片': 'image', '图': 'image', 'image': 'image', 'img': 'image', '照片': 'image',
+        '视频': 'video', 'video': 'video', '影片': 'video', '电影': 'video',
+        '音乐': 'audio', '音频': 'audio', 'audio': 'audio', 'music': 'audio', '歌曲': 'audio'
+      };
+      
+      const lowerInput = input.toLowerCase();
+      if (typeKeywords[lowerInput]) {
+        this.filterType = typeKeywords[lowerInput];
+        this.searchKeyword = '';
+        this.currentStartIndex = 0;
+        this.resetAndLoad();
+        return;
+      }
+      
+      // 普通文件名搜索
+      this.filterType = '';
       this.searchKeyword = input;
       this.currentStartIndex = 0;
       this.resetAndLoad();
@@ -657,6 +677,7 @@ export default {
       // 重置搜索状态
       this.searchInput = '';
       this.searchKeyword = '';
+      this.filterType = '';
       this.currentStartIndex = 0;
       
       await this.loadFiles();
@@ -672,6 +693,9 @@ export default {
         let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${this.currentStartIndex}&count=${this.pageSize}`;
         if (this.searchKeyword) {
           url += `&search=${encodeURIComponent(this.searchKeyword)}`;
+        }
+        if (this.filterType) {
+          url += `&type=${this.filterType}`;
         }
         const res = await axios.get(url);
         
@@ -722,6 +746,9 @@ export default {
         let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${start}&count=${this.pageSize}`;
         if (this.searchKeyword) {
           url += `&search=${encodeURIComponent(this.searchKeyword)}`;
+        }
+        if (this.filterType) {
+          url += `&type=${this.filterType}`;
         }
         const res = await axios.get(url);
         const moreFiles = (res.data.files || []).map(f => ({
