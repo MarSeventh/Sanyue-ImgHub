@@ -15,50 +15,6 @@
         </div>
       </div>
       <div class="header-right">
-        <!-- 筛选按钮组 -->
-        <div class="filter-group">
-          <button 
-            class="filter-btn" 
-            :class="{ active: filterType === '' }"
-            @click="setFilter('')"
-            title="全部"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
-          </button>
-          <button 
-            class="filter-btn" 
-            :class="{ active: filterType === 'image' }"
-            @click="setFilter('image')"
-            title="图片"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-          </button>
-          <button 
-            class="filter-btn" 
-            :class="{ active: filterType === 'video' }"
-            @click="setFilter('video')"
-            title="视频"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-          </button>
-          <button 
-            class="filter-btn" 
-            :class="{ active: filterType === 'audio' }"
-            @click="setFilter('audio')"
-            title="音频"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-          </button>
-        </div>
-        <!-- 递归搜索开关 -->
-        <button 
-          class="filter-btn recursive-btn" 
-          :class="{ active: recursiveSearch }"
-          @click="toggleRecursive"
-          title="包含子目录"
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10H6v-2h8v2zm4-4H6v-2h12v2z"/></svg>
-        </button>
         <!-- 搜索框：默认只显示放大镜，点击展开 -->
         <div class="search-box" :class="{ expanded: searchExpanded }">
           <span class="search-icon" @click="toggleSearch" v-if="!searchExpanded">
@@ -379,8 +335,6 @@ export default {
       searchKeyword: '',
       currentStartIndex: 0,
       searchExpanded: false,
-      filterType: '', // '', 'image', 'video', 'audio', 'other'
-      recursiveSearch: false,
       lastScrollY: 0,
       scrollPage: 0,
       columnCount: 4,
@@ -563,21 +517,6 @@ export default {
       }
     },
     
-    // 设置文件类型过滤
-    setFilter(type) {
-      if (this.filterType === type) return;
-      this.filterType = type;
-      this.currentStartIndex = 0;
-      this.resetAndLoad();
-    },
-    
-    // 切换递归搜索
-    toggleRecursive() {
-      this.recursiveSearch = !this.recursiveSearch;
-      this.currentStartIndex = 0;
-      this.resetAndLoad();
-    },
-    
     // 监听滚动收起搜索框 + 计算当前页码
     handleScroll() {
       const currentScrollY = window.scrollY;
@@ -715,12 +654,10 @@ export default {
       this.files = [];
       this.hasMore = true;
       this.columnHeights = new Array(this.columnCount).fill(0);
-      // 重置搜索和筛选状态
+      // 重置搜索状态
       this.searchInput = '';
       this.searchKeyword = '';
       this.currentStartIndex = 0;
-      this.filterType = '';
-      this.recursiveSearch = false;
       
       await this.loadFiles();
       this.observeLoadTrigger();
@@ -735,12 +672,6 @@ export default {
         let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${this.currentStartIndex}&count=${this.pageSize}`;
         if (this.searchKeyword) {
           url += `&search=${encodeURIComponent(this.searchKeyword)}`;
-        }
-        if (this.filterType) {
-          url += `&type=${this.filterType}`;
-        }
-        if (this.recursiveSearch) {
-          url += `&recursive=true`;
         }
         const res = await axios.get(url);
         
@@ -791,12 +722,6 @@ export default {
         let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${start}&count=${this.pageSize}`;
         if (this.searchKeyword) {
           url += `&search=${encodeURIComponent(this.searchKeyword)}`;
-        }
-        if (this.filterType) {
-          url += `&type=${this.filterType}`;
-        }
-        if (this.recursiveSearch) {
-          url += `&recursive=true`;
         }
         const res = await axios.get(url);
         const moreFiles = (res.data.files || []).map(f => ({
@@ -1233,54 +1158,6 @@ export default {
   gap: 10px;
 }
 
-/* 筛选按钮组 */
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 8px;
-  padding: 2px;
-}
-
-.filter-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: rgba(255,255,255,0.5);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.filter-btn:hover {
-  color: rgba(255,255,255,0.8);
-  background: rgba(255,255,255,0.1);
-}
-
-.filter-btn.active {
-  color: #fff;
-  background: rgba(59, 130, 246, 0.8);
-}
-
-.filter-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.recursive-btn {
-  background: rgba(255,255,255,0.08);
-  border-radius: 8px;
-}
-
-.recursive-btn.active {
-  background: rgba(34, 197, 94, 0.8);
-}
-
 /* 搜索框：默认只显示放大镜图标 */
 .search-box {
   display: flex;
@@ -1388,27 +1265,6 @@ export default {
   .search-box.expanded .search-icon svg {
     width: 11px;
     height: 11px;
-  }
-  
-  /* 手机端筛选按钮更小 */
-  .filter-group {
-    gap: 1px;
-    padding: 1px;
-  }
-  
-  .filter-btn {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .filter-btn svg {
-    width: 14px;
-    height: 14px;
-  }
-  
-  .recursive-btn {
-    width: 24px;
-    height: 24px;
   }
 }
 
@@ -2200,32 +2056,6 @@ export default {
 
 :root:not(.dark) .file-count {
   color: #999;
-}
-
-:root:not(.dark) .filter-group {
-  background: rgba(0,0,0,0.06);
-}
-
-:root:not(.dark) .filter-btn {
-  color: rgba(0,0,0,0.4);
-}
-
-:root:not(.dark) .filter-btn:hover {
-  color: rgba(0,0,0,0.7);
-  background: rgba(0,0,0,0.08);
-}
-
-:root:not(.dark) .filter-btn.active {
-  color: #fff;
-  background: rgba(59, 130, 246, 0.9);
-}
-
-:root:not(.dark) .recursive-btn {
-  background: rgba(0,0,0,0.06);
-}
-
-:root:not(.dark) .recursive-btn.active {
-  background: rgba(34, 197, 94, 0.9);
 }
 
 :root:not(.dark) .search-box {
