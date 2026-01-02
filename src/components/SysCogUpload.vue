@@ -171,6 +171,12 @@
                     <el-input v-model="channel.endpoint" :disabled="channel.fixed"/>
                 </el-form-item>
                 <el-form-item label="路径风格" prop="pathStyle">
+                    <template #label>
+                        路径风格
+                        <el-tooltip content="S3 路径风格/虚拟主机风格，使用 OpenList 作为 S3 提供者时需打开此开关 <br> 路径风格：https://s3.example.com/下方存储桶名称/文件路径 <br> 虚拟主机风格：https://下方存储桶名称.s3.example.com/文件路径" placement="top" raw-content>
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
                     <el-switch v-model="channel.pathStyle" :disabled="channel.fixed"/>
                 </el-form-item>
                 <el-form-item label="存储桶名称" prop="bucketName">
