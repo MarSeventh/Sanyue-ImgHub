@@ -15,6 +15,50 @@
         </div>
       </div>
       <div class="header-right">
+        <!-- 筛选按钮组 -->
+        <div class="filter-group">
+          <button 
+            class="filter-btn" 
+            :class="{ active: filterType === '' }"
+            @click="setFilter('')"
+            title="全部"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+          </button>
+          <button 
+            class="filter-btn" 
+            :class="{ active: filterType === 'image' }"
+            @click="setFilter('image')"
+            title="图片"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          </button>
+          <button 
+            class="filter-btn" 
+            :class="{ active: filterType === 'video' }"
+            @click="setFilter('video')"
+            title="视频"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+          </button>
+          <button 
+            class="filter-btn" 
+            :class="{ active: filterType === 'audio' }"
+            @click="setFilter('audio')"
+            title="音频"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </button>
+        </div>
+        <!-- 递归搜索开关 -->
+        <button 
+          class="filter-btn recursive-btn" 
+          :class="{ active: recursiveSearch }"
+          @click="toggleRecursive"
+          title="包含子目录"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10H6v-2h8v2zm4-4H6v-2h12v2z"/></svg>
+        </button>
         <!-- 搜索框：默认只显示放大镜，点击展开 -->
         <div class="search-box" :class="{ expanded: searchExpanded }">
           <span class="search-icon" @click="toggleSearch" v-if="!searchExpanded">
@@ -35,18 +79,9 @@
           </template>
         </div>
         <ToggleDark class="theme-toggle-btn" />
-        <span class="file-count">
-          <template v-if="currentStartIndex > 0">第{{ currentPage }}页起 · </template>
-          {{ totalCount }} 个文件
-        </span>
+        <span class="file-count">{{ totalCount }} 个文件</span>
       </div>
     </header>
-
-    <!-- 页码跳转提示 -->
-    <div v-if="currentStartIndex > 0 && mediaFiles.length > 0" class="page-jump-hint">
-      <span>从第 {{ currentPage }} 页开始浏览</span>
-      <button class="back-to-first" @click="goToFirstPage">返回第1页</button>
-    </div>
 
     <!-- 加载状态 -->
     <div v-if="loading && files.length === 0" class="loading-container">
@@ -146,6 +181,11 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- 浮动页码指示器 -->
+      <div class="floating-page-indicator" v-if="mediaFiles.length > pageSize">
+        <span>{{ displayCurrentPage }} / {{ totalPages }}</span>
       </div>
 
       <!-- 加载更多指示器 -->
@@ -339,7 +379,10 @@ export default {
       searchKeyword: '',
       currentStartIndex: 0,
       searchExpanded: false,
+      filterType: '', // '', 'image', 'video', 'audio', 'other'
+      recursiveSearch: false,
       lastScrollY: 0,
+      scrollPage: 0,
       columnCount: 4,
       columnHeights: [0, 0, 0, 0],
       // 桌面端旋转和缩放
@@ -390,8 +433,15 @@ export default {
     mediaFiles() {
       return this.files.filter(f => !f.isFolder);
     },
-    currentPage() {
-      return Math.floor(this.currentStartIndex / this.pageSize) + 1;
+    totalPages() {
+      return Math.ceil(this.totalCount / this.pageSize);
+    },
+    displayCurrentPage() {
+      // 基于滚动位置计算当前页码
+      const startPage = Math.floor(this.currentStartIndex / this.pageSize) + 1;
+      const loadedPages = Math.ceil(this.mediaFiles.length / this.pageSize);
+      // 根据滚动比例计算当前在第几页
+      return Math.min(startPage + Math.floor(this.scrollPage * loadedPages), this.totalPages);
     },
     columns() {
       const cols = Array.from({ length: this.columnCount }, () => []);
@@ -503,14 +553,6 @@ export default {
       });
     },
     
-    // 返回第一页
-    goToFirstPage() {
-      this.currentStartIndex = 0;
-      this.searchKeyword = '';
-      this.searchInput = '';
-      this.resetAndLoad();
-    },
-    
     // 搜索框展开/收起
     toggleSearch() {
       this.searchExpanded = !this.searchExpanded;
@@ -521,14 +563,46 @@ export default {
       }
     },
     
-    // 监听滚动收起搜索框
+    // 设置文件类型过滤
+    setFilter(type) {
+      if (this.filterType === type) return;
+      this.filterType = type;
+      this.currentStartIndex = 0;
+      this.resetAndLoad();
+    },
+    
+    // 切换递归搜索
+    toggleRecursive() {
+      this.recursiveSearch = !this.recursiveSearch;
+      this.currentStartIndex = 0;
+      this.resetAndLoad();
+    },
+    
+    // 监听滚动收起搜索框 + 计算当前页码
     handleScroll() {
+      const currentScrollY = window.scrollY;
+      
+      // 收起搜索框
       if (this.searchExpanded) {
-        const currentScrollY = window.scrollY;
         if (currentScrollY > this.lastScrollY + 20) {
           this.searchExpanded = false;
         }
-        this.lastScrollY = currentScrollY;
+      }
+      this.lastScrollY = currentScrollY;
+      
+      // 计算滚动页码比例
+      const gallery = this.$refs.galleryContainer;
+      if (gallery && this.mediaFiles.length > 0) {
+        const galleryRect = gallery.getBoundingClientRect();
+        const galleryTop = gallery.offsetTop;
+        const scrollableHeight = gallery.scrollHeight - window.innerHeight;
+        
+        if (scrollableHeight > 0) {
+          const scrolled = Math.max(0, currentScrollY - galleryTop);
+          this.scrollPage = Math.min(1, scrolled / scrollableHeight);
+        } else {
+          this.scrollPage = 0;
+        }
       }
     },
     
@@ -641,10 +715,12 @@ export default {
       this.files = [];
       this.hasMore = true;
       this.columnHeights = new Array(this.columnCount).fill(0);
-      // 重置搜索状态
+      // 重置搜索和筛选状态
       this.searchInput = '';
       this.searchKeyword = '';
       this.currentStartIndex = 0;
+      this.filterType = '';
+      this.recursiveSearch = false;
       
       await this.loadFiles();
       this.observeLoadTrigger();
@@ -659,6 +735,12 @@ export default {
         let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${this.currentStartIndex}&count=${this.pageSize}`;
         if (this.searchKeyword) {
           url += `&search=${encodeURIComponent(this.searchKeyword)}`;
+        }
+        if (this.filterType) {
+          url += `&type=${this.filterType}`;
+        }
+        if (this.recursiveSearch) {
+          url += `&recursive=true`;
         }
         const res = await axios.get(url);
         
@@ -710,6 +792,12 @@ export default {
         if (this.searchKeyword) {
           url += `&search=${encodeURIComponent(this.searchKeyword)}`;
         }
+        if (this.filterType) {
+          url += `&type=${this.filterType}`;
+        }
+        if (this.recursiveSearch) {
+          url += `&recursive=true`;
+        }
         const res = await axios.get(url);
         const moreFiles = (res.data.files || []).map(f => ({
           name: f.name,
@@ -758,12 +846,13 @@ export default {
 
     isVideo(file) {
       const ext = file.name.split('.').pop().toLowerCase();
-      return ['mp4', 'webm', 'ogg', 'mov'].includes(ext);
+      // 浏览器原生支持的视频格式 + 部分浏览器支持的格式
+      return ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'mkv', 'avi', '3gp', 'mpeg', 'mpg'].includes(ext);
     },
 
     isAudio(file) {
       const ext = file.name.split('.').pop().toLowerCase();
-      return ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'].includes(ext);
+      return ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'ape', 'opus'].includes(ext);
     },
 
     getFileName(name) {
@@ -1144,6 +1233,54 @@ export default {
   gap: 10px;
 }
 
+/* 筛选按钮组 */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.1);
+}
+
+.filter-btn.active {
+  color: #fff;
+  background: rgba(59, 130, 246, 0.8);
+}
+
+.filter-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.recursive-btn {
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+}
+
+.recursive-btn.active {
+  background: rgba(34, 197, 94, 0.8);
+}
+
 /* 搜索框：默认只显示放大镜图标 */
 .search-box {
   display: flex;
@@ -1252,6 +1389,27 @@ export default {
     width: 11px;
     height: 11px;
   }
+  
+  /* 手机端筛选按钮更小 */
+  .filter-group {
+    gap: 1px;
+    padding: 1px;
+  }
+  
+  .filter-btn {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .filter-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .recursive-btn {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .header-center {
@@ -1300,36 +1458,7 @@ export default {
 
 .file-count {
   color: #666;
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-/* 页码跳转提示条 */
-.page-jump-hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 10px 16px;
-  background: rgba(59, 130, 246, 0.1);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-  font-size: 13px;
-  color: #3b82f6;
-}
-
-.back-to-first {
-  padding: 4px 10px;
-  background: rgba(59, 130, 246, 0.2);
-  border: none;
-  border-radius: 12px;
-  color: #3b82f6;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.back-to-first:hover {
-  background: rgba(59, 130, 246, 0.3);
+  font-size: 14px;
 }
 
 .loading-container, .error-container {
@@ -1648,6 +1777,33 @@ export default {
   align-items: center;
   padding: 48px;
   min-height: 100px;
+}
+
+/* 浮动页码指示器 */
+.floating-page-indicator {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  z-index: 50;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.3s;
+}
+
+@media (max-width: 600px) {
+  .floating-page-indicator {
+    bottom: 16px;
+    right: 16px;
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 12px;
+  }
 }
 
 .loading-more {
@@ -2046,17 +2202,30 @@ export default {
   color: #999;
 }
 
-:root:not(.dark) .page-jump-hint {
-  background: rgba(59, 130, 246, 0.08);
-  border-bottom-color: rgba(59, 130, 246, 0.15);
+:root:not(.dark) .filter-group {
+  background: rgba(0,0,0,0.06);
 }
 
-:root:not(.dark) .back-to-first {
-  background: rgba(59, 130, 246, 0.15);
+:root:not(.dark) .filter-btn {
+  color: rgba(0,0,0,0.4);
 }
 
-:root:not(.dark) .back-to-first:hover {
-  background: rgba(59, 130, 246, 0.25);
+:root:not(.dark) .filter-btn:hover {
+  color: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.08);
+}
+
+:root:not(.dark) .filter-btn.active {
+  color: #fff;
+  background: rgba(59, 130, 246, 0.9);
+}
+
+:root:not(.dark) .recursive-btn {
+  background: rgba(0,0,0,0.06);
+}
+
+:root:not(.dark) .recursive-btn.active {
+  background: rgba(34, 197, 94, 0.9);
 }
 
 :root:not(.dark) .search-box {
@@ -2177,5 +2346,11 @@ export default {
 
 :root:not(.dark) .theme-toggle-btn:hover {
   background: rgba(0, 0, 0, 0.08);
+}
+
+:root:not(.dark) .floating-page-indicator {
+  background: rgba(255, 255, 255, 0.85);
+  color: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
