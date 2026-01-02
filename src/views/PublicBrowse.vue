@@ -15,6 +15,18 @@
         </div>
       </div>
       <div class="header-right">
+        <div class="search-box">
+          <input 
+            type="text" 
+            v-model="searchInput" 
+            @keyup.enter="handleSearch"
+            placeholder="搜索文件名 或 #页码"
+            class="search-input"
+          />
+          <span class="search-icon" @click="handleSearch">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </span>
+        </div>
         <ToggleDark class="theme-toggle-btn" />
         <span class="file-count">{{ totalCount }} 个文件</span>
       </div>
@@ -307,6 +319,9 @@ export default {
       previewIndex: 0,
       observer: null,
       pageSize: 24,
+      searchInput: '',
+      searchKeyword: '',
+      currentStartIndex: 0,
       columnCount: 4,
       columnHeights: [0, 0, 0, 0],
       // 桌面端旋转和缩放
@@ -424,6 +439,44 @@ export default {
     window.removeEventListener('resize', this.checkMobile);
   },
   methods: {
+    // 搜索处理
+    handleSearch() {
+      const input = this.searchInput.trim();
+      if (!input) {
+        // 清空搜索，重置
+        this.searchKeyword = '';
+        this.currentStartIndex = 0;
+        this.resetAndLoad();
+        return;
+      }
+      
+      // 检查是否是页码跳转 #数字
+      const pageMatch = input.match(/^#(\d+)$/);
+      if (pageMatch) {
+        const page = parseInt(pageMatch[1], 10);
+        const maxPage = Math.ceil(this.totalCount / this.pageSize);
+        const targetPage = Math.min(Math.max(1, page), maxPage || 1);
+        this.currentStartIndex = (targetPage - 1) * this.pageSize;
+        this.searchKeyword = '';
+        this.searchInput = '';
+        this.resetAndLoad();
+        return;
+      }
+      
+      // 文件名搜索
+      this.searchKeyword = input;
+      this.currentStartIndex = 0;
+      this.resetAndLoad();
+    },
+    
+    // 重置并加载
+    resetAndLoad() {
+      this.files = [];
+      this.hasMore = true;
+      this.columnHeights = new Array(this.columnCount).fill(0);
+      this.loadFiles();
+    },
+    
     // 检测是否为移动设备（用 JS 判断，避免全屏时 CSS 媒体查询失效）
     checkMobile() {
       // 用 pointer: coarse 检测（触摸屏主输入），结合屏幕宽度
@@ -535,6 +588,10 @@ export default {
       this.files = [];
       this.hasMore = true;
       this.columnHeights = new Array(this.columnCount).fill(0);
+      // 重置搜索状态
+      this.searchInput = '';
+      this.searchKeyword = '';
+      this.currentStartIndex = 0;
       
       await this.loadFiles();
       this.observeLoadTrigger();
@@ -546,7 +603,11 @@ export default {
       this.canRetry = true;
       
       try {
-        const res = await axios.get(`/api/public/list?dir=${encodeURIComponent(this.currentPath)}&count=${this.pageSize}`);
+        let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${this.currentStartIndex}&count=${this.pageSize}`;
+        if (this.searchKeyword) {
+          url += `&search=${encodeURIComponent(this.searchKeyword)}`;
+        }
+        const res = await axios.get(url);
         
         if (res.data.allowedDirs) {
           this.allowedDirs = res.data.allowedDirs;
@@ -591,8 +652,12 @@ export default {
       if (this.loading || !this.hasMore) return;
       this.loading = true;
       try {
-        const start = this.mediaFiles.length;
-        const res = await axios.get(`/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${start}&count=${this.pageSize}`);
+        const start = this.currentStartIndex + this.mediaFiles.length;
+        let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${start}&count=${this.pageSize}`;
+        if (this.searchKeyword) {
+          url += `&search=${encodeURIComponent(this.searchKeyword)}`;
+        }
+        const res = await axios.get(url);
         const moreFiles = (res.data.files || []).map(f => ({
           name: f.name,
           isFolder: false,
@@ -1034,6 +1099,50 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 4px 12px;
+  transition: all 0.3s;
+}
+
+.search-box:focus-within {
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  width: 120px;
+  transition: width 0.3s;
+}
+
+.search-input::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.search-input:focus {
+  width: 160px;
+}
+
+.search-icon {
+  cursor: pointer;
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.search-icon:hover {
+  color: #fff;
 }
 
 .header-center {
@@ -1797,6 +1906,30 @@ export default {
 
 :root:not(.dark) .file-count {
   color: #999;
+}
+
+:root:not(.dark) .search-box {
+  background: rgba(0,0,0,0.08);
+}
+
+:root:not(.dark) .search-box:focus-within {
+  background: rgba(0,0,0,0.12);
+}
+
+:root:not(.dark) .search-input {
+  color: #333;
+}
+
+:root:not(.dark) .search-input::placeholder {
+  color: rgba(0,0,0,0.4);
+}
+
+:root:not(.dark) .search-icon {
+  color: rgba(0,0,0,0.5);
+}
+
+:root:not(.dark) .search-icon:hover {
+  color: #333;
 }
 
 :root:not(.dark) .loading-container,
