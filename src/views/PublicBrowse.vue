@@ -15,6 +15,25 @@
         </div>
       </div>
       <div class="header-right">
+        <!-- 搜索框：默认只显示放大镜，点击展开 -->
+        <div class="search-box" :class="{ expanded: searchExpanded }">
+          <span class="search-icon" @click="toggleSearch" v-if="!searchExpanded">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </span>
+          <template v-else>
+            <input 
+              type="text" 
+              v-model="searchInput" 
+              @keyup.enter="handleSearch"
+              placeholder="搜索文件名 或 #页码"
+              class="search-input"
+              ref="searchInputRef"
+            />
+            <span class="search-icon" @click="handleSearch">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </span>
+          </template>
+        </div>
         <ToggleDark class="theme-toggle-btn" />
         <span class="file-count">{{ totalCount }} 个文件</span>
       </div>
@@ -118,6 +137,11 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- 浮动页码指示器 -->
+      <div class="floating-page-indicator" v-if="mediaFiles.length > pageSize">
+        <span>{{ displayCurrentPage }} / {{ totalPages }}</span>
       </div>
 
       <!-- 加载更多指示器 -->
@@ -307,6 +331,13 @@ export default {
       previewIndex: 0,
       observer: null,
       pageSize: 24,
+      searchInput: '',
+      searchKeyword: '',
+      currentStartIndex: 0,
+      searchExpanded: false,
+      filterType: '',
+      lastScrollY: 0,
+      scrollPage: 0,
       columnCount: 4,
       columnHeights: [0, 0, 0, 0],
       // 桌面端旋转和缩放
@@ -356,6 +387,16 @@ export default {
     },
     mediaFiles() {
       return this.files.filter(f => !f.isFolder);
+    },
+    totalPages() {
+      return Math.ceil(this.totalCount / this.pageSize);
+    },
+    displayCurrentPage() {
+      // 基于滚动位置计算当前页码
+      const startPage = Math.floor(this.currentStartIndex / this.pageSize) + 1;
+      const loadedPages = Math.ceil(this.mediaFiles.length / this.pageSize);
+      // 根据滚动比例计算当前在第几页
+      return Math.min(startPage + Math.floor(this.scrollPage * loadedPages), this.totalPages);
     },
     columns() {
       const cols = Array.from({ length: this.columnCount }, () => []);
@@ -415,6 +456,7 @@ export default {
     this.updateColumnCount();
     window.addEventListener('resize', this.updateColumnCount);
     window.addEventListener('resize', this.checkMobile);
+    window.addEventListener('scroll', this.handleScroll);
   },
   beforeUnmount() {
     if (this.observer) {
@@ -422,15 +464,112 @@ export default {
     }
     window.removeEventListener('resize', this.updateColumnCount);
     window.removeEventListener('resize', this.checkMobile);
+    window.removeEventListener('scroll', this.handleScroll);
   },
   methods: {
+    // 搜索处理
+    handleSearch() {
+      const input = this.searchInput.trim();
+      if (!input) {
+        // 清空搜索，重置
+        this.searchKeyword = '';
+        this.filterType = '';
+        this.currentStartIndex = 0;
+        this.resetAndLoad();
+        return;
+      }
+      
+      // 检查是否是页码跳转 #数字
+      const pageMatch = input.match(/^#(\d+)$/);
+      if (pageMatch) {
+        const page = parseInt(pageMatch[1], 10);
+        const maxPage = Math.ceil(this.totalCount / this.pageSize);
+        const targetPage = Math.min(Math.max(1, page), maxPage || 1);
+        this.currentStartIndex = (targetPage - 1) * this.pageSize;
+        this.searchKeyword = '';
+        this.filterType = '';
+        this.searchInput = '';
+        this.resetAndLoad();
+        return;
+      }
+      
+      // 检查是否是类型关键词
+      const typeKeywords = {
+        '图片': 'image', '图': 'image', 'image': 'image', 'img': 'image', '照片': 'image',
+        '视频': 'video', 'video': 'video', '影片': 'video', '电影': 'video',
+        '音乐': 'audio', '音频': 'audio', 'audio': 'audio', 'music': 'audio', '歌曲': 'audio'
+      };
+      
+      const lowerInput = input.toLowerCase();
+      if (typeKeywords[lowerInput]) {
+        this.filterType = typeKeywords[lowerInput];
+        this.searchKeyword = '';
+        this.currentStartIndex = 0;
+        this.resetAndLoad();
+        return;
+      }
+      
+      // 普通文件名搜索
+      this.filterType = '';
+      this.searchKeyword = input;
+      this.currentStartIndex = 0;
+      this.resetAndLoad();
+    },
+    
+    // 重置并加载
+    resetAndLoad() {
+      this.files = [];
+      this.hasMore = true;
+      this.columnHeights = new Array(this.columnCount).fill(0);
+      this.loadFiles().then(() => {
+        // 重新观察加载触发器，确保无限滚动继续工作
+        this.observeLoadTrigger();
+      });
+    },
+    
+    // 搜索框展开/收起
+    toggleSearch() {
+      this.searchExpanded = !this.searchExpanded;
+      if (this.searchExpanded) {
+        this.$nextTick(() => {
+          this.$refs.searchInputRef?.focus();
+        });
+      }
+    },
+    
+    // 监听滚动收起搜索框 + 计算当前页码
+    handleScroll() {
+      const currentScrollY = window.scrollY;
+      
+      // 收起搜索框
+      if (this.searchExpanded) {
+        if (currentScrollY > this.lastScrollY + 20) {
+          this.searchExpanded = false;
+        }
+      }
+      this.lastScrollY = currentScrollY;
+      
+      // 计算滚动页码比例
+      const gallery = this.$refs.galleryContainer;
+      if (gallery && this.mediaFiles.length > 0) {
+        const galleryRect = gallery.getBoundingClientRect();
+        const galleryTop = gallery.offsetTop;
+        const scrollableHeight = gallery.scrollHeight - window.innerHeight;
+        
+        if (scrollableHeight > 0) {
+          const scrolled = Math.max(0, currentScrollY - galleryTop);
+          this.scrollPage = Math.min(1, scrolled / scrollableHeight);
+        } else {
+          this.scrollPage = 0;
+        }
+      }
+    },
+    
     // 检测是否为移动设备（用 JS 判断，避免全屏时 CSS 媒体查询失效）
     checkMobile() {
-      // 用 pointer: coarse 检测（触摸屏主输入），结合屏幕宽度
-      // 不单独用 ontouchstart，因为很多电脑也支持触摸
-      const isCoarse = window.matchMedia?.('(pointer: coarse)').matches;
-      const isSmall = window.innerWidth <= 768;
-      this.isMobile = isCoarse || isSmall;
+      // 只有屏幕宽度 ≤600px 才算手机端（与瀑布流2列的断点一致）
+      // 不用 pointer: coarse，因为很多电脑也有触摸屏
+      this.isMobile = window.innerWidth <= 600;
     },
 
     // 生成 slide key，切换时让子组件重新挂载以重置 transform
@@ -535,6 +674,11 @@ export default {
       this.files = [];
       this.hasMore = true;
       this.columnHeights = new Array(this.columnCount).fill(0);
+      // 重置搜索状态
+      this.searchInput = '';
+      this.searchKeyword = '';
+      this.filterType = '';
+      this.currentStartIndex = 0;
       
       await this.loadFiles();
       this.observeLoadTrigger();
@@ -546,7 +690,14 @@ export default {
       this.canRetry = true;
       
       try {
-        const res = await axios.get(`/api/public/list?dir=${encodeURIComponent(this.currentPath)}&count=${this.pageSize}`);
+        let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${this.currentStartIndex}&count=${this.pageSize}`;
+        if (this.searchKeyword) {
+          url += `&search=${encodeURIComponent(this.searchKeyword)}`;
+        }
+        if (this.filterType) {
+          url += `&type=${this.filterType}`;
+        }
+        const res = await axios.get(url);
         
         if (res.data.allowedDirs) {
           this.allowedDirs = res.data.allowedDirs;
@@ -567,7 +718,7 @@ export default {
         
         this.files = [...dirs, ...files];
         this.totalCount = res.data.totalCount || this.files.length;
-        this.hasMore = this.mediaFiles.length < this.totalCount;
+        this.hasMore = (this.currentStartIndex + this.mediaFiles.length) < this.totalCount;
       } catch (err) {
         if (err.response?.status === 403) {
           const msg = err.response?.data?.error || '';
@@ -591,8 +742,15 @@ export default {
       if (this.loading || !this.hasMore) return;
       this.loading = true;
       try {
-        const start = this.mediaFiles.length;
-        const res = await axios.get(`/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${start}&count=${this.pageSize}`);
+        const start = this.currentStartIndex + this.mediaFiles.length;
+        let url = `/api/public/list?dir=${encodeURIComponent(this.currentPath)}&start=${start}&count=${this.pageSize}`;
+        if (this.searchKeyword) {
+          url += `&search=${encodeURIComponent(this.searchKeyword)}`;
+        }
+        if (this.filterType) {
+          url += `&type=${this.filterType}`;
+        }
+        const res = await axios.get(url);
         const moreFiles = (res.data.files || []).map(f => ({
           name: f.name,
           isFolder: false,
@@ -602,7 +760,7 @@ export default {
         
         moreFiles.forEach(f => this.assignToColumn(f));
         this.files.push(...moreFiles);
-        this.hasMore = this.mediaFiles.length < this.totalCount;
+        this.hasMore = (this.currentStartIndex + this.mediaFiles.length) < this.totalCount;
       } catch (err) {
         console.error('加载更多失败', err);
       } finally {
@@ -640,12 +798,13 @@ export default {
 
     isVideo(file) {
       const ext = file.name.split('.').pop().toLowerCase();
-      return ['mp4', 'webm', 'ogg', 'mov'].includes(ext);
+      // 浏览器原生支持的视频格式 + 部分浏览器支持的格式
+      return ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'mkv', 'avi', '3gp', 'mpeg', 'mpg'].includes(ext);
     },
 
     isAudio(file) {
       const ext = file.name.split('.').pop().toLowerCase();
-      return ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'].includes(ext);
+      return ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'ape', 'opus'].includes(ext);
     },
 
     getFileName(name) {
@@ -653,7 +812,21 @@ export default {
     },
 
     handleImageError(e) {
-      e.target.style.display = 'none';
+      const img = e.target;
+      const retryCount = parseInt(img.dataset.retryCount || '0');
+      const maxRetries = 3;
+      
+      if (retryCount < maxRetries) {
+        // 重试：添加时间戳避免缓存
+        img.dataset.retryCount = retryCount + 1;
+        const originalSrc = img.src.split('?_retry=')[0];
+        setTimeout(() => {
+          img.src = originalSrc + '?_retry=' + Date.now();
+        }, 500 * (retryCount + 1));
+      } else {
+        // 重试次数用完，隐藏图片
+        img.style.display = 'none';
+      }
     },
 
     copyLink(name) {
@@ -1018,7 +1191,83 @@ export default {
   gap: 8px;
 }
 
+.header-right {
+  flex: 0 0 auto;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 搜索框：默认只显示放大镜图标 */
+.search-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.search-box .search-icon {
+  color: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-box .search-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* 搜索框展开状态 */
+.search-box.expanded {
+  width: auto;
+  min-width: 160px;
+  border-radius: 14px;
+  padding: 4px 10px;
+  background: rgba(30, 30, 30, 0.98);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.search-box.expanded .search-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.search-box.expanded .search-input {
+  width: 110px;
+  font-size: 12px;
+}
+
+.search-box:focus-within {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 12px;
+  transition: width 0.3s;
+}
+
+.search-input::placeholder {
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+}
+
+/* 主题切换按钮对齐 */
 .theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border-radius: 8px;
   transition: background 0.2s;
@@ -1028,12 +1277,36 @@ export default {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.header-right {
-  flex: 0 0 auto;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* 手机端搜索框更小 */
+@media (max-width: 600px) {
+  .header-right {
+    gap: 8px;
+  }
+  
+  .search-box {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .search-box .search-icon svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .search-box.expanded {
+    min-width: 140px;
+    padding: 3px 8px;
+  }
+  
+  .search-box.expanded .search-input {
+    width: 90px;
+    font-size: 11px;
+  }
+  
+  .search-box.expanded .search-icon svg {
+    width: 11px;
+    height: 11px;
+  }
 }
 
 .header-center {
@@ -1401,6 +1674,33 @@ export default {
   align-items: center;
   padding: 48px;
   min-height: 100px;
+}
+
+/* 浮动页码指示器 */
+.floating-page-indicator {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  z-index: 50;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.3s;
+}
+
+@media (max-width: 600px) {
+  .floating-page-indicator {
+    bottom: 16px;
+    right: 16px;
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 12px;
+  }
 }
 
 .loading-more {
@@ -1799,6 +2099,31 @@ export default {
   color: #999;
 }
 
+:root:not(.dark) .search-box {
+  background: rgba(0,0,0,0.08);
+}
+
+:root:not(.dark) .search-box.expanded {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+:root:not(.dark) .search-box.expanded .search-input {
+  color: #333;
+}
+
+:root:not(.dark) .search-box.expanded .search-input::placeholder {
+  color: rgba(0,0,0,0.4);
+}
+
+:root:not(.dark) .search-box .search-icon {
+  color: rgba(0,0,0,0.6);
+}
+
+:root:not(.dark) .search-box .search-icon:hover {
+  color: #333;
+}
+
 :root:not(.dark) .loading-container,
 :root:not(.dark) .error-container {
   color: #999;
@@ -1892,5 +2217,11 @@ export default {
 
 :root:not(.dark) .theme-toggle-btn:hover {
   background: rgba(0, 0, 0, 0.08);
+}
+
+:root:not(.dark) .floating-page-indicator {
+  background: rgba(255, 255, 255, 0.85);
+  color: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
