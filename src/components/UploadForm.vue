@@ -239,6 +239,11 @@ props: {
         type: String,
         default: '',
         required: false
+    },
+    convertToWebp: {
+        type: Boolean,
+        default: false,
+        required: false
     }
 },
 data() {
@@ -920,10 +925,33 @@ methods: {
         })
     },
     beforeUpload(file) {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
+            let processedFile = file
+            
+            // WebP 转换：在压缩之前进行
+            // 条件：1.开启WebP转换 2.文件类型为图片 3.不是WebP/GIF/SVG格式
+            const canConvertToWebp = this.convertToWebp && 
+                file.type.includes('image') && 
+                !file.type.includes('webp') && 
+                !file.type.includes('gif') && 
+                !file.type.includes('svg')
+            
+            if (canConvertToWebp) {
+                try {
+                    const convertedFile = await this.convertImageToWebp(file)
+                    if (convertedFile) {
+                        processedFile = convertedFile
+                        console.log(`WebP转换成功: ${file.name} -> ${convertedFile.name}, 大小: ${(file.size/1024).toFixed(1)}KB -> ${(convertedFile.size/1024).toFixed(1)}KB`)
+                    }
+                } catch (err) {
+                    console.warn('WebP转换失败，使用原文件:', err)
+                    // 转换失败，继续使用原文件
+                }
+            }
+            
             // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值
-            const needCustomCompress = file.type.includes('image') && this.customerCompress && file.size / 1024 / 1024 > this.compressBar
-            const isLtLim = file.size / 1024 / 1024 <= 1024 || this.uploadChannel !== 'telegram'
+            const needCustomCompress = processedFile.type.includes('image') && this.customerCompress && processedFile.size / 1024 / 1024 > this.compressBar
+            const isLtLim = processedFile.size / 1024 / 1024 <= 1024 || this.uploadChannel !== 'telegram'
 
             const pushFileToQueue = (file, serverCompress) => {
                 const fileUrl = URL.createObjectURL(file)
@@ -946,15 +974,15 @@ methods: {
 
             if (needCustomCompress) {
                 //尝试压缩图片
-                imageConversion.compressAccurately(file, 1024 * this.compressQuality).then((res) => {
+                imageConversion.compressAccurately(processedFile, 1024 * this.compressQuality).then((res) => {
                     //如果压缩后大于1024MB，且上传渠道为telegram，则不上传
                     if (res.size / 1024 / 1024 > 1024 && this.uploadChannel === 'telegram') {
-                        this.$message.error(file.name + '压缩后文件过大，无法上传!')
+                        this.$message.error(processedFile.name + '压缩后文件过大，无法上传!')
                         reject('文件过大')
                     }
                     this.uploading = true
                     //将res包装成新的file
-                    const newFile = new File([res], file.name, { type: res.type })
+                    const newFile = new File([res], processedFile.name, { type: res.type })
                     newFile.uid = file.uid
                     
                     const myUploadCount = this.uploadCount++
@@ -971,7 +999,7 @@ methods: {
                         }, 300 * myUploadCount)
                     }
                 }).catch((err) => {
-                    this.$message.error(file.name + '压缩失败，无法上传!')
+                    this.$message.error(processedFile.name + '压缩失败，无法上传!')
                     reject(err)
                 })
             } else if (isLtLim) {
@@ -980,18 +1008,18 @@ methods: {
                 const myUploadCount = this.uploadCount++
 
                 // 开启服务端压缩条件：1.上传渠道为Telegram 2.开启服务端压缩 3.如果为图片，则文件大小小于10MB，否则不限制大小
-                const needServerCompress = this.uploadChannel === 'telegram' && this.serverCompress && (file.type.includes('image') ? file.size / 1024 / 1024 < 10 : true)
+                const needServerCompress = this.uploadChannel === 'telegram' && this.serverCompress && (processedFile.type.includes('image') ? processedFile.size / 1024 / 1024 < 10 : true)
 
                 if (myUploadCount === 0) {
-                    pushFileToQueue(file, needServerCompress)
+                    pushFileToQueue(processedFile, needServerCompress)
                 } else {
                     setTimeout(() => {
-                        pushFileToQueue(file, needServerCompress)
+                        pushFileToQueue(processedFile, needServerCompress)
                         this.uploadCount--
                     }, 300 * myUploadCount)
                 }
             } else {
-                this.$message.error(file.name + '文件过大，无法上传!')
+                this.$message.error(processedFile.name + '文件过大，无法上传!')
                 reject('文件过大')
             }
         })
@@ -1689,6 +1717,53 @@ methods: {
                 return hex;
             }
         };
+    },
+    // 将图片转换为 WebP 格式
+    async convertImageToWebp(file) {
+        return new Promise((resolve, reject) => {
+            // 不支持转换的格式直接返回 null
+            if (file.type.includes('gif') || file.type.includes('svg') || file.type.includes('webp')) {
+                resolve(null)
+                return
+            }
+            
+            const img = new Image()
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            
+            img.onload = () => {
+                canvas.width = img.width
+                canvas.height = img.height
+                ctx.drawImage(img, 0, 0)
+                
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        // 修改文件名：将原扩展名替换为 .webp
+                        const originalName = file.name
+                        const lastDotIndex = originalName.lastIndexOf('.')
+                        const newName = lastDotIndex > 0 
+                            ? originalName.substring(0, lastDotIndex) + '.webp'
+                            : originalName + '.webp'
+                        
+                        const webpFile = new File([blob], newName, { type: 'image/webp' })
+                        webpFile.uid = file.uid
+                        resolve(webpFile)
+                    } else {
+                        reject(new Error('WebP 转换失败'))
+                    }
+                    
+                    // 清理
+                    URL.revokeObjectURL(img.src)
+                }, 'image/webp', 0.92) // 0.92 质量参数，平衡质量和大小
+            }
+            
+            img.onerror = () => {
+                URL.revokeObjectURL(img.src)
+                reject(new Error('图片加载失败'))
+            }
+            
+            img.src = URL.createObjectURL(file)
+        })
     },
 },
 beforeDestroy() {

@@ -98,6 +98,7 @@
             :urlPrefix="urlPrefix"
             :uploadMethod="uploadMethod"
             :uploadFolder="uploadFolder"
+            :convertToWebp="convertToWebp"
             class="upload"
         />
         <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
@@ -225,17 +226,26 @@
                 </div>
             </div>
             
-            <!-- 客户端压缩 -->
+            <!-- 客户端预处理 -->
             <div class="dialog-section">
                 <div class="section-header">
-                    <span class="section-title">客户端压缩</span>
-                    <el-tooltip content="上传前在本地进行压缩，仅对图片文件生效" placement="top">
+                    <span class="section-title">文件预处理</span>
+                    <el-tooltip content="上传前在本地进行格式转换和压缩，仅对图片文件生效" placement="top">
                         <font-awesome-icon icon="question-circle" class="section-help-icon"/>
                     </el-tooltip>
                 </div>
                 <div class="section-content">
                     <div class="setting-item">
-                        <span class="setting-label">开启压缩</span>
+                        <span class="setting-label">
+                            转换为WebP
+                            <el-tooltip content="上传前将图片转换为WebP格式，可有效减小文件体积。转换失败时保持原格式上传" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </span>
+                        <el-switch v-model="convertToWebp" />
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">文件压缩</span>
                         <el-switch v-model="customerCompress" />
                     </div>
                     <div class="setting-item slider-item" v-if="customerCompress">
@@ -327,6 +337,7 @@ export default {
             customerCompress: true, //上传前压缩
             compressQuality: 4, //压缩后大小
             compressBar: 5, //压缩阈值
+            convertToWebp: false, //转换为WebP格式
             serverCompress: true, //服务器端压缩
             uploadChannel: '', //上传渠道
             uploadNameType: '', //上传文件命名方式
@@ -365,6 +376,9 @@ export default {
         },
         serverCompress(val) {
             this.updateCompressConfig('serverCompress', val)
+        },
+        convertToWebp(val) {
+            this.updateCompressConfig('convertToWebp', val)
         },
         uploadChannel(val) {
             this.updateStoreUploadChannel(val)
@@ -417,11 +431,12 @@ export default {
 
         // 读取用户选择的链接格式
         this.selectedUrlForm = this.uploadCopyUrlForm || 'url'
-        // 读取用户选择的压缩设置
-        this.customerCompress = this.compressConfig.customerCompress
-        this.compressQuality = this.compressConfig.compressQuality
-        this.compressBar = this.compressConfig.compressBar
-        this.serverCompress = this.compressConfig.serverCompress
+        // 读取用户选择的压缩设置（优先用户设置，其次系统默认配置）
+        this.customerCompress = this.compressConfig.customerCompress ?? this.parseBoolean(this.userConfig?.defaultCustomerCompress, true)
+        this.compressQuality = this.compressConfig.compressQuality ?? this.parseNumber(this.userConfig?.defaultCompressQuality, 4)
+        this.compressBar = this.compressConfig.compressBar ?? this.parseNumber(this.userConfig?.defaultCompressBar, 5)
+        this.serverCompress = this.compressConfig.serverCompress ?? true
+        this.convertToWebp = this.compressConfig.convertToWebp ?? this.parseBoolean(this.userConfig?.defaultConvertToWebp, false)
         // 读取用户选择的上传渠道
         this.uploadChannel = this.storeUploadChannel || this.userConfig?.defaultUploadChannel || 'telegram'
         // 用户定义的失败自动切换
@@ -495,6 +510,19 @@ export default {
         },
         handleManage() {
             this.$router.push('/dashboard')
+        },
+        // 解析布尔值
+        parseBoolean(value, defaultValue) {
+            if (value === undefined || value === null) return defaultValue
+            if (typeof value === 'boolean') return value
+            if (typeof value === 'string') return value === 'true'
+            return defaultValue
+        },
+        // 解析数字
+        parseNumber(value, defaultValue) {
+            if (value === undefined || value === null) return defaultValue
+            const num = parseFloat(value)
+            return isNaN(num) ? defaultValue : num
         },
         openUrlDialog() {
             this.showUrlDialog = true
