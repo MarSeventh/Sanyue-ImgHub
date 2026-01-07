@@ -42,7 +42,8 @@ export default {
           object-fit: cover;
           z-index: -1;
           opacity: 0;
-          transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+          filter: var(--background-image-filter, brightness(1));
         }
         .background-image2 {
           position: fixed;
@@ -53,7 +54,8 @@ export default {
           object-fit: cover;
           z-index: -1;
           opacity: 0;
-          transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+          filter: var(--background-image-filter, brightness(1));
         }
       `
     }

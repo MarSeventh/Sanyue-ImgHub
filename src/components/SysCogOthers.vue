@@ -202,6 +202,9 @@ mounted() {
     font-weight: 500;
     color: var(--el-text-color-primary);
     width: auto !important;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .first-settings :deep(.el-form-item__content) {

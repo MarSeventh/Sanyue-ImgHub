@@ -20,6 +20,11 @@
                 <font-awesome-icon icon="history" class="history-icon" size="lg"/>
             </el-button>
         </el-tooltip>
+        <el-tooltip content="查看公告" placement="bottom" :disabled="disableTooltip">
+            <el-button class="announcement-button desktop-only" @click="handleShowAnnouncement" :disabled="!announcementAvailable">
+                <font-awesome-icon icon="bullhorn" class="announcement-icon" size="lg"/>
+            </el-button>
+        </el-tooltip>
 
         <!-- 移动端更多按钮 -->
         <el-dropdown class="mobile-more-dropdown mobile-only" trigger="click" @command="handleMobileMenuCommand">
@@ -39,6 +44,10 @@
                     <el-dropdown-item command="showHistory">
                         <font-awesome-icon icon="history" style="margin-right: 8px;"/>
                         上传记录
+                    </el-dropdown-item>
+                    <el-dropdown-item command="showAnnouncement" :disabled="!announcementAvailable">
+                        <font-awesome-icon icon="bullhorn" style="margin-right: 8px;"/>
+                        查看公告
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </template>
@@ -382,6 +391,9 @@ export default {
         urlPrefix() {
             // 全局自定义链接前缀
             return this.userConfig?.urlPrefix || `${window.location.protocol}//${window.location.host}/file/`
+        },
+        announcementAvailable() {
+            return !!this.userConfig?.announcement
         }
     },
     mounted() {
@@ -528,6 +540,8 @@ export default {
                 this.handleChangeUploadMethod()
             } else if (command === 'showHistory') {
                 this.showHistory = true
+            } else if (command === 'showAnnouncement') {
+                this.handleShowAnnouncement()
             }
         },
         getThemeIcon() {
@@ -541,6 +555,15 @@ export default {
             if (this.themeMode === 'auto') return '浅色模式'
             if (this.themeMode === 'light') return '深色模式'
             return '自动模式'
+        },
+        handleShowAnnouncement() {
+            const announcement = this.userConfig?.announcement
+            if (announcement) {
+                this.announcementContent = announcement
+                this.showAnnouncementDialog = true
+            } else {
+                this.$message.info('暂无公告')
+            }
         }
     }
 }
@@ -719,6 +742,35 @@ export default {
     box-shadow: var(--toolbar-button-shadow-hover);
 }
 
+/* 公告按钮 */
+.announcement-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 30px;
+    right: 230px;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    color: var(--theme-toggle-color);
+    z-index: 100;
+    border-radius: 12px;
+    outline: none;
+}
+.announcement-button:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
+}
+.announcement-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* 移动端更多按钮 */
 .mobile-more-dropdown {
     position: fixed;
@@ -753,7 +805,7 @@ export default {
     height: 2.5rem;
     position: fixed;
     top: 30px;
-    right: 230px;
+    right: 280px;
     z-index: 100;
     border-radius: 12px;
     transition: all 0.3s ease, width 0.4s ease;

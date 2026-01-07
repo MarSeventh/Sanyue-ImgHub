@@ -11,6 +11,8 @@
     /* 图片预览滤镜 */
     --text-bg-color: rgba(0, 0, 0, 0.1);
     /* 文本背景颜色 */
+    --background-image-filter: brightness(1);
+    /* 背景图亮度滤镜 */
 
     /* 上传页 */
     --upload-list-card-bg-color: rgba(255, 255, 255, 0.7);
@@ -231,6 +233,8 @@
     /* 图片预览滤镜 */
     --text-bg-color: rgba(255, 255, 255, 0.1);
     /* 文本背景颜色 */
+    --background-image-filter: brightness(0.6);
+    /* 背景图亮度滤镜 */
 
     /* 上传页 */
     --upload-list-card-bg-color: rgba(0, 0, 0, 0.7);
@@ -798,7 +802,6 @@
     -webkit-backdrop-filter: blur(12px);
 }
 
-/* Header Styling */
 /* Header Styling */
 .el-dialog__header,
 .el-message-box__header {

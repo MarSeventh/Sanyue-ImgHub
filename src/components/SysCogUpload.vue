@@ -1,392 +1,375 @@
 <template>
-    <div class="upload-settings" v-loading="loading">   
-        <!-- 一级设置：上传渠道 -->
-        <div class="upload-channel">
-        <h3 class="first-title">上传渠道
-            <el-tooltip content="设置每类上传渠道的详细配置 <br> 点击“保存设置”会同时保存对每类配置的修改" placement="right" raw-content>
-                <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-            </el-tooltip>
-        </h3>
-        <el-radio-group v-model="activeChannel">
-            <el-radio
-            v-for="channel in channels"
-            :key="channel.value"
-            :label="channel.value"
-            >
-            {{ channel.label }}
-            </el-radio>
-        </el-radio-group>
+    <div class="upload-settings" v-loading="loading">
+        <!-- 页面标题和操作 -->
+        <div class="page-header">
+            <h3 class="first-title">
+                上传渠道管理
+                <el-tooltip content="管理所有上传渠道的配置，点击卡片查看详情或编辑" placement="right">
+                    <font-awesome-icon icon="question-circle" class="help-icon"/>
+                </el-tooltip>
+            </h3>
+            <div class="header-actions">
+                <el-button type="primary" @click="showAddDialog = true" class="add-btn">
+                    <font-awesome-icon icon="plus" style="margin-right: 6px;"/>
+                    添加渠道
+                </el-button>
+            </div>
         </div>
 
-        <!-- 二级设置：具体渠道配置 -->
-        <div class="channel-settings">
-        <h4 class="second-title">{{ activeChannelLabel }} 设置
-            <el-tooltip v-if="activeChannel === 'telegram'" content="为保证兼容性，v2版本前设置的 Telegram 相关环境变量请保留" placement="right">
-                <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-            </el-tooltip>
-        </h4>
-        <div v-if="activeChannel === 'telegram'">
-            <!-- 负载均衡配置 -->
-            <el-form 
-                :model="telegramSettings" 
-                label-position="top"
-                class="channel-form"
-            >
-                <el-form-item label="负载均衡">
-                    <el-switch v-model="telegramSettings.loadBalance.enabled"/>
-                </el-form-item>
-            </el-form>
+        <!-- 渠道卡片列表 - 按类型分组 -->
+        <div v-for="channelType in channels" :key="channelType.value" class="channel-group">
+            <div class="group-header">
+                <div class="group-title">
+                    <font-awesome-icon :icon="getChannelIcon(channelType.value)" class="group-icon"/>
+                    <span>{{ channelType.label }}</span>
+                    <el-tag size="small" type="info" class="channel-count">
+                        {{ getChannelList(channelType.value).length }}
+                    </el-tag>
+                </div>
+                <!-- 负载均衡开关 -->
+                <div v-if="hasLoadBalance(channelType.value)" class="load-balance-switch">
+                    <span class="switch-label">负载均衡</span>
+                    <el-switch v-model="getSettings(channelType.value).loadBalance.enabled" size="small" @change="saveSettings"/>
+                </div>
+            </div>
 
-            <el-form
-                v-for="(channel, index) in telegramSettings.channels"
-                :key="index"
-                :model="channel"
-                label-position="top"
-                :rules = "tgRules"
-                ref = "tgChannelForm"
-                class="channel-form"
-            >
-                <el-form-item label="渠道名" prop="name">
-                    <el-input v-model="channel.name" :disabled="channel.fixed"/>
-                </el-form-item>
-                <el-form-item label="启用渠道" prop="enabled">
-                    <el-switch v-model="channel.enabled"/>
-                </el-form-item>
-                <el-form-item label="Bot Token" prop="botToken">
-                    <el-input v-model="channel.botToken" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
-                <el-form-item label="Chat ID" prop="chatId">
-                    <el-input v-model="channel.chatId" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
-                <!-- 删除 -->
-                <el-form-item>
-                    <el-button type="danger" @click="deleteChannel(index)" size="small" :disabled="channel.fixed">
-                        <font-awesome-icon icon="trash-alt" />
-                    </el-button>
-                </el-form-item>
-            </el-form>
-        </div>
-
-        <div v-if="activeChannel === 'cfr2'">
-            <el-form 
-                v-for="(channel, index) in cfr2Settings.channels"
-                :model="channel" 
-                label-position="top"
-                class="channel-form"
-            >
-                <el-form-item label="渠道名">
-                    <el-input v-model="channel.name" :disabled="channel.fixed"/>
-                </el-form-item>
-                <el-form-item label="启用渠道">
-                    <el-switch v-model="channel.enabled"/>
-                </el-form-item>
-                <el-form-item>
-                    <template #label>
-                        公开访问链接
-                        <el-tooltip content="若启用图像审查，请设置该项" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-input v-model="channel.publicUrl"/>
-                </el-form-item>
-                <!-- 容量限制配置 -->
-                <el-form-item>
-                    <template #label>
-                        容量限制
-                        <el-tooltip content="启用后，当存储容量达到阈值时，该渠道将自动停止接收新文件，上传会自动切换到其他可用渠道" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-switch v-model="channel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, channel)"/>
-                </el-form-item>
-                <el-form-item v-if="channel.quota.enabled" label="容量上限 (GB)">
-                    <el-input-number v-model="channel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
-                </el-form-item>
-                <el-form-item v-if="channel.quota.enabled">
-                    <template #label>
-                        阈值 (%)
-                        <el-tooltip content="当已用容量达到此百分比时停止写入，默认95%" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-input-number v-model="channel.quota.threshold" :min="50" :max="100" :step="5"/>
-                </el-form-item>
-                <!-- 容量使用情况显示 -->
-                <el-form-item v-if="channel.quota.enabled && channel.name">
-                    <template #label>
-                        当前用量
-                        <el-button link type="primary" @click="refreshQuota" :loading="quotaLoading" style="margin-left: 8px;">
-                            <font-awesome-icon icon="sync-alt" />
-                        </el-button>
-                    </template>
-                    <div class="quota-status">
-                        <el-progress 
-                            :percentage="getQuotaPercentage(channel)" 
-                            :status="getQuotaStatus(channel)"
-                            :stroke-width="20"
-                            :text-inside="true"
-                            :format="() => getQuotaText(channel)"
-                        />
-                        <div class="quota-info" :class="{ 'quota-warning': isQuotaExceeded(channel) }">
-                            {{ getQuotaStatusText(channel) }}
+            <!-- 渠道卡片网格 -->
+            <div class="channel-cards" v-if="getChannelList(channelType.value).length > 0">
+                <div
+                    v-for="(channel, index) in getChannelList(channelType.value)"
+                    :key="channel.name || index"
+                    class="channel-card"
+                    :class="{ 'disabled': !channel.enabled, 'fixed': channel.fixed }"
+                >
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="channel-name">{{ channel.name || '未命名渠道' }}</span>
+                            <el-tag v-if="channel.fixed" size="small" type="warning">环境变量</el-tag>
+                        </div>
+                        <el-switch v-model="channel.enabled" size="small" @click.stop @change="saveSettings"/>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-info">
+                            <template v-if="channelType.value === 'telegram'">
+                                <div class="info-item">
+                                    <font-awesome-icon icon="robot" class="info-icon"/>
+                                    <span>Bot: {{ maskText(channel.botToken) }}</span>
+                                </div>
+                            </template>
+                            <template v-else-if="channelType.value === 'cfr2'">
+                                <div class="info-item">
+                                    <font-awesome-icon icon="link" class="info-icon"/>
+                                    <span>{{ channel.publicUrl || '未设置公开链接' }}</span>
+                                </div>
+                            </template>
+                            <template v-else-if="channelType.value === 's3'">
+                                <div class="info-item">
+                                    <font-awesome-icon icon="server" class="info-icon"/>
+                                    <span>{{ channel.bucketName || '未设置' }}</span>
+                                </div>
+                            </template>
+                            <template v-else-if="channelType.value === 'discord'">
+                                <div class="info-item">
+                                    <font-awesome-icon icon="hashtag" class="info-icon"/>
+                                    <span>Channel: {{ maskText(channel.channelId) }}</span>
+                                </div>
+                                <el-tag v-if="channel.isNitro" size="small" type="success">Nitro</el-tag>
+                            </template>
+                            <template v-else-if="channelType.value === 'huggingface'">
+                                <div class="info-item">
+                                    <font-awesome-icon icon="database" class="info-icon"/>
+                                    <span>{{ channel.repo || '未设置仓库' }}</span>
+                                </div>
+                                <el-tag v-if="channel.isPrivate" size="small" type="warning">私有</el-tag>
+                            </template>
+                        </div>
+                        <!-- 容量显示 -->
+                        <div v-if="channel.quota?.enabled" class="quota-mini">
+                            <el-progress
+                                :percentage="getQuotaPercentage(channel)"
+                                :status="getQuotaStatus(channel)"
+                                :stroke-width="6"
+                            />
+                            <span class="quota-text">{{ getQuotaText(channel) }}</span>
                         </div>
                     </div>
-                </el-form-item>
-            </el-form>
-        </div>
-
-        <div v-if="activeChannel === 's3'">
-            <!-- 负载均衡配置 -->
-            <el-form 
-                :model="s3Settings" 
-                label-position="top"
-                class="channel-form"
-            >
-                <el-form-item label="负载均衡">
-                    <el-switch v-model="s3Settings.loadBalance.enabled"/>
-                </el-form-item>
-            </el-form>
-
-            <el-form 
-                v-for="(channel, index) in s3Settings.channels"
-                :model="channel" 
-                label-position="top"
-                :rules = "s3Rules"
-                ref = "s3ChannelForm"
-                class="channel-form"
-            >
-                <el-form-item label="渠道名" prop="name">
-                    <el-input v-model="channel.name" :disabled="channel.fixed"/>
-                </el-form-item>
-                <el-form-item label="启用渠道" prop="enabled">
-                    <el-switch v-model="channel.enabled"/>
-                </el-form-item>
-                <el-form-item prop="endpoint">
-                    <template #label>
-                        Endpoint
-                        <el-tooltip content="服务提供商 Endpoint，例如 https://s3.us-east-005.backblazeb2.com" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-input v-model="channel.endpoint" :disabled="channel.fixed"/>
-                </el-form-item>
-                <el-form-item label="路径风格" prop="pathStyle">
-                    <template #label>
-                        路径风格
-                        <el-tooltip content="S3 路径风格/虚拟主机风格，使用 OpenList 作为 S3 提供者时需打开此开关 <br> 路径风格：https://s3.example.com/下方存储桶名称/文件路径 <br> 虚拟主机风格：https://下方存储桶名称.s3.example.com/文件路径" placement="top" raw-content>
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-switch v-model="channel.pathStyle" :disabled="channel.fixed"/>
-                </el-form-item>
-                <el-form-item label="存储桶名称" prop="bucketName">
-                    <el-input v-model="channel.bucketName" :disabled="channel.fixed"/>
-                </el-form-item>
-                <el-form-item label="存储桶区域" prop="region">
-                    <el-input v-model="channel.region" placeholder="默认填写 auto 即可" :disabled="channel.fixed"/>
-                </el-form-item>
-                <el-form-item label="访问密钥 ID" prop="accessKeyId">
-                    <el-input v-model="channel.accessKeyId" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
-                <el-form-item label="机密访问密钥" prop="secretAccessKey">
-                    <el-input v-model="channel.secretAccessKey" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
-                <!-- 容量限制配置 -->
-                <el-form-item>
-                    <template #label>
-                        容量限制
-                        <el-tooltip content="启用后，当存储容量达到阈值时，该渠道将自动停止接收新文件，上传会自动切换到其他可用渠道" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-switch v-model="channel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, channel)"/>
-                </el-form-item>
-                <el-form-item v-if="channel.quota.enabled" label="容量上限 (GB)">
-                    <el-input-number v-model="channel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
-                </el-form-item>
-                <el-form-item v-if="channel.quota.enabled">
-                    <template #label>
-                        阈值 (%)
-                        <el-tooltip content="当已用容量达到此百分比时停止写入，默认95%" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-input-number v-model="channel.quota.threshold" :min="50" :max="100" :step="5"/>
-                </el-form-item>
-                <!-- 容量使用情况显示 -->
-                <el-form-item v-if="channel.quota.enabled && channel.name">
-                    <template #label>
-                        当前用量
-                        <el-button link type="primary" @click="refreshQuota" :loading="quotaLoading" style="margin-left: 8px;">
-                            <font-awesome-icon icon="sync-alt" />
+                    <div class="card-actions">
+                        <el-button text type="primary" size="small" @click="openDetailDialog(channelType.value, index)">
+                            <font-awesome-icon icon="eye" style="margin-right: 4px;"/>详情
                         </el-button>
-                    </template>
-                    <div class="quota-status">
-                        <el-progress 
-                            :percentage="getQuotaPercentage(channel)" 
-                            :status="getQuotaStatus(channel)"
-                            :stroke-width="20"
-                            :text-inside="true"
-                            :format="() => getQuotaText(channel)"
-                        />
-                        <div class="quota-info" :class="{ 'quota-warning': isQuotaExceeded(channel) }">
-                            {{ getQuotaStatusText(channel) }}
-                        </div>
+                        <el-button text type="primary" size="small" @click="openEditDialog(channelType.value, index)">
+                            <font-awesome-icon icon="edit" style="margin-right: 4px;"/>编辑
+                        </el-button>
+                        <el-button text type="danger" size="small" @click="deleteChannel(channelType.value, index)" :disabled="channel.fixed">
+                            <font-awesome-icon icon="trash-alt" style="margin-right: 4px;"/>删除
+                        </el-button>
                     </div>
-                </el-form-item>
-                <!-- 删除 -->
-                <el-form-item>
-                    <el-button type="danger" @click="deleteChannel(index)" size="small" :disabled="channel.fixed">
-                        <font-awesome-icon icon="trash-alt" />
-                    </el-button>
-                </el-form-item>
-            </el-form>
+                </div>
+            </div>
+            <div v-else class="empty-tip">
+                <font-awesome-icon icon="inbox" class="empty-icon"/>
+                <span>暂无 {{ channelType.label }} 渠道</span>
+            </div>
+            <!-- Discord 警告提示 -->
+            <div v-if="channelType.value === 'discord' && getChannelList('discord').length > 0" class="channel-warning">
+                <font-awesome-icon icon="exclamation-triangle" style="margin-right: 6px;"/>
+                Discord 有接口频率限制，不建议将其用作大规模并发场景
+            </div>
         </div>
 
-        <div v-if="activeChannel === 'discord'">
-            <!-- 负载均衡配置 -->
-            <el-form 
-                :model="discordSettings" 
-                label-position="top"
-                class="channel-form"
-            >
-                <el-form-item label="负载均衡">
-                    <el-switch v-model="discordSettings.loadBalance.enabled"/>
+        <!-- 添加渠道弹窗 -->
+        <el-dialog v-model="showAddDialog" title="添加新渠道" width="500px" destroy-on-close @close="resetAddForm">
+            <el-form :model="newChannel" label-position="top" ref="addForm" :rules="addRules">
+                <el-form-item label="渠道类型" prop="type">
+                    <el-select v-model="newChannel.type" placeholder="请选择渠道类型" style="width: 100%;" @change="onChannelTypeChange">
+                        <el-option v-for="ch in addableChannels" :key="ch.value" :label="ch.label" :value="ch.value">
+                            <font-awesome-icon :icon="getChannelIcon(ch.value)" style="margin-right: 8px;"/>
+                            {{ ch.label }}
+                        </el-option>
+                    </el-select>
                 </el-form-item>
-            </el-form>
-
-            <el-form
-                v-for="(channel, index) in discordSettings.channels"
-                :key="index"
-                :model="channel"
-                label-position="top"
-                :rules="discordRules"
-                ref="discordChannelForm"
-                class="channel-form"
-            >
-                <el-form-item label="渠道名" prop="name">
-                    <el-input v-model="channel.name" :disabled="channel.fixed"/>
+                <el-form-item label="渠道名称" prop="name">
+                    <el-input v-model="newChannel.name" placeholder="请输入渠道名称"/>
                 </el-form-item>
-                <el-form-item label="启用渠道" prop="enabled">
-                    <el-switch v-model="channel.enabled"/>
-                </el-form-item>
-                <el-form-item label="Bot Token" prop="botToken">
-                    <el-input v-model="channel.botToken" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
-                <el-form-item label="Channel ID" prop="channelId">
-                    <el-input v-model="channel.channelId" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
-                <el-form-item>
-                    <template #label>
-                        代理域名
-                        <el-tooltip content="可选，用于国内访问 Discord CDN，填写代理域名（不含 https://）" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-input v-model="channel.proxyUrl" placeholder="例如: your-proxy.example.com"/>
-                </el-form-item>
-                <el-form-item>
-                    <template #label>
-                        Nitro 会员
-                        <el-tooltip content="开启后单文件限制提升至 25MB，关闭则为 10MB" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
-                    </template>
-                    <el-switch v-model="channel.isNitro"/>
-                </el-form-item>
-                <el-form-item>
-                    <div class="discord-limit-tip">
-                        <font-awesome-icon icon="info-circle" style="margin-right: 5px;"/>
-                        {{ channel.isNitro ? 'Nitro 会员单文件限制 25MB' : 'Discord 免费用户单文件限制 10MB' }}
-                    </div>
-                </el-form-item>
-                <el-form-item>
-                    <div class="discord-rate-limit-tip">
-                        <font-awesome-icon icon="exclamation-triangle" style="margin-right: 5px;"/>
+                <!-- 根据类型显示不同字段 -->
+                <template v-if="newChannel.type === 'telegram'">
+                    <el-form-item label="Bot Token" prop="botToken">
+                        <el-input v-model="newChannel.botToken" type="password" show-password placeholder="请输入 Bot Token"/>
+                    </el-form-item>
+                    <el-form-item label="Chat ID" prop="chatId">
+                        <el-input v-model="newChannel.chatId" type="password" show-password placeholder="请输入 Chat ID"/>
+                    </el-form-item>
+                    <el-form-item label="代理域名">
+                        <el-input v-model="newChannel.proxyUrl" placeholder="可选，例如: your-proxy.example.com"/>
+                    </el-form-item>
+                </template>
+                <template v-else-if="newChannel.type === 's3'">
+                    <el-form-item label="Endpoint" prop="endpoint">
+                        <el-input v-model="newChannel.endpoint" placeholder="例如: https://s3.us-east-005.backblazeb2.com"/>
+                    </el-form-item>
+                    <el-form-item label="存储桶名称" prop="bucketName">
+                        <el-input v-model="newChannel.bucketName" placeholder="请输入存储桶名称"/>
+                    </el-form-item>
+                    <el-form-item label="存储桶区域" prop="region">
+                        <el-input v-model="newChannel.region" placeholder="默认填写 auto"/>
+                    </el-form-item>
+                    <el-form-item label="访问密钥 ID" prop="accessKeyId">
+                        <el-input v-model="newChannel.accessKeyId" type="password" show-password placeholder="请输入访问密钥 ID"/>
+                    </el-form-item>
+                    <el-form-item label="机密访问密钥" prop="secretAccessKey">
+                        <el-input v-model="newChannel.secretAccessKey" type="password" show-password placeholder="请输入机密访问密钥"/>
+                    </el-form-item>
+                    <el-form-item label="路径风格">
+                        <el-switch v-model="newChannel.pathStyle"/>
+                        <span class="form-tip">使用 OpenList 时需开启</span>
+                    </el-form-item>
+                </template>
+                <template v-else-if="newChannel.type === 'discord'">
+                    <el-form-item label="Bot Token" prop="botToken">
+                        <el-input v-model="newChannel.botToken" type="password" show-password placeholder="请输入 Bot Token"/>
+                    </el-form-item>
+                    <el-form-item label="Channel ID" prop="channelId">
+                        <el-input v-model="newChannel.channelId" type="password" show-password placeholder="请输入 Channel ID"/>
+                    </el-form-item>
+                    <el-form-item label="代理域名">
+                        <el-input v-model="newChannel.proxyUrl" placeholder="可选，例如: your-proxy.example.com"/>
+                    </el-form-item>
+                    <el-form-item label="Nitro 会员">
+                        <el-switch v-model="newChannel.isNitro"/>
+                        <span class="form-tip">开启后单文件限制 25MB</span>
+                    </el-form-item>
+                    <div class="form-warning">
+                        <font-awesome-icon icon="exclamation-triangle" style="margin-right: 6px;"/>
                         Discord 有接口频率限制，不建议将其用作大规模并发场景
                     </div>
-                </el-form-item>
-                <!-- 删除 -->
-                <el-form-item>
-                    <el-button type="danger" @click="deleteChannel(index)" size="small" :disabled="channel.fixed">
-                        <font-awesome-icon icon="trash-alt" />
-                    </el-button>
-                </el-form-item>
+                </template>
+                <template v-else-if="newChannel.type === 'huggingface'">
+                    <el-form-item label="仓库名" prop="repo">
+                        <el-input v-model="newChannel.repo" placeholder="格式: username/repo-name"/>
+                    </el-form-item>
+                    <el-form-item label="Access Token" prop="token">
+                        <el-input v-model="newChannel.token" type="password" show-password placeholder="请输入 Access Token"/>
+                    </el-form-item>
+                    <el-form-item label="私有仓库">
+                        <el-switch v-model="newChannel.isPrivate"/>
+                        <span class="form-tip">私有仓库限制 100GB</span>
+                    </el-form-item>
+                </template>
             </el-form>
-        </div>
+            <template #footer>
+                <el-button @click="showAddDialog = false">取消</el-button>
+                <el-button type="primary" @click="confirmAddChannel">确认添加</el-button>
+            </template>
+        </el-dialog>
 
-        <div v-if="activeChannel === 'huggingface'">
-            <!-- 负载均衡配置 -->
-            <el-form 
-                :model="huggingfaceSettings" 
-                label-position="top"
-                class="channel-form"
-            >
-                <el-form-item label="负载均衡">
-                    <el-switch v-model="huggingfaceSettings.loadBalance.enabled"/>
-                </el-form-item>
-            </el-form>
+        <!-- 详情弹窗 -->
+        <el-dialog v-model="showDetailDialog" :title="'渠道详情 - ' + (currentChannel?.name || '')" width="500px">
+            <el-descriptions :column="1" border>
+                <el-descriptions-item label="渠道名称">{{ currentChannel?.name }}</el-descriptions-item>
+                <el-descriptions-item label="渠道类型">{{ getChannelTypeLabel(currentChannelType) }}</el-descriptions-item>
+                <el-descriptions-item label="状态">
+                    <el-tag :type="currentChannel?.enabled ? 'success' : 'info'">
+                        {{ currentChannel?.enabled ? '已启用' : '已禁用' }}
+                    </el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item v-if="currentChannel?.fixed" label="配置来源">
+                    <el-tag type="warning">环境变量</el-tag>
+                </el-descriptions-item>
+                <template v-if="currentChannelType === 'telegram'">
+                    <el-descriptions-item label="Bot Token">{{ maskText(currentChannel?.botToken, 10) }}</el-descriptions-item>
+                    <el-descriptions-item label="Chat ID">{{ maskText(currentChannel?.chatId, 6) }}</el-descriptions-item>
+                    <el-descriptions-item label="代理域名">{{ currentChannel?.proxyUrl || '未设置' }}</el-descriptions-item>
+                </template>
+                <template v-else-if="currentChannelType === 'cfr2'">
+                    <el-descriptions-item label="公开访问链接">{{ currentChannel?.publicUrl || '未设置' }}</el-descriptions-item>
+                </template>
+                <template v-else-if="currentChannelType === 's3'">
+                    <el-descriptions-item label="Endpoint">{{ currentChannel?.endpoint }}</el-descriptions-item>
+                    <el-descriptions-item label="存储桶名称">{{ currentChannel?.bucketName }}</el-descriptions-item>
+                    <el-descriptions-item label="存储桶区域">{{ currentChannel?.region }}</el-descriptions-item>
+                    <el-descriptions-item label="路径风格">{{ currentChannel?.pathStyle ? '是' : '否' }}</el-descriptions-item>
+                </template>
+                <template v-else-if="currentChannelType === 'discord'">
+                    <el-descriptions-item label="Bot Token">{{ maskText(currentChannel?.botToken, 10) }}</el-descriptions-item>
+                    <el-descriptions-item label="Channel ID">{{ maskText(currentChannel?.channelId, 6) }}</el-descriptions-item>
+                    <el-descriptions-item label="代理域名">{{ currentChannel?.proxyUrl || '未设置' }}</el-descriptions-item>
+                    <el-descriptions-item label="Nitro 会员">{{ currentChannel?.isNitro ? '是' : '否' }}</el-descriptions-item>
+                </template>
+                <template v-else-if="currentChannelType === 'huggingface'">
+                    <el-descriptions-item label="仓库名">{{ currentChannel?.repo }}</el-descriptions-item>
+                    <el-descriptions-item label="私有仓库">{{ currentChannel?.isPrivate ? '是' : '否' }}</el-descriptions-item>
+                </template>
+                <!-- 容量信息 -->
+                <template v-if="currentChannel?.quota?.enabled">
+                    <el-descriptions-item label="容量限制">{{ currentChannel?.quota?.limitGB }} GB</el-descriptions-item>
+                    <el-descriptions-item label="阈值">{{ currentChannel?.quota?.threshold }}%</el-descriptions-item>
+                    <el-descriptions-item>
+                        <template #label>
+                            当前用量
+                            <el-button link type="primary" @click="refreshQuota" :loading="quotaLoading" style="margin-left: 8px;">
+                                <font-awesome-icon icon="sync-alt" />
+                            </el-button>
+                        </template>
+                        <div class="quota-status">
+                            <el-progress
+                                :percentage="getQuotaPercentage(currentChannel)"
+                                :status="getQuotaStatus(currentChannel)"
+                                :stroke-width="16"
+                                :text-inside="true"
+                                :format="() => getQuotaText(currentChannel)"
+                            />
+                            <div class="quota-info" :class="{ 'quota-warning': isQuotaExceeded(currentChannel) }">
+                                {{ getQuotaStatusText(currentChannel) }}
+                            </div>
+                        </div>
+                    </el-descriptions-item>
+                </template>
+            </el-descriptions>
+            <template #footer>
+                <el-button @click="showDetailDialog = false">关闭</el-button>
+                <el-button type="primary" @click="openEditFromDetail">编辑</el-button>
+            </template>
+        </el-dialog>
 
-            <el-form
-                v-for="(channel, index) in huggingfaceSettings.channels"
-                :key="index"
-                :model="channel"
-                label-position="top"
-                :rules="huggingfaceRules"
-                ref="huggingfaceChannelForm"
-                class="channel-form"
-            >
-                <el-form-item label="渠道名" prop="name">
-                    <el-input v-model="channel.name" :disabled="channel.fixed"/>
+        <!-- 编辑弹窗 -->
+        <el-dialog v-model="showEditDialog" :title="'编辑渠道 - ' + (editChannel?.name || '')" width="550px" destroy-on-close>
+            <el-form :model="editChannel" label-position="top" ref="editForm">
+                <el-form-item label="渠道名称">
+                    <el-input v-model="editChannel.name" :disabled="editChannel.fixed"/>
                 </el-form-item>
-                <el-form-item label="启用渠道" prop="enabled">
-                    <el-switch v-model="channel.enabled"/>
+                <el-form-item label="启用渠道">
+                    <el-switch v-model="editChannel.enabled"/>
                 </el-form-item>
-                <el-form-item prop="repo">
-                    <template #label>
-                        仓库名
-                        <el-tooltip content="格式：用户名/仓库名，例如 username/my-images" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
+                <!-- 根据类型显示不同字段 -->
+                <template v-if="currentChannelType === 'telegram'">
+                    <el-form-item label="Bot Token">
+                        <el-input v-model="editChannel.botToken" :disabled="editChannel.fixed" type="password" show-password/>
+                    </el-form-item>
+                    <el-form-item label="Chat ID">
+                        <el-input v-model="editChannel.chatId" :disabled="editChannel.fixed" type="password" show-password/>
+                    </el-form-item>
+                    <el-form-item label="代理域名">
+                        <el-input v-model="editChannel.proxyUrl" placeholder="例如: your-proxy.example.com"/>
+                    </el-form-item>
+                </template>
+                <template v-else-if="currentChannelType === 'cfr2'">
+                    <el-form-item label="公开访问链接">
+                        <el-input v-model="editChannel.publicUrl"/>
+                    </el-form-item>
+                    <el-form-item label="容量限制">
+                        <el-switch v-model="editChannel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, editChannel)"/>
+                    </el-form-item>
+                    <template v-if="editChannel.quota?.enabled">
+                        <el-form-item label="容量上限 (GB)">
+                            <el-input-number v-model="editChannel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
+                        </el-form-item>
+                        <el-form-item label="停用阈值 (%)">
+                            <el-input-number v-model="editChannel.quota.threshold" :min="50" :max="100" :step="5"/>
+                        </el-form-item>
                     </template>
-                    <el-input v-model="channel.repo" :disabled="channel.fixed" placeholder="username/repo-name"/>
-                </el-form-item>
-                <el-form-item label="Access Token" prop="token">
-                    <el-input v-model="channel.token" :disabled="channel.fixed" type="password" show-password autocomplete="new-password"/>
-                </el-form-item>
-                <el-form-item>
-                    <template #label>
-                        私有仓库
-                        <el-tooltip content="开启后仓库将设为私有，访问时需要通过服务器代理" placement="top">
-                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                        </el-tooltip>
+                </template>
+                <template v-else-if="currentChannelType === 's3'">
+                    <el-form-item label="Endpoint">
+                        <el-input v-model="editChannel.endpoint" :disabled="editChannel.fixed"/>
+                    </el-form-item>
+                    <el-form-item label="存储桶名称">
+                        <el-input v-model="editChannel.bucketName" :disabled="editChannel.fixed"/>
+                    </el-form-item>
+                    <el-form-item label="存储桶区域">
+                        <el-input v-model="editChannel.region" :disabled="editChannel.fixed"/>
+                    </el-form-item>
+                    <el-form-item label="访问密钥 ID">
+                        <el-input v-model="editChannel.accessKeyId" :disabled="editChannel.fixed" type="password" show-password/>
+                    </el-form-item>
+                    <el-form-item label="机密访问密钥">
+                        <el-input v-model="editChannel.secretAccessKey" :disabled="editChannel.fixed" type="password" show-password/>
+                    </el-form-item>
+                    <el-form-item label="路径风格">
+                        <el-switch v-model="editChannel.pathStyle" :disabled="editChannel.fixed"/>
+                    </el-form-item>
+                    <el-form-item label="容量限制">
+                        <el-switch v-model="editChannel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, editChannel)"/>
+                    </el-form-item>
+                    <template v-if="editChannel.quota?.enabled">
+                        <el-form-item label="容量上限 (GB)">
+                            <el-input-number v-model="editChannel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
+                        </el-form-item>
+                        <el-form-item label="停用阈值 (%)">
+                            <el-input-number v-model="editChannel.quota.threshold" :min="50" :max="100" :step="5"/>
+                        </el-form-item>
                     </template>
-                    <el-switch v-model="channel.isPrivate"/>
-                </el-form-item>
-                <el-form-item>
-                    <div class="huggingface-tip">
-                        <font-awesome-icon icon="info-circle" style="margin-right: 5px;"/>
-                        {{ channel.isPrivate ? '私有仓库限制 100GB，访问时服务器会代理请求' : '公开仓库无容量限制，文件可直接访问' }}
-                    </div>
-                </el-form-item>
-                <!-- 删除 -->
-                <el-form-item>
-                    <el-button type="danger" @click="deleteChannel(index)" size="small" :disabled="channel.fixed">
-                        <font-awesome-icon icon="trash-alt" />
-                    </el-button>
-                </el-form-item>
+                </template>
+                <template v-else-if="currentChannelType === 'discord'">
+                    <el-form-item label="Bot Token">
+                        <el-input v-model="editChannel.botToken" :disabled="editChannel.fixed" type="password" show-password/>
+                    </el-form-item>
+                    <el-form-item label="Channel ID">
+                        <el-input v-model="editChannel.channelId" :disabled="editChannel.fixed" type="password" show-password/>
+                    </el-form-item>
+                    <el-form-item label="代理域名">
+                        <el-input v-model="editChannel.proxyUrl" placeholder="例如: your-proxy.example.com"/>
+                    </el-form-item>
+                    <el-form-item label="Nitro 会员">
+                        <el-switch v-model="editChannel.isNitro"/>
+                    </el-form-item>
+                </template>
+                <template v-else-if="currentChannelType === 'huggingface'">
+                    <el-form-item label="仓库名">
+                        <el-input v-model="editChannel.repo" :disabled="editChannel.fixed"/>
+                    </el-form-item>
+                    <el-form-item label="Access Token">
+                        <el-input v-model="editChannel.token" :disabled="editChannel.fixed" type="password" show-password/>
+                    </el-form-item>
+                    <el-form-item label="私有仓库">
+                        <el-switch v-model="editChannel.isPrivate"/>
+                    </el-form-item>
+                </template>
             </el-form>
-        </div>
-
-        </div>
-
-        <!-- 操作按钮 -->
-        <div class="actions">
-            <el-button type="primary" @click="addChannel">
-                <font-awesome-icon icon="plus" />
-            </el-button>
-            <el-button type="primary" @click="saveSettings">保存设置</el-button>
-        </div>
+            <template #footer>
+                <el-button @click="showEditDialog = false">取消</el-button>
+                <el-button type="primary" @click="confirmEditChannel">保存修改</el-button>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -396,7 +379,7 @@ import fetchWithAuth from '@/utils/fetchWithAuth';
 export default {
 data() {
     return {
-    // 一级设置：上传渠道
+    // 渠道类型列表
     channels: [
         { value: 'telegram', label: 'Telegram' },
         { value: 'cfr2', label: 'CloudFlare R2' },
@@ -404,298 +387,265 @@ data() {
         { value: 'discord', label: 'Discord' },
         { value: 'huggingface', label: 'HuggingFace' }
     ],
-    activeChannel: 'telegram', // 当前选中的上传渠道
+    // 可添加的渠道类型（排除 cfr2，因为只能通过绑定 R2 或 S3 添加）
+    addableChannels: [
+        { value: 'telegram', label: 'Telegram' },
+        { value: 's3', label: 'S3' },
+        { value: 'discord', label: 'Discord' },
+        { value: 'huggingface', label: 'HuggingFace' }
+    ],
 
-    // 二级设置：Telegram 配置
-    telegramSettings: {
-        loadBalance: {},
-        channels: []
+    // 各渠道配置
+    telegramSettings: { loadBalance: { enabled: false }, channels: [] },
+    cfr2Settings: { channels: [] },
+    s3Settings: { loadBalance: { enabled: false }, channels: [] },
+    discordSettings: { loadBalance: { enabled: false }, channels: [] },
+    huggingfaceSettings: { loadBalance: { enabled: false }, channels: [] },
+
+    // 弹窗控制
+    showAddDialog: false,
+    showDetailDialog: false,
+    showEditDialog: false,
+
+    // 当前操作的渠道
+    currentChannelType: '',
+    currentChannelIndex: -1,
+    currentChannel: null,
+    editChannel: {},
+
+    // 新增渠道表单
+    newChannel: {
+        type: '',
+        name: '',
+        enabled: true,
+        // Telegram
+        botToken: '',
+        chatId: '',
+        proxyUrl: '',
+        // S3
+        endpoint: '',
+        bucketName: '',
+        region: 'auto',
+        accessKeyId: '',
+        secretAccessKey: '',
+        pathStyle: false,
+        // Discord
+        channelId: '',
+        isNitro: false,
+        // HuggingFace
+        repo: '',
+        token: '',
+        isPrivate: false
     },
 
-    tgRules: {
-        name: [
-            { required: true, message: '请输入渠道名', trigger: 'blur' },
-            { validator: (rule, value, callback) => {
-                const names = this.telegramSettings.channels.map((item) => item.name);
-                if (names.filter((name) => name === value).length > 1) {
-                    callback(new Error('渠道名不能重复'));
-                } else if (value === 'Telegram_env') {
-                    // 判断该渠道保存位置是否为环境变量
-                    const savePath = this.telegramSettings.channels.find((item) => item.name === value).savePath;
-                    if (savePath !== 'environment variable') {
-                        callback(new Error('渠道名不能为保留值'));
-                    } else {
-                        callback();
-                    }
-                } else {
-                    callback();
-                }
-            }, trigger: 'blur' }
-        ],
-        botToken: [
-            { required: true, message: '请输入 Bot Token', trigger: 'blur' }
-        ],
-        chatId: [
-            { required: true, message: '请输入 Chat ID', trigger: 'blur' }
-        ]
-    },
-
-    // 二级设置：CFR2 配置
-    cfr2Settings: {
-        channels: []
-    },
-
-    // 二级设置：S3 配置
-    s3Settings: {
-        loadBalance: {},
-        channels: []
-    },
-
-    // 二级设置：Discord 配置
-    discordSettings: {
-        loadBalance: {},
-        channels: []
-    },
-
-    // 二级设置：HuggingFace 配置
-    huggingfaceSettings: {
-        loadBalance: {},
-        channels: []
-    },
-
-    huggingfaceRules: {
-        name: [
-            { required: true, message: '请输入渠道名', trigger: 'blur' },
-            { validator: (rule, value, callback) => {
-                const names = this.huggingfaceSettings.channels.map((item) => item.name);
-                if (names.filter((name) => name === value).length > 1) {
-                    callback(new Error('渠道名不能重复'));
-                } else if (value === 'HuggingFace_env') {
-                    const savePath = this.huggingfaceSettings.channels.find((item) => item.name === value).savePath;
-                    if (savePath !== 'environment variable') {
-                        callback(new Error('渠道名不能为保留值'));
-                    } else {
-                        callback();
-                    }
-                } else {
-                    callback();
-                }
-            }, trigger: 'blur' }
-        ],
-        token: [
-            { required: true, message: '请输入 Access Token', trigger: 'blur' }
-        ],
-        repo: [
-            { required: true, message: '请输入仓库名', trigger: 'blur' }
-        ]
-    },
-
-    discordRules: {
-        name: [
-            { required: true, message: '请输入渠道名', trigger: 'blur' },
-            { validator: (rule, value, callback) => {
-                const names = this.discordSettings.channels.map((item) => item.name);
-                if (names.filter((name) => name === value).length > 1) {
-                    callback(new Error('渠道名不能重复'));
-                } else if (value === 'Discord_env') {
-                    const savePath = this.discordSettings.channels.find((item) => item.name === value).savePath;
-                    if (savePath !== 'environment variable') {
-                        callback(new Error('渠道名不能为保留值'));
-                    } else {
-                        callback();
-                    }
-                } else {
-                    callback();
-                }
-            }, trigger: 'blur' }
-        ],
-        botToken: [
-            { required: true, message: '请输入 Bot Token', trigger: 'blur' }
-        ],
-        channelId: [
-            { required: true, message: '请输入 Channel ID', trigger: 'blur' }
-        ]
+    // 添加表单验证规则
+    addRules: {
+        type: [{ required: true, message: '请选择渠道类型', trigger: 'change' }],
+        name: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
+        botToken: [{ required: true, message: '请输入 Bot Token', trigger: 'blur' }],
+        chatId: [{ required: true, message: '请输入 Chat ID', trigger: 'blur' }],
+        channelId: [{ required: true, message: '请输入 Channel ID', trigger: 'blur' }],
+        endpoint: [{ required: true, message: '请输入 Endpoint', trigger: 'blur' }],
+        bucketName: [{ required: true, message: '请输入存储桶名称', trigger: 'blur' }],
+        region: [{ required: true, message: '请输入存储桶区域', trigger: 'blur' }],
+        accessKeyId: [{ required: true, message: '请输入访问密钥 ID', trigger: 'blur' }],
+        secretAccessKey: [{ required: true, message: '请输入机密访问密钥', trigger: 'blur' }],
+        repo: [{ required: true, message: '请输入仓库名', trigger: 'blur' }],
+        token: [{ required: true, message: '请输入 Access Token', trigger: 'blur' }]
     },
 
     // 容量统计数据
     quotaStats: {},
     quotaLoading: false,
 
-    s3Rules: {
-        name: [
-            { required: true, message: '请输入渠道名', trigger: 'blur' },
-            { validator: (rule, value, callback) => {
-                const names = this.s3Settings.channels.map((item) => item.name);
-                if (names.filter((name) => name === value).length > 1) {
-                    callback(new Error('渠道名不能重复'));
-                } else if (value === 'S3_env') {
-                    // 判断该渠道保存位置是否为环境变量
-                    const savePath = this.s3Settings.channels.find((item) => item.name === value).savePath;
-                    if (savePath !== 'environment variable') {   
-                        callback(new Error('渠道名不能为保留值'));
-                    } else {
-                        callback();
-                    }
-                } else {
-                    callback();
-                }
-            }, trigger: 'blur' }
-        ],
-        endpoint: [
-            { required: true, message: '请输入 Endpoint', trigger: 'blur' }
-        ],
-        bucketName: [
-            { required: true, message: '请输入存储桶名称', trigger: 'blur' }
-        ],
-        region: [
-            { required: true, message: '请输入存储桶区域', trigger: 'blur' }
-        ],
-        accessKeyId: [
-            { required: true, message: '请输入访问密钥 ID', trigger: 'blur' }
-        ],
-        secretAccessKey: [
-            { required: true, message: '请输入机密访问密钥', trigger: 'blur' }
-        ]
-    },
-
     // 加载状态
     loading: false
-
     };
 },
-computed: {
-    // 当前选中渠道的标签
-    activeChannelLabel() {
-        const channel = this.channels.find(
-            (item) => item.value === this.activeChannel
-        );
-        return channel ? channel.label : '';
-    }
-},
+computed: {},
 methods: {
-    addChannel() {
-        switch (this.activeChannel) {
-            case 'telegram':
-                this.telegramSettings.channels.push({
-                    id: this.telegramSettings.channels.length + 1,
-                    name: '',
-                    type: 'telegram',
-                    savePath: 'database',
-                    botToken: '',
-                    chatId: '',
-                    enabled: true,
-                    fixed: false
-                });
-                break;
-            case 'cfr2':
-                // this.cfr2Settings.channels.push({
-                //     id: this.cfr2Settings.channels.length + 1,
-                //     name: '',
-                //     type: 'cfr2',
-                //     savePath: 'database',
-                //     enabled: true,
-                //     fixed: false
-                // });
-                this.$message.error('R2渠道请通过绑定 R2 存储桶或通过 S3 渠道添加');
-                break;
-            case 's3':
-                this.s3Settings.channels.push({
-                    id: this.s3Settings.channels.length + 1,
-                    name: '',
-                    type: 's3',
-                    savePath: 'database',
-                    accessKeyId: '',
-                    secretAccessKey: '',
-                    region: '',
-                    bucketName: '',
-                    endpoint: '',
-                    pathStyle: false,
-                    enabled: true,
-                    fixed: false,
-                    quota: {
-                        enabled: false,
-                        limitGB: 10,
-                        threshold: 95
-                    }
-                });
-                break;
-            case 'discord':
-                this.discordSettings.channels.push({
-                    id: this.discordSettings.channels.length + 1,
-                    name: '',
-                    type: 'discord',
-                    savePath: 'database',
-                    botToken: '',
-                    channelId: '',
-                    proxyUrl: '',
-                    isNitro: false,
-                    enabled: true,
-                    fixed: false
-                });
-                break;
-            case 'huggingface':
-                this.huggingfaceSettings.channels.push({
-                    id: this.huggingfaceSettings.channels.length + 1,
-                    name: '',
-                    type: 'huggingface',
-                    savePath: 'database',
-                    token: '',
-                    repo: '',
-                    isPrivate: false,
-                    enabled: true,
-                    fixed: false
-                });
-                break;
-        }
+    // 获取渠道图标
+    getChannelIcon(type) {
+        const icons = {
+            telegram: 'paper-plane',
+            cfr2: 'cloud',
+            s3: 'database',
+            discord: 'comments',
+            huggingface: 'robot'
+        };
+        return icons[type] || 'server';
     },
-    deleteChannel(index) {
-        switch (this.activeChannel) {
-            case 'telegram':
-                // 调整 id
-                this.telegramSettings.channels.forEach((item, i) => {
-                    if (i > index) {
-                        item.id -= 1;
-                    }
-                });
-                this.telegramSettings.channels.splice(index, 1);
-                break;
-            case 'cfr2':
-                // 调整 id
-                this.cfr2Settings.channels.forEach((item, i) => {
-                    if (i > index) {
-                        item.id -= 1;
-                    }
-                });
-                this.cfr2Settings.channels.splice(index, 1);
-                break;
-            case 's3':
-                // 调整 id
-                this.s3Settings.channels.forEach((item, i) => {
-                    if (i > index) {
-                        item.id -= 1;
-                    }
-                });
-                this.s3Settings.channels.splice(index, 1);
-                break;
-            case 'discord':
-                // 调整 id
-                this.discordSettings.channels.forEach((item, i) => {
-                    if (i > index) {
-                        item.id -= 1;
-                    }
-                });
-                this.discordSettings.channels.splice(index, 1);
-                break;
-            case 'huggingface':
-                // 调整 id
-                this.huggingfaceSettings.channels.forEach((item, i) => {
-                    if (i > index) {
-                        item.id -= 1;
-                    }
-                });
-                this.huggingfaceSettings.channels.splice(index, 1);
-                break;
+    // 获取渠道类型标签
+    getChannelTypeLabel(type) {
+        const channel = this.channels.find(c => c.value === type);
+        return channel ? channel.label : type;
+    },
+    // 获取渠道列表
+    getChannelList(type) {
+        return this.getSettings(type)?.channels || [];
+    },
+    // 获取渠道设置对象
+    getSettings(type) {
+        const map = {
+            telegram: this.telegramSettings,
+            cfr2: this.cfr2Settings,
+            s3: this.s3Settings,
+            discord: this.discordSettings,
+            huggingface: this.huggingfaceSettings
+        };
+        return map[type];
+    },
+    // 是否有负载均衡选项
+    hasLoadBalance(type) {
+        return ['telegram', 's3', 'discord', 'huggingface'].includes(type);
+    },
+    // 文本脱敏
+    maskText(text, showLength = 4) {
+        if (!text) return '未设置';
+        if (text.length <= showLength * 2) return '****';
+        return text.slice(0, showLength) + '****' + text.slice(-showLength);
+    },
+    // 打开详情弹窗
+    openDetailDialog(type, index) {
+        this.currentChannelType = type;
+        this.currentChannelIndex = index;
+        this.currentChannel = this.getChannelList(type)[index];
+        this.showDetailDialog = true;
+    },
+    // 打开编辑弹窗
+    openEditDialog(type, index) {
+        this.currentChannelType = type;
+        this.currentChannelIndex = index;
+        const channel = this.getChannelList(type)[index];
+        this.editChannel = JSON.parse(JSON.stringify(channel));
+        // 确保 quota 对象存在
+        if (!this.editChannel.quota) {
+            this.editChannel.quota = { enabled: false, limitGB: 10, threshold: 95 };
         }
+        this.showEditDialog = true;
+    },
+    // 从详情页打开编辑
+    openEditFromDetail() {
+        this.showDetailDialog = false;
+        this.openEditDialog(this.currentChannelType, this.currentChannelIndex);
+    },
+    // 重置添加表单
+    resetAddForm() {
+        this.newChannel = {
+            type: '', name: '', enabled: true,
+            botToken: '', chatId: '', proxyUrl: '',
+            endpoint: '', bucketName: '', region: 'auto',
+            accessKeyId: '', secretAccessKey: '', pathStyle: false,
+            channelId: '', isNitro: false,
+            repo: '', token: '', isPrivate: false
+        };
+    },
+    // 渠道类型变更时重置表单
+    onChannelTypeChange() {
+        // 保留 type 和 name，重置其他字段
+        const { type, name } = this.newChannel;
+        this.newChannel = {
+            type,
+            name,
+            enabled: true,
+            botToken: '',
+            chatId: '',
+            proxyUrl: '',
+            endpoint: '',
+            bucketName: '',
+            region: 'auto',
+            accessKeyId: '',
+            secretAccessKey: '',
+            pathStyle: false,
+            channelId: '',
+            isNitro: false,
+            repo: '',
+            token: '',
+            isPrivate: false
+        };
+    },
+    // 确认添加渠道
+    confirmAddChannel() {
+        this.$refs.addForm.validate((valid) => {
+            if (!valid) return;
+
+            const { type } = this.newChannel;
+            const settings = this.getSettings(type);
+
+            let newChannelData = {
+                id: settings.channels.length + 1,
+                name: this.newChannel.name,
+                type: type,
+                savePath: 'database',
+                enabled: true,
+                fixed: false
+            };
+
+            // 根据类型添加特定字段
+            if (type === 'telegram') {
+                Object.assign(newChannelData, {
+                    botToken: this.newChannel.botToken,
+                    chatId: this.newChannel.chatId,
+                    proxyUrl: this.newChannel.proxyUrl
+                });
+            } else if (type === 's3') {
+                Object.assign(newChannelData, {
+                    endpoint: this.newChannel.endpoint,
+                    bucketName: this.newChannel.bucketName,
+                    region: this.newChannel.region,
+                    accessKeyId: this.newChannel.accessKeyId,
+                    secretAccessKey: this.newChannel.secretAccessKey,
+                    pathStyle: this.newChannel.pathStyle,
+                    quota: { enabled: false, limitGB: 10, threshold: 95 }
+                });
+            } else if (type === 'discord') {
+                Object.assign(newChannelData, {
+                    botToken: this.newChannel.botToken,
+                    channelId: this.newChannel.channelId,
+                    proxyUrl: this.newChannel.proxyUrl,
+                    isNitro: this.newChannel.isNitro
+                });
+            } else if (type === 'huggingface') {
+                Object.assign(newChannelData, {
+                    repo: this.newChannel.repo,
+                    token: this.newChannel.token,
+                    isPrivate: this.newChannel.isPrivate
+                });
+            }
+
+            settings.channels.push(newChannelData);
+            this.showAddDialog = false;
+            // 自动保存全部设置
+            this.saveSettings();
+        });
+    },
+    // 确认编辑渠道
+    confirmEditChannel() {
+        const settings = this.getSettings(this.currentChannelType);
+        settings.channels[this.currentChannelIndex] = { ...this.editChannel };
+        this.showEditDialog = false;
+        // 自动保存全部设置
+        this.saveSettings();
+    },
+    // 删除渠道
+    deleteChannel(type, index) {
+        const channel = this.getChannelList(type)[index];
+        if (channel.fixed) {
+            this.$message.warning('环境变量配置的渠道无法删除');
+            return;
+        }
+        this.$confirm('确定要删除该渠道吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+            const settings = this.getSettings(type);
+            settings.channels.splice(index, 1);
+            // 重新调整 id
+            settings.channels.forEach((item, i) => { item.id = i + 1; });
+            // 自动保存
+            this.saveSettings();
+        }).catch(() => {});
     },
     saveSettings() {
         // 所有表单的 Promise 数组
@@ -949,129 +899,243 @@ mounted() {
     min-height: 500px;
 }
 
-.upload-channel {
-    margin-bottom: 40px;
+/* 页面头部 */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .first-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 16px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
 }
 
-/* 渠道切换按钮组美化 */
-.upload-channel :deep(.el-radio-group) {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.upload-channel :deep(.el-radio) {
-    display: flex;
-    align-items: center;
-    padding: 10px 20px;
-    border-radius: 10px;
-    background: var(--el-fill-color-light);
-    border: 1px solid var(--el-border-color-lighter);
-    transition: all 0.25s ease;
-    margin-right: 0;
-    height: auto;
-}
-
-.upload-channel :deep(.el-radio:hover) {
-    border-color: var(--el-color-primary-light-5);
-    background: var(--el-fill-color);
-}
-
-.upload-channel :deep(.el-radio.is-checked) {
-    background: linear-gradient(135deg, rgba(64, 158, 255, 0.15) 0%, rgba(56, 189, 248, 0.1) 100%);
-    border-color: var(--el-color-primary);
-    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
-}
-
-.upload-channel :deep(.el-radio__input) {
-    display: none;
-}
-
-.upload-channel :deep(.el-radio__label) {
-    padding-left: 0;
-    font-weight: 500;
+.help-icon {
+    cursor: pointer;
+    color: var(--el-text-color-secondary);
     font-size: 14px;
 }
 
-.second-title {
-    text-align: start;
-    margin-left: 0;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
+.add-btn {
+    border-radius: 8px;
 }
 
-.channel-settings {
-    margin-top: 20px;
-}
-
-/* 表单样式 - 上下排列左对齐 */
-.channel-form {
-    margin-bottom: 30px;
-    padding: 20px;
-    background: var(--el-fill-color-lighter);
-    border-radius: 12px;
-    border: 1px solid var(--el-border-color-lighter);
-}
-
-.channel-form :deep(.el-form-item) {
-    margin-bottom: 20px;
+.header-actions {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.channel-form :deep(.el-form-item__label) {
-    text-align: left;
-    padding-bottom: 8px;
-    font-weight: 500;
-    color: var(--el-text-color-primary);
-}
-
-.channel-form :deep(.el-form-item__content) {
-    width: 100%;
-    max-width: 400px;
-}
-
-.channel-form :deep(.el-input) {
-    width: 100%;
-}
-
-.channel-form :deep(.el-switch) {
-    --el-switch-on-color: var(--el-color-primary);
-}
-
-.actions {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
     gap: 12px;
 }
 
-.actions :deep(.el-button) {
+.header-actions :deep(.el-button) {
     border-radius: 8px;
-    padding: 10px 20px;
 }
 
-/* 容量状态样式 */
+/* 渠道分组 */
+.channel-group {
+    margin-bottom: 32px;
+    background: var(--el-bg-color);
+    border-radius: 12px;
+    border: 1px solid var(--el-border-color-lighter);
+    overflow: hidden;
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--el-fill-color-lighter);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+}
+
+.group-icon {
+    font-size: 18px;
+    color: var(--el-color-primary);
+}
+
+.channel-count {
+    font-size: 12px;
+}
+
+.load-balance-switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.switch-label {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+}
+
+/* 渠道卡片网格 */
+.channel-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 20px;
+}
+
+/* 单个渠道卡片 */
+.channel-card {
+    background: var(--el-bg-color);
+    border-radius: 10px;
+    border: 1px solid var(--el-border-color-lighter);
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.channel-card:hover {
+    border-color: var(--el-color-primary-light-5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.channel-card.disabled {
+    opacity: 0.6;
+    background: var(--el-fill-color-lighter);
+}
+
+.channel-card.fixed {
+    border-left: 3px solid var(--el-color-warning);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--el-fill-color-lighter);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.channel-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+}
+
+.card-body {
+    padding: 14px 16px;
+    min-height: 60px;
+}
+
+.card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+}
+
+.info-icon {
+    width: 14px;
+    color: var(--el-text-color-placeholder);
+}
+
+/* 容量迷你进度条 */
+.quota-mini {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--el-border-color-lighter);
+}
+
+.quota-mini :deep(.el-progress) {
+    margin-bottom: 4px;
+}
+
+.quota-text {
+    font-size: 11px;
+    color: var(--el-text-color-secondary);
+}
+
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--el-border-color-lighter);
+    background: var(--el-fill-color-blank);
+}
+
+/* 空状态提示 */
+.empty-tip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: var(--el-text-color-placeholder);
+    gap: 12px;
+}
+
+.empty-icon {
+    font-size: 32px;
+}
+
+/* 渠道警告提示 */
+.channel-warning {
+    margin: 0 20px 16px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--el-color-warning);
+    background: var(--el-color-warning-light-9);
+    border-radius: 6px;
+    border-left: 3px solid var(--el-color-warning);
+}
+
+/* 表单提示 */
+.form-tip {
+    margin-left: 12px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+}
+
+/* 表单内警告 */
+.form-warning {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--el-color-warning);
+    background: var(--el-color-warning-light-9);
+    border-radius: 6px;
+    border-left: 3px solid var(--el-color-warning);
+    margin-top: 8px;
+}
+
+/* 弹窗内容量状态 */
 .quota-status {
     width: 100%;
-    max-width: 400px;
 }
 
 .quota-status :deep(.el-progress) {
     margin-bottom: 8px;
-}
-
-.quota-status :deep(.el-progress-bar__inner) {
-    transition: width 0.5s ease;
 }
 
 .quota-info {
@@ -1088,62 +1152,26 @@ mounted() {
     font-weight: 500;
 }
 
-/* Discord 限制提示 */
-.discord-limit-tip {
-    font-size: 13px;
-    color: var(--el-color-info);
-    padding: 10px 14px;
-    background: var(--el-color-info-light-9);
-    border-radius: 6px;
-    border-left: 3px solid var(--el-color-info);
-}
-
-/* Discord 频率限制警告 */
-.discord-rate-limit-tip {
-    font-size: 13px;
-    color: var(--el-color-warning);
-    padding: 10px 14px;
-    background: var(--el-color-warning-light-9);
-    border-radius: 6px;
-    border-left: 3px solid var(--el-color-warning);
-}
-
-/* HuggingFace 提示 */
-.huggingface-tip {
-    font-size: 13px;
-    color: var(--el-color-info);
-    padding: 10px 14px;
-    background: var(--el-color-info-light-9);
-    border-radius: 6px;
-    border-left: 3px solid var(--el-color-info);
-    white-space: nowrap;
-}
-
 /* 移动端适配 */
 @media (max-width: 768px) {
     .upload-settings {
-        padding: 15px;
-    }
-    
-    .upload-channel :deep(.el-radio-group) {
-        gap: 8px;
-    }
-    
-    .upload-channel :deep(.el-radio) {
-        padding: 8px 14px;
-        font-size: 13px;
-    }
-    
-    .channel-form {
-        padding: 15px;
-    }
-    
-    .channel-form :deep(.el-form-item__content) {
-        max-width: 100%;
+        padding: 12px;
     }
 
-    .quota-status {
-        max-width: 100%;
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .channel-cards {
+        grid-template-columns: 1fr;
+        padding: 12px;
+    }
+
+    .group-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
     }
 }
 </style>

@@ -351,7 +351,7 @@
             </div>
             </el-main>
         </el-container>
-        <el-dialog title="文件详情" v-model="showdetailDialog" :width="dialogWidth">
+        <el-dialog title="文件详情" v-model="showdetailDialog" :width="detailDialogWidth">
             <div class="detail-actions">
                 <el-button type="primary" @click="handleDownload(detailFile?.name)" round size="small" class="detail-action">
                     <font-awesome-icon icon="download" style="margin-right: 3px;"></font-awesome-icon> 下载
@@ -682,6 +682,9 @@ computed: {
     },
     dialogWidth() {
         return window.innerWidth > 768 ? '50%' : '90%';
+    },
+    detailDialogWidth() {
+        return window.innerWidth > 768 ? '70%' : '90%';
     },
     accessType() {
         if (this.detailFile?.metadata?.ListType === 'White') {
