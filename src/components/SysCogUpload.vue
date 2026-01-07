@@ -39,7 +39,7 @@
                     v-for="(channel, index) in getChannelList(channelType.value)"
                     :key="channel.name || index"
                     class="channel-card"
-                    :class="{ 'disabled': !channel.enabled, 'fixed': channel.fixed }"
+                    :class="[channelType.value, { 'disabled': !channel.enabled, 'fixed': channel.fixed }]"
                 >
                     <div class="card-header">
                         <div class="card-title">
@@ -118,7 +118,7 @@
         </div>
 
         <!-- 添加渠道弹窗 -->
-        <el-dialog v-model="showAddDialog" title="添加新渠道" width="500px" destroy-on-close @close="resetAddForm">
+        <el-dialog v-model="showAddDialog" title="添加新渠道" class="channel-dialog" destroy-on-close @close="resetAddForm">
             <el-form :model="newChannel" label-position="top" ref="addForm" :rules="addRules">
                 <el-form-item label="渠道类型" prop="type">
                     <el-select v-model="newChannel.type" placeholder="请选择渠道类型" style="width: 100%;" @change="onChannelTypeChange">
@@ -203,7 +203,7 @@
         </el-dialog>
 
         <!-- 详情弹窗 -->
-        <el-dialog v-model="showDetailDialog" :title="'渠道详情 - ' + (currentChannel?.name || '')" width="500px">
+        <el-dialog v-model="showDetailDialog" :title="'渠道详情 - ' + (currentChannel?.name || '')" class="channel-dialog">
             <el-descriptions :column="1" border>
                 <el-descriptions-item label="渠道名称">{{ currentChannel?.name }}</el-descriptions-item>
                 <el-descriptions-item label="渠道类型">{{ getChannelTypeLabel(currentChannelType) }}</el-descriptions-item>
@@ -272,7 +272,7 @@
         </el-dialog>
 
         <!-- 编辑弹窗 -->
-        <el-dialog v-model="showEditDialog" :title="'编辑渠道 - ' + (editChannel?.name || '')" width="550px" destroy-on-close>
+        <el-dialog v-model="showEditDialog" :title="'编辑渠道 - ' + (editChannel?.name || '')" class="channel-dialog" destroy-on-close>
             <el-form :model="editChannel" label-position="top" ref="editForm">
                 <el-form-item label="渠道名称">
                     <el-input v-model="editChannel.name" :disabled="editChannel.fixed"/>
@@ -996,13 +996,14 @@ mounted() {
 .channel-card {
     background: var(--el-bg-color);
     border-radius: 10px;
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid var(--el-border-color-extra-light);
+    border-left: 3px solid var(--el-border-color-light);
     transition: all 0.25s ease;
     overflow: hidden;
 }
 
 .channel-card:hover {
-    border-color: var(--el-color-primary-light-5);
+    border-color: var(--el-border-color-light);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
@@ -1011,8 +1012,30 @@ mounted() {
     background: var(--el-fill-color-lighter);
 }
 
+/* 渠道类型边缘颜色 */
+.channel-card.telegram {
+    border-left-color: #54a9eb;
+}
+
+.channel-card.cfr2 {
+    border-left-color: #f6821f;
+}
+
+.channel-card.s3 {
+    border-left-color: #569a31;
+}
+
+.channel-card.discord {
+    border-left-color: #5865f2;
+}
+
+.channel-card.huggingface {
+    border-left-color: #ffd21e;
+}
+
 .channel-card.fixed {
-    border-left: 3px solid var(--el-color-warning);
+    border-left-width: 3px;
+    border-left-style: dashed;
 }
 
 .card-header {
@@ -1172,6 +1195,18 @@ mounted() {
         flex-direction: column;
         gap: 12px;
         align-items: flex-start;
+    }
+}
+
+/* 弹窗响应式宽度 */
+:deep(.channel-dialog) {
+    width: 600px !important;
+    max-width: 90vw !important;
+}
+
+@media (max-width: 768px) {
+    :deep(.channel-dialog) {
+        width: 90vw !important;
     }
 }
 </style>
