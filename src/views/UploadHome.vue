@@ -865,6 +865,9 @@ export default {
         height: 2rem;
         right: 110px;
     }
+    .upload-folder.no-announcement {
+        right: 110px;
+    }
     .upload-folder.active {
         width: 120px;
     }
