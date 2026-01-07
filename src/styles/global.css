@@ -441,39 +441,39 @@
 }
 
 /* ==============================
-   Element UI Message Beautification
+   Element Plus 消息提示美化
    ============================== */
 .el-message {
     border-radius: 50px !important;
-    /* Pill shape */
+    /* 胶囊形状 */
     border: none !important;
     padding: 10px 30px !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     background-color: rgba(40, 40, 40, 0.85) !important;
-    /* Dark toast for Light Mode (High Contrast) */
+    /* 亮色模式下使用深色背景（高对比度） */
     min-width: unset !important;
-    /* Allow it to fit content better */
+    /* 允许自适应内容宽度 */
     top: 30px !important;
 }
 
 .el-message .el-message__icon {
     font-size: 18px !important;
     color: #fff !important;
-    /* White icons */
+    /* 白色图标 */
 }
 
 .el-message .el-message__content {
     font-size: 16px !important;
     font-weight: 500 !important;
     color: #fff !important;
-    /* White text */
+    /* 白色文字 */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     letter-spacing: 0.5px;
 }
 
-/* Specific overrides for types if needed to maintain color coding but keep the style */
+/* 不同类型消息的图标颜色 */
 .el-message--success .el-message__icon {
     color: #67c23a !important;
 }
@@ -486,16 +486,20 @@
     color: #f56c6c !important;
 }
 
-/* In dark mode, use a lighter background to contrast with the dark page */
+/* 暗色模式下使用浅色背景与深色页面形成对比 */
 .dark .el-message {
     background-color: rgba(255, 255, 255, 0.2) !important;
-    /* Lighter Glass for Dark Mode */
+    /* 暗色模式下的毛玻璃效果 */
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    /* Subtle border */
+    /* 细微边框 */
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* 弹窗现代化样式 */
+/* ==============================
+   弹窗现代化样式
+   ============================== */
+
+/* 弹窗区块样式 */
 .dialog-section {
     margin-bottom: 24px;
     background: var(--el-fill-color-lighter);
@@ -504,6 +508,7 @@
     border: 1px solid var(--el-border-color-lighter);
 }
 
+/* 区块标题 */
 .section-header {
     display: flex;
     align-items: center;
@@ -519,6 +524,7 @@
     color: var(--el-text-color-primary);
 }
 
+/* 区块帮助图标 */
 .section-help-icon {
     color: var(--el-text-color-secondary);
     cursor: pointer;
@@ -530,19 +536,23 @@
     color: var(--el-color-primary);
 }
 
+/* 区块内容 */
 .section-content {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-/* 卡片式单选组 */
+/* ==============================
+   卡片式单选组样式
+   ============================== */
 .radio-card-group {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 }
 
+/* 单选卡片基础样式 */
 .radio-card-group .radio-card {
     margin-right: 0;
     padding: 10px 16px;
@@ -552,19 +562,23 @@
     transition: all 0.2s ease;
 }
 
+/* 单选卡片悬浮效果 */
 .radio-card-group .radio-card:hover {
     border-color: var(--el-color-primary-light-5);
 }
 
+/* 单选卡片选中状态 */
 .radio-card-group .radio-card.is-checked {
     background: linear-gradient(135deg, rgba(64, 158, 255, 0.1) 0%, rgba(56, 189, 248, 0.05) 100%);
     border-color: var(--el-color-primary);
 }
 
+/* 隐藏原生单选按钮 */
 .radio-card-group .el-radio__input {
     display: none;
 }
 
+/* 单选标签样式 */
 .radio-card-group .el-radio__label {
     padding-left: 0;
     font-weight: 500;
@@ -573,7 +587,9 @@
     gap: 8px;
 }
 
-/* 设置项布局 */
+/* ==============================
+   设置项布局样式
+   ============================== */
 .setting-item {
     display: flex;
     align-items: center;
@@ -584,12 +600,14 @@
     border: 1px solid var(--el-border-color-lighter);
 }
 
+/* 设置项标签 */
 .setting-label {
     font-size: 14px;
     font-weight: 500;
     color: var(--el-text-color-primary);
 }
 
+/* 设置项输入框 */
 .setting-input {
     width: 60%;
     max-width: 250px;
@@ -624,10 +642,12 @@
         font-size: 13px !important;
     }
 
+    /* 弹窗区块移动端样式 */
     .dialog-section {
         padding: 12px;
     }
 
+    /* 单选组移动端样式 */
     .radio-card-group {
         flex-direction: column;
     }
@@ -637,10 +657,15 @@
         text-align: center;
     }
 
+    /* 设置项移动端样式 */
     .setting-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
+    }
+
+    .setting-item .radio-card-group.compact {
+        width: 100%;
     }
 
     .setting-input {
@@ -648,16 +673,37 @@
         max-width: none;
     }
 
-    .slider-wrapper {
+    /* 紧凑型单选组移动端样式 - 两列网格 */
+    .radio-card-group.compact {
+        flex-direction: row;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
         width: 100%;
     }
 
-    .radio-card-group.compact {
-        flex-direction: row;
+    .radio-card-group.compact .radio-card {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+        flex: 1;
+    }
+
+    .radio-card-group.compact .radio-card .el-radio__label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .radio-card-group.compact .channel-icon {
+        width: 16px;
+        text-align: center;
+        flex-shrink: 0;
     }
 }
 
-/* 滑动条样式 */
+/* 滑动条样式（压缩阈值等） */
 .slider-item {
     flex-direction: column;
     align-items: flex-start;
@@ -698,70 +744,11 @@
     color: var(--el-text-color-secondary);
 }
 
-/* 行内帮助图标 */
-.inline-help-icon {
-    color: var(--el-text-color-secondary);
-    cursor: pointer;
-    font-size: 13px;
-    margin-left: 6px;
-    transition: color 0.2s;
-}
-
-.inline-help-icon:hover {
-    color: var(--el-color-primary);
-}
-
-/* 紧凑型单选组 */
-.radio-card-group.compact {
-    gap: 8px;
-}
-
-.radio-card-group.compact .radio-card {
-    padding: 8px 12px;
-    font-size: 13px;
-}
-
-/* 2x2 网格布局 */
-.radio-card-group.grid-2x2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-}
-
-.radio-card-group.grid-2x2 .radio-card {
-    width: 100%;
-    /* 修复宽度溢出 */
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
-    /* 防止文本换行导致布局错乱 */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-left: 20px;
-    /* Increase padding for better visual balance */
-}
-
-/* 单选按钮图标 */
-.radio-icon {
-    font-size: 14px;
-    opacity: 0.8;
-    width: 20px;
-    /* Fixed width for alignment */
-    text-align: center;
-    display: inline-block;
-}
-
-.radio-card.is-checked .radio-icon {
-    opacity: 1;
-}
-
-/* 移动端滑动条修复 */
+/* 移动端适配 */
 @media (max-width: 768px) {
     .slider-wrapper {
         gap: 8px;
+        width: 100%;
     }
 
     .slider-input {
@@ -789,43 +776,145 @@
     }
 }
 
-/* Global Dialog & Message Box Glassmorphism */
+/* 行内帮助图标 */
+.inline-help-icon {
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    margin-left: 6px;
+    transition: color 0.2s;
+}
+
+.inline-help-icon:hover {
+    color: var(--el-color-primary);
+}
+
+/* 紧凑型单选组样式 */
+.radio-card-group.compact {
+    gap: 8px;
+}
+
+.radio-card-group.compact .radio-card {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.radio-card-group.compact .radio-card .el-radio__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 渠道图标样式 */
+.radio-card-group.compact .channel-icon {
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* 2x2 网格布局单选组 */
+.radio-card-group.grid-2x2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.radio-card-group.grid-2x2 .radio-card {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 20px;
+}
+
+/* 单选按钮图标 */
+.radio-icon {
+    font-size: 14px;
+    opacity: 0.8;
+    width: 20px;
+    text-align: center;
+    display: inline-block;
+}
+
+.radio-card.is-checked .radio-icon {
+    opacity: 1;
+}
+
+/* ==============================
+   全局弹窗和消息框毛玻璃效果
+   ============================== */
 .el-dialog,
 .el-message-box {
     border-radius: 16px !important;
     overflow: hidden;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.5);
-    /* Subtle light border */
     background-color: rgba(255, 255, 255, 0.85) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 }
 
-/* Header Styling */
+/* 弹窗头部样式 */
 .el-dialog__header,
 .el-message-box__header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: none;
     padding: 16px 20px !important;
     margin-right: 0 !important;
+    position: relative;
 }
 
-/* Body Styling */
+/* 美化分割线 - Dialog 居中标题 */
+.el-dialog__header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(156, 163, 175, 0.5) 20%, 
+        rgba(156, 163, 175, 0.8) 50%, 
+        rgba(156, 163, 175, 0.5) 80%, 
+        transparent);
+}
+
+/* 美化分割线 - MessageBox 左侧标题 */
+.el-message-box__header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        rgba(156, 163, 175, 0.8), 
+        rgba(156, 163, 175, 0.5) 30%, 
+        transparent 80%);
+}
+
+/* 弹窗内容区域样式 */
 .el-dialog__body,
 .el-message-box__content {
     padding: 20px !important;
 }
 
-/* Footer Styling */
+/* 弹窗底部样式 */
 .el-dialog__footer,
 .el-message-box__btns {
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-top: none;
     padding: 12px 20px !important;
-    background-color: rgba(0, 0, 0, 0.02);
-    /* Slight contrast for footer */
+    background-color: transparent;
 }
 
-/* Dark Mode Overrides */
+/* ==============================
+   暗色模式弹窗样式覆盖
+   ============================== */
 .dark .el-dialog,
 .dark .el-message-box {
     background-color: rgba(30, 30, 30, 0.75) !important;
@@ -835,13 +924,31 @@
 
 .dark .el-dialog__header,
 .dark .el-message-box__header {
-    border-bottom-color: rgba(255, 255, 255, 0.08);
+    border-bottom: none;
+}
+
+/* 暗色模式分割线 - Dialog */
+.dark .el-dialog__header::after {
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(156, 163, 175, 0.3) 20%, 
+        rgba(156, 163, 175, 0.5) 50%, 
+        rgba(156, 163, 175, 0.3) 80%, 
+        transparent);
+}
+
+/* 暗色模式分割线 - MessageBox */
+.dark .el-message-box__header::after {
+    background: linear-gradient(90deg, 
+        rgba(156, 163, 175, 0.5), 
+        rgba(156, 163, 175, 0.3) 30%, 
+        transparent 80%);
 }
 
 .dark .el-dialog__footer,
 .dark .el-message-box__btns {
-    border-top-color: rgba(255, 255, 255, 0.08);
-    background-color: rgba(255, 255, 255, 0.02);
+    border-top: none;
+    background-color: transparent;
 }
 
 .dark .el-dialog__title,
@@ -858,7 +965,9 @@
     border-radius: 12px;
 }
 
-/* 下拉菜单样式 */
+/* ==============================
+   下拉菜单样式
+   ============================== */
 .el-dropdown__popper.el-popper {
     border-radius: 12px;
     border: none;
@@ -914,7 +1023,7 @@ body::-webkit-scrollbar {
     --os-handle-bg-active: rgba(128, 128, 128, 0.85);
 }
 
-/* 深色模式 - 使用 CSS 变量覆盖 */
+/* 深色模式滚动条样式 */
 html.dark .os-theme-dark,
 .dark .os-theme-dark {
     --os-handle-bg: rgba(180, 180, 180, 0.6);

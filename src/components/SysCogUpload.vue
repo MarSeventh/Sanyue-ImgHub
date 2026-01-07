@@ -9,6 +9,12 @@
                 </el-tooltip>
             </h3>
             <div class="header-actions">
+                <CustomSelect
+                    v-model="channelFilter"
+                    :options="filterOptions"
+                    placeholder="筛选渠道类型"
+                    width="160px"
+                />
                 <el-button type="primary" @click="showAddDialog = true" class="add-btn">
                     <font-awesome-icon icon="plus" style="margin-right: 6px;"/>
                     添加渠道
@@ -17,7 +23,7 @@
         </div>
 
         <!-- 渠道卡片列表 - 按类型分组 -->
-        <div v-for="channelType in channels" :key="channelType.value" class="channel-group">
+        <div v-for="channelType in filteredChannels" :key="channelType.value" class="channel-group">
             <div class="group-header">
                 <div class="group-title">
                     <font-awesome-icon :icon="getChannelIcon(channelType.value)" class="group-icon"/>
@@ -273,8 +279,8 @@
 
         <!-- 编辑弹窗 -->
         <el-dialog v-model="showEditDialog" :title="'编辑渠道 - ' + (editChannel?.name || '')" class="channel-dialog" destroy-on-close @closed="resetEditData">
-            <el-form :model="editChannel" label-position="top" ref="editForm">
-                <el-form-item label="渠道名称">
+            <el-form :model="editChannel" label-position="top" ref="editForm" :rules="editRules">
+                <el-form-item label="渠道名称" prop="name">
                     <el-input v-model="editChannel.name" :disabled="editChannel.fixed"/>
                 </el-form-item>
                 <el-form-item label="启用渠道">
@@ -375,10 +381,16 @@
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import CustomSelect from '@/components/CustomSelect.vue';
 
 export default {
+components: {
+    CustomSelect
+},
 data() {
     return {
+    // 渠道类型筛选
+    channelFilter: '',
     // 渠道类型列表
     channels: [
         { value: 'telegram', label: 'Telegram' },
@@ -441,7 +453,10 @@ data() {
     // 添加表单验证规则
     addRules: {
         type: [{ required: true, message: '请选择渠道类型', trigger: 'change' }],
-        name: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
+        name: [
+            { required: true, message: '请输入渠道名称', trigger: 'blur' },
+            { pattern: /^[\u4e00-\u9fa5a-zA-Z0-9_-]+$/, message: '渠道名称只能包含中英文、数字、下划线和横线', trigger: 'blur' }
+        ],
         botToken: [{ required: true, message: '请输入 Bot Token', trigger: 'blur' }],
         chatId: [{ required: true, message: '请输入 Chat ID', trigger: 'blur' }],
         channelId: [{ required: true, message: '请输入 Channel ID', trigger: 'blur' }],
@@ -454,6 +469,14 @@ data() {
         token: [{ required: true, message: '请输入 Access Token', trigger: 'blur' }]
     },
 
+    // 编辑表单验证规则
+    editRules: {
+        name: [
+            { required: true, message: '请输入渠道名称', trigger: 'blur' },
+            { pattern: /^[\u4e00-\u9fa5a-zA-Z0-9_-]+$/, message: '渠道名称只能包含中英文、数字、下划线和横线', trigger: 'blur' }
+        ]
+    },
+
     // 容量统计数据
     quotaStats: {},
     quotaLoading: false,
@@ -462,7 +485,33 @@ data() {
     loading: false
     };
 },
-computed: {},
+computed: {
+    // 筛选下拉框选项
+    filterOptions() {
+        const iconMap = {
+            telegram: 'paper-plane',
+            cfr2: 'cloud',
+            s3: 'database',
+            discord: 'comments',
+            huggingface: 'robot'
+        };
+        return [
+            { value: '', label: '全部类型' },
+            ...this.channels.map(ch => ({
+                value: ch.value,
+                label: ch.label,
+                icon: iconMap[ch.value] || 'server'
+            }))
+        ];
+    },
+    // 根据筛选条件过滤渠道类型
+    filteredChannels() {
+        if (!this.channelFilter) {
+            return this.channels;
+        }
+        return this.channels.filter(ch => ch.value === this.channelFilter);
+    }
+},
 methods: {
     // 获取渠道图标
     getChannelIcon(type) {
@@ -645,28 +694,32 @@ methods: {
     },
     // 确认编辑渠道
     confirmEditChannel() {
-        const settings = this.getSettings(this.currentChannelType);
-        const newName = this.editChannel.name;
-        const currentIndex = this.currentChannelIndex;
+        this.$refs.editForm.validate((valid) => {
+            if (!valid) return;
 
-        // 检查是否为保留名称（{type}_env）
-        const reservedNames = ['telegram_env', 'cfr2_env', 's3_env', 'discord_env', 'huggingface_env'];
-        if (reservedNames.includes(newName)) {
-            this.$message.warning('该名称为系统保留名称，请使用其他名称');
-            return;
-        }
+            const settings = this.getSettings(this.currentChannelType);
+            const newName = this.editChannel.name;
+            const currentIndex = this.currentChannelIndex;
 
-        // 检查名称是否与其他渠道重复（排除当前编辑的渠道）
-        const isDuplicate = settings.channels.some((ch, idx) => idx !== currentIndex && ch.name === newName);
-        if (isDuplicate) {
-            this.$message.warning('该类型下已存在同名渠道，请使用其他名称');
-            return;
-        }
+            // 检查是否为保留名称（{type}_env）
+            const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env'];
+            if (reservedNames.includes(newName)) {
+                this.$message.warning('该名称为系统保留名称，请使用其他名称');
+                return;
+            }
 
-        settings.channels[this.currentChannelIndex] = { ...this.editChannel };
-        this.showEditDialog = false;
-        // 自动保存全部设置
-        this.saveSettings();
+            // 检查名称是否与其他渠道重复（排除当前编辑的渠道）
+            const isDuplicate = settings.channels.some((ch, idx) => idx !== currentIndex && ch.name === newName);
+            if (isDuplicate) {
+                this.$message.warning('该类型下已存在同名渠道，请使用其他名称');
+                return;
+            }
+
+            settings.channels[this.currentChannelIndex] = { ...this.editChannel };
+            this.showEditDialog = false;
+            // 自动保存全部设置
+            this.saveSettings();
+        });
     },
     // 删除渠道
     deleteChannel(type, index) {
@@ -689,71 +742,23 @@ methods: {
         }).catch(() => {});
     },
     saveSettings() {
-        // 所有表单的 Promise 数组
-        let validationPromises = [];
-
-        // Telegram
-        if (this.$refs.tgChannelForm) {
-            this.$refs.tgChannelForm.forEach((form) => {
-                validationPromises.push(new Promise((resolve) => {
-                    form.validate((valid) => resolve(valid));
-                }));
-            });
-        }
-
-        // S3
-        if (this.$refs.s3ChannelForm) {
-            this.$refs.s3ChannelForm.forEach((form) => {
-                validationPromises.push(new Promise((resolve) => {
-                    form.validate((valid) => resolve(valid));
-                }));
-            });
-        }
-
-        // Discord
-        if (this.$refs.discordChannelForm) {
-            this.$refs.discordChannelForm.forEach((form) => {
-                validationPromises.push(new Promise((resolve) => {
-                    form.validate((valid) => resolve(valid));
-                }));
-            });
-        }
-
-        // HuggingFace
-        if (this.$refs.huggingfaceChannelForm) {
-            this.$refs.huggingfaceChannelForm.forEach((form) => {
-                validationPromises.push(new Promise((resolve) => {
-                    form.validate((valid) => resolve(valid));
-                }));
-            });
-        }
-
-        // 等待所有验证完成
-        Promise.all(validationPromises).then((results) => {
-            const isValid = results.every(valid => valid);
-
-            if (!isValid) {
-                return;
-            }
-
-            // 保存设置
-            const settings = {
-                telegram: this.telegramSettings,
-                cfr2: this.cfr2Settings,
-                s3: this.s3Settings,
-                discord: this.discordSettings,
-                huggingface: this.huggingfaceSettings
-            };
-            fetchWithAuth('/api/manage/sysConfig/upload', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(settings)
-            })
-            .then(() => {
-                this.$message.success('设置已保存');
-            });
+        // 保存设置
+        const settings = {
+            telegram: this.telegramSettings,
+            cfr2: this.cfr2Settings,
+            s3: this.s3Settings,
+            discord: this.discordSettings,
+            huggingface: this.huggingfaceSettings
+        };
+        fetchWithAuth('/api/manage/sysConfig/upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        })
+        .then(() => {
+            this.$message.success('设置已保存');
         });
     },
     // 获取容量统计（重新计算）

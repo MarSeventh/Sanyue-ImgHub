@@ -8,7 +8,7 @@
                 <font-awesome-icon icon="book" class="info-icon" size="lg"/>
             </a>
         </el-tooltip>
-        <el-input class="upload-folder" :class="{ 'active': isFolderInputActive }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="isFolderInputActive = false"/>
+        <el-input class="upload-folder" :class="{ 'active': isFolderInputActive, 'no-announcement': !announcementAvailable }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="isFolderInputActive = false"/>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button desktop-only" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
@@ -20,8 +20,8 @@
                 <font-awesome-icon icon="history" class="history-icon" size="lg"/>
             </el-button>
         </el-tooltip>
-        <el-tooltip content="查看公告" placement="bottom" :disabled="disableTooltip">
-            <el-button class="announcement-button desktop-only" @click="handleShowAnnouncement" :disabled="!announcementAvailable">
+        <el-tooltip v-if="announcementAvailable" content="查看公告" placement="bottom" :disabled="disableTooltip">
+            <el-button class="announcement-button desktop-only" @click="handleShowAnnouncement">
                 <font-awesome-icon icon="bullhorn" class="announcement-icon" size="lg"/>
             </el-button>
         </el-tooltip>
@@ -160,11 +160,26 @@
                     <div class="setting-item">
                         <span class="setting-label">上传渠道</span>
                         <el-radio-group v-model="uploadChannel" class="radio-card-group compact">
-                            <el-radio label="telegram" class="radio-card">TG</el-radio>
-                            <el-radio label="cfr2" class="radio-card">R2</el-radio>
-                            <el-radio label="s3" class="radio-card">S3</el-radio>
-                            <el-radio label="discord" class="radio-card">DC</el-radio>
-                            <el-radio label="huggingface" class="radio-card">HF</el-radio>
+                            <el-radio label="telegram" class="radio-card">
+                                <font-awesome-icon icon="paper-plane" class="channel-icon"/>
+                                <span>TG</span>
+                            </el-radio>
+                            <el-radio label="cfr2" class="radio-card">
+                                <font-awesome-icon icon="cloud" class="channel-icon"/>
+                                <span>R2</span>
+                            </el-radio>
+                            <el-radio label="s3" class="radio-card">
+                                <font-awesome-icon icon="database" class="channel-icon"/>
+                                <span>S3</span>
+                            </el-radio>
+                            <el-radio label="discord" class="radio-card">
+                                <font-awesome-icon icon="comments" class="channel-icon"/>
+                                <span>DC</span>
+                            </el-radio>
+                            <el-radio label="huggingface" class="radio-card">
+                                <font-awesome-icon icon="robot" class="channel-icon"/>
+                                <span>HF</span>
+                            </el-radio>
                         </el-radio-group>
                     </div>
                     <div class="setting-item">
@@ -810,6 +825,9 @@ export default {
     border-radius: 12px;
     transition: all 0.3s ease, width 0.4s ease;
 }
+.upload-folder.no-announcement {
+    right: 230px;
+}
 .upload-folder.active {
     width: 200px;
 }
@@ -1134,6 +1152,4 @@ export default {
 .footer {
     height: 6vh;
 }
-
-
 </style>
