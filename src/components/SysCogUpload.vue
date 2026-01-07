@@ -118,7 +118,7 @@
         </div>
 
         <!-- 添加渠道弹窗 -->
-        <el-dialog v-model="showAddDialog" title="添加新渠道" class="channel-dialog" destroy-on-close @close="resetAddForm">
+        <el-dialog v-model="showAddDialog" title="添加新渠道" class="channel-dialog" destroy-on-close @closed="resetAddForm">
             <el-form :model="newChannel" label-position="top" ref="addForm" :rules="addRules">
                 <el-form-item label="渠道类型" prop="type">
                     <el-select v-model="newChannel.type" placeholder="请选择渠道类型" style="width: 100%;" @change="onChannelTypeChange">
@@ -203,7 +203,7 @@
         </el-dialog>
 
         <!-- 详情弹窗 -->
-        <el-dialog v-model="showDetailDialog" :title="'渠道详情 - ' + (currentChannel?.name || '')" class="channel-dialog">
+        <el-dialog v-model="showDetailDialog" :title="'渠道详情 - ' + (currentChannel?.name || '')" class="channel-dialog" @closed="resetDetailData">
             <el-descriptions :column="1" border>
                 <el-descriptions-item label="渠道名称">{{ currentChannel?.name }}</el-descriptions-item>
                 <el-descriptions-item label="渠道类型">{{ getChannelTypeLabel(currentChannelType) }}</el-descriptions-item>
@@ -272,7 +272,7 @@
         </el-dialog>
 
         <!-- 编辑弹窗 -->
-        <el-dialog v-model="showEditDialog" :title="'编辑渠道 - ' + (editChannel?.name || '')" class="channel-dialog" destroy-on-close>
+        <el-dialog v-model="showEditDialog" :title="'编辑渠道 - ' + (editChannel?.name || '')" class="channel-dialog" destroy-on-close @closed="resetEditData">
             <el-form :model="editChannel" label-position="top" ref="editForm">
                 <el-form-item label="渠道名称">
                     <el-input v-model="editChannel.name" :disabled="editChannel.fixed"/>
@@ -540,6 +540,16 @@ methods: {
             repo: '', token: '', isPrivate: false
         };
     },
+    // 重置详情弹窗数据
+    resetDetailData() {
+        this.currentChannel = null;
+        this.currentChannelType = '';
+        this.currentChannelIndex = -1;
+    },
+    // 重置编辑弹窗数据
+    resetEditData() {
+        this.editChannel = {};
+    },
     // 渠道类型变更时重置表单
     onChannelTypeChange() {
         // 保留 type 和 name，重置其他字段
@@ -569,8 +579,22 @@ methods: {
         this.$refs.addForm.validate((valid) => {
             if (!valid) return;
 
-            const { type } = this.newChannel;
+            const { type, name } = this.newChannel;
             const settings = this.getSettings(type);
+
+            // 检查是否为保留名称（{type}_env）
+            const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env'];
+            if (reservedNames.includes(name)) {
+                this.$message.warning('该名称为系统保留名称，请使用其他名称');
+                return;
+            }
+
+            // 检查名称是否重复
+            const isDuplicate = settings.channels.some(ch => ch.name === name);
+            if (isDuplicate) {
+                this.$message.warning('该类型下已存在同名渠道，请使用其他名称');
+                return;
+            }
 
             let newChannelData = {
                 id: settings.channels.length + 1,
@@ -622,6 +646,23 @@ methods: {
     // 确认编辑渠道
     confirmEditChannel() {
         const settings = this.getSettings(this.currentChannelType);
+        const newName = this.editChannel.name;
+        const currentIndex = this.currentChannelIndex;
+
+        // 检查是否为保留名称（{type}_env）
+        const reservedNames = ['telegram_env', 'cfr2_env', 's3_env', 'discord_env', 'huggingface_env'];
+        if (reservedNames.includes(newName)) {
+            this.$message.warning('该名称为系统保留名称，请使用其他名称');
+            return;
+        }
+
+        // 检查名称是否与其他渠道重复（排除当前编辑的渠道）
+        const isDuplicate = settings.channels.some((ch, idx) => idx !== currentIndex && ch.name === newName);
+        if (isDuplicate) {
+            this.$message.warning('该类型下已存在同名渠道，请使用其他名称');
+            return;
+        }
+
         settings.channels[this.currentChannelIndex] = { ...this.editChannel };
         this.showEditDialog = false;
         // 自动保存全部设置
