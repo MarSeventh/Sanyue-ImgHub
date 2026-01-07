@@ -897,6 +897,7 @@ mounted() {
 .upload-settings {
     padding: 20px;
     min-height: 500px;
+    overflow-x: hidden;
 }
 
 /* 页面头部 */

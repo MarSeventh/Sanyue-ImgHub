@@ -110,6 +110,7 @@ export default {
     color: var(--admin-container-color);
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
 }
 
 .header-content {
@@ -220,6 +221,7 @@ html.dark .header-content:hover {
     width: calc(100% - 80px);
     margin-left: 70px;
     padding: 0 10px;
+    min-height: calc(100vh - 60px);
   }
 }
 </style>
