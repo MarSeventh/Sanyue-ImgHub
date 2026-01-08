@@ -387,26 +387,6 @@ beforeUnmount() {
     this.activeUploads = 0
 },
 methods: {
-    // 上传卡片光斑跟随鼠标
-    handleUploadCardMouseMove(event) {
-        const wrapper = event.currentTarget;
-        const rect = wrapper.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        const glowEl = this.$refs.uploadCardGlow;
-        if (glowEl) {
-            glowEl.style.opacity = '1';
-            glowEl.style.left = `${x}px`;
-            glowEl.style.top = `${y}px`;
-        }
-    },
-    handleUploadCardMouseLeave() {
-        const glowEl = this.$refs.uploadCardGlow;
-        if (glowEl) {
-            glowEl.style.opacity = '0';
-        }
-    },
     // 文件名中间截断，保留前缀和扩展名
     truncateFilename(filename, maxLength = 20) {
         if (!filename || filename.length <= maxLength) {
@@ -1904,43 +1884,14 @@ beforeDestroy() {
         gap: 6px;
     }
 }
-
-/* 上传卡片包装器 - 用于光斑效果 */
-.upload-card-wrapper {
-    position: relative;
+.upload-card {
     width: 55vw;
     padding: 20px;
-}
-
-@media (max-width: 768px) {
-    .upload-card-wrapper {
-        width: 70vw;
-    }
-}
-
-/* 上传卡片光斑效果 */
-.upload-card-glow {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    pointer-events: none;
-    opacity: 0;
-    transform: translate(-50%, -50%);
-    transition: opacity 0.3s ease;
-    z-index: 0;
-    background: radial-gradient(circle, rgba(64, 158, 255, 0.15) 0%, transparent 70%);
-}
-
-.upload-card {
-    width: 100%;
-    position: relative;
-    z-index: 1;
     background: none;
 }
 @media (max-width: 768px) {
     .upload-card {
-        width: 100%;
+        width: 70vw;
     }
 }
 .upload-card-busy :deep(.el-upload-dragger) {
@@ -2081,8 +2032,8 @@ beforeDestroy() {
 .paste-card.is-uploading::before {
     content: '';
     position: absolute;
-    inset: -4px;
-    border-radius: 17px;
+    inset: 0;
+    border-radius: 15px;
     padding: 2px;
     background: conic-gradient(
         from var(--border-angle),
