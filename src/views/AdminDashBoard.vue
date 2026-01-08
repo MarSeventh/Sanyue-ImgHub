@@ -323,16 +323,16 @@
             </div>
             
             <div class="pagination-container">
-                <el-pagination
-                    background
-                    layout="prev, pager, next"
-                    :total="filteredTableData.length"
-                    :page-size="pageSize"
-                    :current-page="currentPage"
-                    :pager-count="pagerCount"
-                    @current-change="handlePageChange">
-                </el-pagination>
-                <div class="pagination-right">
+                <div class="pagination-center">
+                    <el-pagination
+                        background
+                        layout="prev, pager, next"
+                        :total="filteredTableData.length"
+                        :page-size="pageSize"
+                        :current-page="currentPage"
+                        :pager-count="pagerCount"
+                        @current-change="handlePageChange">
+                    </el-pagination>
                     <el-button 
                         type="primary" 
                         @click="refreshFileList" 
@@ -347,6 +347,19 @@
                         class="load-more">
                         加载更多
                     </el-button>
+                </div>
+                <div class="pagination-right">
+                    <span class="page-total">共 {{ realTotalPages }} 页</span>
+                    <div class="page-jump">
+                        <span>跳至</span>
+                        <el-input 
+                            v-model="jumpPage" 
+                            size="small" 
+                            class="jump-input"
+                            @keyup.enter="handleJumpPage"
+                        />
+                        <el-button size="small" type="primary" @click="handleJumpPage" class="jump-btn">GO</el-button>
+                    </div>
                 </div>
             </div>
             </el-main>
@@ -599,6 +612,8 @@ export default {
 data() {
     return {
         Number: 0,
+        directFileCount: 0, // 当前目录直接子文件数量
+        directFolderCount: 0, // 当前目录直接子文件夹数量
         showLogoutButton: false,
         tableData: [],
         tempSearch: '',
@@ -632,6 +647,7 @@ data() {
         mobileActionIsFolder: false, // 是否为文件夹操作
         longPressTimer: null, // 长按计时器
         showMobileDirectoryDrawer: false, // 移动端目录抽屉
+        jumpPage: '', // 跳转页码输入
     }
 },
 components: {
@@ -643,6 +659,14 @@ computed: {
     ...mapGetters(['adminUrlSettings', 'userConfig']),
     filteredTableData() {
         return this.tableData;
+    },
+    totalPages() {
+        return Math.ceil(this.filteredTableData.length / this.pageSize) || 1;
+    },
+    // 基于当前文件夹直接子文件和子文件夹数量计算的真实总页数
+    realTotalPages() {
+        const total = this.directFolderCount + this.directFileCount;
+        return Math.ceil(total / this.pageSize) || 1;
     },
     paginatedTableData() {
         const sortedData = this.sortData(this.filteredTableData);
@@ -1574,6 +1598,58 @@ methods: {
             this.loadMoreData();
         }
     },
+    // 跳转到指定页码
+    handleJumpPage() {
+        const page = parseInt(this.jumpPage);
+        if (isNaN(page) || page < 1) {
+            this.$message.warning('请输入有效的页码');
+            return;
+        }
+        if (page > this.realTotalPages) {
+            this.$message.warning(`页码不能超过 ${this.realTotalPages}`);
+            return;
+        }
+        // 如果目标页超过当前已加载的页数，需要先加载更多数据
+        if (page > this.totalPages) {
+            this.$message.info('正在加载数据，请稍候...');
+            this.loadMoreDataUntilPage(page);
+        } else {
+            this.currentPage = page;
+        }
+        this.jumpPage = '';
+    },
+    // 加载数据直到指定页
+    async loadMoreDataUntilPage(targetPage) {
+        this.loading = true;
+        try {
+            // 计算目标页需要的文件数量（不包含文件夹）
+            // 目标页最后一个项目的索引 = targetPage * pageSize
+            // 需要的文件数 = 目标索引 - 已有文件夹数量
+            const targetIndex = targetPage * this.pageSize;
+            const currentFolderCount = this.filteredTableData.filter(item => item.isFolder).length;
+            const currentFileCount = this.filteredTableData.filter(item => !item.isFolder).length;
+            
+            // 需要加载的文件数量 = 目标位置需要的文件数 - 当前已加载的文件数
+            const neededFileCount = Math.max(0, targetIndex - currentFolderCount - currentFileCount);
+            
+            if (neededFileCount > 0) {
+                await fileManager.loadMoreFiles(
+                    this.currentPath,
+                    this.searchKeywords,
+                    this.searchIncludeTags,
+                    this.searchExcludeTags,
+                    neededFileCount
+                );
+                await this.fetchFileList();
+            }
+            
+            this.currentPage = Math.min(targetPage, this.totalPages);
+        } catch (error) {
+            this.$message.error('加载数据失败，请检查网络连接');
+        } finally {
+            this.loading = false;
+        }
+    },
     // 判断是否为文件夹
     isFolder(item) {
         // 如果是已经标记为文件夹的项目，直接返回true
@@ -1729,6 +1805,10 @@ methods: {
 
             // 更新统计信息
             this.updateStats(data.totalCount, true);
+            
+            // 更新直接文件和文件夹数量
+            this.directFileCount = data.directFileCount || 0;
+            this.directFolderCount = data.directFolderCount || 0;
 
         } catch (error) {
             console.error('Error fetching file list:', error);
@@ -2706,6 +2786,13 @@ html.dark .header-content:hover {
     margin-top: 20px;
     padding-bottom: 20px;
     gap: 15px;
+    position: relative;
+}
+
+.pagination-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 /* 页码按钮美化 */
@@ -2774,6 +2861,84 @@ html.dark .header-content:hover {
     display: flex;
     align-items: center;
     gap: 10px;
+    position: absolute;
+    right: 0;
+}
+
+/* 分页信息区域 */
+.page-total {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+    white-space: nowrap;
+}
+
+.page-jump {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+}
+
+.page-jump .jump-input {
+    width: 50px;
+}
+
+.page-jump .jump-input :deep(.el-input__wrapper) {
+    background: var(--admin-dashboard-btn-bg-color);
+    box-shadow: var(--admin-dashboard-btn-shadow);
+    border-radius: 8px;
+    padding: 0 8px;
+    height: 28px;
+}
+
+.page-jump .jump-input :deep(.el-input__inner) {
+    text-align: center;
+    color: var(--el-text-color-primary);
+    height: 28px;
+    line-height: 28px;
+}
+
+.page-jump .jump-btn {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    border: none;
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 28px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
+    transition: all 0.3s ease;
+}
+
+.page-jump .jump-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+}
+
+/* 移动端分页适配 */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 15px;
+    }
+    
+    .pagination-center {
+        order: 0;
+    }
+    
+    .pagination-right {
+        position: static;
+        width: 100%;
+        justify-content: center;
+        order: 1;
+    }
+    
+    .page-jump .jump-input {
+        width: 45px;
+    }
 }
 
 .refresh-btn {

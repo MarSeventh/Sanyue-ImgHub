@@ -153,6 +153,7 @@ class FileManager {
             if (!newFileList.isIndexedResponse) {
                 ElMessage.warning('索引构建中，当前搜索和排序结果可能不准确，请稍后再试。');
             }
+            // 保存包含新字段的完整数据
             return this.saveFileList(newFileList);
         } catch (error) {
             console.error('Error refreshing file list:', error);
@@ -161,13 +162,13 @@ class FileManager {
     }
 
     // 读取更多数据
-    async loadMoreFiles(dir, search = '', includeTags = '', excludeTags = '') {
+    async loadMoreFiles(dir, search = '', includeTags = '', excludeTags = '', count = 60) {
         search = search.trim();
         try {
             const fileList = this.getLocalFileList();
             const start = fileList.files.length;
 
-            let url = `/api/manage/list?dir=${dir}&start=${start}&count=60&search=${encodeURIComponent(search)}`;
+            let url = `/api/manage/list?dir=${dir}&start=${start}&count=${count}&search=${encodeURIComponent(search)}`;
             if (includeTags) {
                 url += `&includeTags=${encodeURIComponent(includeTags)}`;
             }

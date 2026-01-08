@@ -170,86 +170,78 @@
     <!-- 最新/最旧文件信息 -->
     <div class="file-info-section" v-if="indexInfo.newestFile || indexInfo.oldestFile">
       <!-- 最新上传 -->
-      <div class="file-info-card info-card-newest" v-if="indexInfo.newestFile">
-        <div class="card-bg-wrapper">
-          <el-image 
-            v-if="isImageFile(indexInfo.newestFile) && !loadErrors['newest']"
-            :src="'/file/' + indexInfo.newestFile.id + '?from=admin'"
-            fit="cover"
-            class="card-bg-media"
-            @error="handleImageError('newest')"
-          ></el-image>
-          <video 
-            v-else-if="isVideoFile(indexInfo.newestFile) && !loadErrors['newest']"
-            :src="'/file/' + indexInfo.newestFile.id + '?from=admin'"
-            class="card-bg-media"
-            muted
-            loop
-            autoplay
-            @error="handleImageError('newest')"
-          ></video>
-          <div v-else class="card-bg-fallback">
-             <font-awesome-icon icon="file-alt" class="fallback-icon" />
-          </div>
+      <div class="file-info-card info-card-newest" v-if="indexInfo.newestFile" @click="openFileInNewTab(indexInfo.newestFile)">
+        <!-- 图片/视频背景 -->
+        <el-image 
+          v-if="isImageFile(indexInfo.newestFile) && !loadErrors['newest']"
+          :src="'/file/' + indexInfo.newestFile.id + '?from=admin'"
+          fit="cover"
+          class="card-bg-media"
+          @error="handleImageError('newest')"
+        ></el-image>
+        <video 
+          v-else-if="isVideoFile(indexInfo.newestFile) && !loadErrors['newest']"
+          :src="'/file/' + indexInfo.newestFile.id + '?from=admin'"
+          class="card-bg-media"
+          muted
+          loop
+          autoplay
+          @error="handleImageError('newest')"
+        ></video>
+        <div v-else class="card-bg-fallback">
+           <font-awesome-icon icon="file-alt" class="fallback-icon" />
         </div>
         
-        <div class="info-card-overlay">
-          <div class="info-card-header">
-            <div class="header-badge">
-              <font-awesome-icon icon="arrow-up" />
-              <span>最近上传</span>
-            </div>
+        <!-- 顶部标题浮层 -->
+        <div class="file-card-header">
+          <font-awesome-icon icon="arrow-up" />
+          <span>最近上传</span>
+        </div>
+        
+        <!-- 底部信息浮层 -->
+        <div class="info-card-footer">
+          <div class="file-name">
+            {{ indexInfo.newestFile.metadata?.FileName || indexInfo.newestFile.id }}
           </div>
-          <div class="info-card-content">
-            <div class="info-details">
-              <div class="file-name">
-                {{ indexInfo.newestFile.metadata?.FileName || indexInfo.newestFile.id }}
-              </div>
-              <div class="file-meta">{{ formatTime(indexInfo.newestFile.metadata?.TimeStamp) }}</div>
-            </div>
-          </div>
+          <div class="file-meta">{{ formatTime(indexInfo.newestFile.metadata?.TimeStamp) }}</div>
         </div>
       </div>
 
       <!-- 最早上传 -->
-      <div class="file-info-card info-card-oldest" v-if="indexInfo.oldestFile">
-        <div class="card-bg-wrapper">
-          <el-image 
-            v-if="isImageFile(indexInfo.oldestFile) && !loadErrors['oldest']"
-            :src="'/file/' + indexInfo.oldestFile.id + '?from=admin'"
-            fit="cover"
-            class="card-bg-media"
-            @error="handleImageError('oldest')"
-          ></el-image>
-          <video 
-            v-else-if="isVideoFile(indexInfo.oldestFile) && !loadErrors['oldest']"
-            :src="'/file/' + indexInfo.oldestFile.id + '?from=admin'"
-            class="card-bg-media"
-            muted
-            loop
-            autoplay
-            @error="handleImageError('oldest')"
-          ></video>
-          <div v-else class="card-bg-fallback">
-             <font-awesome-icon icon="file-alt" class="fallback-icon" />
-          </div>
+      <div class="file-info-card info-card-oldest" v-if="indexInfo.oldestFile" @click="openFileInNewTab(indexInfo.oldestFile)">
+        <!-- 图片/视频背景 -->
+        <el-image 
+          v-if="isImageFile(indexInfo.oldestFile) && !loadErrors['oldest']"
+          :src="'/file/' + indexInfo.oldestFile.id + '?from=admin'"
+          fit="cover"
+          class="card-bg-media"
+          @error="handleImageError('oldest')"
+        ></el-image>
+        <video 
+          v-else-if="isVideoFile(indexInfo.oldestFile) && !loadErrors['oldest']"
+          :src="'/file/' + indexInfo.oldestFile.id + '?from=admin'"
+          class="card-bg-media"
+          muted
+          loop
+          autoplay
+          @error="handleImageError('oldest')"
+        ></video>
+        <div v-else class="card-bg-fallback">
+           <font-awesome-icon icon="file-alt" class="fallback-icon" />
         </div>
 
-        <div class="info-card-overlay">
-          <div class="info-card-header">
-            <div class="header-badge warning">
-              <font-awesome-icon icon="arrow-down" />
-              <span>最早上传</span>
-            </div>
+        <!-- 顶部标题浮层 -->
+        <div class="file-card-header warning">
+          <font-awesome-icon icon="arrow-down" />
+          <span>最早上传</span>
+        </div>
+
+        <!-- 底部信息浮层 -->
+        <div class="info-card-footer">
+          <div class="file-name">
+            {{ indexInfo.oldestFile.metadata?.FileName || indexInfo.oldestFile.id }}
           </div>
-          <div class="info-card-content">
-            <div class="info-details">
-              <div class="file-name">
-                {{ indexInfo.oldestFile.metadata?.FileName || indexInfo.oldestFile.id }}
-              </div>
-              <div class="file-meta">{{ formatTime(indexInfo.oldestFile.metadata?.TimeStamp) }}</div>
-            </div>
-          </div>
+          <div class="file-meta">{{ formatTime(indexInfo.oldestFile.metadata?.TimeStamp) }}</div>
         </div>
       </div>
     </div>
@@ -587,6 +579,12 @@ export default {
       const extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase()
       const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'flv', 'wmv', 'mkv', 'm4v', '3gp', 'mpeg', 'mpg']
       return videoExtensions.includes(extension)
+    },
+    
+    // 在新窗口打开文件
+    openFileInNewTab(file) {
+      if (!file?.id) return
+      window.open('/file/' + file.id, '_blank')
     }
   }
 }
@@ -634,7 +632,7 @@ export default {
   justify-content: center;
   font-size: 24px;
   margin-right: 20px;
-  background: linear-gradient(135deg, var(--admin-purple), #E1BEE7);
+  background: linear-gradient(135deg, #60A5FA, #93C5FD);
   color: white;
 }
 
@@ -994,7 +992,7 @@ html.dark .legend-item:hover {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
-  align-items: stretch; /* 确保卡片高度一致 */
+  align-items: stretch;
 }
 
 .file-info-card {
@@ -1009,33 +1007,34 @@ html.dark .legend-item:hover {
   cursor: pointer;
 }
 
-.file-info-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--admin-dashboard-stats-hover-shadow);
-}
-
-.card-bg-wrapper {
+/* 图片/视频占满整个卡片 */
+.card-bg-media {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  display: block;
 }
 
-.card-bg-media {
+/* 确保 el-image 内部图片撑满容器 */
+.card-bg-media:deep(.el-image__inner) {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
 }
 
-.file-info-card:hover .card-bg-media {
-  transform: scale(1.05);
+.card-bg-media:deep(.el-image__wrapper) {
+  width: 100%;
+  height: 100%;
 }
 
-.card-bg-placeholder,
 .card-bg-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background: var(--admin-dashborad-stats-bg-color);
@@ -1050,70 +1049,80 @@ html.dark .legend-item:hover {
   opacity: 0.3;
 }
 
-.info-card-overlay {
+/* 文件卡片标题 - 浮层在顶部 */
+.file-card-header {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.3) 100%);
-  z-index: 1;
+  right: 0;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 12px 16px;
-}
-
-.info-card-header {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.header-badge {
-  display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: rgba(var(--admin-purple-rgb, 106, 27, 154), 0.9);
-  color: white;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
   font-weight: 600;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  color: white;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+  z-index: 2;
 }
 
-.header-badge.warning {
-  background: rgba(255, 152, 0, 0.9);
+.file-card-header .fa-icon {
+  color: #60A5FA;
 }
 
-.info-card-content {
-  display: flex;
-  align-items: flex-end;
-  gap: 15px;
-  width: 100%;
-  padding-bottom: 20px;
+.file-card-header.warning .fa-icon {
+  color: #F59E0B;
 }
 
-.info-details {
-  flex: 1;
-  min-width: 0;
+/* 底部文件信息 - 浮层在底部 */
+.info-card-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  text-align: center;
+  z-index: 2;
 }
 
-.file-name {
-  font-size: 16px;
+.info-card-footer .file-name {
+  font-size: 14px;
   color: white;
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.file-meta {
-  font-size: 13px;
-  color: white;
+.info-card-footer .file-meta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 大屏幕上增大图片卡片高度 */
+@media (min-width: 1200px) {
+  .file-info-card {
+    height: 400px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .file-info-card {
+    height: 450px;
+  }
+}
+
+.file-info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-dashboard-stats-hover-shadow);
+}
+
+.file-info-card:hover .card-bg-media {
+  transform: scale(1.05);
 }
 
 /* 响应式设计 */

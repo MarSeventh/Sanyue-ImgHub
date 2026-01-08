@@ -1,6 +1,6 @@
 <template>
     <a 
-        :href="href" 
+        :href="logoHref" 
         :target="target"
         :class="logo-link"
     >
@@ -18,7 +18,7 @@ import { mapGetters } from 'vuex'
 export default {
   name: 'Logo',
   props: {
-    // Logo链接地址
+    // Logo链接地址（可被用户配置覆盖）
     href: {
       type: String,
       default: 'https://github.com/MarSeventh/CloudFlare-ImgBed'
@@ -55,6 +55,11 @@ export default {
     enableHover: {
       type: Boolean,
       default: true
+    },
+    // 是否允许使用用户配置的链接（仅上传页面启用）
+    useConfigLink: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -64,6 +69,13 @@ export default {
       return this.customSrc || 
              this.userConfig?.logoUrl || 
              require('../assets/logo.png')
+    },
+    logoHref() {
+      // 只有启用 useConfigLink 时才使用用户配置的链接
+      if (this.useConfigLink && this.userConfig?.logoLink) {
+        return this.userConfig.logoLink
+      }
+      return this.href
     },
     logoClasses() {
       return {

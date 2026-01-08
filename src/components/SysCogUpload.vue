@@ -46,7 +46,10 @@
                     :key="channel.name || index"
                     class="channel-card"
                     :class="[channelType.value, { 'disabled': !channel.enabled, 'fixed': channel.fixed }]"
+                    @mousemove="handleCardMouseMove($event, channelType.value, index)"
+                    @mouseleave="handleCardMouseLeave(channelType.value, index)"
                 >
+                    <div class="card-glow" :ref="`glow-${channelType.value}-${index}`"></div>
                     <div class="card-header">
                         <div class="card-title">
                             <span class="channel-name">{{ channel.name || '未命名渠道' }}</span>
@@ -59,32 +62,44 @@
                             <template v-if="channelType.value === 'telegram'">
                                 <div class="info-item">
                                     <font-awesome-icon icon="robot" class="info-icon"/>
-                                    <span>Bot: {{ maskText(channel.botToken) }}</span>
+                                    <span class="info-text">Bot: {{ maskText(channel.botToken) }}</span>
+                                </div>
+                                <div class="info-item" v-if="channel.chatId">
+                                    <font-awesome-icon icon="comments" class="info-icon"/>
+                                    <span class="info-text">Channel: {{ maskText(channel.chatId) }}</span>
                                 </div>
                             </template>
                             <template v-else-if="channelType.value === 'cfr2'">
                                 <div class="info-item">
                                     <font-awesome-icon icon="link" class="info-icon"/>
-                                    <span>{{ channel.publicUrl || '未设置公开链接' }}</span>
+                                    <span class="info-text" :title="channel.publicUrl">{{ channel.publicUrl || '未设置公开链接' }}</span>
                                 </div>
                             </template>
                             <template v-else-if="channelType.value === 's3'">
                                 <div class="info-item">
                                     <font-awesome-icon icon="server" class="info-icon"/>
-                                    <span>{{ channel.bucketName || '未设置' }}</span>
+                                    <span class="info-text">{{ channel.bucketName || '未设置' }}</span>
+                                </div>
+                                <div class="info-item" v-if="channel.endpoint">
+                                    <font-awesome-icon icon="link" class="info-icon"/>
+                                    <span class="info-text" :title="channel.endpoint">{{ channel.endpoint }}</span>
                                 </div>
                             </template>
                             <template v-else-if="channelType.value === 'discord'">
                                 <div class="info-item">
+                                    <font-awesome-icon icon="robot" class="info-icon"/>
+                                    <span class="info-text">Bot: {{ maskText(channel.botToken) }}</span>
+                                </div>
+                                <div class="info-item">
                                     <font-awesome-icon icon="hashtag" class="info-icon"/>
-                                    <span>Channel: {{ maskText(channel.channelId) }}</span>
+                                    <span class="info-text">Channel: {{ maskText(channel.channelId) }}</span>
                                 </div>
                                 <el-tag v-if="channel.isNitro" size="small" type="success">Nitro</el-tag>
                             </template>
                             <template v-else-if="channelType.value === 'huggingface'">
                                 <div class="info-item">
                                     <font-awesome-icon icon="database" class="info-icon"/>
-                                    <span>{{ channel.repo || '未设置仓库' }}</span>
+                                    <span class="info-text">{{ channel.repo || '未设置仓库' }}</span>
                                 </div>
                                 <el-tag v-if="channel.isPrivate" size="small" type="warning">私有</el-tag>
                             </template>
@@ -532,6 +547,28 @@ computed: {
     }
 },
 methods: {
+    // 卡片光斑跟随鼠标
+    handleCardMouseMove(event, channelType, index) {
+        const card = event.currentTarget;
+        const rect = card.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        const refKey = `glow-${channelType}-${index}`;
+        const glowEl = this.$refs[refKey];
+        if (glowEl && glowEl[0]) {
+            glowEl[0].style.opacity = '1';
+            glowEl[0].style.left = `${x}px`;
+            glowEl[0].style.top = `${y}px`;
+        }
+    },
+    handleCardMouseLeave(channelType, index) {
+        const refKey = `glow-${channelType}-${index}`;
+        const glowEl = this.$refs[refKey];
+        if (glowEl && glowEl[0]) {
+            glowEl[0].style.opacity = '0';
+        }
+    },
     // 获取渠道图标
     getChannelIcon(type) {
         const icons = {
@@ -1068,6 +1105,41 @@ mounted() {
     border-left: 3px solid var(--el-border-color-light);
     transition: all 0.25s ease;
     overflow: hidden;
+    position: relative;
+}
+
+/* 光斑效果 */
+.card-glow {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    z-index: 0;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+}
+
+.channel-card.telegram .card-glow {
+    background: radial-gradient(circle, rgba(84, 169, 235, 0.2) 0%, transparent 70%);
+}
+
+.channel-card.cfr2 .card-glow {
+    background: radial-gradient(circle, rgba(246, 130, 31, 0.2) 0%, transparent 70%);
+}
+
+.channel-card.s3 .card-glow {
+    background: radial-gradient(circle, rgba(86, 154, 49, 0.2) 0%, transparent 70%);
+}
+
+.channel-card.discord .card-glow {
+    background: radial-gradient(circle, rgba(88, 101, 242, 0.2) 0%, transparent 70%);
+}
+
+.channel-card.huggingface .card-glow {
+    background: radial-gradient(circle, rgba(255, 210, 30, 0.2) 0%, transparent 70%);
 }
 
 .channel-card:hover {
@@ -1130,12 +1202,16 @@ mounted() {
 .card-body {
     padding: 14px 16px;
     min-height: 60px;
+    text-align: left;
 }
 
 .card-info {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    align-items: flex-start;
+    width: 100%;
+    overflow: hidden;
 }
 
 .info-item {
@@ -1144,10 +1220,23 @@ mounted() {
     gap: 8px;
     font-size: 13px;
     color: var(--el-text-color-secondary);
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+.info-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
 }
 
 .info-icon {
     width: 14px;
+    flex-shrink: 0;
     color: var(--el-text-color-placeholder);
 }
 
