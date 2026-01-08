@@ -1772,6 +1772,23 @@ methods: {
             img.src = URL.createObjectURL(file)
         })
     },
+    // 拖拽上传卡片鼠标移动事件 - 悬浮光斑效果
+    handleUploadCardMouseMove(e) {
+        const glow = this.$refs.uploadCardGlow;
+        if (!glow) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        glow.style.opacity = '1';
+        glow.style.left = x + 'px';
+        glow.style.top = y + 'px';
+    },
+    // 拖拽上传卡片鼠标离开事件
+    handleUploadCardMouseLeave() {
+        const glow = this.$refs.uploadCardGlow;
+        if (!glow) return;
+        glow.style.opacity = '0';
+    },
 },
 beforeDestroy() {
     // 清理定时器
@@ -1884,6 +1901,27 @@ beforeDestroy() {
         gap: 6px;
     }
 }
+
+/* 拖拽上传卡片包装器 - 用于悬浮光斑效果 */
+.upload-card-wrapper {
+    position: relative;
+    overflow: visible;
+}
+
+/* 悬浮光斑效果 */
+.upload-card-glow {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
 .upload-card {
     width: 55vw;
     padding: 20px;
