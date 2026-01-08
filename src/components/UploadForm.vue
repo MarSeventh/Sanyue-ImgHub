@@ -1409,8 +1409,11 @@ methods: {
                 data: {
                     fileSize: file.file.size,
                     fileName: file.file.name,
+                    fileType: file.file.type,
                     sha256,
-                    fileSample
+                    fileSample,
+                    uploadNameType: this.uploadNameType,
+                    uploadFolder: this.uploadFolder
                 },
                 withAuthCode: true,
                 signal: abortController.signal
@@ -1470,6 +1473,7 @@ methods: {
                     sha256,
                     fileSize: file.file.size,
                     fileName: file.file.name,
+                    fileType: file.file.type,
                     channelName: uploadInfo.channelName
                 },
                 withAuthCode: true,
