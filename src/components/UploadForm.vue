@@ -2070,7 +2070,7 @@ beforeDestroy() {
 .paste-card.is-uploading::before {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -4px;
     border-radius: 15px;
     padding: 2px;
     background: conic-gradient(

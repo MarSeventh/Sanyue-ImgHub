@@ -758,19 +758,23 @@ methods: {
             const settings = this.getSettings(this.currentChannelType);
             const newName = this.editChannel.name;
             const currentIndex = this.currentChannelIndex;
+            const isFixedChannel = this.editChannel.fixed;
 
-            // 检查是否为保留名称（{type}_env）
-            const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env'];
-            if (reservedNames.includes(newName)) {
-                this.$message.warning('该名称为系统保留名称，请使用其他名称');
-                return;
-            }
+            // 非环境变量渠道才检查名称
+            if (!isFixedChannel) {
+                // 检查是否为保留名称（{type}_env）
+                const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env'];
+                if (reservedNames.includes(newName)) {
+                    this.$message.warning('该名称为系统保留名称，请使用其他名称');
+                    return;
+                }
 
-            // 检查名称是否与其他渠道重复（排除当前编辑的渠道）
-            const isDuplicate = settings.channels.some((ch, idx) => idx !== currentIndex && ch.name === newName);
-            if (isDuplicate) {
-                this.$message.warning('该类型下已存在同名渠道，请使用其他名称');
-                return;
+                // 检查名称是否与其他渠道重复（排除当前编辑的渠道）
+                const isDuplicate = settings.channels.some((ch, idx) => idx !== currentIndex && ch.name === newName);
+                if (isDuplicate) {
+                    this.$message.warning('该类型下已存在同名渠道，请使用其他名称');
+                    return;
+                }
             }
 
             settings.channels[this.currentChannelIndex] = { ...this.editChannel };
@@ -1106,6 +1110,8 @@ mounted() {
     transition: all 0.25s ease;
     overflow: hidden;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 /* 光斑效果 */
@@ -1263,6 +1269,7 @@ mounted() {
     padding: 10px 16px;
     border-top: 1px solid var(--el-border-color-lighter);
     background: var(--el-fill-color-blank);
+    margin-top: auto;
 }
 
 /* 空状态提示 */
