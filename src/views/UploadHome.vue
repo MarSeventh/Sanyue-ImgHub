@@ -160,7 +160,7 @@
                 </div>
                 <div class="section-content">
                     <div class="setting-item">
-                        <span class="setting-label">上传渠道</span>
+                        <span class="setting-label">渠道类型</span>
                         <el-radio-group v-model="uploadChannel" class="radio-card-group compact">
                             <el-radio label="telegram" class="radio-card">
                                 <font-awesome-icon icon="paper-plane" class="channel-icon"/>
@@ -186,7 +186,7 @@
                     </div>
                     <div class="setting-item" v-if="currentChannelList.length > 1">
                         <span class="setting-label">
-                            指定渠道
+                            渠道名称
                             <el-tooltip content="选择具体的渠道名称，不选择则使用负载均衡或默认渠道" placement="top">
                                 <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
                             </el-tooltip>
