@@ -212,6 +212,11 @@ props: {
         default: 'telegram',
         required: false
     },
+    channelName: {
+        type: String,
+        default: '',
+        required: false
+    },
     uploadNameType: {
         type: String,
         default: 'default',
@@ -534,6 +539,7 @@ methods: {
             url: '/upload' + 
                 '?serverCompress=' + needServerCompress + 
                 '&uploadChannel=' + uploadChannel + 
+                (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                 '&uploadNameType=' + uploadNameType + 
                 '&autoRetry=' + autoRetry + 
                 '&uploadFolder=' + this.uploadFolder,
@@ -616,6 +622,7 @@ methods: {
                 url: '/upload' + 
                     '?serverCompress=' + needServerCompress + 
                     '&uploadChannel=' + uploadChannel + 
+                    (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                     '&uploadNameType=' + uploadNameType + 
                     '&autoRetry=' + autoRetry + 
                     '&uploadFolder=' + this.uploadFolder +
@@ -672,6 +679,7 @@ methods: {
                             url: '/upload' + 
                                 '?serverCompress=' + needServerCompress + 
                                 '&uploadChannel=' + uploadChannel + 
+                                (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                                 '&uploadNameType=' + uploadNameType + 
                                 '&autoRetry=' + autoRetry + 
                                 '&uploadFolder=' + this.uploadFolder +
@@ -761,6 +769,7 @@ methods: {
                 url: '/upload' + 
                     '?serverCompress=' + needServerCompress + 
                     '&uploadChannel=' + uploadChannel + 
+                    (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                     '&uploadNameType=' + uploadNameType + 
                     '&autoRetry=' + autoRetry + 
                     '&uploadFolder=' + this.uploadFolder +
@@ -1412,6 +1421,7 @@ methods: {
                     fileType: file.file.type,
                     sha256,
                     fileSample,
+                    channelName: this.channelName, // 传递指定的渠道名称
                     uploadNameType: this.uploadNameType,
                     uploadFolder: this.uploadFolder
                 },

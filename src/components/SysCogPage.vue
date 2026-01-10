@@ -20,6 +20,15 @@
                             :value="option.value">
                         </el-option>
                     </el-select>
+                    <!-- 如果是channelName类型则使用渠道名选择器 -->
+                    <el-select v-else-if="setting.type === 'channelName'" v-model="setting.value" :disabled="!currentUploadChannel || currentChannelList.length === 0" placeholder="请先选择上传渠道" clearable style="width: 100%">
+                        <el-option
+                            v-for="ch in currentChannelList"
+                            :key="ch.name"
+                            :label="ch.name"
+                            :value="ch.name">
+                        </el-option>
+                    </el-select>
                     <!-- 如果是boolean类型则使用切换按钮 -->
                     <el-switch v-else-if="setting.type === 'boolean'" v-model="setting.value" :disabled="setting.fixed"></el-switch>
                     <!-- 否则使用输入框 -->
@@ -38,6 +47,7 @@
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import axios from '@/utils/axios';
 
 export default {
 data() {
@@ -46,7 +56,9 @@ data() {
             config: []
         },
         // 加载状态
-        loading: false
+        loading: false,
+        // 可用渠道列表
+        availableChannels: {}
     };
 },
 computed: {
@@ -63,6 +75,29 @@ computed: {
             });
         }
         return grouped;
+    },
+    // 当前选择的上传渠道
+    currentUploadChannel() {
+        const channelSetting = this.settings.config?.find(s => s.id === 'defaultUploadChannel');
+        return channelSetting?.value || '';
+    },
+    // 当前渠道类型对应的渠道列表
+    currentChannelList() {
+        return this.availableChannels[this.currentUploadChannel] || [];
+    }
+},
+watch: {
+    // 监听上传渠道变化，清空渠道名称（如果不在新列表中）
+    currentUploadChannel(newVal, oldVal) {
+        if (newVal !== oldVal) {
+            const channelNameSetting = this.settings.config?.find(s => s.id === 'defaultChannelName');
+            if (channelNameSetting) {
+                const newChannelList = this.availableChannels[newVal] || [];
+                if (!newChannelList.some(ch => ch.name === channelNameSetting.value)) {
+                    channelNameSetting.value = '';
+                }
+            }
+        }
     }
 },
 methods: {
@@ -75,10 +110,23 @@ methods: {
             body: JSON.stringify(this.settings)
         })
         .then(() => this.$message.success('设置已保存'));
+    },
+    // 获取可用渠道列表
+    async fetchAvailableChannels() {
+        try {
+            const response = await axios.get('/api/channels');
+            if (response.data) {
+                this.availableChannels = response.data;
+            }
+        } catch (error) {
+            console.error('Failed to fetch available channels:', error);
+        }
     }
 },
 mounted() {
     this.loading = true;
+    // 获取可用渠道列表
+    this.fetchAvailableChannels();
     // 获取上传设置
     fetchWithAuth('/api/manage/sysConfig/page')
     .then((response) => response.json())

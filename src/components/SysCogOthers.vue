@@ -89,6 +89,25 @@
                 <el-form-item label="密码">
                     <el-input v-model="settings.webDAV.password" :disabled="settings.webDAV.fixed" type="password" show-password autocomplete="new-password"></el-input>
                 </el-form-item>
+                <el-form-item label="上传渠道">
+                    <el-select v-model="settings.webDAV.uploadChannel" :disabled="settings.webDAV.fixed" placeholder="默认渠道" clearable>
+                        <el-option label="Telegram" value="telegram"></el-option>
+                        <el-option label="Cloudflare R2" value="cfr2"></el-option>
+                        <el-option label="S3" value="s3"></el-option>
+                        <el-option label="Discord" value="discord"></el-option>
+                        <el-option label="HuggingFace" value="huggingface"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="指定渠道名" v-if="settings.webDAV.uploadChannel && webdavChannelList.length > 1">
+                    <el-select v-model="settings.webDAV.channelName" :disabled="settings.webDAV.fixed" placeholder="自动选择" clearable>
+                        <el-option
+                            v-for="ch in webdavChannelList"
+                            :key="ch.name"
+                            :label="ch.name"
+                            :value="ch.name"
+                        ></el-option>
+                    </el-select>
+                </el-form-item>
             </el-form>
         </div>
 
@@ -113,11 +132,25 @@ data() {
             webDAV: {},
             publicBrowse: {}
         },
+        availableChannels: {}, // 可用渠道列表
         // 加载状态
         loading: false
     };
 },
 computed: {
+    // WebDAV 当前渠道类型对应的渠道列表
+    webdavChannelList() {
+        const channelType = this.settings.webDAV?.uploadChannel;
+        return channelType ? (this.availableChannels[channelType] || []) : [];
+    }
+},
+watch: {
+    'settings.webDAV.uploadChannel'() {
+        // 切换渠道类型时清空指定的渠道名称
+        if (this.settings.webDAV) {
+            this.settings.webDAV.channelName = '';
+        }
+    }
 },
 methods: {
     saveSettings() {
@@ -129,6 +162,16 @@ methods: {
             body: JSON.stringify(this.settings)
         })
         .then(() => this.$message.success('设置已保存'));
+    },
+    async fetchAvailableChannels() {
+        try {
+            const response = await fetchWithAuth('/api/channels');
+            if (response.ok) {
+                this.availableChannels = await response.json();
+            }
+        } catch (error) {
+            console.error('Failed to fetch available channels:', error);
+        }
     }
 },
 mounted() {
@@ -142,6 +185,8 @@ mounted() {
     .finally(() => {
         this.loading = false;
     });
+    // 获取可用渠道列表
+    this.fetchAvailableChannels();
 }
 };
 </script>

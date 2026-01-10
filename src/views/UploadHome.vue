@@ -91,6 +91,7 @@
             :compressBar="compressBar"
             :serverCompress="serverCompress"
             :uploadChannel="uploadChannel"
+            :channelName="channelName"
             :uploadNameType="uploadNameType"
             :useCustomUrl="useCustomUrl"
             :customUrlPrefix="customUrlPrefix"
@@ -182,6 +183,22 @@
                                 <span>HF</span>
                             </el-radio>
                         </el-radio-group>
+                    </div>
+                    <div class="setting-item" v-if="currentChannelList.length > 1">
+                        <span class="setting-label">
+                            指定渠道
+                            <el-tooltip content="选择具体的渠道名称，不选择则使用负载均衡或默认渠道" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </span>
+                        <el-select v-model="channelName" placeholder="自动选择" clearable class="setting-input" size="small">
+                            <el-option
+                                v-for="ch in currentChannelList"
+                                :key="ch.name"
+                                :label="ch.name"
+                                :value="ch.name"
+                            />
+                        </el-select>
                     </div>
                     <div class="setting-item">
                         <span class="setting-label">上传目录</span>
@@ -322,6 +339,7 @@ import ToggleDark from '@/components/ToggleDark.vue'
 import Logo from '@/components/Logo.vue'
 import UploadHistory from '@/components/UploadHistory.vue'
 import backgroundManager from '@/mixins/backgroundManager'
+import axios from '@/utils/axios'
 import { ref } from 'vue'
 import cookies from 'vue-cookies'
 import { mapGetters } from 'vuex'
@@ -340,6 +358,8 @@ export default {
             convertToWebp: false, //转换为WebP格式
             serverCompress: true, //服务器端压缩
             uploadChannel: '', //上传渠道
+            channelName: '', //指定的渠道名称
+            availableChannels: {}, //可用渠道列表
             uploadNameType: '', //上传文件命名方式
             customUrlPrefix: '', //自定义链接前缀
             useCustomUrl: 'false', //是否启用自定义链接格式
@@ -382,6 +402,19 @@ export default {
         },
         uploadChannel(val) {
             this.updateStoreUploadChannel(val)
+            // 切换渠道类型时，检查持久化的渠道名是否在新渠道列表中
+            const newChannelList = this.availableChannels[val] || []
+            const savedChannelName = this.storeChannelName
+            if (savedChannelName && newChannelList.some(ch => ch.name === savedChannelName)) {
+                // 持久化的渠道名在新渠道列表中，恢复它
+                this.channelName = savedChannelName
+            } else {
+                // 否则清空
+                this.channelName = ''
+            }
+        },
+        channelName(val) {
+            this.$store.commit('setStoreChannelName', val)
         },
         uploadNameType(val) {
             this.updateStoreUploadNameType(val)
@@ -407,7 +440,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder']),
+        ...mapGetters(['userConfig', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeChannelName', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder']),
         ownerName() {
             return this.userConfig?.ownerName || 'Sanyue'
         },
@@ -423,6 +456,10 @@ export default {
         },
         announcementAvailable() {
             return !!this.userConfig?.announcement
+        },
+        // 当前渠道类型对应的渠道列表
+        currentChannelList() {
+            return this.availableChannels[this.uploadChannel] || []
         }
     },
     mounted() {
@@ -448,6 +485,8 @@ export default {
         this.useCustomUrl = this.customUrlSettings.useCustomUrl
         // 读取用户偏好的上传方式
         this.uploadMethod = this.storeUploadMethod
+        // 获取可用渠道列表
+        this.fetchAvailableChannels()
         // 读取用户设置的上传文件夹
         this.uploadFolder = this.storeUploadFolder || this.userConfig?.defaultUploadFolder || ''
 
@@ -480,6 +519,26 @@ export default {
         UploadHistory
     },
     methods: {
+        // 获取可用渠道列表
+        async fetchAvailableChannels() {
+            try {
+                const response = await axios.get('/api/channels')
+                if (response.data) {
+                    this.availableChannels = response.data
+                    // 恢复渠道名称：优先持久化的值，其次系统默认配置
+                    const savedChannelName = this.storeChannelName
+                    const defaultChannelName = this.userConfig?.defaultChannelName
+                    const currentChannelList = this.availableChannels[this.uploadChannel] || []
+                    if (savedChannelName && currentChannelList.some(ch => ch.name === savedChannelName)) {
+                        this.channelName = savedChannelName
+                    } else if (defaultChannelName && currentChannelList.some(ch => ch.name === defaultChannelName)) {
+                        this.channelName = defaultChannelName
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch available channels:', error)
+            }
+        },
         // 验证上传文件夹路径的合法性
         validateUploadFolder(path) {
             // 如果路径为空，返回true（允许空路径）
