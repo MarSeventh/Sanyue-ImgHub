@@ -562,6 +562,10 @@
                             </template>
                             <!-- 文件夹操作 -->
                             <template v-else>
+                                <div class="bottom-sheet-item" @click="handleMobileAction('folderCopy')">
+                                    <font-awesome-icon icon="copy" class="bottom-sheet-icon"></font-awesome-icon>
+                                    <span>复制链接</span>
+                                </div>
                                 <div class="bottom-sheet-item" @click="handleMobileAction('move')">
                                     <font-awesome-icon icon="file-export" class="bottom-sheet-icon"></font-awesome-icon>
                                     <span>移动文件夹</span>
@@ -885,6 +889,9 @@ methods: {
             case 'copy':
                 this.handleCopy(index, file.name);
                 break;
+            case 'folderCopy':
+                this.handleFolderCopy(file.name);
+                break;
             case 'download':
                 this.handleDownload(file.name);
                 break;
@@ -1163,8 +1170,7 @@ methods: {
         if (folders.length > 0) {
             loading = this.$loading({
                 lock: true,
-                text: '正在获取文件列表...',
-                background: 'rgba(0, 0, 0, 0.7)'
+                text: '正在获取文件列表...'
             });
         }
         
@@ -1965,8 +1971,7 @@ methods: {
         // 显示加载状态
         const loading = this.$loading({
             lock: true,
-            text: '正在获取文件列表...',
-            background: 'rgba(0, 0, 0, 0.7)'
+            text: '正在获取文件列表...'
         });
         
         try {

@@ -191,7 +191,7 @@
                                 <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
                             </el-tooltip>
                         </span>
-                        <el-select v-model="channelName" placeholder="自动选择" clearable class="setting-input" size="small">
+                        <el-select v-model="channelName" placeholder="自动选择" clearable class="setting-input">
                             <el-option
                                 v-for="ch in currentChannelList"
                                 :key="ch.name"
@@ -275,7 +275,7 @@
                         <div class="slider-wrapper">
                             <el-slider v-model="compressBar" :min="1" :max="20" :format-tooltip="(value) => `${value} MB`"/>
                             <div class="slider-input-wrapper">
-                                <el-input-number v-model="compressBar" :min="1" :max="20" :step="1" :value-on-clear="1" size="small" class="slider-input" controls-position="right"/>
+                                <el-input-number v-model="compressBar" :min="1" :max="20" :step="1" :value-on-clear="1" class="slider-input" controls-position="right"/>
                                 <span class="slider-unit">MB</span>
                             </div>
                         </div>
@@ -290,7 +290,7 @@
                         <div class="slider-wrapper">
                             <el-slider v-model="compressQuality" :min="0.5" :max="compressBar" :step="0.1" :format-tooltip="(value) => `${value} MB`"/>
                             <div class="slider-input-wrapper">
-                                <el-input-number v-model="compressQuality" :min="0.5" :max="compressBar" :step="0.1" :precision="1" :value-on-clear="0.5" size="small" class="slider-input" controls-position="right"/>
+                                <el-input-number v-model="compressQuality" :min="0.5" :max="compressBar" :step="0.1" :precision="1" :value-on-clear="0.5" class="slider-input" controls-position="right"/>
                                 <span class="slider-unit">MB</span>
                             </div>
                         </div>

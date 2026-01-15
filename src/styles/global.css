@@ -1,4 +1,11 @@
 /* 全局样式 */
+
+/* 禁用移动端点击高亮 */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
 :root {
     /* 全局 */
     --bg-color: linear-gradient(90deg, #efe8e8 0%, #e4f8ff 100%);

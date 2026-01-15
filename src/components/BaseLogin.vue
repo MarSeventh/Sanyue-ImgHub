@@ -206,7 +206,7 @@ export default {
 }
 
 .login-title {
-    font-size: 2.5rem;
+    font-size: 2.3rem;
     margin-bottom: 15px;
     color: var(--login-title-color);
     font-family: 'Noto Sans SC', sans-serif;
@@ -247,7 +247,7 @@ export default {
     align-items: center;
     min-height: auto;
     height: auto;
-    width: 40vw;
+    width: 600px;
     border-radius: 12px;
     box-shadow: var(--login-container-box-shadow);
     background-color: var(--login-container-bg-color);
@@ -255,10 +255,12 @@ export default {
     transition: all 0.3s ease;
     padding: 40px 0;
     gap: 20px;
+    position: relative;
+    z-index: 101;
 }
 @media (max-width: 768px) {
     .login-container {
-        width: 80vw;
+        width: 85vw;
     }
 }
 .login-container:hover {
