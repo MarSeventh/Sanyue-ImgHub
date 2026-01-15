@@ -130,6 +130,11 @@
                             <div v-if="!isSearchMode" class="action-bar">
                                 <div class="action-bar-left"></div>
                                 <div class="action-bar-right">
+                                    <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
+                                        <button class="action-btn" @click.stop="handleFolderCopy(item.name)">
+                                            <font-awesome-icon icon="copy"></font-awesome-icon>
+                                        </button>
+                                    </el-tooltip>
                                     <el-tooltip :disabled="disableTooltip" content="移动" placement="top">
                                         <button class="action-btn" @click.stop="handleMove(index, item.name)">
                                             <font-awesome-icon icon="file-export"></font-awesome-icon>
@@ -226,7 +231,8 @@
                     <div class="list-col list-col-preview">预览</div>
                     <div class="list-col list-col-name">文件名</div>
                     <div class="list-col list-col-tags">标签</div>
-                    <div class="list-col list-col-channel">上传渠道</div>
+                    <div class="list-col list-col-channel">渠道类型</div>
+                    <div class="list-col list-col-channel-name">渠道名称</div>
                     <div class="list-col list-col-address">上传地址</div>
                     <div class="list-col list-col-size">大小</div>
                     <div class="list-col list-col-date">上传时间</div>
@@ -280,6 +286,10 @@
                     <div class="list-col list-col-channel">
                         {{ isFolder(item) ? '-' : (item.metadata?.Channel || item.channelTag || '-') }}
                     </div>
+                    <div class="list-col list-col-channel-name">
+                        <div v-if="!isFolder(item) && item.metadata?.ChannelName" class="channel-name-box">{{ item.metadata.ChannelName }}</div>
+                        <span v-else class="list-empty">-</span>
+                    </div>
                     <div class="list-col list-col-address">
                         <div v-if="!isFolder(item) && item.metadata?.UploadIP" class="address-box">{{ item.metadata.UploadIP }}</div>
                         <span v-else class="list-empty">-</span>
@@ -308,11 +318,18 @@
                                 </button>
                             </el-tooltip>
                         </template>
-                        <el-tooltip v-else content="移动" placement="top">
-                            <button class="list-action-btn" @click.stop="handleMove(index, item.name)">
-                                <font-awesome-icon icon="file-export"/>
-                            </button>
-                        </el-tooltip>
+                        <template v-else>
+                            <el-tooltip content="复制链接" placement="top">
+                                <button class="list-action-btn" @click.stop="handleFolderCopy(item.name)">
+                                    <font-awesome-icon icon="copy"/>
+                                </button>
+                            </el-tooltip>
+                            <el-tooltip content="移动" placement="top">
+                                <button class="list-action-btn" @click.stop="handleMove(index, item.name)">
+                                    <font-awesome-icon icon="file-export"/>
+                                </button>
+                            </el-tooltip>
+                        </template>
                         <el-tooltip content="删除" placement="top">
                             <button class="list-action-btn list-action-danger" @click.stop="handleDelete(index, item.name)">
                                 <font-awesome-icon icon="trash-alt"/>
@@ -608,6 +625,7 @@ import TagManagementDialog from '@/components/TagManagementDialog.vue';
 import BatchTagDialog from '@/components/BatchTagDialog.vue';
 import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import { validateFolderPath } from '@/utils/pathValidator';
 
 export default {
 data() {
@@ -1135,70 +1153,71 @@ methods: {
             .catch(() => this.$message.error('批量删除失败'));
         }).catch(() => console.log('已取消批量删除'));
     },
-    handleBatchCopy() {
-        let tmpLinks = '';
-        switch (this.defaultUrlFormat) {
-            case 'originUrl':
-                tmpLinks = this.selectedFiles.map(file => {
-                    // 跳过文件夹
-                    if (file.isFolder) return '';
-
-                    if (file.metadata?.Channel === 'External') {
-                        return file.metadata?.ExternalLink;
-                    } else {
-                        return `${this.rootUrl}${file.name}`;
-                    }
-                }).join('\n');
-                break;
-            case 'mdUrl':
-                tmpLinks = this.selectedFiles.map(file => {
-                    // 跳过文件夹
-                    if (file.isFolder) return '';
-
-                    if (file.metadata?.Channel === 'External') {
-                        return `![${file.metadata?.FileName || file.name}](${file.metadata?.ExternalLink})`;
-                    } else {
-                        return `![${file.metadata?.FileName || file.name}](${this.rootUrl}${file.name})`;
-                    }
-                }).join('\n');
-                break;
-            case 'htmlUrl':
-                tmpLinks = this.selectedFiles.map(file => {
-                    // 跳过文件夹
-                    if (file.isFolder) return '';
-
-                    if (file.metadata?.Channel === 'External') {
-                        return `<img src="${file.metadata?.ExternalLink}" alt="${file.metadata?.FileName || file.name}" width=100%>`;
-                    } else {
-                        return `<img src="${this.rootUrl}${file.name}" alt="${file.metadata?.FileName || file.name}" width=100%>`;
-                    }
-                }).join('\n');
-                break;
-            case 'bbUrl':
-                tmpLinks = this.selectedFiles.map(file => {
-                    // 跳过文件夹
-                    if (file.isFolder) return '';
-
-                    if (file.metadata?.Channel === 'External') {
-                        return `[img]${file.metadata?.ExternalLink}[/img]`;
-                    } else {
-                        return `[img]${this.rootUrl}${file.name}[/img]`;
-                    }
-                }).join('\n');
-                break;
-            case 'tgId':
-                tmpLinks = this.selectedFiles.map(file => file.metadata?.TgFileId || '').join('\n');
-                break;
-            case 's3Location':
-                tmpLinks = this.selectedFiles.map(file => file.metadata?.S3Location || '').join('\n');
-                break;
+    async handleBatchCopy() {
+        // 分离文件和文件夹
+        const files = this.selectedFiles.filter(item => !item.isFolder);
+        const folders = this.selectedFiles.filter(item => item.isFolder);
+        
+        // 如果有文件夹，显示加载状态
+        let loading = null;
+        if (folders.length > 0) {
+            loading = this.$loading({
+                lock: true,
+                text: '正在获取文件列表...',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
         }
-        // 删除空行
-        tmpLinks = tmpLinks.replace(/^\s*[\r\n]/gm, '');
-
-        const links = tmpLinks;
-        navigator.clipboard ? navigator.clipboard.writeText(links).then(() => this.$message.success('批量复制链接成功')) :
-        this.copyToClipboardFallback(links);
+        
+        try {
+            // 收集所有文件（包括文件夹内的文件）
+            let allFiles = [...files];
+            
+            // 递归获取所有文件夹内的文件
+            for (const folder of folders) {
+                try {
+                    const response = await fetchWithAuth(
+                        `/api/manage/list?dir=${encodeURIComponent(folder.name)}&recursive=true&count=-1`,
+                        { method: 'GET' }
+                    );
+                    const data = await response.json();
+                    if (data.files && data.files.length > 0) {
+                        allFiles = allFiles.concat(data.files);
+                    }
+                } catch (error) {
+                    console.error(`获取文件夹 ${folder.name} 内容失败:`, error);
+                }
+            }
+            
+            if (loading) loading.close();
+            
+            if (allFiles.length === 0) {
+                this.$message.warning('没有可复制的链接');
+                return;
+            }
+            
+            // 生成所有链接
+            const links = allFiles.map(file => {
+                return this.generateFileLink(file.name, file.metadata);
+            }).filter(link => link); // 过滤掉空链接
+            
+            if (links.length === 0) {
+                this.$message.warning('没有可复制的链接');
+                return;
+            }
+            
+            // 复制到剪贴板
+            const text = links.join('\n');
+            if (navigator.clipboard) {
+                await navigator.clipboard.writeText(text);
+                this.$message.success(`批量复制 ${links.length} 个链接成功`);
+            } else {
+                this.copyToClipboardFallback(text);
+            }
+        } catch (error) {
+            if (loading) loading.close();
+            console.error('批量复制链接失败:', error);
+            this.$message.error('批量复制链接失败，请重试');
+        }
     },
     copyToClipboardFallback(text) {
         const textarea = document.createElement('textarea');
@@ -1354,8 +1373,21 @@ methods: {
         this.$prompt('请输入新的目录', '移动文件', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
-            inputPattern: /^\/([a-zA-Z0-9_\u4e00-\u9fa5]+(\/[a-zA-Z0-9_\u4e00-\u9fa5]+)*)?$/,
-            inputErrorMessage: '请输入/开头的正确目录路径'
+            inputValue: '/',
+            beforeClose: (action, instance, done) => {
+                if (action === 'confirm') {
+                    const value = instance.inputValue;
+                    // 使用共享验证器验证路径
+                    const validation = validateFolderPath(value);
+                    if (!validation.valid) {
+                        this.$message.error(validation.error);
+                        return; // 验证失败，不关闭弹窗
+                    }
+                    done(); // 验证通过，关闭弹窗
+                } else {
+                    done(); // 取消操作，直接关闭
+                }
+            }
         }).then(({ value }) => {
             // 去掉开头的 /，结尾若没有 /，则加上
             const newPath = value.replace(/^\/+/, '') + (value.endsWith('/') ? '' : value === '' ? '' : '/');
@@ -1405,8 +1437,21 @@ methods: {
         this.$prompt('请输入新的目录', '移动文件', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
-            inputPattern: /^\/([a-zA-Z0-9_\u4e00-\u9fa5]+(\/[a-zA-Z0-9_\u4e00-\u9fa5]+)*)?$/,
-            inputErrorMessage: '请输入/开头的正确目录路径'
+            inputValue: '/',
+            beforeClose: (action, instance, done) => {
+                if (action === 'confirm') {
+                    const value = instance.inputValue;
+                    // 使用共享验证器验证路径
+                    const validation = validateFolderPath(value);
+                    if (!validation.valid) {
+                        this.$message.error(validation.error);
+                        return; // 验证失败，不关闭弹窗
+                    }
+                    done(); // 验证通过，关闭弹窗
+                } else {
+                    done(); // 取消操作，直接关闭
+                }
+            }
         }).then(({ value }) => {
             // 去掉开头的 /，结尾若没有 /，则加上
             const newPath = value.replace(/^\/+/, '') + (value.endsWith('/') ? '' : value === '' ? '' : '/');
@@ -1891,6 +1936,78 @@ methods: {
     async handleBatchTagsUpdated() {
         // 刷新文件列表以显示更新后的标签
         await this.refreshLocalFileList();
+    },
+    // 生成单个文件链接
+    generateFileLink(key, metadata) {
+        const isExternal = metadata?.Channel === 'External';
+        const baseUrl = isExternal ? metadata?.ExternalLink : `${this.rootUrl}${key}`;
+        const fileName = metadata?.FileName || key;
+        
+        switch (this.defaultUrlFormat) {
+            case 'originUrl':
+                return baseUrl;
+            case 'mdUrl':
+                return `![${fileName}](${baseUrl})`;
+            case 'htmlUrl':
+                return `<img src="${baseUrl}" alt="${fileName}" width=100%>`;
+            case 'bbUrl':
+                return `[img]${baseUrl}[/img]`;
+            case 'tgId':
+                return metadata?.TgFileId || '';
+            case 's3Location':
+                return metadata?.S3Location || '';
+            default:
+                return baseUrl;
+        }
+    },
+    // 复制文件夹中所有文件的链接
+    async handleFolderCopy(folderName) {
+        // 显示加载状态
+        const loading = this.$loading({
+            lock: true,
+            text: '正在获取文件列表...',
+            background: 'rgba(0, 0, 0, 0.7)'
+        });
+        
+        try {
+            // 调用 list API 递归获取文件夹内所有文件
+            const response = await fetchWithAuth(
+                `/api/manage/list?dir=${encodeURIComponent(folderName)}&recursive=true&count=-1`,
+                { method: 'GET' }
+            );
+            
+            const data = await response.json();
+            loading.close();
+            
+            if (!data.files || data.files.length === 0) {
+                this.$message.warning('文件夹为空，没有可复制的链接');
+                return;
+            }
+            
+            // 根据当前链接格式生成所有文件链接
+            const links = data.files.map(file => {
+                return this.generateFileLink(file.name, file.metadata);
+            }).filter(link => link); // 过滤掉空链接
+            
+            if (links.length === 0) {
+                this.$message.warning('没有可复制的链接');
+                return;
+            }
+            
+            // 复制到剪贴板
+            const text = links.join('\n');
+            if (navigator.clipboard) {
+                await navigator.clipboard.writeText(text);
+                this.$message.success(`已复制 ${links.length} 个文件链接`);
+            } else {
+                this.copyToClipboardFallback(text);
+                this.$message.success(`已复制 ${links.length} 个文件链接`);
+            }
+        } catch (error) {
+            loading.close();
+            console.error('复制文件夹链接失败:', error);
+            this.$message.error('复制文件夹链接失败，请重试');
+        }
     },
 },
 mounted() {
@@ -2507,7 +2624,7 @@ html.dark .header-content:hover {
 
 .list-header {
     display: grid;
-    grid-template-columns: 50px 60px minmax(180px, 1fr) 130px 100px 120px 80px 100px 120px;
+    grid-template-columns: 50px 60px minmax(180px, 1fr) 130px 100px 110px 130px 80px 100px 120px;
     padding: 12px 20px;
     background: var(--admin-dashboard-stats-bg);
     font-weight: 600;
@@ -2519,7 +2636,7 @@ html.dark .header-content:hover {
 
 .list-item {
     display: grid;
-    grid-template-columns: 50px 60px minmax(180px, 1fr) 130px 100px 120px 80px 100px 120px;
+    grid-template-columns: 50px 60px minmax(180px, 1fr) 130px 100px 110px 130px 80px 100px 120px;
     padding: 12px 20px;
     align-items: center;
     transition: background 0.2s ease;
@@ -2583,7 +2700,8 @@ html.dark .header-content:hover {
 
 .list-col-size,
 .list-col-date,
-.list-col-channel {
+.list-col-channel,
+.list-col-channel-name {
     font-size: 13px;
     color: var(--el-text-color-secondary);
 }
@@ -2614,6 +2732,31 @@ html.dark .header-content:hover {
 }
 
 .address-box {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* 渠道名称文本框样式 */
+.channel-name-box {
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    width: 70px;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+/* 隐藏滚动条但保持可滚动 */
+.channel-name-box::-webkit-scrollbar {
+    display: none;
+}
+
+.channel-name-box {
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -2743,6 +2886,7 @@ html.dark .header-content:hover {
     .list-col-date,
     .list-col-tags,
     .list-col-channel,
+    .list-col-channel-name,
     .list-col-address {
         display: none;
     }

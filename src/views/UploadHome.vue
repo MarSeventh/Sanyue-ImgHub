@@ -343,6 +343,7 @@ import axios from '@/utils/axios'
 import { ref } from 'vue'
 import cookies from 'vue-cookies'
 import { mapGetters } from 'vuex'
+import { validateFolderPath } from '@/utils/pathValidator'
 
 export default {
     name: 'UploadHome',
@@ -541,30 +542,13 @@ export default {
         },
         // 验证上传文件夹路径的合法性
         validateUploadFolder(path) {
-            // 如果路径为空，返回true（允许空路径）
-            if (!path || path.trim() === '') {
-                return true
-            }
-            
-            // 检查路径是否以/开头
-            if (!path.startsWith('/')) {
-                this.$message.error('上传目录必须以 "/" 开头')
+            const result = validateFolderPath(path)
+            if (!result.valid) {
+                // 将错误消息中的"目标目录"替换为"上传目录"以保持原有的提示风格
+                const errorMessage = result.error.replace('目标目录', '上传目录')
+                this.$message.error(errorMessage)
                 return false
             }
-            
-            // 检查路径是否包含非法字符
-            const invalidChars = /[\\:\*\?"'<>\| \(\)\[\]\{\}#%\^`~;@&=\+\$,]/
-            if (invalidChars.test(path)) {
-                this.$message.error('上传目录包含非法字符，请使用合法的路径格式')
-                return false
-            }
-            
-            // 检查路径是否包含连续的斜杠
-            if (path.includes('//')) {
-                this.$message.error('上传目录不能包含连续的斜杠')
-                return false
-            }
-            
             return true
         },
         handleManage() {
