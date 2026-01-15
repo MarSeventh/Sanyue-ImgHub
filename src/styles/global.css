@@ -199,6 +199,12 @@
     --admin-dashboard-tag-suggestion-item-hover-bg-color: #f5f7fa;
     /* admin-dashboard tag搜索建议项悬浮背景颜色 */
 
+    /* 骨架图颜色 */
+    --skeleton-bg-color: #e0e0e0;
+    /* 骨架图背景颜色 */
+    --skeleton-shimmer-color: rgba(255, 255, 255, 0.5);
+    /* 骨架图闪烁颜色 */
+
 
     --admin-cuscfg-table-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     /* admin 用户管理页面 table阴影 */
@@ -422,6 +428,12 @@
     /* admin-dashboard tag搜索建议阴影 */
     --admin-dashboard-tag-suggestion-item-hover-bg-color: #3a3a3a;
     /* admin-dashboard tag搜索建议项悬浮背景颜色 */
+
+    /* 骨架图颜色 */
+    --skeleton-bg-color: #3a3a3a;
+    /* 骨架图背景颜色 */
+    --skeleton-shimmer-color: rgba(255, 255, 255, 0.15);
+    /* 骨架图闪烁颜色 */
 
 
     --admin-cuscfg-table-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 0 1px 1px rgba(255, 255, 255, 0.05);

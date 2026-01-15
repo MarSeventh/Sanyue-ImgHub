@@ -18,38 +18,66 @@
                 </span>
             </div>
         </div>
+        
         <!-- 视频预览 -->
-        <video 
-            v-if="isVideo" 
-            :src="fileLink" 
-            muted 
-            loop 
-            preload="metadata" 
-            class="video-preview" 
-            @click="handleVideoClick"
-            @mouseenter="handleVideoHover($event, true)" 
-            @mouseleave="handleVideoHover($event, false)"
-        ></video>
+        <template v-if="isVideo">
+            <div v-if="videoLoading" class="skeleton-wrapper">
+                <div class="skeleton-animation"></div>
+            </div>
+            <div v-else-if="videoError" class="error-wrapper" @click="$emit('detail')">
+                <font-awesome-icon icon="exclamation-triangle" class="error-icon"/>
+                <span class="error-text">加载失败</span>
+            </div>
+            <video 
+                v-show="!videoLoading && !videoError"
+                :src="fileLink" 
+                muted 
+                loop 
+                preload="metadata" 
+                class="video-preview" 
+                @click="handleVideoClick"
+                @mouseenter="handleVideoHover($event, true)" 
+                @mouseleave="handleVideoHover($event, false)"
+                @fullscreenchange="handleFullscreenChange"
+                @webkitfullscreenchange="handleFullscreenChange"
+                @loadeddata="videoLoading = false"
+                @error="handleVideoError"
+            ></video>
+        </template>
+        
         <!-- 音频预览 -->
         <div v-else-if="isAudio" class="file-preview audio-card-preview" @click="$emit('detail')">
             <font-awesome-icon icon="music" class="file-icon audio-icon"/>
         </div>
+        
         <!-- 图片预览 -->
         <el-image 
-            v-else-if="isImage" 
+            v-else-if="isImage"
             :preview-teleported="true" 
             :src="fileLink" 
             :preview-src-list="previewSrcList" 
             fit="cover" 
             lazy 
-            loading="lazy" 
-            decoding="async" 
             class="image-preview"
-        ></el-image>
+        >
+            <template #placeholder>
+                <div class="skeleton-wrapper">
+                    <div class="skeleton-animation"></div>
+                </div>
+            </template>
+            <template #error>
+                <div class="error-wrapper" @click.stop="$emit('detail')">
+                    <font-awesome-icon icon="image" class="error-icon"/>
+                    <span class="error-text">加载失败</span>
+                </div>
+            </template>
+        </el-image>
+        
         <!-- 其他文件 -->
         <div v-else class="file-preview">
             <font-awesome-icon icon="file" class="file-icon"/>
         </div>
+        
         <!-- 底部覆盖层 -->
         <div class="card-bottom-overlay">
             <div class="file-name-row">
@@ -103,7 +131,9 @@ export default {
     emits: ['update:selected', 'detail', 'copy', 'move', 'delete', 'download', 'touchstart', 'touchend', 'touchmove'],
     data() {
         return {
-            localSelected: this.selected
+            localSelected: this.selected,
+            videoLoading: true,
+            videoError: false
         }
     },
     computed: {
@@ -132,21 +162,53 @@ export default {
     watch: {
         selected(val) {
             this.localSelected = val;
+        },
+        fileLink() {
+            // 链接变化时重置加载状态
+            this.videoLoading = true;
+            this.videoError = false;
         }
     },
     methods: {
+        handleVideoError() {
+            this.videoLoading = false;
+            this.videoError = true;
+        },
         handleVideoClick(e) {
             const video = e.target;
-            if (video.paused) {
-                video.play();
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {
+                video.webkitRequestFullscreen();
+            } else if (video.mozRequestFullScreen) {
+                video.mozRequestFullScreen();
+            } else if (video.msRequestFullscreen) {
+                video.msRequestFullscreen();
+            }
+        },
+        handleFullscreenChange(e) {
+            const video = e.target;
+            const isFullscreen = document.fullscreenElement || 
+                                 document.webkitFullscreenElement ||
+                                 document.mozFullScreenElement ||
+                                 document.msFullscreenElement;
+            
+            if (isFullscreen) {
+                // 进入全屏：取消静音和循环
+                video.muted = false;
+                video.loop = false;
             } else {
+                // 退出全屏：恢复静音和循环，暂停并重置
+                video.muted = true;
+                video.loop = true;
                 video.pause();
+                video.currentTime = 0;
             }
         },
         handleVideoHover(e, isEnter) {
             const video = e.target;
             if (isEnter) {
-                video.play();
+                video.play().catch(() => {});
             } else {
                 video.pause();
                 video.currentTime = 0;
@@ -188,6 +250,9 @@ export default {
     object-fit: cover;
     transition: transform 0.4s ease, opacity 0.3s ease;
     filter: var(--image-preview-filter);
+}
+.video-preview {
+    cursor: pointer;
 }
 .img-card:hover .image-preview,
 .img-card:hover .video-preview,
@@ -340,5 +405,55 @@ export default {
     .action-bar {
         display: none !important;
     }
+}
+
+/* 骨架图加载动画 */
+.skeleton-wrapper {
+    width: 100%;
+    height: 100%;
+    background: var(--skeleton-bg-color);
+    position: relative;
+    overflow: hidden;
+}
+.skeleton-animation {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--skeleton-shimmer-color),
+        transparent
+    );
+    animation: skeleton-loading 1.5s infinite;
+}
+@keyframes skeleton-loading {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* 加载失败提示 */
+.error-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--skeleton-bg-color);
+    cursor: pointer;
+    gap: 8px;
+}
+.error-icon {
+    font-size: 32px;
+    color: var(--el-color-warning);
+    opacity: 0.7;
+}
+.error-text {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
 }
 </style>

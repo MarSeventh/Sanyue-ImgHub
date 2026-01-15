@@ -99,9 +99,9 @@ export default {
     height: 100%;
     background: linear-gradient(
         90deg,
-        var(--el-fill-color-light) 25%,
-        var(--el-fill-color) 50%,
-        var(--el-fill-color-light) 75%
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
     );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
@@ -124,7 +124,7 @@ export default {
     background: linear-gradient(
         90deg,
         rgba(255, 255, 255, 0.1) 25%,
-        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.25) 50%,
         rgba(255, 255, 255, 0.1) 75%
     );
     background-size: 200% 100%;
@@ -140,7 +140,7 @@ export default {
     width: 18px;
     height: 18px;
     border-radius: 4px;
-    background: var(--el-fill-color);
+    background: var(--skeleton-bg-color);
 }
 
 .skeleton-preview {
@@ -149,9 +149,9 @@ export default {
     border-radius: 6px;
     background: linear-gradient(
         90deg,
-        var(--el-fill-color-light) 25%,
-        var(--el-fill-color) 50%,
-        var(--el-fill-color-light) 75%
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
     );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
@@ -163,9 +163,9 @@ export default {
     border-radius: 4px;
     background: linear-gradient(
         90deg,
-        var(--el-fill-color-light) 25%,
-        var(--el-fill-color) 50%,
-        var(--el-fill-color-light) 75%
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
     );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
@@ -177,9 +177,9 @@ export default {
     border-radius: 4px;
     background: linear-gradient(
         90deg,
-        var(--el-fill-color-light) 25%,
-        var(--el-fill-color) 50%,
-        var(--el-fill-color-light) 75%
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
     );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
@@ -191,9 +191,9 @@ export default {
     border-radius: 4px;
     background: linear-gradient(
         90deg,
-        var(--el-fill-color-light) 25%,
-        var(--el-fill-color) 50%,
-        var(--el-fill-color-light) 75%
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
     );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
@@ -205,9 +205,9 @@ export default {
     border-radius: 10px;
     background: linear-gradient(
         90deg,
-        var(--el-fill-color-light) 25%,
-        var(--el-fill-color) 50%,
-        var(--el-fill-color-light) 75%
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
     );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
@@ -217,7 +217,7 @@ export default {
     height: 28px;
     width: 80px;
     border-radius: 6px;
-    background: var(--el-fill-color-light);
+    background: var(--skeleton-bg-color);
 }
 
 /* 列表项布局继承 */

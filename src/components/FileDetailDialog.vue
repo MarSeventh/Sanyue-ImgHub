@@ -37,24 +37,26 @@
                 <el-input v-model="urls.S3Location" readonly @click="handleUrlClick"></el-input>
             </el-tab-pane>
         </el-tabs>
-        <el-descriptions direction="vertical" border :column="columnNum">
-            <el-descriptions-item label="文件预览" :rowspan="previewSpan" :width="300" align="center">
-                <video v-if="isVideo" :src="fileLink" autoplay muted loop class="video-preview" @click="handleVideoClick"></video>
+        <!-- 文件预览区域 -->
+        <div class="preview-section">
+            <div class="preview-content">
+                <video v-if="isVideo" :src="fileLink" autoplay muted loop class="video-preview" @click="openImageLink"></video>
                 <audio v-else-if="isAudio" :src="fileLink" controls autoplay class="audio-preview"></audio>
-                <el-image v-else-if="isImage" :src="fileLink" fit="cover" lazy class="image-preview"></el-image>
+                <el-image v-else-if="isImage" :src="fileLink" fit="contain" lazy class="image-preview" @click="openImageLink"></el-image>
                 <font-awesome-icon v-else icon="file" class="file-icon-detail"></font-awesome-icon>
-            </el-descriptions-item>
-            <el-descriptions-item label="文件名" class-name="description-item">{{ file?.metadata?.FileName || file?.name }}</el-descriptions-item>
-            <el-descriptions-item label="文件类型" class-name="description-item">{{ file?.metadata?.FileType || '未知' }}</el-descriptions-item>
-            <el-descriptions-item label="文件大小(MB)" class-name="description-item">{{ file?.metadata?.FileSize || '未知' }}</el-descriptions-item>
-            <el-descriptions-item label="上传时间" class-name="description-item">{{ uploadTime }}</el-descriptions-item>
-            <el-descriptions-item label="访问状态" class-name="description-item">{{ accessType }}</el-descriptions-item>
-            <el-descriptions-item label="渠道类型" class-name="description-item">{{ file?.metadata?.Channel || '未知' }}</el-descriptions-item>
-            <el-descriptions-item label="渠道名称" class-name="description-item">{{ file?.metadata?.ChannelName || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="审查结果" class-name="description-item">{{ file?.metadata?.Label || '无' }}</el-descriptions-item>
-            <el-descriptions-item label="上传IP" class-name="description-item">{{ file?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
-            <el-descriptions-item label="上传地址" class-name="description-item">{{ file?.metadata?.UploadAddress || '未知' }}</el-descriptions-item>
-            <el-descriptions-item label="文件标签" class-name="description-item">
+            </div>
+        </div>
+        <!-- 详细信息 -->
+        <el-descriptions border :column="descColumn">
+            <el-descriptions-item label="文件名">{{ file?.metadata?.FileName || file?.name }}</el-descriptions-item>
+            <el-descriptions-item label="文件类型">{{ file?.metadata?.FileType || '未知' }}</el-descriptions-item>
+            <el-descriptions-item label="文件大小">{{ file?.metadata?.FileSize ? file.metadata.FileSize + ' MB' : '未知' }}</el-descriptions-item>
+            <el-descriptions-item label="上传时间">{{ uploadTime }}</el-descriptions-item>
+            <el-descriptions-item label="渠道类型/名称">{{ file?.metadata?.Channel || '未知' }} / {{ file?.metadata?.ChannelName || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="访问状态/审查">{{ accessType }} / {{ file?.metadata?.Label || '无' }}</el-descriptions-item>
+            <el-descriptions-item label="上传IP">{{ file?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
+            <el-descriptions-item label="上传地址">{{ file?.metadata?.UploadAddress || '未知' }}</el-descriptions-item>
+            <el-descriptions-item label="文件标签">
                 <div v-if="file?.metadata?.Tags && file?.metadata?.Tags.length > 0" style="display: flex; flex-wrap: wrap; gap: 5px;">
                     <el-tag v-for="tag in file?.metadata?.Tags" :key="tag" size="small">{{ tag }}</el-tag>
                 </div>
@@ -87,13 +89,10 @@ export default {
             set(val) { this.$emit('update:modelValue', val); }
         },
         dialogWidth() {
-            return window.innerWidth < 768 ? '95%' : '800px';
+            return window.innerWidth < 768 ? '95%' : '900px';
         },
-        columnNum() {
+        descColumn() {
             return window.innerWidth < 768 ? 1 : 2;
-        },
-        previewSpan() {
-            return window.innerWidth < 768 ? 1 : 6;
         },
         isVideo() {
             const name = this.file?.name?.toLowerCase() || '';
@@ -117,8 +116,9 @@ export default {
         accessType() {
             const listType = this.file?.metadata?.ListType;
             const label = this.file?.metadata?.Label;
-            if (listType === 'White') return '白名单';
-            if (listType === 'Block' || label === 'adult') return '已屏蔽';
+            if (listType === 'White') return '正常（白名单）';
+            if (listType === 'Block') return '已屏蔽（黑名单）';
+            if (label === 'adult') return '已屏蔽（审查不通过）'
             return '正常';
         }
     },
@@ -135,6 +135,13 @@ export default {
             navigator.clipboard.writeText(input.value).then(() => {
                 ElMessage.success('链接已复制');
             });
+        },
+        openImageLink() {
+            if (this.fileLink) {
+                // 移除 ?from=admin 参数
+                const cleanUrl = this.fileLink.replace(/\?from=admin$/, '');
+                window.open(cleanUrl, '_blank');
+            }
         }
     }
 }
@@ -153,27 +160,48 @@ export default {
 }
 .video-preview {
     width: 100%;
-    max-width: 300px;
+    max-width: 200px;
     border-radius: 8px;
     cursor: pointer;
 }
 .audio-preview {
     width: 100%;
-    max-width: 300px;
+    max-width: 400px;
     border-radius: 8px;
 }
 .image-preview {
     width: 100%;
-    max-width: 300px;
+    max-width: 200px;
     border-radius: 8px;
+    cursor: pointer;
 }
 .file-icon-detail {
     font-size: 64px;
     color: var(--el-text-color-secondary);
 }
+.preview-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: var(--el-fill-color-light);
+    border-radius: 8px;
+    min-height: 60px;
+}
+.preview-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
 :deep(.description-item) {
     word-break: break-all;
     word-wrap: break-word;
+}
+:deep(.el-descriptions__label) {
+    width: 120px !important;
+    min-width: 100px !important;
+    max-width: 120px !important;
 }
 @media (max-width: 768px) {
     .detail-actions {
