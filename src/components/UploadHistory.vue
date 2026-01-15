@@ -3,7 +3,7 @@
         <div class="history-header">
             <div class="header-left">
                 <h2>历史记录</h2>
-                <span class="record-count">共 {{ historyList.length }} 条</span>
+                <span class="record-count">共 {{ totalCount }} 条</span>
             </div>
             <div class="header-right">
                 <el-tooltip content="切换视图" placement="bottom">
@@ -22,7 +22,7 @@
             </div>
         </div>
         
-        <div class="history-content" v-if="historyList.length > 0">
+        <div class="history-content" v-if="historyList.length > 0" ref="historyContent" @scroll="handleScroll">
             <div v-for="group in groupedHistory" :key="group.date" class="history-group">
                 <div class="timeline-header">
                     <div class="timeline-dot"></div>
@@ -31,7 +31,7 @@
 
                 <!-- Grid View -->
                 <div v-if="viewMode === 'grid'" class="grid-view">
-                    <div v-for="(item, index) in group.items" :key="item.time" class="grid-item">
+                    <div v-for="item in group.items" :key="item.time" class="grid-item">
                         <div class="grid-preview">
                             <img v-if="isImage(item.name)" :src="item.url" loading="lazy" @error="handleImageError" />
                             <video v-else-if="isVideo(item.name)" :src="item.url" muted></video>
@@ -61,7 +61,7 @@
 
                 <!-- List View -->
                 <div v-else class="list-view">
-                    <div v-for="(item, index) in group.items" :key="item.time" class="list-item">
+                    <div v-for="item in group.items" :key="item.time" class="list-item">
                         <div class="list-preview">
                             <img v-if="isImage(item.name)" :src="item.url" loading="lazy" @error="handleImageError" />
                             <video v-else-if="isVideo(item.name)" :src="item.url" muted></video>
@@ -90,6 +90,16 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 加载更多提示 -->
+            <div v-if="hasMore" class="load-more-container">
+                <div v-if="loadingMore" class="loading-indicator">
+                    <font-awesome-icon icon="spinner" spin />
+                    <span>加载中...</span>
+                </div>
+                <div v-else class="load-more-hint">下拉加载更多</div>
+            </div>
+            <div v-else-if="historyList.length > 0" class="no-more-hint">没有更多记录了</div>
         </div>
         
         <div v-else class="empty-state">
@@ -111,17 +121,25 @@ export default {
     data() {
         return {
             historyList: [],
+            allHistory: [], // 完整历史记录
             viewMode: 'grid', // 'grid' or 'list'
+            pageSize: 30, // 每次加载数量
+            currentPage: 0,
+            loadingMore: false,
+            totalCount: 0,
         }
     },
     watch: {
         show(val) {
             if (val) {
-                this.loadHistory()
+                this.resetAndLoad()
             }
         }
     },
     computed: {
+        hasMore() {
+            return this.historyList.length < this.totalCount
+        },
         groupedHistory() {
             const groups = {}
             this.historyList.forEach(item => {
@@ -148,15 +166,49 @@ export default {
         }
     },
     methods: {
-        loadHistory() {
+        resetAndLoad() {
+            this.historyList = []
+            this.currentPage = 0
+            this.loadAllHistory()
+            this.loadMore()
+        },
+        loadAllHistory() {
             try {
                 const history = JSON.parse(localStorage.getItem('uploadHistory') || '[]')
-                
                 // Sort by time desc
-                this.historyList = history.sort((a, b) => b.time - a.time)
+                this.allHistory = history.sort((a, b) => b.time - a.time)
+                this.totalCount = this.allHistory.length
             } catch (e) {
                 console.error('Failed to load history', e)
-                this.historyList = []
+                this.allHistory = []
+                this.totalCount = 0
+            }
+        },
+        loadMore() {
+            if (this.loadingMore || !this.hasMore) return
+            
+            this.loadingMore = true
+            
+            // 模拟异步加载，避免阻塞UI
+            setTimeout(() => {
+                const start = this.currentPage * this.pageSize
+                const end = start + this.pageSize
+                const newItems = this.allHistory.slice(start, end)
+                
+                this.historyList = [...this.historyList, ...newItems]
+                this.currentPage++
+                this.loadingMore = false
+            }, 50)
+        },
+        handleScroll(e) {
+            const container = e.target
+            const scrollTop = container.scrollTop
+            const scrollHeight = container.scrollHeight
+            const clientHeight = container.clientHeight
+            
+            // 距离底部 100px 时加载更多
+            if (scrollHeight - scrollTop - clientHeight < 100) {
+                this.loadMore()
             }
         },
         toggleViewMode() {
@@ -170,6 +222,9 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.historyList = []
+                this.allHistory = []
+                this.totalCount = 0
+                this.currentPage = 0
                 localStorage.removeItem('uploadHistory')
                 this.$message.success('记录已清空')
             }).catch(() => {})
@@ -180,14 +235,14 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                // Remove from list
+                // Remove from lists
                 this.historyList = this.historyList.filter(i => i.time !== item.time)
+                this.allHistory = this.allHistory.filter(i => i.time !== item.time)
+                this.totalCount = this.allHistory.length
                 
                 // Update localStorage
                 try {
-                    const history = JSON.parse(localStorage.getItem('uploadHistory') || '[]')
-                    const newHistory = history.filter(i => i.time !== item.time)
-                    localStorage.setItem('uploadHistory', JSON.stringify(newHistory))
+                    localStorage.setItem('uploadHistory', JSON.stringify(this.allHistory))
                     this.$message.success('记录已删除')
                 } catch (e) {
                     console.error('Failed to update history', e)
@@ -241,25 +296,23 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--bg-color);
     z-index: 2000;
     display: flex;
     flex-direction: column;
-    transform: translateY(100%);
-    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--admin-container-bg-color);
     color: var(--upload-text-color);
-}
-
-/* Dark mode support */
-.dark .history-container {
-    background: rgba(30, 30, 30, 0.9);
-    color: var(--upload-text-color);
+    /* 初始状态：从右上角的小圆开始 */
+    clip-path: circle(0% at calc(100% - 200px) 50px);
+    opacity: 0;
+    transition: 
+        clip-path 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease;
 }
 
 .history-container.active {
-    transform: translateY(0);
+    clip-path: circle(150% at calc(100% - 200px) 50px);
+    opacity: 1;
 }
 
 .history-header {
@@ -267,11 +320,7 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-}
-
-.dark .history-header {
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
 .header-left {
@@ -283,7 +332,12 @@ export default {
 .header-left h2 {
     margin: 0;
     font-size: 24px;
-    color: var(--upload-header-color);
+    background: var(--upload-main-title-color);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    font-weight: 700;
 }
 
 .record-count {
@@ -295,6 +349,25 @@ export default {
 .header-right {
     display: flex;
     gap: 10px;
+}
+
+.header-right .el-button {
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    border: none;
+    color: var(--theme-toggle-color);
+    transition: all 0.3s ease;
+}
+
+.header-right .el-button:hover {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
+}
+
+.header-right .el-button.el-button--danger {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+    color: #fff;
 }
 
 .history-content {
@@ -311,35 +384,28 @@ export default {
 }
 
 .grid-item {
-    background: var(--upload-list-card-bg-color);
+    background: var(--toolbar-button-bg-color);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: var(--upload-list-card-box-shadow);
+    box-shadow: var(--toolbar-button-shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: var(--upload-list-card-border);
+    border: none;
+    backdrop-filter: blur(10px);
 }
 
 .grid-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-
-.dark .grid-item:hover {
-    box-shadow: 0 8px 20px rgba(255,255,255,0.1);
+    box-shadow: var(--toolbar-button-shadow-hover);
 }
 
 .grid-preview {
     height: 160px;
     position: relative;
-    background: rgba(0,0,0,0.05);
+    background: var(--el-fill-color-light);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-}
-
-.dark .grid-preview {
-    background: rgba(255,255,255,0.05);
 }
 
 .grid-preview img, .grid-preview video {
@@ -350,7 +416,8 @@ export default {
 
 .file-icon-wrapper {
     font-size: 48px;
-    color: var(--upload-list-file-icon-color);
+    color: var(--theme-toggle-color);
+    opacity: 0.5;
 }
 
 .grid-overlay {
@@ -359,7 +426,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.3);
+    background: rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -376,8 +443,12 @@ export default {
     gap: 15px;
 }
 
+.grid-actions .el-button {
+    backdrop-filter: blur(10px);
+}
+
 .grid-info {
-    padding: 10px;
+    padding: 12px;
 }
 
 .file-name {
@@ -393,7 +464,7 @@ export default {
 .upload-time {
     font-size: 12px;
     color: var(--upload-text-color);
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
 /* List View */
@@ -406,36 +477,31 @@ export default {
 .list-item {
     display: flex;
     align-items: center;
-    padding: 10px;
-    background: var(--upload-list-card-bg-color);
-    border-radius: 8px;
-    border: var(--upload-list-item-border);
-    transition: background 0.2s ease;
+    padding: 12px 15px;
+    background: var(--toolbar-button-bg-color);
+    border-radius: 12px;
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    border: none;
+    transition: all 0.3s ease;
 }
 
 .list-item:hover {
-    background: rgba(255,255,255,0.8);
-}
-
-.dark .list-item:hover {
-    background: rgba(255,255,255,0.1);
+    transform: translateX(5px);
+    box-shadow: var(--toolbar-button-shadow-hover);
 }
 
 .list-preview {
     width: 50px;
     height: 50px;
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
     margin-right: 15px;
-    background: rgba(0,0,0,0.05);
+    background: var(--el-fill-color-light);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-}
-
-.dark .list-preview {
-    background: rgba(255,255,255,0.05);
 }
 
 .list-preview img, .list-preview video {
@@ -446,7 +512,8 @@ export default {
 
 .file-icon-wrapper-small {
     font-size: 24px;
-    color: var(--upload-list-file-icon-color);
+    color: var(--theme-toggle-color);
+    opacity: 0.5;
 }
 
 .list-info {
@@ -461,7 +528,7 @@ export default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .list-meta {
@@ -472,7 +539,11 @@ export default {
 
 .list-actions {
     display: flex;
-    gap: 5px;
+    gap: 8px;
+}
+
+.list-actions .el-button {
+    backdrop-filter: blur(10px);
 }
 
 .empty-state {
@@ -483,12 +554,13 @@ export default {
     justify-content: center;
     color: var(--upload-text-color);
     font-size: 18px;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .empty-icon {
     font-size: 64px;
     margin-bottom: 20px;
+    color: var(--theme-toggle-color);
 }
 
 /* Scrollbar styling */
@@ -499,48 +571,30 @@ export default {
     background: transparent;
 }
 .history-content::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.2);
+    background: var(--el-border-color);
     border-radius: 4px;
 }
 .history-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.3);
-}
-.dark .history-content::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.2);
-}
-.dark .history-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.3);
+    background: var(--el-border-color-darker);
 }
 
 .action-btn-view {
-    background-color: #f5f7fa;
-    border-color: #dcdfe6;
-    color: #606266;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    border: none;
+    color: var(--theme-toggle-color);
 }
 .action-btn-view:hover {
-    background-color: #e6e8eb;
-    color: #409eff;
-}
-
-.dark .action-btn-view {
-    background-color: rgba(255, 255, 255, 0.4);
-    border-color: transparent;
-    color: #fff;
-}
-.dark .action-btn-view:hover {
-    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: var(--toolbar-button-shadow-hover);
+    color: var(--el-color-primary);
 }
 
 .history-group {
     position: relative;
     padding-left: 30px;
-    border-left: 2px solid rgba(0,0,0,0.1);
+    border-left: 2px solid var(--el-border-color-lighter);
     margin-left: 10px;
     padding-bottom: 30px;
-}
-
-.dark .history-group {
-    border-left: 2px solid rgba(255,255,255,0.1);
 }
 
 .history-group:last-child {
@@ -560,19 +614,79 @@ export default {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 3px solid var(--theme-toggle-color);
-    background: #fff;
+    background: var(--el-upload-dragger-uniform-color);
+    box-shadow: 0 0 10px var(--el-upload-dragger-uniform-color);
     z-index: 2;
     box-sizing: border-box;
-}
-
-.dark .timeline-dot {
-    background: #1a1a1a;
 }
 
 .date-label {
     font-size: 20px;
     font-weight: bold;
-    color: var(--upload-header-color);
+    background: var(--upload-main-title-color);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* 加载更多样式 */
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--el-upload-dragger-uniform-color);
+}
+
+.load-more-hint {
+    color: var(--upload-text-color);
+    opacity: 0.5;
+    font-size: 14px;
+}
+
+.no-more-hint {
+    text-align: center;
+    padding: 20px;
+    color: var(--upload-text-color);
+    opacity: 0.5;
+    font-size: 14px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .history-header {
+        padding: 15px 20px;
+    }
+    
+    .header-left h2 {
+        font-size: 20px;
+    }
+    
+    .history-content {
+        padding: 15px 20px;
+    }
+    
+    .grid-view {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+    }
+    
+    .grid-preview {
+        height: 120px;
+    }
+    
+    .list-meta {
+        display: none;
+    }
+    
+    .list-info {
+        margin-right: 10px;
+    }
 }
 </style>

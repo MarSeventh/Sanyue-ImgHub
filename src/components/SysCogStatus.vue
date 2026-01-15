@@ -314,6 +314,10 @@ export default {
         responsive: true,
         maintainAspectRatio: true,
         cutout: '65%',
+        hoverOffset: 8,
+        layout: {
+          padding: 10
+        },
         plugins: {
           legend: {
             display: false
@@ -325,6 +329,7 @@ export default {
             padding: 12,
             cornerRadius: 8,
             displayColors: true,
+            z: 100,
             callbacks: {
               label: (context) => {
                 const value = context.raw
@@ -667,6 +672,7 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
+  overflow: visible;
 }
 
 .chart-card {
@@ -706,8 +712,8 @@ export default {
 
 .chart-content {
   min-height: 160px;
-  padding: 10px;
-  margin: -10px;
+  padding: 15px;
+  margin: -5px;
 }
 
 .empty-state {
@@ -782,12 +788,13 @@ export default {
 
 .pie-chart-wrapper {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 180px;
+  height: 180px;
   flex-shrink: 0;
-  padding: 10px;
-  margin: -10px;
+  padding: 15px;
+  box-sizing: content-box;
   overflow: visible;
+  isolation: isolate;
 }
 
 .chart-center-text {
@@ -797,6 +804,7 @@ export default {
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
+  z-index: -1;
 }
 
 .center-value {
