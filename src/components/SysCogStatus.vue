@@ -94,12 +94,12 @@
             </div>
             <div class="chart-legend">
               <div 
-                v-for="(count, type, index) in indexInfo.typeStats" 
-                :key="type"
+                v-for="(count, status, index) in aggregatedTypeStats" 
+                :key="status"
                 class="legend-item"
               >
                 <span class="legend-color" :style="{ background: getTypeChartColor(index) }"></span>
-                <span class="legend-label">{{ type || '未知类型' }}</span>
+                <span class="legend-label">{{ status }}</span>
                 <span class="legend-value">{{ count.toLocaleString() }}</span>
                 <span class="legend-percent">{{ getPercentage(count, indexInfo.totalFiles) }}%</span>
               </div>
@@ -296,17 +296,27 @@ export default {
         }]
       }
     },
-    // 文件状态图表数据
+    // 文件状态图表数据 - 将Block映射为"已屏蔽"，其余为"正常"
     typeChartData() {
-      const stats = this.indexInfo.typeStats || {}
+      const aggregatedStats = this.aggregatedTypeStats
       return {
-        labels: Object.keys(stats).map(k => k || '未知类型'),
+        labels: Object.keys(aggregatedStats),
         datasets: [{
-          data: Object.values(stats),
-          backgroundColor: this.typeColors.slice(0, Object.keys(stats).length),
+          data: Object.values(aggregatedStats),
+          backgroundColor: this.typeColors.slice(0, Object.keys(aggregatedStats).length),
           borderWidth: 0
         }]
       }
+    },
+    // 聚合后的状态统计：Block -> 已屏蔽，其余 -> 正常
+    aggregatedTypeStats() {
+      const stats = this.indexInfo.typeStats || {}
+      const aggregatedStats = {}
+      for (const [status, count] of Object.entries(stats)) {
+        const mappedStatus = status === 'Block' ? '已屏蔽' : '正常'
+        aggregatedStats[mappedStatus] = (aggregatedStats[mappedStatus] || 0) + count
+      }
+      return aggregatedStats
     },
     // 图表配置
     chartOptions() {
