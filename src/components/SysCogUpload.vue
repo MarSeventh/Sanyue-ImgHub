@@ -248,10 +248,14 @@
                     <el-descriptions-item label="代理域名">{{ currentChannel?.proxyUrl || '未设置' }}</el-descriptions-item>
                 </template>
                 <template v-else-if="currentChannelType === 'cfr2'">
-                    <el-descriptions-item label="公开访问链接">{{ currentChannel?.publicUrl || '未设置' }}</el-descriptions-item>
+                    <el-descriptions-item label="公开访问链接">
+                        <el-input :model-value="currentChannel?.publicUrl || '未设置'" readonly />
+                    </el-descriptions-item>
                 </template>
                 <template v-else-if="currentChannelType === 's3'">
-                    <el-descriptions-item label="Endpoint">{{ currentChannel?.endpoint }}</el-descriptions-item>
+                    <el-descriptions-item label="Endpoint">
+                        <el-input :model-value="currentChannel?.endpoint" readonly />
+                    </el-descriptions-item>
                     <el-descriptions-item label="存储桶名称">{{ currentChannel?.bucketName }}</el-descriptions-item>
                     <el-descriptions-item label="存储桶区域">{{ currentChannel?.region }}</el-descriptions-item>
                     <el-descriptions-item label="路径风格">{{ currentChannel?.pathStyle ? '是' : '否' }}</el-descriptions-item>
