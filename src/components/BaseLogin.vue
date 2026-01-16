@@ -209,9 +209,10 @@ export default {
     font-size: 2.3rem;
     margin-bottom: 15px;
     color: var(--login-title-color);
-    font-family: 'Noto Sans SC', sans-serif;
+    font-family: 'Righteous', 'Noto Sans SC', sans-serif;
     cursor: pointer;
     transition: all 0.3s ease;
+    letter-spacing: 2px;
 }
 @media (max-width: 768px) {
     .login-title {
