@@ -653,8 +653,6 @@ methods: {
     // 重置详情弹窗数据
     resetDetailData() {
         this.currentChannel = null;
-        this.currentChannelType = '';
-        this.currentChannelIndex = -1;
     },
     // 重置编辑弹窗数据
     resetEditData() {
