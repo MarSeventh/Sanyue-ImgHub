@@ -1116,14 +1116,14 @@ export default {
 }
 .title {
     font-size: 2.5rem;
-    font-weight: 800;
-    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 400;
+    font-family: 'Righteous', 'Noto Sans SC', sans-serif;
     position: relative;
     padding-bottom: 8px;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     animation: float 4s ease-in-out infinite;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
 }
 .title:hover {
     transform: scale(1.08) translateY(-3px);
