@@ -21,9 +21,7 @@
         
         <!-- 视频预览 -->
         <template v-if="isVideo">
-            <div v-if="videoLoading" class="skeleton-wrapper">
-                <div class="skeleton-animation"></div>
-            </div>
+            <div v-if="videoLoading" class="skeleton-wrapper"></div>
             <div v-else-if="videoError" class="error-wrapper" @click="$emit('detail')">
                 <font-awesome-icon icon="exclamation-triangle" class="error-icon"/>
                 <span class="error-text">加载失败</span>
@@ -61,9 +59,7 @@
             class="image-preview"
         >
             <template #placeholder>
-                <div class="skeleton-wrapper">
-                    <div class="skeleton-animation"></div>
-                </div>
+                <div class="skeleton-wrapper"></div>
             </template>
             <template #error>
                 <div class="error-wrapper" @click.stop="$emit('detail')">
@@ -141,17 +137,30 @@ export default {
             return this.item.channelTag || '';
         },
         isVideo() {
+            // 先通过 content-type 判断
+            const fileType = this.item.metadata?.FileType?.toLowerCase() || '';
+            if (fileType.includes('video')) return true;
+            // 再通过文件后缀判断
             const name = this.item.name?.toLowerCase() || '';
             return name.endsWith('.mp4') || name.endsWith('.webm') || name.endsWith('.mov') || name.endsWith('.avi');
         },
         isAudio() {
+            // 先通过 content-type 判断
+            const fileType = this.item.metadata?.FileType?.toLowerCase() || '';
+            if (fileType.includes('audio')) return true;
+            // 再通过文件后缀判断
             const name = this.item.name?.toLowerCase() || '';
             return name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.ogg') || name.endsWith('.flac');
         },
         isImage() {
+            // 先通过 content-type 判断
+            const fileType = this.item.metadata?.FileType?.toLowerCase() || '';
+            if (fileType.includes('image')) return true;
+            // 再通过文件后缀判断
             const name = this.item.name?.toLowerCase() || '';
             return name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || 
-                   name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.svg') || name.endsWith('.bmp');
+                   name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.svg') || 
+                   name.endsWith('.bmp') || name.endsWith('.avif') || name.endsWith('.heic') || name.endsWith('.heif');
         },
         displayName() {
             const fileName = this.item.metadata?.FileName || this.item.name || '';
@@ -408,31 +417,26 @@ export default {
 }
 
 /* 骨架图加载动画 */
-.skeleton-wrapper {
-    width: 100%;
-    height: 100%;
-    background: var(--skeleton-bg-color);
-    position: relative;
-    overflow: hidden;
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
-.skeleton-animation {
+
+.skeleton-wrapper {
     width: 100%;
     height: 100%;
     background: linear-gradient(
         90deg,
-        transparent,
-        var(--skeleton-shimmer-color),
-        transparent
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
     );
-    animation: skeleton-loading 1.5s infinite;
-}
-@keyframes skeleton-loading {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
 /* 加载失败提示 */

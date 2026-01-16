@@ -42,7 +42,15 @@
             <div class="preview-content">
                 <video v-if="isVideo" :src="fileLink" autoplay muted loop class="video-preview" @click="openImageLink"></video>
                 <audio v-else-if="isAudio" :src="fileLink" controls autoplay class="audio-preview"></audio>
-                <el-image v-else-if="isImage" :src="fileLink" fit="contain" lazy class="image-preview" @click="openImageLink"></el-image>
+                <el-image 
+                    v-else-if="isImage" 
+                    :src="fileLink" 
+                    :preview-src-list="[fileLink]"
+                    :preview-teleported="true"
+                    fit="contain" 
+                    lazy 
+                    class="image-preview"
+                ></el-image>
                 <font-awesome-icon v-else icon="file" class="file-icon-detail"></font-awesome-icon>
             </div>
         </div>
@@ -95,17 +103,30 @@ export default {
             return window.innerWidth < 768 ? 1 : 2;
         },
         isVideo() {
+            // 先通过 content-type 判断
+            const fileType = this.file?.metadata?.FileType?.toLowerCase() || '';
+            if (fileType.includes('video')) return true;
+            // 再通过文件后缀判断
             const name = this.file?.name?.toLowerCase() || '';
             return name.endsWith('.mp4') || name.endsWith('.webm') || name.endsWith('.mov') || name.endsWith('.avi');
         },
         isAudio() {
+            // 先通过 content-type 判断
+            const fileType = this.file?.metadata?.FileType?.toLowerCase() || '';
+            if (fileType.includes('audio')) return true;
+            // 再通过文件后缀判断
             const name = this.file?.name?.toLowerCase() || '';
             return name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.ogg') || name.endsWith('.flac');
         },
         isImage() {
+            // 先通过 content-type 判断
+            const fileType = this.file?.metadata?.FileType?.toLowerCase() || '';
+            if (fileType.includes('image')) return true;
+            // 再通过文件后缀判断
             const name = this.file?.name?.toLowerCase() || '';
             return name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || 
-                   name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.svg') || name.endsWith('.bmp');
+                   name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.svg') || 
+                   name.endsWith('.bmp') || name.endsWith('.avif') || name.endsWith('.heic') || name.endsWith('.heif');
         },
         uploadTime() {
             if (this.file?.metadata?.TimeStamp) {
@@ -160,9 +181,11 @@ export default {
 }
 .video-preview {
     width: 100%;
-    max-width: 200px;
+    max-width: 400px;
+    max-height: 300px;
     border-radius: 8px;
     cursor: pointer;
+    object-fit: contain;
 }
 .audio-preview {
     width: 100%;
@@ -170,10 +193,17 @@ export default {
     border-radius: 8px;
 }
 .image-preview {
-    width: 100%;
-    max-width: 200px;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 300px;
     border-radius: 8px;
     cursor: pointer;
+}
+.image-preview :deep(img) {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
 }
 .file-icon-detail {
     font-size: 64px;
