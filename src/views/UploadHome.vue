@@ -415,7 +415,8 @@ export default {
             }
         },
         channelName(val) {
-            this.$store.commit('setStoreChannelName', val)
+            // 确保清空时保存空字符串而不是null
+            this.$store.commit('setStoreChannelName', val || '')
         },
         uploadNameType(val) {
             this.updateStoreUploadNameType(val)
@@ -530,10 +531,17 @@ export default {
                     const savedChannelName = this.storeChannelName
                     const defaultChannelName = this.userConfig?.defaultChannelName
                     const currentChannelList = this.availableChannels[this.uploadChannel] || []
+                    
+                    // 如果用户主动清空过（savedChannelName === ''），则保持为空
+                    // 如果从未选择过（savedChannelName === null/undefined），则使用默认值
                     if (savedChannelName && currentChannelList.some(ch => ch.name === savedChannelName)) {
                         this.channelName = savedChannelName
-                    } else if (defaultChannelName && currentChannelList.some(ch => ch.name === defaultChannelName)) {
-                        this.channelName = defaultChannelName
+                    } else if (savedChannelName === '' || savedChannelName === null || savedChannelName === undefined) {
+                        // 用户主动清空或从未选择，检查是否使用默认值
+                        if (savedChannelName !== '' && defaultChannelName && currentChannelList.some(ch => ch.name === defaultChannelName)) {
+                            this.channelName = defaultChannelName
+                        }
+                        // 如果 savedChannelName === ''，说明用户主动清空，保持为空
                     }
                 }
             } catch (error) {

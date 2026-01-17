@@ -17,7 +17,7 @@ export default createStore({
       convertToWebp: undefined,
     },
     storeUploadChannel: '',
-    storeChannelName: '', // 指定的渠道名称
+    storeChannelName: null, // 指定的渠道名称，null表示从未选择，''表示用户主动清空
     storeAutoRetry: true,
     storeUploadNameType: '',
     uploadFolder: '',
