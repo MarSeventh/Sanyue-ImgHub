@@ -1238,14 +1238,18 @@ html.dark .legend-item:hover {
 
 .action-btn {
   border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
+  border-radius: 14px;
+  padding: 14px 28px;
   margin-left: 0;
   font-weight: 600;
-  transition: all 0.3s ease;
-  min-width: 140px;
-  width: 140px;
-  height: 48px;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 150px;
+  width: 150px;
+  height: 52px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 768px) {
@@ -1257,36 +1261,62 @@ html.dark .legend-item:hover {
   }
 }
 
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
 .action-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+}
+
+.action-btn:active {
+  transform: translateY(-1px);
 }
 
 .action-btn .fa-icon {
-  margin-right: 8px;
+  margin-right: 10px;
+  font-size: 15px;
 }
 
 .rebuild-btn {
-  background: linear-gradient(135deg, var(--admin-purple), #E1BEE7);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
 }
 
 .rebuild-btn:hover {
-  box-shadow: 0 6px 16px rgba(179, 157, 219, 0.4);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.45);
+  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
 }
 
 .backup-btn {
-  background: linear-gradient(135deg, #4CAF50, #81C784);
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: #fff;
 }
 
 .backup-btn:hover {
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 8px 24px rgba(17, 153, 142, 0.45);
+  background: linear-gradient(135deg, #0f8a80 0%, #32d970 100%);
 }
 
 .restore-btn {
-  background: linear-gradient(135deg, #FF9800, #FFB74D);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: #fff;
 }
 
 .restore-btn:hover {
-  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(245, 87, 108, 0.45);
+  background: linear-gradient(135deg, #e085eb 0%, #e04d61 100%);
 }
 
 .restore-section {
@@ -1572,11 +1602,25 @@ html.dark .legend-item:hover {
 }
 
 .cancel-btn {
-  margin-top: 8px;
+  margin-top: 12px;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #EF4444;
+}
+
+.cancel-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
 .cancel-btn .fa-icon {
-  margin-right: 6px;
+  margin-right: 8px;
 }
 
 /* 错误显示样式 (Requirement 9.3) */
@@ -1625,8 +1669,41 @@ html.dark .legend-item:hover {
   gap: 12px;
 }
 
+.error-actions .el-button {
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 100px;
+}
+
+.error-actions .el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+}
+
+.error-actions .el-button--primary:hover {
+  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.error-actions .el-button--default {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--el-text-color-regular);
+}
+
+.error-actions .el-button--default:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .error-actions .fa-icon {
-  margin-right: 6px;
+  margin-right: 8px;
 }
 
 /* 暗色模式适配 */
@@ -1673,6 +1750,7 @@ html.dark .error-suggestion {
   
   .error-actions .el-button {
     width: 100%;
+    margin: 0;
   }
 }
 </style>
