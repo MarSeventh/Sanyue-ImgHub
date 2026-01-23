@@ -476,7 +476,8 @@ computed: {
                 'htmlUrl': `<img src="${this.detailFile?.metadata?.ExternalLink}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
                 'bbUrl': `[img]${this.detailFile?.metadata?.ExternalLink}[/img]`,
                 'tgId': this.detailFile?.metadata?.TgFileId || '未知',
-                'S3Location': this.detailFile?.metadata?.S3Location || '未知'
+                'S3Location': this.detailFile?.metadata?.S3Location || '未知',
+                'S3CdnFileUrl': this.detailFile?.metadata?.S3CdnFileUrl || '未知'
             }
         } else {
             return {
@@ -485,7 +486,8 @@ computed: {
                 'htmlUrl': `<img src="${this.rootUrl}${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
                 'bbUrl': `[img]${this.rootUrl}${this.detailFile?.name}[/img]`,
                 'tgId': this.detailFile?.metadata?.TgFileId || '未知',
-                'S3Location': this.detailFile?.metadata?.S3Location || '未知'
+                'S3Location': this.detailFile?.metadata?.S3Location || '未知',
+                'S3CdnFileUrl': this.detailFile?.metadata?.S3CdnFileUrl || '未知'
             }
         }
     },

@@ -163,6 +163,10 @@
                     <el-form-item label="Endpoint" prop="endpoint">
                         <el-input v-model="newChannel.endpoint" placeholder="例如: https://s3.us-east-005.backblazeb2.com"/>
                     </el-form-item>
+                    <el-form-item label="CDN 域名">
+                        <el-input v-model="newChannel.cdnDomain" placeholder="如果有 CDN，请配置 CDN 域名，例如：https://cdn.example.com"/>
+                        <span class="form-tip">可选配置。配置后将优先通过 CDN 读取文件，提高访问速度和降低成本</span>
+                    </el-form-item>
                     <el-form-item label="存储桶名称" prop="bucketName">
                         <el-input v-model="newChannel.bucketName" placeholder="请输入存储桶名称"/>
                     </el-form-item>
@@ -256,6 +260,9 @@
                     <el-descriptions-item label="Endpoint">
                         <el-input :model-value="currentChannel?.endpoint" readonly />
                     </el-descriptions-item>
+                    <el-descriptions-item label="CDN 域名">
+                        <el-input :model-value="currentChannel?.cdnDomain || '未设置'" readonly />
+                    </el-descriptions-item>
                     <el-descriptions-item label="存储桶名称">{{ currentChannel?.bucketName }}</el-descriptions-item>
                     <el-descriptions-item label="存储桶区域">{{ currentChannel?.region }}</el-descriptions-item>
                     <el-descriptions-item label="路径风格">{{ currentChannel?.pathStyle ? '是' : '否' }}</el-descriptions-item>
@@ -344,6 +351,10 @@
                 <template v-else-if="currentChannelType === 's3'">
                     <el-form-item label="Endpoint" prop="endpoint">
                         <el-input v-model="editChannel.endpoint" :disabled="editChannel.fixed"/>
+                    </el-form-item>
+                    <el-form-item label="CDN 域名">
+                        <el-input v-model="editChannel.cdnDomain" placeholder="如果有 CDN，请配置 CDN 域名，例如：https://cdn.example.com"/>
+                        <span class="form-tip">可选配置。配置后将优先通过 CDN 读取文件，提高访问速度和降低成本</span>
                     </el-form-item>
                     <el-form-item label="存储桶名称" prop="bucketName">
                         <el-input v-model="editChannel.bucketName" :disabled="editChannel.fixed"/>
@@ -463,6 +474,7 @@ data() {
         proxyUrl: '',
         // S3
         endpoint: '',
+        cdnDomain: '',
         bucketName: '',
         region: 'auto',
         accessKeyId: '',
@@ -670,6 +682,7 @@ methods: {
             chatId: '',
             proxyUrl: '',
             endpoint: '',
+            cdnDomain: '',
             bucketName: '',
             region: 'auto',
             accessKeyId: '',
@@ -724,6 +737,7 @@ methods: {
             } else if (type === 's3') {
                 Object.assign(newChannelData, {
                     endpoint: this.newChannel.endpoint,
+                    cdnDomain: this.newChannel.cdnDomain,
                     bucketName: this.newChannel.bucketName,
                     region: this.newChannel.region,
                     accessKeyId: this.newChannel.accessKeyId,
