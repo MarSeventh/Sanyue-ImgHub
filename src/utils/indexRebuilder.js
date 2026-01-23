@@ -16,14 +16,14 @@ class IndexRebuilder {
   /**
    * 创建 IndexRebuilder 实例
    * @param {Object} options - 配置选项
-   * @param {number} options.chunkSize - 每个分块的记录数，默认 5000
+   * @param {number} options.chunkSize - 每个分块的记录数，默认从后端获取
    * @param {number} options.maxRetries - 分块上传最大重试次数，默认 3
    * @param {number} options.retryDelay - 重试延迟基数（毫秒），默认 1000
    * @param {Function} options.onProgress - 进度回调函数
    * @param {Function} options.onError - 错误回调函数
    */
   constructor(options = {}) {
-    this.chunkSize = options.chunkSize || 5000;
+    this.chunkSize = options.chunkSize || null; // 从后端获取
     this.maxRetries = options.maxRetries || 3;
     this.retryDelay = options.retryDelay || 1000;
     this.onProgress = options.onProgress || (() => {});
@@ -33,13 +33,39 @@ class IndexRebuilder {
   }
 
   /**
+   * 从后端获取索引配置（分块大小等）
+   * @returns {Promise<Object>} 配置对象 { chunkSize, databaseType }
+   */
+  async fetchConfig() {
+    try {
+      const response = await fetchWithAuth('/api/manage/batch/index/config');
+      if (!response.ok) {
+        throw new Error('获取配置失败');
+      }
+      const result = await response.json();
+      if (result.success) {
+        return {
+          chunkSize: result.chunkSize || 500,
+          databaseType: result.databaseType || 'unknown'
+        };
+      }
+      throw new Error(result.error || '获取配置失败');
+    } catch (error) {
+      // 获取失败时使用保守的默认值（兼容 D1）
+      console.warn('Failed to fetch index config, using default:', error);
+      return { chunkSize: 500, databaseType: 'unknown' };
+    }
+  }
+
+  /**
    * 执行索引重建
    * 
    * 完整流程：
-   * 1. 获取所有记录
-   * 2. 按时间戳降序排序
-   * 3. 分块上传
-   * 4. 完成重建
+   * 1. 获取配置（分块大小）
+   * 2. 获取所有记录
+   * 3. 按时间戳降序排序
+   * 4. 分块上传
+   * 5. 完成重建
    * 
    * @returns {Promise<Object>} 重建结果 { success: boolean, totalFiles: number }
    * @throws {BatchOperationError} 当发生错误时抛出
@@ -48,6 +74,12 @@ class IndexRebuilder {
     this.aborted = false;
     
     try {
+      // 获取配置（分块大小）
+      if (!this.chunkSize) {
+        const config = await this.fetchConfig();
+        this.chunkSize = config.chunkSize;
+      }
+
       // 获取所有记录
       this.onProgress({ 
         phase: 'fetching', 
@@ -99,7 +131,7 @@ class IndexRebuilder {
         });
       }
 
-      // 4. 完成重建
+      // 完成重建
       this.onProgress({ 
         phase: 'finalizing', 
         message: '正在完成重建...',
