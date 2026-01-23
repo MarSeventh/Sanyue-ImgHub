@@ -598,7 +598,8 @@ export default {
         const result = await this.currentBackupGenerator.generateBackup()
         
         // 成功完成 (Requirement 9.4)
-        this.$message.success(`备份完成！共备份 ${result.fileCount.toLocaleString()} 个文件`)
+        const settingsMsg = result.settingsCount > 0 ? `，${result.settingsCount} 个设置项` : ''
+        this.$message.success(`备份完成！共备份 ${result.fileCount.toLocaleString()} 个文件${settingsMsg}`)
       } catch (error) {
         // 错误处理 (Requirement 9.3)
         if (error.code !== 'ABORTED') {

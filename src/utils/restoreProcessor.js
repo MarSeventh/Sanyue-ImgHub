@@ -14,14 +14,14 @@ class RestoreProcessor {
   /**
    * 创建 RestoreProcessor 实例
    * @param {Object} options - 配置选项
-   * @param {number} options.chunkSize - 每批数据量，默认 100
+   * @param {number} options.chunkSize - 每批数据量，默认 50
    * @param {number} options.maxRetries - 最大重试次数，默认 3
    * @param {number} options.retryDelay - 重试延迟基数（毫秒），默认 1000
    * @param {Function} options.onProgress - 进度回调函数
    * @param {Function} options.onError - 错误回调函数
    */
   constructor(options = {}) {
-    this.chunkSize = options.chunkSize || 100;
+    this.chunkSize = options.chunkSize || 50;
     this.maxRetries = options.maxRetries || 3;
     this.retryDelay = options.retryDelay || 1000;
     this.onProgress = options.onProgress || (() => {});

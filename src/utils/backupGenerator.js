@@ -7,7 +7,7 @@
 
 import BatchProcessor from '@/utils/batchProcessor';
 import fetchWithAuth from '@/utils/fetchWithAuth';
-import { version } from '../../package.json';
+import packageInfo from '../../package.json'
 
 /**
  * BackupGenerator 类
@@ -50,7 +50,7 @@ class BackupGenerator {
 
     const backupData = {
       timestamp: Date.now(),
-      version: version,
+      version: packageInfo.version,
       data: {
         fileCount: records.length,
         files: {},
@@ -74,7 +74,8 @@ class BackupGenerator {
     this.onProgress({ phase: 'downloading', message: '正在生成下载...' });
     this.downloadBackup(backupData);
 
-    return { success: true, fileCount: records.length };
+    const settingsCount = Object.keys(settings).length;
+    return { success: true, fileCount: records.length, settingsCount };
   }
 
   /**
@@ -89,7 +90,9 @@ class BackupGenerator {
         console.warn('Failed to fetch settings:', response.status);
         return {};
       }
-      return await response.json();
+      const data = await response.json();
+      // 返回 settings 字段，而不是整个响应
+      return data.settings || {};
     } catch (error) {
       console.warn('Failed to fetch settings:', error);
       return {};
