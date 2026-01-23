@@ -36,6 +36,9 @@
             <el-tab-pane label="S3 Location" v-if="file?.metadata?.S3Location" name="s3Location">
                 <el-input v-model="urls.S3Location" readonly @click="handleUrlClick"></el-input>
             </el-tab-pane>
+            <el-tab-pane label="S3 CDN URL" v-if="file?.metadata?.S3CdnFileUrl" name="s3CdnFileUrl">
+                <el-input v-model="urls.S3CdnFileUrl" readonly @click="handleUrlClick"></el-input>
+            </el-tab-pane>
         </el-tabs>
         <!-- 文件预览区域 -->
         <div class="preview-section">
@@ -83,7 +86,7 @@ export default {
         modelValue: { type: Boolean, default: false },
         file: { type: Object, default: null },
         fileLink: { type: String, default: '' },
-        urls: { type: Object, default: () => ({ originUrl: '', mdUrl: '', htmlUrl: '', bbUrl: '', tgId: '', S3Location: '' }) }
+        urls: { type: Object, default: () => ({ originUrl: '', mdUrl: '', htmlUrl: '', bbUrl: '', tgId: '', S3Location: '', S3CdnFileUrl: '' }) }
     },
     emits: ['update:modelValue', 'download', 'tagManagement', 'block', 'white', 'delete'],
     data() {
