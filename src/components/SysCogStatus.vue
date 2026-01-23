@@ -117,11 +117,88 @@
           <span>系统维护</span>
         </div>
         <div class="action-content">
-          <div class="action-buttons">
+          <!-- 进度显示 UI (Requirements 3.6, 4.6, 9.1, 9.2) -->
+          <div v-if="isProcessing" class="progress-container">
+            <div class="progress-header">
+              <span class="progress-phase">{{ phaseDescription }}</span>
+              <span class="progress-percentage">{{ Math.round(processingProgress.percentage) }}%</span>
+            </div>
+            <el-progress 
+              :percentage="processingProgress.percentage" 
+              :stroke-width="12"
+              :show-text="false"
+              class="progress-bar"
+            />
+            <div class="progress-details">
+              <!-- 当前/总数显示 (Requirement 9.1) -->
+              <span class="progress-count" v-if="processingProgress.current > 0">
+                <font-awesome-icon icon="file-alt" />
+                {{ processingProgress.current.toLocaleString() }}
+                <template v-if="processingProgress.total > 0">
+                  / {{ processingProgress.total.toLocaleString() }}
+                </template>
+                条记录
+              </span>
+              <!-- 预计剩余时间 (Requirement 9.2) -->
+              <span class="progress-time" v-if="estimatedTimeRemaining">
+                <font-awesome-icon icon="clock" />
+                {{ estimatedTimeRemaining }}
+              </span>
+            </div>
+            <div class="progress-message" v-if="processingProgress.message">
+              {{ processingProgress.message }}
+            </div>
+            <!-- 取消按钮 -->
+            <el-button 
+              type="danger" 
+              plain
+              size="small"
+              @click="cancelOperation"
+              class="cancel-btn"
+            >
+              <font-awesome-icon icon="times" />
+              取消操作
+            </el-button>
+          </div>
+          
+          <!-- 错误显示 (Requirement 9.3) -->
+          <div v-else-if="processingError" class="error-container">
+            <div class="error-icon">
+              <font-awesome-icon icon="exclamation-triangle" />
+            </div>
+            <div class="error-content">
+              <div class="error-message">{{ processingError.message }}</div>
+              <div class="error-suggestion" v-if="processingError.suggestion">
+                {{ processingError.suggestion }}
+              </div>
+            </div>
+            <div class="error-actions">
+              <el-button 
+                v-if="processingError.recoverable"
+                type="primary" 
+                size="small"
+                @click="retryOperation"
+              >
+                <font-awesome-icon icon="redo" />
+                重试
+              </el-button>
+              <el-button 
+                type="default" 
+                size="small"
+                @click="dismissError"
+              >
+                关闭
+              </el-button>
+            </div>
+          </div>
+          
+          <!-- 操作按钮 -->
+          <div v-else class="action-buttons">
             <el-tooltip content="重新扫描所有文件并更新索引数据，适用于数据不一致时的修复" placement="top">
               <el-button 
                 type="primary" 
                 :loading="rebuilding"
+                :disabled="isProcessing"
                 @click="rebuildIndex"
                 class="action-btn rebuild-btn"
               >
@@ -134,6 +211,7 @@
               <el-button 
                 type="success" 
                 :loading="backing"
+                :disabled="isProcessing"
                 @click="backupData"
                 class="action-btn backup-btn"
               >
@@ -154,6 +232,7 @@
                 <el-button 
                   type="warning" 
                   :loading="restoring"
+                  :disabled="isProcessing"
                   @click="selectRestoreFile"
                   class="action-btn restore-btn"
                 >
@@ -253,6 +332,9 @@ import fetchWithAuth from '@/utils/fetchWithAuth'
 import packageInfo from '../../package.json'
 import { Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import IndexRebuilder from '@/utils/indexRebuilder'
+import BackupGenerator from '@/utils/backupGenerator'
+import RestoreProcessor from '@/utils/restoreProcessor'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -280,7 +362,22 @@ export default {
       // 状态图表颜色
       typeColors: [
         '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
-      ]
+      ],
+      // 批量操作进度状态
+      isProcessing: false,
+      processingPhase: '', // fetching, sorting, uploading, finalizing, building, downloading, completed
+      processingProgress: {
+        current: 0,
+        total: 0,
+        message: '',
+        percentage: 0
+      },
+      processingError: null,
+      processingStartTime: null,
+      // 当前处理器实例（用于取消操作）
+      currentRebuilder: null,
+      currentBackupGenerator: null,
+      currentRestoreProcessor: null
     }
   },
   computed: {
@@ -355,6 +452,44 @@ export default {
           animateScale: true
         }
       }
+    },
+    // 预计剩余时间（Requirements 9.2）
+    estimatedTimeRemaining() {
+      if (!this.isProcessing || !this.processingStartTime) return ''
+      if (this.processingProgress.current === 0 || this.processingProgress.percentage === 0) return ''
+      
+      const elapsed = Date.now() - this.processingStartTime
+      const progress = this.processingProgress.percentage / 100
+      if (progress <= 0) return ''
+      
+      const totalEstimated = elapsed / progress
+      const remaining = totalEstimated - elapsed
+      
+      if (remaining <= 0) return '即将完成'
+      
+      const seconds = Math.ceil(remaining / 1000)
+      if (seconds < 60) return `约 ${seconds} 秒`
+      const minutes = Math.ceil(seconds / 60)
+      if (minutes < 60) return `约 ${minutes} 分钟`
+      const hours = Math.floor(minutes / 60)
+      const remainingMinutes = minutes % 60
+      return `约 ${hours} 小时 ${remainingMinutes} 分钟`
+    },
+    // 处理阶段描述
+    phaseDescription() {
+      const phaseMap = {
+        'fetching': '正在获取数据',
+        'sorting': '正在排序',
+        'uploading': '正在上传',
+        'finalizing': '正在完成',
+        'building': '正在构建备份',
+        'downloading': '正在生成下载',
+        'restoring_files': '正在恢复文件',
+        'restoring_settings': '正在恢复设置',
+        'completed': '已完成',
+        'retrying': '正在重试'
+      }
+      return phaseMap[this.processingPhase] || this.processingPhase
     }
   },
   mounted() {
@@ -391,61 +526,97 @@ export default {
       }
     },
 
-    // 重建索引
+    // 重建索引 - 使用前端辅助重建流程 (Requirements 3.6, 9.1, 9.2, 9.3, 9.4)
     async rebuildIndex() {
+      if (this.isProcessing) {
+        this.$message.warning('已有操作正在进行中')
+        return
+      }
+      
       this.rebuilding = true
+      this.isProcessing = true
+      this.processingError = null
+      this.processingStartTime = Date.now()
+      this.processingProgress = { current: 0, total: 0, message: '', percentage: 0 }
+      
+      // 创建 IndexRebuilder 实例
+      this.currentRebuilder = new IndexRebuilder({
+        onProgress: (progress) => this.handleProgress(progress),
+        onError: (error) => this.handleError(error)
+      })
+      
       try {
-        const response = await fetchWithAuth('/api/manage/list?action=rebuild', {
-          method: 'GET'
-        })
+        const result = await this.currentRebuilder.rebuild()
         
-        if (response.ok) {
-          this.$message.success('索引重建已启动，请稍后刷新查看最新状态')
-          // 延迟刷新数据
-          setTimeout(() => {
-            this.fetchIndexInfo()
-          }, 3000)
-        } else {
-          throw new Error('API请求失败')
-        }
+        // 成功完成 (Requirement 9.4)
+        this.$message.success(`索引重建完成！共处理 ${result.totalFiles.toLocaleString()} 个文件`)
+        
+        // 刷新索引信息
+        setTimeout(() => {
+          this.fetchIndexInfo()
+        }, 1000)
       } catch (error) {
-        console.error('重建索引失败:', error)
-        this.$message.error('重建索引失败')
+        // 错误处理 (Requirement 9.3)
+        if (error.code !== 'ABORTED') {
+          const errorMessage = error.suggestion 
+            ? `${error.message}。${error.suggestion}`
+            : error.message
+          this.$message.error(errorMessage)
+          this.processingError = {
+            message: error.message,
+            suggestion: error.suggestion,
+            recoverable: error.recoverable
+          }
+        }
       } finally {
         this.rebuilding = false
+        this.isProcessing = false
+        this.currentRebuilder = null
+        this.processingStartTime = null
       }
     },
 
-    // 备份数据
+    // 备份数据 - 使用前端辅助备份流程 (Requirements 4.6, 9.1, 9.2, 9.3, 9.4)
     async backupData() {
+      if (this.isProcessing) {
+        this.$message.warning('已有操作正在进行中')
+        return
+      }
+      
       this.backing = true
+      this.isProcessing = true
+      this.processingError = null
+      this.processingStartTime = Date.now()
+      this.processingProgress = { current: 0, total: 0, message: '', percentage: 0 }
+      
+      // 创建 BackupGenerator 实例
+      this.currentBackupGenerator = new BackupGenerator({
+        onProgress: (progress) => this.handleProgress(progress)
+      })
+      
       try {
-        const response = await fetchWithAuth('/api/manage/sysConfig/backup?action=backup', {
-          method: 'GET'
-        })
+        const result = await this.currentBackupGenerator.generateBackup()
         
-        if (response.ok) {
-          // 创建下载链接
-          const blob = await response.blob()
-          const url = window.URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = `imgbed_backup_${new Date().toISOString().split('T')[0]}.json`
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
-          window.URL.revokeObjectURL(url)
-          
-          this.$message.success('备份文件已下载')
-        } else {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'API请求失败')
-        }
+        // 成功完成 (Requirement 9.4)
+        this.$message.success(`备份完成！共备份 ${result.fileCount.toLocaleString()} 个文件`)
       } catch (error) {
-        console.error('备份数据失败:', error)
-        this.$message.error('备份数据失败: ' + error.message)
+        // 错误处理 (Requirement 9.3)
+        if (error.code !== 'ABORTED') {
+          const errorMessage = error.suggestion 
+            ? `${error.message}。${error.suggestion}`
+            : error.message
+          this.$message.error(errorMessage)
+          this.processingError = {
+            message: error.message,
+            suggestion: error.suggestion,
+            recoverable: error.recoverable
+          }
+        }
       } finally {
         this.backing = false
+        this.isProcessing = false
+        this.currentBackupGenerator = null
+        this.processingStartTime = null
       }
     },
 
@@ -488,36 +659,65 @@ export default {
       event.target.value = ''
     },
 
-    // 恢复数据
+    // 恢复数据 - 使用前端辅助分批恢复流程
     async restoreData(file) {
+      if (this.isProcessing) {
+        this.$message.warning('已有操作正在进行中')
+        return
+      }
+
       this.restoring = true
+      this.isProcessing = true
+      this.processingError = null
+      this.processingStartTime = Date.now()
+      this.processingProgress = { current: 0, total: 0, message: '', percentage: 0 }
+
       try {
-        const response = await fetchWithAuth('/api/manage/sysConfig/backup?action=restore', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: await file.text()
-        })
-        
-        if (response.ok) {
-          const result = await response.json()
-          this.$message.success(
-            `恢复完成！已恢复 ${result.stats.restoredFiles} 个文件和 ${result.stats.restoredSettings} 个设置项`
-          )
-          // 刷新索引信息
-          setTimeout(() => {
-            this.fetchIndexInfo()
-          }, 1000)
-        } else {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'API请求失败')
+        // 解析备份文件
+        const fileContent = await file.text()
+        let backupData
+        try {
+          backupData = JSON.parse(fileContent)
+        } catch (parseError) {
+          throw new Error('备份文件格式无效，请选择有效的 JSON 文件')
         }
+
+        // 创建 RestoreProcessor 实例
+        this.currentRestoreProcessor = new RestoreProcessor({
+          chunkSize: 100, // 每批恢复 100 条
+          onProgress: (progress) => this.handleProgress(progress),
+          onError: (error) => this.handleError(error)
+        })
+
+        const result = await this.currentRestoreProcessor.restore(backupData)
+
+        // 成功完成
+        this.$message.success(
+          `恢复完成！已恢复 ${result.restoredFiles} 个文件和 ${result.restoredSettings} 个设置项`
+        )
+
+        // 刷新索引信息
+        setTimeout(() => {
+          this.fetchIndexInfo()
+        }, 1000)
       } catch (error) {
         console.error('恢复数据失败:', error)
-        this.$message.error('恢复数据失败: ' + error.message)
+        if (error.code !== 'ABORTED') {
+          const errorMessage = error.suggestion
+            ? `${error.message}。${error.suggestion}`
+            : error.message
+          this.$message.error('恢复数据失败: ' + errorMessage)
+          this.processingError = {
+            message: error.message,
+            suggestion: error.suggestion,
+            recoverable: error.recoverable
+          }
+        }
       } finally {
         this.restoring = false
+        this.isProcessing = false
+        this.currentRestoreProcessor = null
+        this.processingStartTime = null
       }
     },
 
@@ -600,6 +800,108 @@ export default {
     openFileInNewTab(file) {
       if (!file?.id) return
       window.open('/file/' + file.id, '_blank')
+    },
+    
+    // 处理进度更新 (Requirements 3.6, 4.6, 9.1, 9.2)
+    handleProgress(progress) {
+      this.processingPhase = progress.phase
+      this.processingProgress.message = progress.message || ''
+      this.processingProgress.current = progress.current || 0
+      
+      // 根据不同阶段计算进度百分比
+      if (progress.phase === 'fetching') {
+        // 获取阶段：基于已获取的记录数估算（假设总数未知时显示已获取数量）
+        this.processingProgress.total = progress.total || 0
+        // 获取阶段占总进度的 60%
+        if (progress.total && progress.total > 0) {
+          this.processingProgress.percentage = Math.min(60, (progress.current / progress.total) * 60)
+        } else {
+          // 未知总数时，使用对数增长模拟进度
+          this.processingProgress.percentage = Math.min(50, Math.log10(progress.current + 1) * 15)
+        }
+      } else if (progress.phase === 'sorting') {
+        // 排序阶段：占 60-70%
+        this.processingProgress.percentage = 65
+        this.processingProgress.total = progress.total || this.processingProgress.total
+      } else if (progress.phase === 'uploading') {
+        // 上传阶段：占 70-95%
+        this.processingProgress.total = progress.total || 0
+        if (progress.total && progress.total > 0) {
+          this.processingProgress.percentage = 70 + (progress.current / progress.total) * 25
+        }
+      } else if (progress.phase === 'finalizing') {
+        // 完成阶段：95-100%
+        this.processingProgress.percentage = 97
+      } else if (progress.phase === 'building') {
+        // 构建备份阶段：70-90%
+        this.processingProgress.percentage = 80
+      } else if (progress.phase === 'downloading') {
+        // 下载阶段：90-100%
+        this.processingProgress.percentage = 95
+      } else if (progress.phase === 'restoring_files') {
+        // 恢复文件阶段：0-80%
+        this.processingProgress.total = progress.total || 0
+        this.processingProgress.percentage = progress.percentage || 0
+      } else if (progress.phase === 'restoring_settings') {
+        // 恢复设置阶段：80-100%
+        this.processingProgress.total = progress.total || 0
+        this.processingProgress.percentage = progress.percentage || 80
+      } else if (progress.phase === 'completed') {
+        // 完成
+        this.processingProgress.percentage = 100
+      } else if (progress.phase === 'retrying') {
+        // 重试阶段：保持当前进度
+        this.processingProgress.message = progress.message
+      }
+    },
+    
+    // 处理错误 (Requirement 9.3)
+    handleError(error) {
+      console.error('批量操作错误:', error)
+      this.processingError = {
+        message: error.message,
+        suggestion: error.suggestion,
+        recoverable: error.recoverable
+      }
+    },
+    
+    // 取消当前操作 (Requirement 2.4)
+    cancelOperation() {
+      if (this.currentRebuilder) {
+        this.currentRebuilder.abort()
+        this.$message.info('正在取消索引重建...')
+      }
+      if (this.currentBackupGenerator) {
+        this.currentBackupGenerator.abort()
+        this.$message.info('正在取消备份...')
+      }
+      if (this.currentRestoreProcessor) {
+        this.currentRestoreProcessor.abort()
+        this.$message.info('正在取消恢复...')
+      }
+    },
+    
+    // 重试操作
+    retryOperation() {
+      this.processingError = null
+      if (this.rebuilding) {
+        this.rebuilding = false
+        this.isProcessing = false
+        this.$nextTick(() => {
+          this.rebuildIndex()
+        })
+      } else if (this.backing) {
+        this.backing = false
+        this.isProcessing = false
+        this.$nextTick(() => {
+          this.backupData()
+        })
+      }
+    },
+    
+    // 关闭错误提示
+    dismissError() {
+      this.processingError = null
     }
   }
 }
@@ -1194,6 +1496,182 @@ html.dark .legend-item:hover {
 @keyframes fillAnimation {
   from {
     width: 0;
+  }
+}
+
+/* 进度显示样式 (Requirements 3.6, 4.6, 9.1, 9.2) */
+.progress-container {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progress-phase {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-container-color);
+}
+
+.progress-percentage {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--admin-purple);
+}
+
+.progress-bar {
+  margin-bottom: 16px;
+}
+
+.progress-bar :deep(.el-progress-bar__outer) {
+  background-color: rgba(139, 92, 246, 0.1);
+  border-radius: 6px;
+}
+
+.progress-bar :deep(.el-progress-bar__inner) {
+  background: linear-gradient(90deg, var(--admin-purple), #E1BEE7);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.progress-details {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.progress-count,
+.progress-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #666;
+}
+
+.progress-count .fa-icon,
+.progress-time .fa-icon {
+  color: var(--admin-purple);
+  font-size: 12px;
+}
+
+.progress-message {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 16px;
+  min-height: 20px;
+}
+
+.cancel-btn {
+  margin-top: 8px;
+}
+
+.cancel-btn .fa-icon {
+  margin-right: 6px;
+}
+
+/* 错误显示样式 (Requirement 9.3) */
+.error-container {
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.error-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #EF4444;
+  font-size: 24px;
+}
+
+.error-content {
+  text-align: center;
+}
+
+.error-message {
+  font-size: 15px;
+  font-weight: 600;
+  color: #EF4444;
+  margin-bottom: 8px;
+}
+
+.error-suggestion {
+  font-size: 13px;
+  color: #666;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.error-actions .fa-icon {
+  margin-right: 6px;
+}
+
+/* 暗色模式适配 */
+html.dark .progress-count,
+html.dark .progress-time {
+  color: #aaa;
+}
+
+html.dark .progress-message {
+  color: #999;
+}
+
+html.dark .error-container {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+html.dark .error-suggestion {
+  color: #aaa;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .progress-container,
+  .error-container {
+    padding: 16px;
+  }
+  
+  .progress-header {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  .progress-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .error-actions .el-button {
+    width: 100%;
   }
 }
 </style>
