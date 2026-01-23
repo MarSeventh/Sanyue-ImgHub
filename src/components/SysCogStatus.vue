@@ -692,15 +692,17 @@ export default {
 
         const result = await this.currentRestoreProcessor.restore(backupData)
 
-        // 成功完成
+        // 恢复完成后自动重建索引
         this.$message.success(
-          `恢复完成！已恢复 ${result.restoredFiles} 个文件和 ${result.restoredSettings} 个设置项`
+          `恢复完成！已恢复 ${result.restoredFiles} 个文件和 ${result.restoredSettings} 个设置项，正在重建索引...`
         )
 
-        // 刷新索引信息
-        setTimeout(() => {
-          this.fetchIndexInfo()
-        }, 1000)
+        // 重置恢复状态
+        this.restoring = false
+        this.currentRestoreProcessor = null
+
+        // 自动开始重建索引
+        await this.rebuildIndex()
       } catch (error) {
         console.error('恢复数据失败:', error)
         if (error.code !== 'ABORTED') {
@@ -715,10 +717,13 @@ export default {
           }
         }
       } finally {
-        this.restoring = false
-        this.isProcessing = false
-        this.currentRestoreProcessor = null
-        this.processingStartTime = null
+        // 只有在出错时才重置状态（成功时由 rebuildIndex 处理）
+        if (this.restoring) {
+          this.restoring = false
+          this.isProcessing = false
+          this.currentRestoreProcessor = null
+          this.processingStartTime = null
+        }
       }
     },
 
