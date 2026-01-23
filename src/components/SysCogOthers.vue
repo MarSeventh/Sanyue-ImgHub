@@ -112,17 +112,19 @@
         </div>
 
     
-        <!-- 保存按钮 -->
-        <div class="actions">
-            <el-button type="primary" @click="saveSettings">保存设置</el-button>
-        </div>
+        <!-- 悬浮保存按钮 -->
+        <FloatingSaveButton @click="saveSettings" />
     </div>
 </template>
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import FloatingSaveButton from '@/components/FloatingSaveButton.vue';
 
 export default {
+components: {
+    FloatingSaveButton
+},
 data() {
     return {
         settings: {
@@ -266,22 +268,11 @@ mounted() {
     --el-switch-on-color: var(--el-color-primary);
 }
 
-.actions {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.actions :deep(.el-button) {
-    border-radius: 8px;
-    padding: 10px 20px;
-}
-
 /* 移动端适配 */
 @media (max-width: 768px) {
     .others-settings {
         padding: 15px;
+        padding-bottom: 80px; /* 为悬浮按钮留出空间 */
     }
     
     .first-settings :deep(.el-form) {

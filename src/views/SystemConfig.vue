@@ -218,10 +218,12 @@ html.dark .header-content:hover {
 @media (max-width: 768px) {
   .main-container,
   .main-container.collapsed {
-    width: calc(100% - 80px);
-    margin-left: 70px;
-    padding: 0 10px;
+    width: auto;
+    margin-left: 65px;
+    margin-right: 15px;
+    padding: 0;
     min-height: calc(100vh - 60px);
+    box-sizing: border-box;
   }
 }
 </style>

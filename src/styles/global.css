@@ -270,6 +270,14 @@ body {
 
     /* 404 页面 */
     --not-found-title-text-color: linear-gradient(to right, #6b9788, rgb(98, 133, 172));
+
+    /* 悬浮保存按钮 */
+    --floating-btn-bg: linear-gradient(135deg, #409EFF, #66b1ff);
+    --floating-btn-color: #ffffff;
+    --floating-btn-shadow: 0 4px 16px rgba(64, 158, 255, 0.4);
+    --floating-btn-shadow-hover: 0 8px 24px rgba(64, 158, 255, 0.5);
+    --floating-btn-right: 32px;
+    --floating-btn-bottom: 32px;
 }
 
 /* 暗黑模式 */
@@ -496,6 +504,12 @@ body {
     /* 404 页面 */
     --not-found-title-text-color: linear-gradient(to right, rgb(239, 250, 195), #f3a060);
     /* 404 页面标题颜色 */
+
+    /* 悬浮保存按钮 */
+    --floating-btn-bg: linear-gradient(135deg, #409EFF, #2d8cf0);
+    --floating-btn-color: #ffffff;
+    --floating-btn-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --floating-btn-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ==============================

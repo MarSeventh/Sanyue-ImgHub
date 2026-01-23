@@ -155,10 +155,8 @@
             </el-form>
         </div>
 
-        <!-- 保存按钮 -->
-        <div class="actions">
-            <el-button type="primary" @click="saveSettings">保存设置</el-button>
-        </div>
+        <!-- 悬浮保存按钮 -->
+        <FloatingSaveButton @click="saveSettings" />
 
         <!-- 创建Token对话框 -->
         <el-dialog v-model="showCreateTokenDialog" title="创建新 API Token" :width="dialogWidth">
@@ -235,8 +233,12 @@
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import FloatingSaveButton from '@/components/FloatingSaveButton.vue';
 
 export default {
+components: {
+    FloatingSaveButton
+},
 data() {
     return {
         authSettings: {
@@ -646,18 +648,6 @@ mounted() {
     --el-switch-on-color: var(--el-color-primary);
 }
 
-.actions {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.actions :deep(.el-button) {
-    border-radius: 8px;
-    padding: 10px 20px;
-}
-
 .token-title {
     display: flex;
     align-items: center;
@@ -752,6 +742,7 @@ mounted() {
 @media (max-width: 768px) {
     .security-settings {
         padding: 15px;
+        padding-bottom: 80px; /* 为悬浮按钮留出空间 */
     }
     
     .first-settings :deep(.el-form) {
