@@ -36,10 +36,10 @@ export default {
             immediate: true,
             handler(val) {
                 if (val) {
-                    // 延迟显示，等待页面内容加载
+                    // 延迟显示，等待 Element Plus 加载遮罩淡出动画完成
                     setTimeout(() => {
                         this.visible = true;
-                    }, 300);
+                    }, 600);
                 } else {
                     this.visible = false;
                 }
