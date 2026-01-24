@@ -74,7 +74,7 @@ beforeDestroy() {
     left: 8px;
     transform: translateY(-50%);
     z-index: 2001;
-    width: 150px;
+    width: 140px;
     /* macOS 风格毛玻璃效果 */
     background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(20px) saturate(180%);
@@ -124,19 +124,16 @@ html.dark .sidebar-container:hover {
 .menu-item {
     display: flex;
     align-items: center;
-    padding: 12px;
+    justify-content: flex-start;
+    padding: 12px 12px 12px 0;
     height: 42px;
     box-sizing: border-box;
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease, padding 0.25s ease;
+    transition: background 0.2s ease, color 0.2s ease;
     color: var(--admin-container-color, #333);
     gap: 0;
     overflow: hidden;
-}
-
-.sidebar-container.is-collapsed .menu-item {
-    padding: 12px 0;
 }
 
 .menu-item:hover {
@@ -157,8 +154,8 @@ html.dark .menu-item.is-active {
 }
 
 .menu-icon {
-    width: 32px;
-    min-width: 32px;
+    width: 40px;
+    min-width: 40px;
     font-size: 16px;
     flex-shrink: 0;
     text-align: center;
@@ -205,11 +202,16 @@ html.dark .toggle-button:hover {
 @media (max-width: 768px) {
     .sidebar-container {
         left: 4px;
-        width: 140px;
+        width: 120px;
     }
     
     .sidebar-container.is-collapsed {
         width: 50px;
+    }
+    
+    .menu-icon {
+        width: 34px;
+        min-width: 34px;
     }
 }
 </style>
