@@ -299,8 +299,6 @@ export default {
     z-index: 2000;
     display: flex;
     flex-direction: column;
-    backdrop-filter: blur(20px);
-    background: var(--admin-container-bg-color);
     color: var(--upload-text-color);
     /* 初始状态：从右上角的小圆开始 */
     clip-path: circle(0% at calc(100% - 200px) 50px);
@@ -308,6 +306,22 @@ export default {
     transition: 
         clip-path 0.6s cubic-bezier(0.4, 0, 0.2, 1),
         opacity 0.3s ease;
+}
+
+/* 使用伪元素处理背景模糊，避免与内容渲染冲突导致闪烁 */
+.history-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(20px);
+    background: var(--admin-container-bg-color);
+    z-index: -1;
+    /* 强制创建独立的合成层，提升渲染稳定性 */
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 .history-container.active {

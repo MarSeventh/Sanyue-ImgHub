@@ -136,7 +136,7 @@ data() {
         },
         availableChannels: {}, // 可用渠道列表
         // 加载状态
-        loading: false
+        loading: true
     };
 },
 computed: {

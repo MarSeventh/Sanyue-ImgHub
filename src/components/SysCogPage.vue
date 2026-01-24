@@ -58,7 +58,7 @@ data() {
             config: []
         },
         // 加载状态
-        loading: false,
+        loading: true,
         // 可用渠道列表
         availableChannels: {}
     };

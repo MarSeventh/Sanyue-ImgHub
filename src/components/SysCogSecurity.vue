@@ -251,7 +251,7 @@ data() {
         accessSettings: {},
         apiTokens: [], // API Token列表
         // 加载状态
-        loading: false,
+        loading: true,
         tokenLoading: false,
 
         // 修改密码相关
