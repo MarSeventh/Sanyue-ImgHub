@@ -156,7 +156,7 @@
         </div>
 
         <!-- 悬浮保存按钮 -->
-        <FloatingSaveButton @click="saveSettings" />
+        <FloatingSaveButton :show="!loading" @click="saveSettings" />
 
         <!-- 创建Token对话框 -->
         <el-dialog v-model="showCreateTokenDialog" title="创建新 API Token" :width="dialogWidth">

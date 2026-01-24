@@ -39,7 +39,7 @@
 
     
         <!-- 悬浮保存按钮 -->
-        <FloatingSaveButton @click="saveSettings" />
+        <FloatingSaveButton :show="!loading" @click="saveSettings" />
     </div>
 </template>
 

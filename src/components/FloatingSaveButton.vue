@@ -1,13 +1,16 @@
 <template>
-    <div 
-        class="floating-save-btn" 
-        :class="{ 'is-loading': loading }"
-        @click="handleClick"
-    >
-        <font-awesome-icon v-if="loading" icon="spinner" spin />
-        <font-awesome-icon v-else icon="save" />
-        <span class="save-text">{{ loading ? '保存中' : '保存' }}</span>
-    </div>
+    <transition name="fade-up">
+        <div 
+            v-show="visible"
+            class="floating-save-btn" 
+            :class="{ 'is-loading': loading }"
+            @click="handleClick"
+        >
+            <font-awesome-icon v-if="loading" icon="spinner" spin />
+            <font-awesome-icon v-else icon="save" />
+            <span class="save-text">{{ loading ? '保存中' : '保存' }}</span>
+        </div>
+    </transition>
 </template>
 
 <script>
@@ -17,6 +20,30 @@ export default {
         loading: {
             type: Boolean,
             default: false
+        },
+        show: {
+            type: Boolean,
+            default: true
+        }
+    },
+    data() {
+        return {
+            visible: false
+        };
+    },
+    watch: {
+        show: {
+            immediate: true,
+            handler(val) {
+                if (val) {
+                    // 延迟显示，等待页面内容加载
+                    setTimeout(() => {
+                        this.visible = true;
+                    }, 300);
+                } else {
+                    this.visible = false;
+                }
+            }
         }
     },
     methods: {
@@ -32,12 +59,12 @@ export default {
 <style scoped>
 .floating-save-btn {
     position: fixed;
-    right: var(--floating-btn-right, 32px);
-    bottom: var(--floating-btn-bottom, 32px);
+    right: var(--floating-btn-right, 24px);
+    bottom: var(--floating-btn-bottom, 24px);
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 14px 24px;
+    gap: 6px;
+    padding: 10px 18px;
     background: var(--floating-btn-bg);
     color: var(--floating-btn-color);
     border-radius: 50px;
@@ -46,12 +73,12 @@ export default {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 100;
     font-weight: 500;
-    font-size: 15px;
+    font-size: 13px;
     user-select: none;
 }
 
 .floating-save-btn:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: var(--floating-btn-shadow-hover);
 }
 
@@ -70,28 +97,47 @@ export default {
 }
 
 .floating-save-btn svg {
-    font-size: 16px;
+    font-size: 14px;
+}
+
+/* 淡入上移动画 */
+.fade-up-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.fade-up-leave-active {
+    transition: all 0.2s ease-in;
+}
+
+.fade-up-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.fade-up-leave-to {
+    opacity: 0;
+    transform: translateY(10px);
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
     .floating-save-btn {
-        right: 20px;
-        bottom: 20px;
-        padding: 12px 20px;
-        font-size: 14px;
+        right: 16px;
+        bottom: 16px;
+        padding: 10px 16px;
+        font-size: 12px;
     }
     
     .floating-save-btn svg {
-        font-size: 14px;
+        font-size: 12px;
     }
 }
 
 @media (max-width: 480px) {
     .floating-save-btn {
-        right: 16px;
-        bottom: 16px;
-        padding: 14px;
+        right: 12px;
+        bottom: 12px;
+        padding: 12px;
         border-radius: 50%;
     }
     
@@ -100,7 +146,7 @@ export default {
     }
     
     .floating-save-btn svg {
-        font-size: 18px;
+        font-size: 16px;
     }
 }
 </style>
