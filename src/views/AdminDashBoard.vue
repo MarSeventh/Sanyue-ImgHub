@@ -118,6 +118,12 @@
             <div v-if="viewMode === 'card'" class="content">
                 <!-- 加载骨架屏 -->
                 <SkeletonLoader v-if="loading" type="card" :count="15" />
+                <!-- 空状态 -->
+                <div v-else-if="paginatedTableData.length === 0" class="empty-state">
+                    <font-awesome-icon icon="folder-open" class="empty-icon" />
+                    <p class="empty-text">{{ hasSearchOrFilter ? '未找到匹配的文件或文件夹' : '当前目录为空' }}</p>
+                    <p class="empty-hint">{{ hasSearchOrFilter ? '尝试调整搜索条件或筛选器' : '上传文件后将显示在这里' }}</p>
+                </div>
                 <!-- 文件夹和文件列表 -->
                 <template v-else v-for="(item, index) in paginatedTableData" :key="index">
                     <!-- 文件夹卡片 -->
@@ -175,6 +181,12 @@
                 </div>
                 <!-- 列表骨架屏 -->
                 <SkeletonLoader v-if="loading" type="list" :count="15" />
+                <!-- 空状态 -->
+                <div v-else-if="paginatedTableData.length === 0" class="empty-state list-empty">
+                    <font-awesome-icon icon="folder-open" class="empty-icon" />
+                    <p class="empty-text">{{ hasSearchOrFilter ? '未找到匹配的文件或文件夹' : '当前目录为空' }}</p>
+                    <p class="empty-hint">{{ hasSearchOrFilter ? '尝试调整搜索条件或筛选器' : '上传文件后将显示在这里' }}</p>
+                </div>
                 <!-- 实际数据 -->
                 <template v-else>
                     <FileListItem
@@ -439,6 +451,10 @@ computed: {
     // 计算当前激活的筛选条件数量（数组形式）
     activeFilterCount() {
         return Object.values(this.filters).reduce((count, arr) => count + (Array.isArray(arr) ? arr.length : 0), 0);
+    },
+    // 判断是否处于搜索或筛选模式
+    hasSearchOrFilter() {
+        return this.isSearchMode || this.activeFilterCount > 0;
     },
     paginatedTableData() {
         const sortedData = this.sortData(this.filteredTableData);
@@ -766,15 +782,55 @@ methods: {
         this.currentPage = 1;
         this.refreshFileList();
     },
-    // 从文件列表中提取渠道名称
-    extractChannelNames() {
-        const channelNames = new Set();
-        this.tableData.forEach(file => {
-            if (file.metadata?.ChannelName) {
-                channelNames.add(file.metadata.ChannelName);
+    // 从 API 获取所有渠道名称
+    async extractChannelNames() {
+        try {
+            const response = await fetchWithAuth('/api/channels?includeDisabled=true', {
+                method: 'GET'
+            });
+
+            if (response.ok) {
+                const channels = await response.json();
+                const channelOptions = [];
+
+                // 类型映射
+                const typeLabels = {
+                    telegram: 'Telegram',
+                    cfr2: 'Cloudflare R2',
+                    s3: 'S3',
+                    discord: 'Discord',
+                    huggingface: 'HuggingFace'
+                };
+
+                // 按类型提取渠道名称
+                Object.entries(channels).forEach(([type, channelList]) => {
+                    if (Array.isArray(channelList) && channelList.length > 0) {
+                        channelList.forEach(channel => {
+                            if (channel.name) {
+                                channelOptions.push({
+                                    name: channel.name,
+                                    type: type,
+                                    typeLabel: typeLabels[type] || type,
+                                    label: `${channel.name} (${typeLabels[type] || type})`
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // 按类型和名称排序
+                channelOptions.sort((a, b) => {
+                    if (a.type !== b.type) {
+                        return a.type.localeCompare(b.type);
+                    }
+                    return a.name.localeCompare(b.name);
+                });
+
+                this.channelNameOptions = channelOptions;
             }
-        });
-        this.channelNameOptions = Array.from(channelNames).sort();
+        } catch (error) {
+            console.error('Failed to fetch channel names:', error);
+        }
     },
     handleDownload(key) {
         const link = document.createElement('a');
@@ -1079,8 +1135,6 @@ methods: {
             );
             // 获取新的文件列表后
             await this.fetchFileList();
-            // 提取渠道名称用于筛选选项
-            this.extractChannelNames();
         } catch (error) {
             this.$message.error('加载更多文件失败，请检查网络连接');
         } finally {
@@ -1477,10 +1531,8 @@ methods: {
                     this.filters
                 );
                 await this.fetchFileList();
-                // 提取渠道名称用于筛选选项
-                this.extractChannelNames();
             }
-            
+
             this.currentPage = Math.min(targetPage, this.totalPages);
         } catch (error) {
             this.$message.error('加载数据失败，请检查网络连接');
@@ -1670,8 +1722,6 @@ methods: {
             );
             if (success) {
                 await this.fetchFileList();
-                // 提取渠道名称用于筛选选项
-                this.extractChannelNames();
             } else {
                 throw new Error('Refresh failed');
             }
@@ -1821,6 +1871,10 @@ mounted() {
         .then(() => {
             // 首次加载时刷新文件列表
             return this.refreshFileList();
+        })
+        .then(() => {
+            // 获取所有渠道名称
+            return this.extractChannelNames();
         })
         .catch((err) => {
             if (err.message !== 'Unauthorized') {
@@ -2190,6 +2244,41 @@ html.dark .header-content:hover {
     padding-bottom: 0px;
     flex-grow: 1;
     min-height: 80vh;
+}
+
+/* 空状态样式 */
+.empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--admin-container-color);
+    opacity: 0.6;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    color: var(--admin-container-color);
+    opacity: 0.3;
+}
+
+.empty-text {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+}
+
+.empty-hint {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.7;
+}
+
+.list-empty {
+    padding: 80px 20px;
 }
 
 /* 在小屏幕上，将所有内容放入一列 */

@@ -82,12 +82,16 @@
                     <div class="filter-title">渠道名称</div>
                     <div class="filter-options">
                         <el-checkbox-group v-model="localFilters.channelName" @change="handleFilterChange('channelName')">
-                            <el-checkbox 
-                                v-for="option in channelNameOptions" 
-                                :key="'channelName-' + option"
-                                :label="option">
-                                {{ option }}
-                            </el-checkbox>
+                            <template v-for="(group, index) in groupedChannelNames" :key="'group-' + group.type">
+                                <div v-if="index > 0" class="channel-divider"></div>
+                                <div class="channel-group-title">{{ group.typeLabel }}</div>
+                                <el-checkbox
+                                    v-for="option in group.channels"
+                                    :key="'channelName-' + option.name"
+                                    :label="option.name">
+                                    {{ option.name }}
+                                </el-checkbox>
+                            </template>
                         </el-checkbox-group>
                     </div>
                 </div>
@@ -170,6 +174,23 @@ export default {
     computed: {
         activeFilterCount() {
             return Object.values(this.localFilters).reduce((count, arr) => count + arr.length, 0);
+        },
+        // 按类型分组渠道名称
+        groupedChannelNames() {
+            const groups = {};
+
+            this.channelNameOptions.forEach(option => {
+                if (!groups[option.type]) {
+                    groups[option.type] = {
+                        type: option.type,
+                        typeLabel: option.typeLabel,
+                        channels: []
+                    };
+                }
+                groups[option.type].channels.push(option);
+            });
+
+            return Object.values(groups);
         }
     },
     watch: {
@@ -296,6 +317,24 @@ export default {
 
 .filter-options :deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
     color: #0ea5e9;
+}
+
+/* 渠道分组样式 */
+.channel-group-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--el-text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 6px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.channel-divider {
+    height: 1px;
+    background: var(--el-border-color-lighter);
+    margin: 6px 0;
 }
 
 .filter-options :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
