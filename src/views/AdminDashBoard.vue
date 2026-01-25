@@ -4,12 +4,20 @@
             <el-header>
             <div class="header-content">
                 <DashboardTabs activeTab="dashboard"></DashboardTabs>
-                <div class="search-card">
-                    <el-input v-model="tempSearch" size="mini" placeholder="搜索：#标签 -#排除标签" @keyup.enter="handleSearch">
-                        <template #suffix>
-                            <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
-                        </template>
-                    </el-input>
+                <div class="search-area">
+                    <div class="search-card">
+                        <el-input v-model="tempSearch" size="mini" placeholder="搜索：#标签 -#排除标签" @keyup.enter="handleSearch">
+                            <template #suffix>
+                                <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
+                            </template>
+                        </el-input>
+                    </div>
+                    <!-- 筛选下拉菜单 -->
+                    <FilterDropdown
+                        v-model:filters="filters"
+                        :channelNameOptions="channelNameOptions"
+                        @change="handleFilterChange"
+                    />
                 </div>
                 <div class="actions">
                 <el-dropdown @command="sort" :hide-on-click="false">
@@ -345,6 +353,7 @@ import FileListItem from '@/components/FileListItem.vue';
 import FileDetailDialog from '@/components/FileDetailDialog.vue';
 import MobileActionSheet from '@/components/MobileActionSheet.vue';
 import MobileDirectoryDrawer from '@/components/MobileDirectoryDrawer.vue';
+import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFolderPath } from '@/utils/pathValidator';
@@ -389,6 +398,16 @@ data() {
         longPressTimer: null, // 长按计时器
         showMobileDirectoryDrawer: false, // 移动端目录抽屉
         jumpPage: '', // 跳转页码输入
+        // 筛选相关状态（数组形式支持多选）
+        filters: {
+            accessStatus: [], // 访问状态: 'normal'(正常), 'blocked'(已屏蔽)
+            listType: [],     // 黑白名单: 'White', 'Block', 'None'
+            label: [],         // 审查结果: 'normal', 'teen', 'adult'
+            fileType: [],      // 文件类型: 'image', 'video', 'audio', 'other'
+            channel: [],       // 渠道类型: 'TelegramNew', 'CloudflareR2', 'S3', 'Discord', 'HuggingFace', 'External'
+            channelName: []    // 渠道名称: 动态获取
+        },
+        channelNameOptions: [] // 动态从文件列表中提取
     }
 },
 components: {
@@ -401,7 +420,8 @@ components: {
     FileListItem,
     FileDetailDialog,
     MobileActionSheet,
-    MobileDirectoryDrawer
+    MobileDirectoryDrawer,
+    FilterDropdown
 },
 computed: {
     ...mapGetters(['adminUrlSettings', 'userConfig']),
@@ -415,6 +435,10 @@ computed: {
     realTotalPages() {
         const total = this.directFolderCount + this.directFileCount;
         return Math.ceil(total / this.pageSize) || 1;
+    },
+    // 计算当前激活的筛选条件数量（数组形式）
+    activeFilterCount() {
+        return Object.values(this.filters).reduce((count, arr) => count + (Array.isArray(arr) ? arr.length : 0), 0);
     },
     paginatedTableData() {
         const sortedData = this.sortData(this.filteredTableData);
@@ -724,6 +748,34 @@ methods: {
 
         this.refreshFileList();
     },
+    // 处理筛选变化（来自 FilterDropdown 组件）
+    handleFilterChange({ type, filters }) {
+        this.filters = filters;
+        this.currentPage = 1; // 重置到第一页
+        this.refreshFileList();
+    },
+    // 清除所有筛选条件
+    clearFilters() {
+        this.filters = {
+            listType: [],
+            label: [],
+            fileType: [],
+            channel: [],
+            channelName: []
+        };
+        this.currentPage = 1;
+        this.refreshFileList();
+    },
+    // 从文件列表中提取渠道名称
+    extractChannelNames() {
+        const channelNames = new Set();
+        this.tableData.forEach(file => {
+            if (file.metadata?.ChannelName) {
+                channelNames.add(file.metadata.ChannelName);
+            }
+        });
+        this.channelNameOptions = Array.from(channelNames).sort();
+    },
     handleDownload(key) {
         const link = document.createElement('a');
         link.href = this.getFileLink(key);
@@ -1016,15 +1068,19 @@ methods: {
         this.loading = true;
 
         try {
-            // 传递标签参数到后端
+            // 传递标签参数和筛选参数到后端
             await fileManager.loadMoreFiles(
                 this.currentPath, 
                 this.searchKeywords,
                 this.searchIncludeTags,
-                this.searchExcludeTags
+                this.searchExcludeTags,
+                60,
+                this.filters
             );
             // 获取新的文件列表后
             await this.fetchFileList();
+            // 提取渠道名称用于筛选选项
+            this.extractChannelNames();
         } catch (error) {
             this.$message.error('加载更多文件失败，请检查网络连接');
         } finally {
@@ -1417,9 +1473,12 @@ methods: {
                     this.searchKeywords,
                     this.searchIncludeTags,
                     this.searchExcludeTags,
-                    neededFileCount
+                    neededFileCount,
+                    this.filters
                 );
                 await this.fetchFileList();
+                // 提取渠道名称用于筛选选项
+                this.extractChannelNames();
             }
             
             this.currentPage = Math.min(targetPage, this.totalPages);
@@ -1601,15 +1660,18 @@ methods: {
         this.refreshLoading = true;
         this.loading = true;
         try {
-            // 传递标签参数到后端
+            // 传递标签参数和筛选参数到后端
             const success = await fileManager.refreshFileList(
                 this.currentPath, 
                 this.searchKeywords,
                 this.searchIncludeTags,
-                this.searchExcludeTags
+                this.searchExcludeTags,
+                this.filters
             );
             if (success) {
                 await this.fetchFileList();
+                // 提取渠道名称用于筛选选项
+                this.extractChannelNames();
             } else {
                 throw new Error('Refresh failed');
             }
@@ -2014,17 +2076,27 @@ html.dark .header-content:hover {
     margin-right: 5px;
 }
 
-/* 搜索卡片样式 */
-.search-card {
+/* 搜索区域样式（包含搜索框和筛选按钮） */
+.search-area {
     margin-left: auto;
     margin-right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 @media (max-width: 768px) {
-    .search-card {
+    .search-area {
         margin-right: 0;
         margin-left: 0;
         margin-top: 10px;
+        gap: 6px;
     }
+}
+
+/* 搜索卡片样式 */
+.search-card {
+    display: flex;
+    align-items: center;
 }
 .search-card :deep(.el-input__wrapper) {
     border-radius: 20px;
@@ -2034,7 +2106,7 @@ html.dark .header-content:hover {
 }
 
 .search-card :deep(.el-input__inner) {
-    width: 300px;
+    width: 280px;
     height: 40px;
     font-size: 1.2em;
     border: none;
@@ -2058,15 +2130,17 @@ html.dark .header-content:hover {
 }
 @media (max-width: 768px) {
     .search-card :deep(.el-input__inner) {
-        width: 60vw;
+        width: 45vw;
+        height: 32px;
+        font-size: 1em;
     }
 }
 .search-card :deep(.el-input__inner:focus) {
-    width: 400px;
+    width: 350px;
 }
 @media (max-width: 768px) {
     .search-card :deep(.el-input__inner:focus) {
-        width: 80vw;
+        width: 55vw;
     }
 }
 .search-icon {
@@ -2084,7 +2158,7 @@ html.dark .header-content:hover {
     pointer-events: auto;
 }
 .search-card:focus-within .search-icon:hover {
-    color: var(--admin-purple); /* 使用柔和的淡紫色 */
+    color: var(--admin-purple);
     transform: scale(1.2);
 }
 .search-card :deep(.el-input__suffix) {
