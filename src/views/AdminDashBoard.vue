@@ -793,13 +793,13 @@ methods: {
                 const channels = await response.json();
                 const channelOptions = [];
 
-                // 类型映射
+                // 类型映射（显示名称）
                 const typeLabels = {
-                    telegram: 'Telegram',
-                    cfr2: 'Cloudflare R2',
-                    s3: 'S3',
-                    discord: 'Discord',
-                    huggingface: 'HuggingFace'
+                    TelegramNew: 'Telegram',
+                    CloudflareR2: 'Cloudflare R2',
+                    S3: 'S3',
+                    Discord: 'Discord',
+                    HuggingFace: 'HuggingFace'
                 };
 
                 // 按类型提取渠道名称
@@ -809,9 +809,10 @@ methods: {
                             if (channel.name) {
                                 channelOptions.push({
                                     name: channel.name,
-                                    type: type,
-                                    typeLabel: typeLabels[type] || type,
-                                    label: `${channel.name} (${typeLabels[type] || type})`
+                                    type: channel.type,
+                                    typeLabel: typeLabels[channel.type] || channel.type,
+                                    // 使用 type:name 作为唯一标识
+                                    value: `${channel.type}:${channel.name}`,
                                 });
                             }
                         });

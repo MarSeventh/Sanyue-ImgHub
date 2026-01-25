@@ -87,8 +87,8 @@
                                 <div class="channel-group-title">{{ group.typeLabel }}</div>
                                 <el-checkbox
                                     v-for="option in group.channels"
-                                    :key="'channelName-' + option.name"
-                                    :label="option.name">
+                                    :key="'channelName-' + option.type + '-' + option.name"
+                                    :label="option.type + ':' + option.name">
                                     {{ option.name }}
                                 </el-checkbox>
                             </template>
