@@ -471,7 +471,7 @@ computed: {
         });
         // 增加channelTag属性，用于显示渠道信息
         data.forEach(file => {
-            if (file.metadata?.Channel === 'TelegramNew') {
+            if (file.metadata?.Channel === 'TelegramNew' || file.metadata?.Channel === 'Telegram') {
                 file.channelTag = 'TG';
             } else if (file.metadata?.Channel === 'CloudflareR2') {
                 file.channelTag = 'R2';
@@ -795,14 +795,14 @@ methods: {
 
                 // 类型映射（显示名称）
                 const typeLabels = {
-                    TelegramNew: 'Telegram',
-                    CloudflareR2: 'Cloudflare R2',
-                    S3: 'S3',
-                    Discord: 'Discord',
-                    HuggingFace: 'HuggingFace'
+                    telegram: 'Telegram',
+                    cfr2: 'Cloudflare R2',
+                    s3: 'S3',
+                    discord: 'Discord',
+                    huggingface: 'HuggingFace'
                 };
 
-                // 按类型提取渠道名称
+                // 按类型提取渠道名称，channel.type是类型内部存储名称（可能根据版本有变化），type是类型对外名称
                 Object.entries(channels).forEach(([type, channelList]) => {
                     if (Array.isArray(channelList) && channelList.length > 0) {
                         channelList.forEach(channel => {
@@ -810,8 +810,8 @@ methods: {
                                 channelOptions.push({
                                     name: channel.name,
                                     type: channel.type,
-                                    typeLabel: typeLabels[channel.type] || channel.type,
-                                    // 使用 type:name 作为唯一标识
+                                    typeLabel: typeLabels[type] || type,
+                                    // 使用 channel.type:channel.name 作为唯一标识
                                     value: `${channel.type}:${channel.name}`,
                                 });
                             }
