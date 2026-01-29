@@ -235,10 +235,45 @@ export default {
     width: 95%;
     max-width: 1400px;
     border-radius: 16px;
-    box-shadow: var(--admin-cuscfg-table-shadow);
+    box-shadow: var(--glass-shadow);
     min-height: 530px;
     overflow: hidden;
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.main-table :deep(.el-table__inner-wrapper) {
+    background: transparent !important;
+}
+
+.main-table :deep(.el-table__header-wrapper) {
+    background: var(--glass-header-bg) !important;
+}
+
+.main-table :deep(.el-table__header th) {
+    background: transparent !important;
+}
+
+.main-table :deep(.el-table__body-wrapper) {
+    background: transparent !important;
+}
+
+.main-table :deep(.el-table__row) {
+    background: transparent !important;
+}
+
+.main-table :deep(.el-table__row td) {
+    background: transparent !important;
+}
+
+.main-table :deep(.el-table__row:hover td) {
+    background: var(--glass-header-bg) !important;
+}
+
+.main-table :deep(.el-table__expanded-cell) {
+    background: var(--glass-header-bg) !important;
 }
 
 .container {

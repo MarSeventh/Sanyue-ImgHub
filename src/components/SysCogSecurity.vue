@@ -602,10 +602,19 @@ mounted() {
 /* 表单样式 - 上下排列左对齐 */
 .first-settings :deep(.el-form) {
     padding: 16px 20px;
-    background: var(--el-fill-color-lighter);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 12px;
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid var(--glass-border);
     margin-bottom: 20px;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s ease;
+}
+
+.first-settings :deep(.el-form:hover) {
+    box-shadow: var(--glass-shadow-hover);
+    background: var(--glass-bg-hover);
 }
 
 .first-settings :deep(.el-form-item) {
@@ -670,7 +679,11 @@ mounted() {
     width: 100%;
     border-radius: 12px !important;
     overflow: hidden;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: var(--glass-shadow);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
 }
 
 .token-table :deep(.el-table__header-wrapper) {

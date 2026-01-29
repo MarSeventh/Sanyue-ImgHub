@@ -931,21 +931,23 @@ export default {
 }
 
 .overview-card {
-  background: var(--admin-dashborad-stats-bg-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 24px;
   display: flex;
   align-items: center;
-  box-shadow: var(--admin-dashboard-stats-shadow);
+  box-shadow: var(--glass-shadow);
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--glass-border);
   cursor: pointer;
 }
 
 .overview-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--admin-dashboard-stats-hover-shadow);
-  background: var(--admin-dashborad-stats-hover-bg-color);
+  box-shadow: var(--glass-shadow-hover);
+  background: var(--glass-bg-hover);
 }
 
 .card-icon {
@@ -996,16 +998,19 @@ export default {
 }
 
 .chart-card {
-  background: var(--admin-dashborad-stats-bg-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: var(--admin-dashboard-stats-shadow);
+  box-shadow: var(--glass-shadow);
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--glass-border);
 }
 
 .chart-card:hover {
-  box-shadow: var(--admin-dashboard-stats-hover-shadow);
+  box-shadow: var(--glass-shadow-hover);
+  background: var(--glass-bg-hover);
 }
 
 .chart-card,
@@ -1206,11 +1211,19 @@ html.dark .legend-item:hover {
 }
 
 .action-card {
-  background: var(--admin-dashborad-stats-bg-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: var(--admin-dashboard-stats-shadow);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--glass-border);
+  transition: all 0.3s ease;
+}
+
+.action-card:hover {
+  box-shadow: var(--glass-shadow-hover);
+  background: var(--glass-bg-hover);
 }
 
 .action-header {
@@ -1355,10 +1368,12 @@ html.dark .legend-item:hover {
 
 .file-info-card {
   position: relative;
-  background: var(--admin-dashborad-stats-bg-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
-  box-shadow: var(--admin-dashboard-stats-shadow);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--glass-border);
   transition: all 0.3s ease;
   height: 300px;
   overflow: hidden;
@@ -1476,7 +1491,7 @@ html.dark .legend-item:hover {
 
 .file-info-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--admin-dashboard-stats-hover-shadow);
+  box-shadow: var(--glass-shadow-hover);
 }
 
 .file-info-card:hover .card-bg-media {

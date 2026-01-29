@@ -278,6 +278,16 @@ body {
     --floating-btn-shadow-hover: 0 8px 24px rgba(64, 158, 255, 0.5);
     --floating-btn-right: 32px;
     --floating-btn-bottom: 32px;
+
+    /* 玻璃效果卡片 */
+    --glass-bg: rgba(255, 255, 255, 0.45);
+    --glass-bg-hover: rgba(255, 255, 255, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-border-hover: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12);
+    --glass-header-bg: rgba(255, 255, 255, 0.3);
+    --glass-header-border: rgba(255, 255, 255, 0.4);
 }
 
 /* 暗黑模式 */
@@ -510,6 +520,16 @@ body {
     --floating-btn-color: #ffffff;
     --floating-btn-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     --floating-btn-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    /* 玻璃效果卡片 */
+    --glass-bg: rgba(30, 30, 30, 0.6);
+    --glass-bg-hover: rgba(40, 40, 40, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-hover: rgba(255, 255, 255, 0.15);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.4);
+    --glass-header-bg: rgba(255, 255, 255, 0.03);
+    --glass-header-border: rgba(255, 255, 255, 0.08);
 }
 
 /* ==============================

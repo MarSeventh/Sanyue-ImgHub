@@ -1065,10 +1065,18 @@ mounted() {
 /* 渠道分组 */
 .channel-group {
     margin-bottom: 32px;
-    background: var(--el-bg-color);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 12px;
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid var(--glass-border);
     overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s ease;
+}
+
+.channel-group:hover {
+    box-shadow: var(--glass-shadow-hover);
 }
 
 .group-header {
@@ -1076,8 +1084,8 @@ mounted() {
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    background: var(--el-fill-color-lighter);
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    background: var(--glass-header-bg);
+    border-bottom: 1px solid var(--glass-header-border);
 }
 
 .group-title {
@@ -1119,15 +1127,18 @@ mounted() {
 
 /* 单个渠道卡片 */
 .channel-card {
-    background: var(--el-bg-color);
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-radius: 10px;
-    border: 1px solid var(--el-border-color-extra-light);
+    border: 1px solid var(--glass-border);
     border-left: 3px solid var(--el-border-color-light);
     transition: all 0.25s ease;
     overflow: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* 光斑效果 */
@@ -1165,8 +1176,9 @@ mounted() {
 }
 
 .channel-card:hover {
-    border-color: var(--el-border-color-light);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--glass-border-hover);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    background: var(--glass-bg-hover);
 }
 
 .channel-card.disabled {
@@ -1205,8 +1217,8 @@ mounted() {
     justify-content: space-between;
     align-items: center;
     padding: 14px 16px;
-    background: var(--el-fill-color-lighter);
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    background: var(--glass-header-bg);
+    border-bottom: 1px solid var(--glass-header-border);
 }
 
 .card-title {
@@ -1283,8 +1295,8 @@ mounted() {
     justify-content: flex-end;
     gap: 4px;
     padding: 10px 16px;
-    border-top: 1px solid var(--el-border-color-lighter);
-    background: var(--el-fill-color-blank);
+    border-top: 1px solid var(--glass-header-border);
+    background: var(--glass-header-bg);
     margin-top: auto;
 }
 

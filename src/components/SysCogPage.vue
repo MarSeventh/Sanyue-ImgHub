@@ -189,9 +189,18 @@ mounted() {
 /* 表单样式 - 上下排列左对齐 */
 .first-settings :deep(.el-form) {
     padding: 16px 20px;
-    background: var(--el-fill-color-lighter);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 12px;
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s ease;
+}
+
+.first-settings :deep(.el-form:hover) {
+    box-shadow: var(--glass-shadow-hover);
+    background: var(--glass-bg-hover);
 }
 
 .first-settings :deep(.el-form-item) {
