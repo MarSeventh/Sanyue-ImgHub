@@ -369,8 +369,11 @@ import FilterDropdown from '@/components/FilterDropdown.vue';
 import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFolderPath } from '@/utils/pathValidator';
+import backgroundManager from '@/mixins/backgroundManager';
 
 export default {
+name: 'AdminDashBoard',
+mixins: [backgroundManager],
 data() {
     return {
         Number: 0,
@@ -1856,6 +1859,9 @@ methods: {
     },
 },
 mounted() {
+    // 初始化背景图
+    this.initializeBackground('adminBkImg', '.container', false, true);
+
     this.loading = true;
     fetchWithAuth("/api/manage/check", { method: 'GET' })
         .then(response => response.text())

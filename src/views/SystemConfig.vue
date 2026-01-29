@@ -26,9 +26,11 @@ import SysCogUpload from '@/components/SysCogUpload.vue';
 import SysCogSecurity from '@/components/SysCogSecurity.vue';
 import SysCogPage from '@/components/SysCogPage.vue';
 import SysCogOthers from '@/components/SysCogOthers.vue';
+import backgroundManager from '@/mixins/backgroundManager';
 
 export default {
     name: 'SystemConfig',
+    mixins: [backgroundManager],
     data() {
         return {
             activeIndex: 'status',
@@ -95,6 +97,9 @@ export default {
         },
     },
     mounted() {
+        // 初始化背景图
+        this.initializeBackground('adminBkImg', '.container', false, true);
+
         // 如果 URL 中没有锚点，则设置默认锚点
         if (!window.location.hash) {
             this.setDefaultHash();

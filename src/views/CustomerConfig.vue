@@ -79,9 +79,11 @@
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import DashboardTabs from '@/components/DashboardTabs.vue';
+import backgroundManager from '@/mixins/backgroundManager';
 
 export default {
     name: 'CustomerConfig',
+    mixins: [backgroundManager],
     data() {
         return {
             tableData: [],
@@ -182,6 +184,9 @@ export default {
         }
     },
     mounted() {
+        // 初始化背景图
+        this.initializeBackground('adminBkImg', '.container', false, true);
+
         this.loading = true;
 
         fetchWithAuth("/api/manage/check", { method: 'GET' })
