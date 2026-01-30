@@ -1000,7 +1000,7 @@ methods: {
                     //将res包装成新的file
                     const newFile = new File([res], processedFile.name, { type: res.type })
                     newFile.uid = file.uid
-                    
+
                     const myUploadCount = this.uploadCount++
 
                     //开启服务端压缩条件：1.开启服务端压缩 2.文件大小小于10MB 3.上传渠道为Telegram
