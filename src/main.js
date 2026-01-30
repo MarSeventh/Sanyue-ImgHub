@@ -72,7 +72,7 @@ const presetSiteTitle = (userConfig) => {
     document.title = userConfig?.siteTitle || 'Sanyue ImgHub';
 };
 
-// 预设网站图标的函数
+// 预设和更新网站图标的函数
 const presetSiteIcon = (isDarkMode, userConfig) => {
     // 同时更改 icon apple-touch-icon 和 mask-icon
     const existingIcons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"], link[rel="mask-icon"]');
