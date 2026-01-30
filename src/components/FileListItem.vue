@@ -62,7 +62,7 @@
         </div>
         <!-- 大小 -->
         <div class="list-col list-col-size">
-            {{ isFolder ? '-' : (item.metadata?.FileSize ? item.metadata.FileSize + ' MB' : '-') }}
+            {{ isFolder ? '-' : fileSizeDisplay }}
         </div>
         <!-- 上传时间 -->
         <div class="list-col list-col-date">
@@ -125,7 +125,8 @@ export default {
     },
     computed: {
         isFolder() {
-            return this.item.name?.endsWith('/');
+            // 检查 isFolder 属性或名称以 / 结尾
+            return this.item.isFolder || this.item.name?.endsWith('/');
         },
         isVideo() {
             const name = this.item.name?.toLowerCase() || '';
@@ -159,6 +160,22 @@ export default {
             }
             if (this.item.metadata?.TimeStamp) {
                 return new Date(this.item.metadata.TimeStamp).toLocaleDateString();
+            }
+            return '-';
+        },
+        fileSizeDisplay() {
+            const sizeBytes = this.item.metadata?.FileSizeBytes;
+            const sizeMB = this.item.metadata?.FileSize;
+            if (sizeBytes) {
+                if (sizeBytes < 1024) {
+                    return `${sizeBytes} B`;
+                } else if (sizeBytes < 1024 * 1024) {
+                    return `${(sizeBytes / 1024).toFixed(1)} KB`;
+                } else {
+                    return `${(sizeBytes / 1024 / 1024).toFixed(2)} MB`;
+                }
+            } else if (sizeMB) {
+                return `${sizeMB} MB`;
             }
             return '-';
         }

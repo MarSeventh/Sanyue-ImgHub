@@ -61,7 +61,8 @@
         <el-descriptions border :column="descColumn">
             <el-descriptions-item label="文件名">{{ file?.metadata?.FileName || file?.name }}</el-descriptions-item>
             <el-descriptions-item label="文件类型">{{ file?.metadata?.FileType || '未知' }}</el-descriptions-item>
-            <el-descriptions-item label="文件大小">{{ file?.metadata?.FileSize ? file.metadata.FileSize + ' MB' : '未知' }}</el-descriptions-item>
+            <el-descriptions-item label="文件大小">{{ fileSizeDisplay }}</el-descriptions-item>
+            <el-descriptions-item label="图片尺寸" v-if="imageDimensions">{{ imageDimensions }}</el-descriptions-item>
             <el-descriptions-item label="上传时间">{{ uploadTime }}</el-descriptions-item>
             <el-descriptions-item label="渠道类型/名称">{{ file?.metadata?.Channel || '未知' }} / {{ file?.metadata?.ChannelName || '-' }}</el-descriptions-item>
             <el-descriptions-item label="访问状态/审查">{{ accessType }} / {{ file?.metadata?.Label || '无' }}</el-descriptions-item>
@@ -144,6 +145,37 @@ export default {
             if (listType === 'Block') return '已屏蔽（黑名单）';
             if (label === 'adult') return '已屏蔽（审查不通过）'
             return '正常';
+        },
+        imageDimensions() {
+            const width = this.file?.metadata?.Width;
+            const height = this.file?.metadata?.Height;
+            if (width && height) {
+                // 判断图片方向
+                const ratio = width / height;
+                let orientation = '';
+                if (ratio > 1.1) orientation = '横图';
+                else if (ratio < 0.9) orientation = '竖图';
+                else orientation = '方图';
+                return `${width} × ${height} (${orientation})`;
+            }
+            return null;
+        },
+        fileSizeDisplay() {
+            const sizeBytes = this.file?.metadata?.FileSizeBytes;
+            const sizeMB = this.file?.metadata?.FileSize;
+            if (sizeBytes) {
+                // 根据大小选择合适的单位
+                if (sizeBytes < 1024) {
+                    return `${sizeBytes} B`;
+                } else if (sizeBytes < 1024 * 1024) {
+                    return `${(sizeBytes / 1024).toFixed(2)} KB`;
+                } else {
+                    return `${(sizeBytes / 1024 / 1024).toFixed(2)} MB`;
+                }
+            } else if (sizeMB) {
+                return `${sizeMB} MB`;
+            }
+            return '未知';
         }
     },
     methods: {
