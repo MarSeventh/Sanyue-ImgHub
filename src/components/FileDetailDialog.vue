@@ -259,7 +259,7 @@ export default {
     align-items: center;
     width: 100%;
 }
-:deep(.description-item) {
+:deep(.el-descriptions__content) {
     word-break: break-all;
     word-wrap: break-word;
 }

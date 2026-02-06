@@ -107,67 +107,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="upload-list-item" v-for="file in fileList.slice().reverse()" :key="file.name" :span="8">
-                        <a :href="file.url" target="_blank" class="upload-list-item-preview">
-                            <!-- 判断文件类型是否为视频 -->
-                            <video
-                                v-if="isVideo(file.name)"
-                                style="width: 10vw; border-radius: 12px;"
-                                autoplay
-                                muted
-                                playsinline
-                                loop
-                            >
-                                <source :src="file.url" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <!-- 判断文件类型是否为图片 -->
-                            <img
-                                v-else-if="isImage(file.name)"
-                                style="width: 10vw; border-radius: 12px;"
-                                :src="file.url"
-                                @error="file.url = require('@/assets/404.png')"
-                            />
-                            <!-- 其他文件类型 -->
-                            <div v-else style="width: 10vw; border-radius: 12px;">
-                                <font-awesome-icon icon="file" class="file-icon"></font-awesome-icon>
-                            </div>
-                        </a>
-                        <div class="upload-list-item-content">
-                            <div class="upload-list-item-name-wrapper">
-                                <el-text class="upload-list-item-name" truncated>{{ truncateFilename(file.name) }}</el-text>
-                            </div>
-                            <div class="upload-list-item-url" v-if="file.status==='done'">
-                                <div class="upload-list-item-url-row">
-                                    <el-input v-model="file.finalURL" readonly @click="selectAllText" :size="urlSize">
-                                        <template #prepend>URL</template>
-                                    </el-input>
-                                    <el-input v-model="file.mdURL" readonly @click="selectAllText" :size="urlSize">
-                                        <template #prepend>MarkDown</template>
-                                    </el-input>
-                                </div>
-                                <div class="upload-list-item-url-row">
-                                    <el-input v-model="file.htmlURL" readonly @click="selectAllText" :size="urlSize">
-                                        <template #prepend>HTML</template>
-                                    </el-input>
-                                    <el-input v-model="file.ubbURL" readonly @click="selectAllText" :size="urlSize">
-                                        <template #prepend>BBCode</template>
-                                    </el-input>
-                                </div>
-                            </div>
-                            <div class="upload-list-item-progress" v-else>
-                                <el-progress :percentage="file.progreess" :status="file.status" :show-text="false"/>
-                            </div>
-                        </div>
-                        <div class="upload-list-item-action">
-                            <button class="modern-file-action-btn modern-file-action-btn-primary" @click="handleCopy(file)">
-                                <el-icon><Link /></el-icon>
-                            </button>
-                            <button class="modern-file-action-btn modern-file-action-btn-danger" @click="handleRemove(file)">
-                                <el-icon><Delete /></el-icon>
-                            </button>
-                        </div>
-                    </div>
+                    <UploadFileItem
+                        v-for="file in fileList.slice().reverse()"
+                        :key="file.name"
+                        :file="file"
+                        @copy="handleCopy"
+                        @remove="handleRemove"
+                        @preview-error="(f) => f.url = require('@/assets/404.png')"
+                    />
                 </el-scrollbar>
             </div>
         </el-card>
@@ -178,9 +125,15 @@
 import axios from '@/utils/axios'
 import * as imageConversion from 'image-conversion'
 import { mapGetters } from 'vuex'
+import { buildFileUrls, updateFileListUrls, getUrlByFormat } from '@/utils/upload/urlBuilder'
+import { computeSha256 } from '@/utils/upload/sha256'
+import UploadFileItem from '@/components/upload/UploadFileItem.vue'
 
 export default {
 name: 'UploadForm',
+components: {
+    UploadFileItem
+},
 props: {
     selectedUrlForm: {
         type: String,
@@ -301,42 +254,14 @@ watch: {
     },
     useCustomUrl: {
         handler() {
-            if (this.useCustomUrl === 'true') {
-                this.fileList.forEach(item => {
-                    if (item.uploadChannel === 'external') {
-                        return
-                    }
-                    item.finalURL = this.customUrlPrefix + item.srcID
-                    item.mdURL = `![${item.name}](${this.customUrlPrefix + item.srcID})`
-                    item.htmlURL = `<img src="${this.customUrlPrefix + item.srcID}" alt="${item.name}" width=100% />`
-                    item.ubbURL = `[img]${this.customUrlPrefix + item.srcID}[/img]`
-                })
-            } else {
-                this.fileList.forEach(item => {
-                    if (item.uploadChannel === 'external') {
-                        return
-                    }
-                    item.finalURL = this.rootUrl + item.srcID
-                    item.mdURL = `![${item.name}](${this.rootUrl + item.srcID})`
-                    item.htmlURL = `<img src="${this.rootUrl + item.srcID}" alt="${item.name}" width=100% />`
-                    item.ubbURL = `[img]${this.rootUrl + item.srcID}[/img]`
-                })
-            }
+            updateFileListUrls(this.fileList, this.rootUrl)
         },
         immediate: true
     },
     customUrlPrefix: {
         handler() {
             if (this.useCustomUrl === 'true') {
-                this.fileList.forEach(item => {
-                    if (item.uploadChannel === 'external') {
-                        return
-                    }
-                    item.finalURL = this.customUrlPrefix + item.srcID
-                    item.mdURL = `![${item.name}](${this.customUrlPrefix + item.srcID})`
-                    item.htmlURL = `<img src="${this.customUrlPrefix + item.srcID}" alt="${item.name}" width=100% />`
-                    item.ubbURL = `[img]${this.customUrlPrefix + item.srcID}[/img]`
-                })
+                updateFileListUrls(this.fileList, this.rootUrl)
             }
         },
         immediate: true
@@ -526,7 +451,7 @@ methods: {
         if (uploadChannel === 'huggingface') {
             try {
                 console.log('Computing SHA256 for HuggingFace upload...')
-                const sha256 = await this.computeSha256(file.file)
+                const sha256 = await computeSha256(file.file)
                 formData.append('sha256', sha256)
                 console.log('SHA256 computed:', sha256)
             } catch (err) {
@@ -604,7 +529,7 @@ methods: {
         if (uploadChannel === 'huggingface') {
             try {
                 console.log('Computing SHA256 for HuggingFace chunked upload...')
-                precomputedSha256 = await this.computeSha256(file.file)
+                precomputedSha256 = await computeSha256(file.file)
                 console.log('SHA256 computed:', precomputedSha256)
             } catch (err) {
                 console.error('Failed to compute SHA256:', err)
@@ -861,10 +786,8 @@ methods: {
                 // 从response.data[0].src中去除/file/前缀
                 const srcID = response.data[0].src.replace('/file/', '')
                 fileItem.url = `${window.location.protocol}//${window.location.host}/file/` + srcID
-                fileItem.finalURL = this.rootUrl + srcID
-                fileItem.mdURL = `![${file.name}](${this.rootUrl + srcID})`
-                fileItem.htmlURL = `<img src="${this.rootUrl + srcID}" alt="${file.name}" width=100% />`
-                fileItem.ubbURL = `[img]${this.rootUrl + srcID}[/img]`
+                const urls = buildFileUrls(srcID, file.name, this.rootUrl)
+                Object.assign(fileItem, urls)
                 fileItem.srcID = srcID
             }
             fileItem.progreess = 100
@@ -918,27 +841,11 @@ methods: {
     handleCopy(file) {
         const status = this.fileList.find(item => item.uid === file.uid).status
         if (status !== 'done' && status !== 'success') {
-            this.$message({
-                type: 'warning',
-                message: '文件未上传成功，无法复制链接'
-            })
+            this.$message({ type: 'warning', message: '文件未上传成功，无法复制链接' })
             return
         }
-        if (this.selectedUrlForm === 'url') {
-            navigator.clipboard.writeText(file.finalURL)
-        } else if (this.selectedUrlForm === 'md') {
-            navigator.clipboard.writeText(file.mdURL)
-        } else if (this.selectedUrlForm === 'html') {
-            navigator.clipboard.writeText(file.htmlURL)
-        } else if (this.selectedUrlForm === 'ubb') {
-            navigator.clipboard.writeText(file.ubbURL)
-        } else {
-            navigator.clipboard.writeText(file.finalURL)
-        }
-        this.$message({
-            type: 'success',
-            message: '复制成功'
-        })
+        navigator.clipboard.writeText(getUrlByFormat(file, this.selectedUrlForm))
+        this.$message({ type: 'success', message: '复制成功' })
     },
     beforeUpload(file) {
         return new Promise(async (resolve, reject) => {
@@ -1047,46 +954,12 @@ methods: {
         }
     },
     copyAll() {
-        if (this.selectedUrlForm === 'url') {
-            const urls = this.fileList.map(item => {
-                if (item.status === 'done' || item.status === 'success') {
-                    return item.finalURL
-                }
-            }).join('\n')
-            navigator.clipboard.writeText(urls)
-        } else if (this.selectedUrlForm === 'md') {
-            const urls = this.fileList.map(item => {
-                if (item.status === 'done' || item.status === 'success') {
-                    return item.mdURL
-                }
-            }).join('\n')
-            navigator.clipboard.writeText(urls)
-        } else if (this.selectedUrlForm === 'html') {
-            const urls = this.fileList.map(item => {
-                if (item.status === 'done' || item.status === 'success') {
-                    return item.htmlURL
-                }
-            }).join('\n')
-            navigator.clipboard.writeText(urls)
-        } else if (this.selectedUrlForm === 'ubb') {
-            const urls = this.fileList.map(item => {
-                if (item.status === 'done' || item.status === 'success') {
-                    return item.ubbURL
-                }
-            }).join('\n')
-            navigator.clipboard.writeText(urls)
-        } else {
-            const urls = this.fileList.map(item => {
-                if (item.status === 'done' || item.status === 'success') {
-                    return item.finalURL
-                }
-            }).join('\n')
-            navigator.clipboard.writeText(urls)
-        }
-        this.$message({
-            type: 'success',
-            message: '整体复制成功'
-        })
+        const urls = this.fileList
+            .filter(item => item.status === 'done' || item.status === 'success')
+            .map(item => getUrlByFormat(item, this.selectedUrlForm))
+            .join('\n')
+        navigator.clipboard.writeText(urls)
+        this.$message({ type: 'success', message: '整体复制成功' })
     },
     clearFileList() {
         if (this.fileList.length > 0) {
@@ -1291,37 +1164,6 @@ methods: {
             }
         }
     },
-    selectAllText(event) {
-        // 复制到剪贴板
-        navigator.clipboard.writeText(event.target.value)
-            .then(() => {
-                this.$message({
-                    type: 'success',
-                    message: '复制成功'
-                });
-            })
-            .catch(() => {
-                this.$message({
-                    type: 'error',
-                    message: '复制失败'
-                });
-            });
-    },
-    // 判断是否为图片类型
-    isImage(fileName) {
-        const imageExtensions = [
-            'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico', 'avif', 'heic',
-            'jfif', 'pjpeg', 'pjp', 'raw', 'cr2', 'nef', 'dng', 'eps', 'ai', 'emf', 'wmf'
-        ];
-        const extension = fileName.split('.').pop().toLowerCase();
-        return imageExtensions.includes(extension);
-    },
-    // 判断是否为视频类型
-    isVideo(fileName) {
-        const videoExtensions = ['mp4', 'webm', 'ogg', 'mkv'];
-        const extension = fileName.split('.').pop().toLowerCase();
-        return videoExtensions.includes(extension);
-    },
     handleScroll(event) {
         this.listScrolled = event.scrollTop > 0 && this.fileList.length > 0
     },
@@ -1396,7 +1238,7 @@ methods: {
             // 1. 计算 SHA256
             file.onProgress({ percent: 5, file: file.file });
             console.log('Computing SHA256...');
-            const sha256 = await this.computeSha256(file.file);
+            const sha256 = await computeSha256(file.file);
             console.log('SHA256:', sha256);
 
             // 检查是否已取消
@@ -1593,152 +1435,6 @@ methods: {
 
         console.log('Multipart upload complete');
     },
-    // 计算文件的 SHA256 哈希（用于 HuggingFace 上传）
-    // 使用增量哈希算法，支持任意大小文件
-    async computeSha256(file) {
-        // 使用纯 JavaScript 实现的增量 SHA256
-        // 这样可以分块处理大文件，避免内存溢出
-        const sha256 = this.createSha256();
-        
-        const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB chunks - 更小的块减少内存压力
-        let offset = 0;
-        
-        while (offset < file.size) {
-            const chunk = file.slice(offset, Math.min(offset + CHUNK_SIZE, file.size));
-            const buffer = await chunk.arrayBuffer();
-            sha256.update(new Uint8Array(buffer));
-            offset += CHUNK_SIZE;
-            
-            // 每处理 20MB 打印一次进度
-            if (offset % (20 * 1024 * 1024) < CHUNK_SIZE) {
-                console.log(`SHA256 progress: ${Math.min(100, Math.round(offset / file.size * 100))}%`);
-            }
-        }
-        
-        return sha256.digest();
-    },
-    // 创建增量 SHA256 哈希器（纯 JavaScript 实现）
-    createSha256() {
-        // SHA256 常量
-        const K = new Uint32Array([
-            0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-            0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-            0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-            0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-            0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-            0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-            0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-        ]);
-
-        let H = new Uint32Array([
-            0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-            0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
-        ]);
-
-        let buffer = new Uint8Array(64);
-        let bufferLength = 0;
-        let totalLength = 0;
-
-        const rotr = (x, n) => (x >>> n) | (x << (32 - n));
-
-        const processBlock = (block) => {
-            const W = new Uint32Array(64);
-            
-            for (let i = 0; i < 16; i++) {
-                W[i] = (block[i * 4] << 24) | (block[i * 4 + 1] << 16) | (block[i * 4 + 2] << 8) | block[i * 4 + 3];
-            }
-            
-            for (let i = 16; i < 64; i++) {
-                const s0 = rotr(W[i - 15], 7) ^ rotr(W[i - 15], 18) ^ (W[i - 15] >>> 3);
-                const s1 = rotr(W[i - 2], 17) ^ rotr(W[i - 2], 19) ^ (W[i - 2] >>> 10);
-                W[i] = (W[i - 16] + s0 + W[i - 7] + s1) >>> 0;
-            }
-
-            let [a, b, c, d, e, f, g, h] = H;
-
-            for (let i = 0; i < 64; i++) {
-                const S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
-                const ch = (e & f) ^ (~e & g);
-                const temp1 = (h + S1 + ch + K[i] + W[i]) >>> 0;
-                const S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
-                const maj = (a & b) ^ (a & c) ^ (b & c);
-                const temp2 = (S0 + maj) >>> 0;
-
-                h = g; g = f; f = e;
-                e = (d + temp1) >>> 0;
-                d = c; c = b; b = a;
-                a = (temp1 + temp2) >>> 0;
-            }
-
-            H[0] = (H[0] + a) >>> 0;
-            H[1] = (H[1] + b) >>> 0;
-            H[2] = (H[2] + c) >>> 0;
-            H[3] = (H[3] + d) >>> 0;
-            H[4] = (H[4] + e) >>> 0;
-            H[5] = (H[5] + f) >>> 0;
-            H[6] = (H[6] + g) >>> 0;
-            H[7] = (H[7] + h) >>> 0;
-        };
-
-        return {
-            update(data) {
-                totalLength += data.length;
-                let offset = 0;
-
-                if (bufferLength > 0) {
-                    const needed = 64 - bufferLength;
-                    const toCopy = Math.min(needed, data.length);
-                    buffer.set(data.subarray(0, toCopy), bufferLength);
-                    bufferLength += toCopy;
-                    offset = toCopy;
-
-                    if (bufferLength === 64) {
-                        processBlock(buffer);
-                        bufferLength = 0;
-                    }
-                }
-
-                while (offset + 64 <= data.length) {
-                    processBlock(data.subarray(offset, offset + 64));
-                    offset += 64;
-                }
-
-                if (offset < data.length) {
-                    buffer.set(data.subarray(offset), 0);
-                    bufferLength = data.length - offset;
-                }
-            },
-            digest() {
-                const bitLength = totalLength * 8;
-                
-                // Padding
-                buffer[bufferLength++] = 0x80;
-                
-                if (bufferLength > 56) {
-                    buffer.fill(0, bufferLength, 64);
-                    processBlock(buffer);
-                    bufferLength = 0;
-                }
-                
-                buffer.fill(0, bufferLength, 56);
-                
-                // Length in bits (big-endian, 64-bit)
-                const view = new DataView(buffer.buffer);
-                view.setUint32(56, Math.floor(bitLength / 0x100000000), false);
-                view.setUint32(60, bitLength >>> 0, false);
-                
-                processBlock(buffer);
-
-                // Convert to hex
-                let hex = '';
-                for (let i = 0; i < 8; i++) {
-                    hex += H[i].toString(16).padStart(8, '0');
-                }
-                return hex;
-            }
-        };
-    },
     // 将图片转换为 WebP 格式
     async convertImageToWebp(file) {
         return new Promise((resolve, reject) => {
@@ -1883,38 +1579,6 @@ beforeDestroy() {
                 0 0 40px color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 15%, transparent),
                 inset 0 0 20px color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 8%, transparent) !important;
 }
-/* Old upload-list-item styles moved to modern section below */
-.upload-list-item-content {
-    display: flex;
-    flex-direction: column;
-    margin-left: 10px;
-}
-.upload-list-item-url-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    width: 38vw;
-    gap: 8px;
-    margin-bottom: 6px;
-}
-.upload-list-item-url-row:last-child {
-    margin-bottom: 0;
-}
-.upload-list-item-url {
-    display: flex;
-    flex-direction: column;
-}
-/* .upload-list-item-progress styles moved to modern section below */
-@media (max-width: 768px) {
-    .upload-list-item-content {
-        margin-left: 2px;
-    }
-    .upload-list-item-url-row {
-        width: 42vw;
-        flex-direction: column;
-        gap: 6px;
-    }
-}
 
 /* 拖拽上传卡片包装器 - 用于悬浮光斑效果 */
 .upload-card-wrapper {
@@ -2041,16 +1705,6 @@ beforeDestroy() {
     }
     .el-icon--upload.upload-list-busy {
         font-size: 30px;
-    }
-}
-.el-upload__tip {
-    font-size: medium;
-    color: var(--upload-text-color);
-    user-select: none;
-}
-@media (max-width: 768px) {
-    .el-upload__tip {
-        font-size: small;
     }
 }
 
@@ -2390,158 +2044,6 @@ beforeDestroy() {
     background-color: var(--upload-list-dashboard-bg-color);
     box-shadow: var(--upload-list-dashboard-shadow);
 }
-/* .upload-list-dashboard-title moved to modern section below */
-
-.file-icon {
-    font-size: 30px;
-    color: var(--upload-list-file-icon-color);
-}
-
-/* Modern URL Input Styles */
-.upload-list-item-url :deep(.el-input) {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.upload-list-item-url :deep(.el-input:hover) {
-    transform: translateY(-1px);
-}
-
-.upload-list-item-url :deep(.el-input__wrapper) {
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--el-fill-color-blank);
-    border: 1px solid var(--el-border-color-lighter);
-    overflow: hidden;
-    position: relative;
-    padding: 0;
-}
-
-.upload-list-item-url :deep(.el-input-group > .el-input__wrapper) {
-    border-radius: 0 9px 9px 0 !important;
-}
-
-.upload-list-item-url :deep(.el-input__wrapper:hover) {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    border-color: var(--el-color-primary-light-5);
-}
-
-.upload-list-item-url :deep(.el-input__wrapper.is-focus) {
-    box-shadow: 0 0 0 2px var(--el-color-primary-light-8),
-                0 4px 12px rgba(0, 0, 0, 0.15);
-    border-color: var(--el-color-primary);
-}
-
-/* Gradient animation on focus */
-.upload-list-item-url :deep(.el-input__wrapper.is-focus::before) {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(64, 158, 255, 0.08), 
-        transparent);
-    animation: shimmer 2s infinite;
-    z-index: 0;
-}
-
-@keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
-}
-
-.upload-list-item-url :deep(.el-input__inner) {
-    font-size: 13px;
-    font-family: 'Courier New', Monaco, monospace;
-    color: var(--el-text-color-regular);
-    transition: all 0.3s ease;
-    padding-left: 12px;
-    position: relative;
-    z-index: 1;
-    border-radius: 0 10px 10px 0;
-}
-
-.upload-list-item-url :deep(.el-input__inner::selection) {
-    background-color: var(--el-color-primary-light-7);
-}
-
-.upload-list-item-url :deep(.el-input-group__prepend) {
-    background: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
-    font-weight: 600;
-    font-size: 12px;
-    border: none;
-    padding: 0 14px;
-    margin: 0;
-    border-radius: 9px 0 0 9px;
-    box-shadow: none;
-    transition: all 0.3s ease;
-    letter-spacing: 0.5px;
-    position: relative;
-    z-index: 1;
-}
-
-/* 去除prepend和input之间的分隔 */
-.upload-list-item-url :deep(.el-input-group__prepend::after) {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 60%;
-    width: 1px;
-    background: var(--el-color-primary-light-7);
-    opacity: 0.3;
-    transition: all 0.3s ease;
-}
-
-.upload-list-item-url :deep(.el-input:hover .el-input-group__prepend) {
-    background: var(--el-color-primary-light-8);
-}
-
-.upload-list-item-url :deep(.el-input:hover .el-input-group__prepend::after) {
-    opacity: 0.5;
-}
-
-.upload-list-item-url :deep(.el-input.is-focus .el-input-group__prepend) {
-    background: var(--el-color-primary);
-    color: white;
-}
-
-.upload-list-item-url :deep(.el-input.is-focus .el-input-group__prepend::after) {
-    background: rgba(255, 255, 255, 0.3);
-    opacity: 1;
-}
-
-/* Add subtle pulse animation to focused prepend */
-.upload-list-item-url :deep(.el-input.is-focus .el-input-group__prepend) {
-    animation: prependPulse 2s ease-in-out infinite;
-}
-
-@keyframes prependPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.95; }
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-    .upload-list-item-url :deep(.el-input__wrapper) {
-        border-radius: 8px;
-    }
-    
-    .upload-list-item-url :deep(.el-input__inner) {
-        font-size: 12px;
-    }
-    
-    .upload-list-item-url :deep(.el-input-group__prepend) {
-        font-size: 11px;
-        padding: 0 8px;
-        border-radius: 8px 0 0 8px;
-    }
-}
 
 /* Enhanced Starry Sky Effect */
 :deep(.el-upload-dragger) {
@@ -2608,151 +2110,6 @@ beforeDestroy() {
 @keyframes starPulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.3; }
-}
-
-/* ============================================
-   Modern Progress Bar Styles
-   ============================================ */
-.upload-list-item-progress {
-    margin-top: 8px;
-    width: 28vw;
-    padding: 4px 8px;
-    background: var(--progress-wrapper-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.05) 0%, rgba(64, 158, 255, 0.02) 100%));
-    border-radius: 12px;
-    border: 1px solid var(--progress-wrapper-border, rgba(64, 158, 255, 0.1));
-}
-
-.upload-list-item-progress :deep(.el-progress) {
-    --el-color-primary: #409eff;
-}
-
-.upload-list-item-progress :deep(.el-progress-bar) {
-    padding-right: 0;
-    margin-right: 0;
-}
-
-.upload-list-item-progress :deep(.el-progress-bar__outer) {
-    height: 10px !important;
-    border-radius: 8px;
-    background: var(--progress-outer-bg, linear-gradient(135deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.03) 100%));
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-}
-
-.upload-list-item-progress :deep(.el-progress-bar__inner) {
-    border-radius: 8px;
-    background: linear-gradient(90deg, 
-        #409eff 0%, 
-        #66b1ff 50%, 
-        #409eff 100%) !important;
-    box-shadow: 0 0 12px rgba(64, 158, 255, 0.5),
-                0 0 4px rgba(64, 158, 255, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    position: relative;
-    overflow: hidden;
-    transition: width 0.3s ease;
-}
-
-.upload-list-item-progress :deep(.el-progress-bar__inner::after) {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.2) 50%,
-        transparent 100%
-    );
-    pointer-events: none;
-}
-
-/* Stripe animation for active upload */
-.upload-list-item-progress :deep(.el-progress-bar__inner::before) {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 300%;
-    height: 100%;
-    background: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 8px,
-        rgba(255, 255, 255, 0.15) 8px,
-        rgba(255, 255, 255, 0.15) 16px
-    );
-    animation: progressStripes 1s linear infinite;
-}
-
-/* Success state */
-.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner) {
-    background: linear-gradient(90deg, 
-        #67c23a 0%, 
-        #85ce61 25%, 
-        #95d475 50%, 
-        #85ce61 75%, 
-        #67c23a 100%) !important;
-    background-size: 200% 100%;
-    box-shadow: 0 0 12px rgba(103, 194, 58, 0.5),
-                0 0 4px rgba(103, 194, 58, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    animation: none;
-}
-
-.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner::before),
-.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner::after) {
-    animation: none;
-    background: none;
-}
-
-/* Exception/Error state */
-.upload-list-item-progress :deep(.el-progress--exception .el-progress-bar__inner) {
-    background: linear-gradient(90deg, 
-        #f56c6c 0%, 
-        #f78989 25%, 
-        #f9a7a7 50%, 
-        #f78989 75%, 
-        #f56c6c 100%) !important;
-    background-size: 200% 100%;
-    box-shadow: 0 0 12px rgba(245, 108, 108, 0.5),
-                0 0 4px rgba(245, 108, 108, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    animation: progressPulse 1s ease-in-out infinite;
-}
-
-.upload-list-item-progress :deep(.el-progress--exception .el-progress-bar__inner::before) {
-    animation: none;
-    background: none;
-}
-
-@keyframes progressShine {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 200% 0%; }
-}
-
-@keyframes progressStripes {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(22.627px); }
-}
-
-@keyframes progressPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .upload-list-item-progress {
-        width: 32vw;
-        padding: 3px 6px;
-    }
-    
-    .upload-list-item-progress :deep(.el-progress-bar__outer) {
-        height: 8px !important;
-    }
 }
 
 /* ============================================
@@ -2850,137 +2207,6 @@ beforeDestroy() {
 }
 
 /* ============================================
-   File Item Name Wrapper Styles
-   ============================================ */
-.upload-list-item-name-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 16px;
-    background: var(--file-name-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.08) 0%, rgba(64, 158, 255, 0.03) 100%));
-    border-radius: 10px;
-    margin-bottom: 8px;
-    border: 1px solid var(--file-name-border, rgba(64, 158, 255, 0.12));
-    backdrop-filter: blur(4px);
-    transition: all 0.3s ease;
-}
-
-.upload-list-item-name-wrapper:hover {
-    background: var(--file-name-hover-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.12) 0%, rgba(64, 158, 255, 0.06) 100%));
-    border-color: var(--file-name-hover-border, rgba(64, 158, 255, 0.2));
-}
-
-.upload-list-item-name {
-    font-size: 14px;
-    font-weight: 600;
-    max-width: 28vw;
-    color: var(--el-text-color-primary);
-    letter-spacing: 0.3px;
-    text-align: center;
-}
-
-/* ============================================
-   Modern File Action Button Styles
-   ============================================ */
-.modern-file-action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 16px;
-    position: relative;
-    overflow: hidden;
-    margin: 4px 0;
-}
-
-.modern-file-action-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.4s ease, height 0.4s ease;
-}
-
-.modern-file-action-btn:active::before {
-    width: 100%;
-    height: 100%;
-}
-
-.modern-file-action-btn-primary {
-    background: var(--file-action-primary-bg, linear-gradient(145deg, #409eff 0%, #53a8ff 50%, #66b1ff 100%));
-    color: white;
-    box-shadow: 0 3px 10px rgba(64, 158, 255, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.modern-file-action-btn-primary:hover {
-    transform: translateY(-3px) scale(1.08);
-    box-shadow: 0 6px 20px rgba(64, 158, 255, 0.45),
-                inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-.modern-file-action-btn-primary:active {
-    transform: translateY(-1px) scale(1.02);
-}
-
-.modern-file-action-btn-danger {
-    background: var(--file-action-danger-bg, linear-gradient(145deg, #f56c6c 0%, #f78989 50%, #f9a7a7 100%));
-    color: white;
-    box-shadow: 0 3px 10px rgba(245, 108, 108, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.modern-file-action-btn-danger:hover {
-    transform: translateY(-3px) scale(1.08);
-    box-shadow: 0 6px 20px rgba(245, 108, 108, 0.45),
-                inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-.modern-file-action-btn-danger:active {
-    transform: translateY(-1px) scale(1.02);
-}
-
-/* ============================================
-   Updated Upload List Item Styles
-   ============================================ */
-.upload-list-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 8px 10px;
-    border: 1px solid var(--upload-list-item-border-color, rgba(64, 158, 255, 0.1));
-    padding: 10px 12px;
-    border-radius: 16px;
-    background: var(--upload-list-item-bg, linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%));
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px var(--upload-list-item-shadow, rgba(0, 0, 0, 0.04));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.upload-list-item:hover {
-    border-color: var(--upload-list-item-hover-border, rgba(64, 158, 255, 0.25));
-    box-shadow: 0 4px 16px var(--upload-list-item-hover-shadow, rgba(64, 158, 255, 0.12));
-    transform: translateY(-2px);
-}
-
-.upload-list-item-action {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-
-/* ============================================
    Dashboard Title Enhancement
    ============================================ */
 .upload-list-dashboard-title {
@@ -3016,23 +2242,6 @@ beforeDestroy() {
         height: 32px;
         border-radius: 8px;
         font-size: 12px;
-    }
-
-    .modern-file-action-btn {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        font-size: 14px;
-    }
-
-    .upload-list-item-name-wrapper {
-        padding: 4px 10px;
-        border-radius: 8px;
-    }
-
-    .upload-list-item-name {
-        font-size: 12px;
-        width: 32vw;
     }
 
     .upload-list-dashboard-title {
