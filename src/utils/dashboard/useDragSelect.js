@@ -6,6 +6,7 @@ import { rectIntersects, calcSelectionRect } from './rectIntersects.js';
  *
  * @param {Object} options
  * @param {import('vue').Ref<HTMLElement>} options.containerRef - 卡片容器 (.content) 的 ref
+ * @param {string} [options.mainSelector='.main-container'] - 主内容区域的 CSS 选择器，框选只能从该区域内开始
  * @param {import('vue').Ref<string>} options.viewMode - 当前视图模式
  * @param {import('vue').Ref<Array>} options.items - 当前页的数据项（paginatedTableData）
  * @param {string} [options.cardSelector='.img-card'] - 卡片元素的 CSS 选择器
@@ -14,6 +15,7 @@ import { rectIntersects, calcSelectionRect } from './rectIntersects.js';
 export function useDragSelect(options) {
   const {
     containerRef,
+    mainSelector = '.main-container',
     viewMode,
     items,
     cardSelector = '.img-card',
@@ -74,18 +76,26 @@ export function useDragSelect(options) {
   // ------------------------------------------------------------------
 
   /**
-   * Check whether the mousedown target is a blank area (not on a card or its children).
+   * 判断 mousedown 目标是否为可启动框选的空白区域。
+   * 必须在主内容区域内，且不在卡片、交互元素上。
    */
   function isBlankArea(event) {
     const target = event.target;
-    // Walk up from target; if we hit a card element before the container, it's not blank
+    // 必须在主内容区域（el-main）内
+    const mainArea = target.closest(mainSelector);
+    if (!mainArea) return false;
+    // 排除卡片元素
     const card = target.closest(cardSelector);
     if (card) {
       const container = toValue(containerRef);
-      // Only consider it a card click if the card is inside our container
       if (container && container.contains(card)) {
         return false;
       }
+    }
+    // 排除交互元素（按钮、输入框、链接、下拉菜单、分页等）
+    const interactive = target.closest('button, a, input, .el-input, .el-dropdown, .el-checkbox, .el-breadcrumb, .el-pagination, .el-pager, .header-content, .breadcrumb-container');
+    if (interactive) {
+      return false;
     }
     return true;
   }
@@ -322,17 +332,15 @@ export function useDragSelect(options) {
   // ------------------------------------------------------------------
 
   function attachContainerListener() {
-    const container = toValue(containerRef);
-    if (container && !listenerAttached) {
-      container.addEventListener('mousedown', onMouseDown);
+    if (!listenerAttached) {
+      document.addEventListener('mousedown', onMouseDown);
       listenerAttached = true;
     }
   }
 
   function detachContainerListener() {
-    const container = toValue(containerRef);
-    if (container && listenerAttached) {
-      container.removeEventListener('mousedown', onMouseDown);
+    if (listenerAttached) {
+      document.removeEventListener('mousedown', onMouseDown);
       listenerAttached = false;
     }
   }
@@ -352,22 +360,7 @@ export function useDragSelect(options) {
     }
   }
 
-  // Watch containerRef – re-attach when the DOM element changes (if enabled)
-  watch(
-    () => toValue(containerRef),
-    (newContainer, oldContainer) => {
-      if (oldContainer && listenerAttached) {
-        oldContainer.removeEventListener('mousedown', onMouseDown);
-        listenerAttached = false;
-      }
-      if (newContainer && shouldEnable()) {
-        newContainer.addEventListener('mousedown', onMouseDown);
-        listenerAttached = true;
-      }
-    }
-  );
-
-  // Watch viewMode – enable/disable drag-select based on card view
+  // 监听 viewMode 变化，启用/禁用框选
   watch(
     () => toValue(viewMode),
     () => {
