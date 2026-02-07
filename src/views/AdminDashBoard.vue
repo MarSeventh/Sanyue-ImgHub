@@ -275,6 +275,8 @@
             @block="handleBlock(detailFile?.name)"
             @white="handleWhite(detailFile?.name)"
             @delete="handleDetailDelete(detailFile?.name)"
+            @metadataUpdated="handleMetadataUpdated"
+            @fileRenamed="handleFileRenamed"
         />
         <el-dialog title="链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
             <div class="dialog-section">
@@ -1837,6 +1839,35 @@ methods: {
     async handleBatchTagsUpdated() {
         // 刷新文件列表以显示更新后的标签
         await this.refreshLocalFileList();
+    },
+    handleMetadataUpdated(fileId, updatedMetadata) {
+        // 更新 tableData 中对应文件的 metadata
+        const fileIndex = this.tableData.findIndex(f => f.name === fileId);
+        if (fileIndex !== -1) {
+            this.tableData[fileIndex].metadata = { ...this.tableData[fileIndex].metadata, ...updatedMetadata };
+        }
+        // 如果 detailFile 正在显示该文件，同步更新 detailFile
+        if (this.detailFile && this.detailFile.name === fileId) {
+            this.detailFile.metadata = { ...this.detailFile.metadata, ...updatedMetadata };
+        }
+    },
+    handleFileRenamed(oldFileId, newFileId, updatedMetadata) {
+        // 更新 tableData 中对应文件的 name（File_ID）和 metadata
+        const fileIndex = this.tableData.findIndex(f => f.name === oldFileId);
+        if (fileIndex !== -1) {
+            this.tableData[fileIndex].name = newFileId;
+            this.tableData[fileIndex].metadata = { ...this.tableData[fileIndex].metadata, ...updatedMetadata };
+        }
+        // 更新 detailFile 引用并关闭/重新打开详情弹窗以刷新链接
+        if (this.detailFile && this.detailFile.name === oldFileId) {
+            this.detailFile.name = newFileId;
+            this.detailFile.metadata = { ...this.detailFile.metadata, ...updatedMetadata };
+            // 关闭详情弹窗，然后在下一个 tick 重新打开以刷新所有链接
+            this.showdetailDialog = false;
+            this.$nextTick(() => {
+                this.showdetailDialog = true;
+            });
+        }
     },
     // 生成单个文件链接
     generateFileLink(key, metadata) {
