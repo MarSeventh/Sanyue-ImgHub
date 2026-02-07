@@ -115,7 +115,7 @@
             </div>
             
             <!-- 卡片视图 -->
-            <div v-if="viewMode === 'card'" class="content">
+            <div v-if="viewMode === 'card'" class="content" ref="cardContainerRef">
                 <!-- 加载骨架屏 -->
                 <SkeletonLoader v-if="loading" type="card" :count="15" />
                 <!-- 空状态 -->
@@ -209,6 +209,19 @@
                 </template>
             </div>
             
+            <!-- 选区矩形覆盖层 -->
+            <div
+              v-if="isDragging"
+              class="drag-select-overlay"
+              :style="{
+                position: 'fixed',
+                left: selectionRect.left + 'px',
+                top: selectionRect.top + 'px',
+                width: selectionRect.width + 'px',
+                height: selectionRect.height + 'px'
+              }"
+            ></div>
+
             <div class="pagination-container">
                 <div class="pagination-center">
                     <el-pagination
@@ -356,20 +369,22 @@
 import { mapGetters } from 'vuex';
 import JSZip from 'jszip';
 import DashboardTabs from '@/components/DashboardTabs.vue';
-import TagManagementDialog from '@/components/TagManagementDialog.vue';
-import BatchTagDialog from '@/components/BatchTagDialog.vue';
-import SkeletonLoader from '@/components/SkeletonLoader.vue';
-import FileCard from '@/components/FileCard.vue';
-import FolderCard from '@/components/FolderCard.vue';
-import FileListItem from '@/components/FileListItem.vue';
-import FileDetailDialog from '@/components/FileDetailDialog.vue';
-import MobileActionSheet from '@/components/MobileActionSheet.vue';
-import MobileDirectoryDrawer from '@/components/MobileDirectoryDrawer.vue';
-import FilterDropdown from '@/components/FilterDropdown.vue';
+import TagManagementDialog from '@/components/dashboard/TagManagementDialog.vue';
+import BatchTagDialog from '@/components/dashboard/BatchTagDialog.vue';
+import SkeletonLoader from '@/components/dashboard/SkeletonLoader.vue';
+import FileCard from '@/components/dashboard/FileCard.vue';
+import FolderCard from '@/components/dashboard/FolderCard.vue';
+import FileListItem from '@/components/dashboard/FileListItem.vue';
+import FileDetailDialog from '@/components/dashboard/FileDetailDialog.vue';
+import MobileActionSheet from '@/components/dashboard/MobileActionSheet.vue';
+import MobileDirectoryDrawer from '@/components/dashboard/MobileDirectoryDrawer.vue';
+import FilterDropdown from '@/components/dashboard/FilterDropdown.vue';
 import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFolderPath } from '@/utils/pathValidator';
 import backgroundManager from '@/mixins/backgroundManager';
+import { ref } from 'vue';
+import { useDragSelect } from '@/utils/dashboard/useDragSelect.js';
 
 export default {
 name: 'AdminDashBoard',
@@ -437,6 +452,29 @@ components: {
     MobileActionSheet,
     MobileDirectoryDrawer,
     FilterDropdown
+},
+setup() {
+    // Template ref for the .content card container
+    const cardContainerRef = ref(null);
+    // Reactive refs to sync with Options API data/computed
+    const viewModeRef = ref('card');
+    const itemsRef = ref([]);
+
+    // Initialize drag-select composable
+    const { isDragging, selectionRect } = useDragSelect({
+        containerRef: cardContainerRef,
+        viewMode: viewModeRef,
+        items: itemsRef,
+        cardSelector: '.img-card',
+    });
+
+    return {
+        cardContainerRef,
+        viewModeRef,
+        itemsRef,
+        isDragging,
+        selectionRect,
+    };
 },
 computed: {
     ...mapGetters(['adminUrlSettings', 'userConfig']),
@@ -576,6 +614,20 @@ computed: {
     }
 },
 watch: {
+    // Sync viewMode data property to the ref used by useDragSelect
+    viewMode: {
+        handler(newVal) {
+            this.viewModeRef = newVal;
+        },
+        immediate: true
+    },
+    // Sync paginatedTableData computed property to the ref used by useDragSelect
+    paginatedTableData: {
+        handler(newVal) {
+            this.itemsRef = newVal;
+        },
+        immediate: true
+    },
     tableData: {
         handler(newData) {
             // selectedFiles 增加 newData中新选中，不包含在 selectedFiles 中的文件
@@ -2691,6 +2743,16 @@ html.dark .header-content:hover {
         padding: 0;
         margin-left: 0;
     }
+}
+
+/* 框选选区矩形覆盖层 */
+.drag-select-overlay {
+    position: fixed;
+    background: rgba(24, 144, 255, 0.1);
+    border: 1px solid rgba(24, 144, 255, 0.6);
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 2px;
 }
 
 </style>
