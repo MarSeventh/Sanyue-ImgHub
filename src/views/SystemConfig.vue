@@ -20,12 +20,12 @@
 </template>
 <script>
 import DashboardTabs from '@/components/DashboardTabs.vue';
-import SysConfigTabs from '@/components/SysConfigTabs.vue';
-import SysCogStatus from '@/components/SysCogStatus.vue';
-import SysCogUpload from '@/components/SysCogUpload.vue';
-import SysCogSecurity from '@/components/SysCogSecurity.vue';
-import SysCogPage from '@/components/SysCogPage.vue';
-import SysCogOthers from '@/components/SysCogOthers.vue';
+import SysConfigTabs from '@/components/config/SysConfigTabs.vue';
+import SysCogStatus from '@/components/config/SysCogStatus.vue';
+import SysCogUpload from '@/components/config/SysCogUpload.vue';
+import SysCogSecurity from '@/components/config/SysCogSecurity.vue';
+import SysCogPage from '@/components/config/SysCogPage.vue';
+import SysCogOthers from '@/components/config/SysCogOthers.vue';
 import backgroundManager from '@/mixins/backgroundManager';
 
 export default {

@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import AdminToggleDark from './AdminToggleDark.vue';
+import AdminToggleDark from './dashboard/AdminToggleDark.vue';
 
 export default {
     name: 'DashboardTabs',

@@ -329,7 +329,7 @@
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth'
-import packageInfo from '../../package.json'
+import packageInfo from '../../../package.json'
 import { Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import IndexRebuilder from '@/utils/indexRebuilder'

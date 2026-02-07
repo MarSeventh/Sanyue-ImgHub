@@ -306,7 +306,7 @@
 <script>
 import axios from 'axios';
 import { mapGetters } from 'vuex';
-import TransformMedia from '@/components/TransformMedia.vue';
+import TransformMedia from '@/components/browse/TransformMedia.vue';
 import ToggleDark from '@/components/ToggleDark.vue';
 import { hardStopAll, installGlobalMediaGuards } from '@/utils/mediaManager';
 

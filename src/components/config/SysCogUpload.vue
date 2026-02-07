@@ -419,7 +419,7 @@
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
-import CustomSelect from '@/components/CustomSelect.vue';
+import CustomSelect from './CustomSelect.vue';
 
 export default {
 components: {

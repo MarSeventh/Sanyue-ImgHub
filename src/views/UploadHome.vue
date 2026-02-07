@@ -181,11 +181,11 @@
 </template>
 
 <script>
-import UploadForm from '@/components/UploadForm.vue'
+import UploadForm from '@/components/upload/UploadForm.vue'
 import Footer from '@/components/Footer.vue'
 import ToggleDark from '@/components/ToggleDark.vue'
 import Logo from '@/components/Logo.vue'
-import UploadHistory from '@/components/UploadHistory.vue'
+import UploadHistory from '@/components/upload/UploadHistory.vue'
 import UploadSettingsDialog from '@/components/upload/UploadSettingsDialog.vue'
 import backgroundManager from '@/mixins/backgroundManager'
 import axios from '@/utils/axios'
