@@ -80,7 +80,13 @@
                 <span v-else>{{ file?.metadata?.FileType || '未知' }}</span>
             </el-descriptions-item>
             <el-descriptions-item label="文件大小">{{ fileSizeDisplay }}</el-descriptions-item>
-            <el-descriptions-item label="图片尺寸" v-if="imageDimensions">{{ imageDimensions }}</el-descriptions-item>
+            <el-descriptions-item label="图片尺寸">
+                <div v-if="imageDimensions" style="display: flex; align-items: center; gap: 6px;">
+                    <span>{{ file?.metadata?.Width }} × {{ file?.metadata?.Height }}</span>
+                    <el-tag size="small" type="info" style="display: inline-flex; align-items: center; justify-content: center;">{{ orientationIcon }}</el-tag>
+                </div>
+                <span v-else style="color: #909399;">无</span>
+            </el-descriptions-item>
             <el-descriptions-item label="上传时间">{{ uploadTime }}</el-descriptions-item>
             <el-descriptions-item label="渠道类型/名称">
                 <el-tag size="small" type="info" style="margin-right: 6px;">{{ file?.metadata?.Channel || '未知' }}</el-tag>
@@ -103,7 +109,7 @@
         <el-dialog
             v-model="showRenameDialog"
             title="重命名 File ID"
-            width="500px"
+            :width="dialogWidth"
             append-to-body
         >
             <el-form @submit.prevent>
@@ -229,16 +235,17 @@ export default {
         imageDimensions() {
             const width = this.file?.metadata?.Width;
             const height = this.file?.metadata?.Height;
-            if (width && height) {
-                // 判断图片方向
-                const ratio = width / height;
-                let orientation = '';
-                if (ratio > 1.1) orientation = '横图';
-                else if (ratio < 0.9) orientation = '竖图';
-                else orientation = '方图';
-                return `${width} × ${height} (${orientation})`;
-            }
+            if (width && height) return true;
             return null;
+        },
+        orientationIcon() {
+            const width = this.file?.metadata?.Width;
+            const height = this.file?.metadata?.Height;
+            if (!width || !height) return '';
+            const ratio = width / height;
+            if (ratio > 1.1) return '横';
+            if (ratio < 0.9) return '竖';
+            return '方';
         },
         fileSizeDisplay() {
             const sizeBytes = this.file?.metadata?.FileSizeBytes;
@@ -439,10 +446,19 @@ export default {
     word-break: break-all;
     word-wrap: break-word;
 }
+:deep(.el-descriptions__content .el-tag) {
+    vertical-align: middle;
+}
+:deep(.el-descriptions__content .el-tag + span) {
+    vertical-align: middle;
+}
 :deep(.el-descriptions__label) {
     width: 120px !important;
     min-width: 100px !important;
     max-width: 120px !important;
+}
+:deep(.el-descriptions__body table) {
+    table-layout: fixed;
 }
 @media (max-width: 768px) {
     .detail-actions {
