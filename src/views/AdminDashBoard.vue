@@ -161,7 +161,7 @@
                 </template>
             </div>
             <!-- 列表视图 -->
-            <div v-else class="list-view">
+            <div v-else class="list-view" ref="listContainerRef">
                 <div class="list-header">
                     <div class="list-col list-col-checkbox">
                         <span class="custom-checkbox" :class="{ 'checked': isSelectAll, 'indeterminate': isIndeterminate }" @click="handleSelectAllPage(!isSelectAll)">
@@ -456,22 +456,23 @@ components: {
     FilterDropdown
 },
 setup() {
-    // Template ref for the .content card container
     const cardContainerRef = ref(null);
-    // Reactive refs to sync with Options API data/computed
+    const listContainerRef = ref(null);
     const viewModeRef = ref('card');
     const itemsRef = ref([]);
 
-    // Initialize drag-select composable
     const { isDragging, selectionRect } = useDragSelect({
-        containerRef: cardContainerRef,
+        modes: {
+            card: { containerRef: cardContainerRef, itemSelector: '.img-card' },
+            list: { containerRef: listContainerRef, itemSelector: '.list-item' },
+        },
         viewMode: viewModeRef,
         items: itemsRef,
-        cardSelector: '.img-card',
     });
 
     return {
         cardContainerRef,
+        listContainerRef,
         viewModeRef,
         itemsRef,
         isDragging,

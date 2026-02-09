@@ -2,23 +2,27 @@ import { ref, watch, onMounted, onBeforeUnmount, toValue } from 'vue';
 import { rectIntersects, calcSelectionRect } from './rectIntersects.js';
 
 /**
- * Vue 3 Composable：卡片布局框选（rubber-band selection）核心逻辑
+ * Vue 3 Composable：框选（rubber-band selection）核心逻辑，支持多视图模式
  *
  * @param {Object} options
- * @param {import('vue').Ref<HTMLElement>} options.containerRef - 卡片容器 (.content) 的 ref
+ * @param {Object} options.modes - Per-view-mode configuration
+ * @param {Object} options.modes.card - Card view config
+ * @param {import('vue').Ref<HTMLElement>} options.modes.card.containerRef
+ * @param {string} options.modes.card.itemSelector - e.g. '.img-card'
+ * @param {Object} options.modes.list - List view config
+ * @param {import('vue').Ref<HTMLElement>} options.modes.list.containerRef
+ * @param {string} options.modes.list.itemSelector - e.g. '.list-item'
  * @param {string} [options.mainSelector='.main-container'] - 主内容区域的 CSS 选择器，框选只能从该区域内开始
  * @param {import('vue').Ref<string>} options.viewMode - 当前视图模式
  * @param {import('vue').Ref<Array>} options.items - 当前页的数据项（paginatedTableData）
- * @param {string} [options.cardSelector='.img-card'] - 卡片元素的 CSS 选择器
  * @returns {{ isDragging: import('vue').Ref<boolean>, selectionRect: import('vue').Ref<Object> }}
  */
 export function useDragSelect(options) {
   const {
-    containerRef,
+    modes,
     mainSelector = '.main-container',
     viewMode,
     items,
-    cardSelector = '.img-card',
   } = options;
 
   // --- Reactive state ---
@@ -43,15 +47,29 @@ export function useDragSelect(options) {
   let savedUserSelect = '';    // saved document.body.style.userSelect before drag
 
   // ------------------------------------------------------------------
+  // Mode resolution helper
+  // ------------------------------------------------------------------
+
+  /**
+   * Returns the configuration for the current viewMode.
+   * @returns {{ containerRef: import('vue').Ref<HTMLElement>, itemSelector: string } | undefined}
+   */
+  function getActiveConfig() {
+    const mode = toValue(viewMode);
+    return modes[mode] || undefined;
+  }
+
+  // ------------------------------------------------------------------
   // Enable / disable helpers
   // ------------------------------------------------------------------
 
   /**
    * Determine whether drag-select should be enabled.
-   * Returns true only when viewMode is 'card' AND window width > 768px.
+   * Returns true when viewMode is 'card' or 'list' AND window width > 768px.
    */
   function shouldEnable() {
-    return toValue(viewMode) === 'card' && window.innerWidth > MOBILE_BREAKPOINT;
+    const mode = toValue(viewMode);
+    return (mode === 'card' || mode === 'list') && window.innerWidth > MOBILE_BREAKPOINT;
   }
 
   /**
@@ -84,12 +102,15 @@ export function useDragSelect(options) {
     // 必须在主内容区域（el-main）内
     const mainArea = target.closest(mainSelector);
     if (!mainArea) return false;
-    // 排除卡片元素
-    const card = target.closest(cardSelector);
-    if (card) {
-      const container = toValue(containerRef);
-      if (container && container.contains(card)) {
-        return false;
+    // 排除当前模式的可选元素
+    const config = getActiveConfig();
+    if (config) {
+      const itemEl = target.closest(config.itemSelector);
+      if (itemEl) {
+        const container = toValue(config.containerRef);
+        if (container && container.contains(itemEl)) {
+          return false;
+        }
       }
     }
     // 排除交互元素（按钮、输入框、链接、下拉菜单、分页等）
@@ -197,7 +218,10 @@ export function useDragSelect(options) {
    * Update the selected state of every item based on the current selection rectangle.
    */
   function updateSelection() {
-    const container = toValue(containerRef);
+    const config = getActiveConfig();
+    if (!config) return;
+
+    const container = toValue(config.containerRef);
     if (!container) return;
 
     const currentItems = toValue(items);
@@ -211,23 +235,23 @@ export function useDragSelect(options) {
       bottom: rect.bottom,
     };
 
-    // Query all card DOM elements inside the container
-    const cardElements = container.querySelectorAll(cardSelector);
+    // Query all item DOM elements inside the container using the active mode's selector
+    const itemElements = container.querySelectorAll(config.itemSelector);
 
-    // Iterate over items and corresponding card elements
+    // Iterate over items and corresponding DOM elements
     currentItems.forEach((item, index) => {
-      const cardEl = cardElements[index];
-      if (!cardEl) return;
+      const itemEl = itemElements[index];
+      if (!itemEl) return;
 
-      const cardRect = cardEl.getBoundingClientRect();
-      const cardBounds = {
-        left: cardRect.left,
-        top: cardRect.top,
-        right: cardRect.right,
-        bottom: cardRect.bottom,
+      const itemRect = itemEl.getBoundingClientRect();
+      const itemBounds = {
+        left: itemRect.left,
+        top: itemRect.top,
+        right: itemRect.right,
+        bottom: itemRect.bottom,
       };
 
-      const intersects = rectIntersects(selRect, cardBounds);
+      const intersects = rectIntersects(selRect, itemBounds);
 
       if (isAppendMode) {
         // Append mode: keep original state, toggle on if intersects
@@ -361,9 +385,12 @@ export function useDragSelect(options) {
   }
 
   // 监听 viewMode 变化，启用/禁用框选
+  // Always cancel any in-progress drag when viewMode changes (Requirement 2.3),
+  // then re-evaluate whether listeners should be attached for the new mode.
   watch(
     () => toValue(viewMode),
     () => {
+      cancelDrag();
       syncListenerState();
     }
   );
