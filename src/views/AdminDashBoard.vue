@@ -1978,6 +1978,12 @@ mounted() {
     // 读取自定义链接设置项
     this.customUrlPrefix = this.adminUrlSettings.customUrlPrefix;
     this.useCustomUrl = this.adminUrlSettings.useCustomUrl;
+
+    // 恢复视图模式偏好
+    const savedViewMode = localStorage.getItem('viewMode');
+    if (savedViewMode === 'card' || savedViewMode === 'list') {
+        this.viewMode = savedViewMode;
+    }
 }
 
 };
