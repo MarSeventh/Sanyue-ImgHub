@@ -144,6 +144,13 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
+                <template v-if="newChannel.type === 'cfr2'">
+                    <div class="form-warning" style="margin-top: 0;">
+                        <font-awesome-icon icon="info-circle" style="margin-right: 6px;"/>
+                        请按照 <a href="https://cfbed.sanyue.de/deployment/configuration.html#配置-r2-渠道" target="_blank" style="color: var(--el-color-primary);">配置 R2 渠道</a> 文档说明添加 R2 渠道
+                    </div>
+                </template>
+                <template v-else>
                 <el-form-item label="渠道名称" prop="name">
                     <el-input v-model="newChannel.name" placeholder="请输入渠道名称"/>
                 </el-form-item>
@@ -181,7 +188,7 @@
                     </el-form-item>
                     <el-form-item label="路径风格">
                         <el-switch v-model="newChannel.pathStyle"/>
-                        <span class="form-tip">使用 OpenList 时需开启</span>
+                        <span class="form-tip">使用 OpenList 等不兼容主机风格服务时需开启</span>
                     </el-form-item>
                     <el-form-item label="容量限制">
                         <el-switch v-model="newChannel.quota.enabled"/>
@@ -226,10 +233,11 @@
                         <span class="form-tip">私有仓库限制 100GB</span>
                     </el-form-item>
                 </template>
+                </template>
             </el-form>
             <template #footer>
                 <el-button @click="showAddDialog = false">取消</el-button>
-                <el-button type="primary" @click="confirmAddChannel">确认添加</el-button>
+                <el-button type="primary" @click="confirmAddChannel" v-if="newChannel.type !== 'cfr2'">确认添加</el-button>
             </template>
         </el-dialog>
 
@@ -437,9 +445,10 @@ data() {
         { value: 'discord', label: 'Discord' },
         { value: 'huggingface', label: 'HuggingFace' }
     ],
-    // 可添加的渠道类型（排除 cfr2，因为只能通过绑定 R2 或 S3 添加）
+    // 可添加的渠道类型
     addableChannels: [
         { value: 'telegram', label: 'Telegram' },
+        { value: 'cfr2', label: 'CloudFlare R2' },
         { value: 's3', label: 'S3' },
         { value: 'discord', label: 'Discord' },
         { value: 'huggingface', label: 'HuggingFace' }
