@@ -280,9 +280,14 @@ export default {
             this.$store.commit('setStoreAutoRetry', val)
         },
         uploadFolder(val) {
-            // 验证上传文件夹路径的合法性
-            if (this.validateUploadFolder(val)) {
-                this.$store.commit('setStoreUploadFolder', val)
+            // 实时输入时用非 strict 模式，不检查末尾的单独 . 以允许继续输入如 .123
+            if (this.validateUploadFolder(val, false)) {
+                // 非 strict 通过后，再用 strict 模式静默检查，只有完全合法才更新 store
+                const strictResult = validateFolderPath(val, { strict: true })
+                if (strictResult.valid) {
+                    this.$store.commit('setStoreUploadFolder', val)
+                }
+                // strict 不通过时不更新 store，等失焦时提示并回滚
             } else {
                 this.$nextTick(() => {
                     this.uploadFolder = this.storeUploadFolder
@@ -399,13 +404,13 @@ export default {
             }
         },
         // 验证上传文件夹路径的合法性
-        validateUploadFolder(path) {
+        validateUploadFolder(path, strict = true) {
             // 自动补全前导 /
             if (path && !path.startsWith('/')) {
                 path = '/' + path
                 this.uploadFolder = path
             }
-            const result = validateFolderPath(path)
+            const result = validateFolderPath(path, { strict })
             if (!result.valid) {
                 // 将错误消息中的"目标目录"替换为"上传目录"以保持原有的提示风格
                 const errorMessage = result.error.replace('目标目录', '上传目录')
@@ -419,6 +424,12 @@ export default {
             // 失焦时自动补全前导 /
             if (this.uploadFolder && !this.uploadFolder.startsWith('/')) {
                 this.uploadFolder = '/' + this.uploadFolder
+            }
+            // 失焦时做完整校验（包括末尾单独的 .）
+            if (!this.validateUploadFolder(this.uploadFolder, true)) {
+                this.$nextTick(() => {
+                    this.uploadFolder = this.storeUploadFolder
+                })
             }
         },
         handleManage() {

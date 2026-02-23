@@ -42,7 +42,8 @@ export function validateFileId(newFileId, currentFileId) {
     };
   }
 
-  if (/(^|\/)\.(\/|$)/.test(newFileId)) {
+  // 3.5 单独的 . 路径段检测（仅检查 /./ 或开头 ./，不检查末尾以允许继续输入如 .123）
+  if (/\/\.\//.test(newFileId) || /^\.\//.test(newFileId)) {
     return {
       valid: false,
       error: '文件名不能包含单独的 "." 路径段'

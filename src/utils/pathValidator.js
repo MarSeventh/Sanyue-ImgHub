@@ -6,9 +6,10 @@
 /**
  * 验证文件夹路径的合法性
  * @param {string} path - 要验证的路径
+ * @param {{ strict?: boolean }} options - 选项，strict 为 true 时检查末尾单独的 "."（默认 true）
  * @returns {{ valid: boolean, error?: string }} 验证结果
  */
-export function validateFolderPath(path) {
+export function validateFolderPath(path, { strict = true } = {}) {
     // 如果路径为空或仅为空白字符，返回有效（表示根目录）
     if (!path || path.trim() === '') {
         return { valid: true };
@@ -35,8 +36,10 @@ export function validateFolderPath(path) {
         };
     }
 
-    // 检查路径中单独的 . 段（如 /./）
-    if (/(?:^|\/)\.(\/|$)/.test(path)) {
+    // 检查路径中单独的 . 段
+    // strict 模式检查 /./ 和末尾 /.，非 strict 模式仅检查 /./ 以允许用户继续输入如 /.123
+    const dotPattern = strict ? /\/\.(\/|$)/ : /\/\.\//;
+    if (dotPattern.test(path)) {
         return {
             valid: false,
             error: '目标目录不能包含单独的 "." 路径段'

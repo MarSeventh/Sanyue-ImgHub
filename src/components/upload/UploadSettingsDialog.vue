@@ -168,7 +168,6 @@
 </template>
 
 <script>
-import { validateFolderPath } from '@/utils/pathValidator'
 
 export default {
     name: 'UploadSettingsDialog',
