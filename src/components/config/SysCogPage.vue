@@ -31,6 +31,8 @@
                     </el-select>
                     <!-- 如果是boolean类型则使用切换按钮 -->
                     <el-switch v-else-if="setting.type === 'boolean'" v-model="setting.value" :disabled="setting.fixed"></el-switch>
+                    <!-- 如果是textarea类型则使用可拖拽文本域 -->
+                    <el-input v-else-if="setting.type === 'textarea'" v-model="setting.value" type="textarea" :autosize="{ minRows: 2 }" resize="vertical" :disabled="setting.fixed" :placeholder="setting.placeholder"></el-input>
                     <!-- 否则使用输入框 -->
                     <el-input v-else v-model="setting.value" :disabled="setting.fixed" :placeholder="setting.placeholder"></el-input>
                 </el-form-item>
@@ -229,6 +231,10 @@ mounted() {
     width: 100%;
     max-width: 400px;
     margin-left: 0 !important;
+}
+
+.first-settings :deep(.el-form-item:has(.el-textarea) .el-form-item__content) {
+    max-width: 600px;
 }
 
 .first-settings :deep(.el-input) {
