@@ -1255,7 +1255,7 @@ methods: {
             file.onProgress({ percent: 10, file: file.file });
             console.log('Getting LFS upload URL...');
             const uploadInfoRes = await axios({
-                url: '/api/huggingface/getUploadUrl',
+                url: '/upload/huggingface/getUploadUrl',
                 method: 'post',
                 data: {
                     fileSize: file.file.size,
@@ -1317,7 +1317,7 @@ methods: {
             file.onProgress({ percent: 95, file: file.file });
             console.log('Committing file...');
             const commitRes = await axios({
-                url: '/api/huggingface/commitUpload',
+                url: '/upload/huggingface/commitUpload',
                 method: 'post',
                 data: {
                     fullId: uploadInfo.fullId,
