@@ -26,6 +26,22 @@ export function validateFolderPath(path) {
             error: '目标目录必须以 "/" 开头' 
         };
     }
+
+    // 检查路径穿越：包含 .. 的路径段
+    if (/(?:^|\/)\.\.(\/|$)/.test(path) || path.includes('..')) {
+        return {
+            valid: false,
+            error: '目标目录不能包含路径穿越字符 ".."'
+        };
+    }
+
+    // 检查路径是否包含连续的斜杠
+    if (path.includes('//')) {
+        return { 
+            valid: false, 
+            error: '目标目录不能包含连续的斜杠' 
+        };
+    }
     
     // 检查路径是否包含非法字符
     // 非法字符包括: \ : * ? " ' < > | 空格 ( ) [ ] { } # % ^ ` ~ ; @ & = + $ ,
@@ -34,14 +50,6 @@ export function validateFolderPath(path) {
         return { 
             valid: false, 
             error: '目标目录包含非法字符，请使用合法的路径格式' 
-        };
-    }
-    
-    // 检查路径是否包含连续的斜杠
-    if (path.includes('//')) {
-        return { 
-            valid: false, 
-            error: '目标目录不能包含连续的斜杠' 
         };
     }
     

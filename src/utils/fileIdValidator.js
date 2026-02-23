@@ -34,7 +34,15 @@ export function validateFileId(newFileId, currentFileId) {
     };
   }
 
-  // 3. 非法字符检测（复用 pathValidator 的字符规则）
+  // 3. 路径穿越检测
+  if (newFileId.includes('..')) {
+    return {
+      valid: false,
+      error: '文件名不能包含路径穿越字符 ".."'
+    };
+  }
+
+  // 4. 非法字符检测（复用 pathValidator 的字符规则）
   if (INVALID_CHARS.test(newFileId)) {
     return {
       valid: false,
@@ -42,7 +50,7 @@ export function validateFileId(newFileId, currentFileId) {
     };
   }
 
-  // 4. 连续斜杠检测
+  // 5. 连续斜杠检测
   if (newFileId.includes('//')) {
     return {
       valid: false,

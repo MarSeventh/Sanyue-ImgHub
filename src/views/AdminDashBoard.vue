@@ -1299,7 +1299,7 @@ methods: {
                 this.$message.warning('目标文件夹不能是当前文件夹');
                 return;
             }
-            fetchWithAuth(`/api/manage/move/${key}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' })
+            fetchWithAuth(`/api/manage/move/${key}?folder=${isFolder}&dist=${encodeURIComponent(newPath)}`, { method: 'GET' })
                 .then(response => {
                     if (response.ok) {
                         const fileIndex = this.tableData.findIndex(file => file.name === key);
@@ -1364,7 +1364,7 @@ methods: {
             }
             const promises = this.selectedFiles.map(file => {
                 const isFolder = file.isFolder;
-                return fetchWithAuth(`/api/manage/move/${file.name}?folder=${isFolder}&dist=${newPath}`, { method: 'GET' });
+                return fetchWithAuth(`/api/manage/move/${file.name}?folder=${isFolder}&dist=${encodeURIComponent(newPath)}`, { method: 'GET' });
             });
 
             Promise.all(promises)

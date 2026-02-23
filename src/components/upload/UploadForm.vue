@@ -467,7 +467,7 @@ methods: {
                 (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                 '&uploadNameType=' + uploadNameType + 
                 '&autoRetry=' + autoRetry + 
-                '&uploadFolder=' + this.uploadFolder,
+                '&uploadFolder=' + encodeURIComponent(this.uploadFolder),
             method: 'post',
             data: formData,
             withAuthCode: true,
@@ -550,7 +550,7 @@ methods: {
                     (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                     '&uploadNameType=' + uploadNameType + 
                     '&autoRetry=' + autoRetry + 
-                    '&uploadFolder=' + this.uploadFolder +
+                    '&uploadFolder=' + encodeURIComponent(this.uploadFolder) +
                     '&initChunked=true',
                 method: 'post',
                 data: initFormData,
@@ -607,7 +607,7 @@ methods: {
                                 (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                                 '&uploadNameType=' + uploadNameType + 
                                 '&autoRetry=' + autoRetry + 
-                                '&uploadFolder=' + this.uploadFolder +
+                                '&uploadFolder=' + encodeURIComponent(this.uploadFolder) +
                                 '&chunked=true',
                             method: 'post',
                             data: formData,
@@ -697,7 +697,7 @@ methods: {
                     (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                     '&uploadNameType=' + uploadNameType + 
                     '&autoRetry=' + autoRetry + 
-                    '&uploadFolder=' + this.uploadFolder +
+                    '&uploadFolder=' + encodeURIComponent(this.uploadFolder) +
                     '&chunked=true&merge=true',
                 method: 'post',
                 data: mergeFormData,

@@ -49,7 +49,7 @@
                 </div>
                 <div class="setting-item">
                     <span class="setting-label">上传目录</span>
-                    <el-input :model-value="uploadFolder" @update:model-value="$emit('update:uploadFolder', $event)" placeholder="请输入上传目录路径" class="setting-input"/>
+                    <el-input :model-value="uploadFolder" @update:model-value="handleUploadFolderInput" placeholder="请输入上传目录路径" class="setting-input"></el-input>
                 </div>
                 <div class="setting-item">
                     <span class="setting-label">
@@ -168,8 +168,19 @@
 </template>
 
 <script>
+import { validateFolderPath } from '@/utils/pathValidator'
+
 export default {
     name: 'UploadSettingsDialog',
+    methods: {
+        handleUploadFolderInput(val) {
+            // 自动补全前导 /
+            if (val && !val.startsWith('/')) {
+                val = '/' + val
+            }
+            this.$emit('update:uploadFolder', val)
+        }
+    },
     props: {
         modelValue: { type: Boolean, default: false },
         uploadChannel: { type: String, default: 'telegram' },

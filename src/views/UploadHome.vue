@@ -8,7 +8,7 @@
                 <font-awesome-icon icon="book" class="info-icon" size="lg"/>
             </a>
         </el-tooltip>
-        <el-input class="upload-folder" :class="{ 'active': isFolderInputActive, 'no-announcement': !announcementAvailable }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="isFolderInputActive = false"/>
+        <el-input class="upload-folder" :class="{ 'active': isFolderInputActive, 'no-announcement': !announcementAvailable }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="handleFolderInputBlur"></el-input>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button desktop-only" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
@@ -400,6 +400,11 @@ export default {
         },
         // 验证上传文件夹路径的合法性
         validateUploadFolder(path) {
+            // 自动补全前导 /
+            if (path && !path.startsWith('/')) {
+                path = '/' + path
+                this.uploadFolder = path
+            }
             const result = validateFolderPath(path)
             if (!result.valid) {
                 // 将错误消息中的"目标目录"替换为"上传目录"以保持原有的提示风格
@@ -408,6 +413,13 @@ export default {
                 return false
             }
             return true
+        },
+        handleFolderInputBlur() {
+            this.isFolderInputActive = false
+            // 失焦时自动补全前导 /
+            if (this.uploadFolder && !this.uploadFolder.startsWith('/')) {
+                this.uploadFolder = '/' + this.uploadFolder
+            }
         },
         handleManage() {
             this.$router.push('/dashboard')
