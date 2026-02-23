@@ -42,6 +42,13 @@ export function validateFileId(newFileId, currentFileId) {
     };
   }
 
+  if (/(^|\/)\.(\/|$)/.test(newFileId)) {
+    return {
+      valid: false,
+      error: '文件名不能包含单独的 "." 路径段'
+    };
+  }
+
   // 4. 非法字符检测（复用 pathValidator 的字符规则）
   if (INVALID_CHARS.test(newFileId)) {
     return {

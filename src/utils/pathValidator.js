@@ -35,6 +35,14 @@ export function validateFolderPath(path) {
         };
     }
 
+    // 检查路径中单独的 . 段（如 /./）
+    if (/(?:^|\/)\.(\/|$)/.test(path)) {
+        return {
+            valid: false,
+            error: '目标目录不能包含单独的 "." 路径段'
+        };
+    }
+
     // 检查路径是否包含连续的斜杠
     if (path.includes('//')) {
         return { 
