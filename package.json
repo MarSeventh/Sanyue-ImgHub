@@ -16,7 +16,7 @@
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@vueuse/core": "^12.3.0",
     "@vueuse/head": "^2.0.0",
-    "axios": "^1.7.7",
+    "axios": "^1.13.5",
     "chart.js": "^4.5.0",
     "core-js": "^3.38.1",
     "element-plus": "^2.8.2",
