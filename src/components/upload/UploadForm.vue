@@ -1087,7 +1087,8 @@ methods: {
                     let fileName = '';
                     if (urlPattern.test(text)) {
                         axios.post('/api/fetchRes', { url: text }, {
-                            responseType: 'blob'
+                            responseType: 'blob',
+                            withAuthCode: true
                         }).then(response => {
                             const contentType = response.headers['content-type'];
                             if (response.status == 200) {

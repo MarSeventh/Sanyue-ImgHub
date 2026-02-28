@@ -408,7 +408,7 @@ export default {
         // 获取可用渠道列表
         async fetchAvailableChannels() {
             try {
-                const response = await axios.get('/api/channels')
+                const response = await axios.get('/api/channels', { withAuthCode: true })
                 if (response.data) {
                     this.availableChannels = response.data
                     // 恢复渠道名称：优先持久化的值，其次系统默认配置
