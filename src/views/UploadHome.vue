@@ -8,7 +8,23 @@
                 <font-awesome-icon icon="book" class="info-icon" size="lg"/>
             </a>
         </el-tooltip>
-        <el-input class="upload-folder" :class="{ 'active': isFolderInputActive, 'no-announcement': !announcementAvailable }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="handleFolderInputBlur"></el-input>
+        <div class="upload-folder-container" :class="{ 'no-announcement': !announcementAvailable }">
+            <el-input class="upload-folder" :class="{ 'active': isFolderInputActive }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="handleFolderInputBlur"></el-input>
+            <DirectoryTreePicker
+                v-if="showDirectorySuggestions"
+                :current-directory="uploadFolder"
+                source="upload"
+                @select="handleDirectorySelect"
+            >
+                <template #trigger>
+                    <el-tooltip content="选择目录" placement="bottom" :disabled="disableTooltip">
+                        <el-button class="directory-picker-trigger">
+                            <font-awesome-icon icon="folder-tree" size="lg"/>
+                        </el-button>
+                    </el-tooltip>
+                </template>
+            </DirectoryTreePicker>
+        </div>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button desktop-only" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
@@ -187,6 +203,7 @@ import ToggleDark from '@/components/ToggleDark.vue'
 import Logo from '@/components/Logo.vue'
 import UploadHistory from '@/components/upload/UploadHistory.vue'
 import UploadSettingsDialog from '@/components/upload/UploadSettingsDialog.vue'
+import DirectoryTreePicker from '@/components/DirectoryTreePicker.vue'
 import backgroundManager from '@/mixins/backgroundManager'
 import axios from '@/utils/axios'
 import { ref } from 'vue'
@@ -313,6 +330,10 @@ export default {
         announcementAvailable() {
             return !!this.userConfig?.announcement
         },
+        // 是否显示目录候选项（从 userConfig 获取）
+        showDirectorySuggestions() {
+            return this.userConfig?.showDirectorySuggestions ?? false
+        },
         // 当前渠道类型对应的渠道列表
         currentChannelList() {
             return this.availableChannels[this.uploadChannel] || []
@@ -366,6 +387,13 @@ export default {
             this.showAnnouncementDialog = true
             localStorage.setItem('visitedUploadHome', 'true')
         }
+
+        // 初始化目录树选择器触发按钮引用
+        this.$nextTick(() => {
+            if (this.$refs.directoryPickerTriggerRef) {
+                this.directoryPickerTriggerRef = this.$refs.directoryPickerTriggerRef.$el || this.$refs.directoryPickerTriggerRef
+            }
+        })
     },
     components: {
         UploadForm,
@@ -373,7 +401,8 @@ export default {
         ToggleDark,
         Logo,
         UploadHistory,
-        UploadSettingsDialog
+        UploadSettingsDialog,
+        DirectoryTreePicker
     },
     methods: {
         // 获取可用渠道列表
@@ -530,6 +559,15 @@ export default {
                 this.showAnnouncementDialog = true
             } else {
                 this.$message.info('暂无公告')
+            }
+        },
+        // 处理目录选择
+        handleDirectorySelect(path) {
+            // 填入选择的目录路径
+            this.uploadFolder = path
+            // 触发路径验证逻辑
+            if (this.validateUploadFolder(path, true)) {
+                this.$store.commit('setStoreUploadFolder', path)
             }
         }
     }
@@ -766,19 +804,34 @@ export default {
     box-shadow: var(--toolbar-button-shadow-hover);
 }
 
-/* 上传文件输入框样式 */
-.upload-folder {
-    width: 100px;
-    height: 2.5rem;
+/* 上传文件输入框容器样式 */
+.upload-folder-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     position: fixed;
     top: 30px;
     right: 280px;
     z-index: 100;
+}
+.upload-folder-container.no-announcement {
+    right: 230px;
+}
+@media (max-width: 768px) {
+    .upload-folder-container {
+        right: 110px;
+    }
+    .upload-folder-container.no-announcement {
+        right: 110px;
+    }
+}
+
+/* 上传文件输入框样式 */
+.upload-folder {
+    width: 100px;
+    height: 2.5rem;
     border-radius: 12px;
     transition: all 0.3s ease, width 0.4s ease;
-}
-.upload-folder.no-announcement {
-    right: 230px;
 }
 .upload-folder.active {
     width: 200px;
@@ -787,10 +840,6 @@ export default {
     .upload-folder {
         width: 80px;
         height: 2rem;
-        right: 110px;
-    }
-    .upload-folder.no-announcement {
-        right: 110px;
     }
     .upload-folder.active {
         width: 120px;
@@ -802,6 +851,35 @@ export default {
     box-shadow: var(--toolbar-button-shadow);
     backdrop-filter: blur(10px);
     border: none;
+}
+
+/* 目录选择器触发按钮样式 */
+.directory-picker-trigger {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    color: var(--theme-toggle-color);
+    border-radius: 12px;
+    outline: none;
+    padding: 0;
+    flex-shrink: 0;
+}
+.directory-picker-trigger:hover {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
+}
+@media (max-width: 768px) {
+    .directory-picker-trigger {
+        width: 2rem;
+        height: 2rem;
+    }
 }
 
 

@@ -124,6 +124,17 @@
                     <el-input v-model="uploadSettings.moderate.nsfwApiPath" placeholder="https://nsfwjs.your.domain"/>
                 </el-form-item>
             </el-form>
+
+            <h4 class="second-title">目录候选项
+                <el-tooltip content="控制上传页面是否展示目录树选择器" placement="top">
+                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                </el-tooltip>
+            </h4>
+            <el-form :model="uploadSettings" label-width="120px">
+                <el-form-item label="展示目录候选项">
+                    <el-switch v-model="uploadSettings.showDirectorySuggestions"/>
+                </el-form-item>
+            </el-form>
         </div>
 
         <!-- 一级设置：访问管理 -->
@@ -655,6 +666,14 @@ mounted() {
 
 .first-settings :deep(.el-switch) {
     --el-switch-on-color: var(--el-color-primary);
+}
+
+.form-item-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    line-height: 1.5;
 }
 
 .token-title {

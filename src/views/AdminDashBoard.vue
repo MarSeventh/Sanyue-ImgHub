@@ -6,7 +6,7 @@
                 <DashboardTabs activeTab="dashboard"></DashboardTabs>
                 <div class="search-area">
                     <div class="search-card">
-                        <el-input v-model="tempSearch" size="mini" placeholder="搜索：#标签 -#排除标签" @keyup.enter="handleSearch">
+                        <el-input v-model="tempSearch" size="small" placeholder="搜索：#标签 -#排除标签" @keyup.enter="handleSearch">
                             <template #suffix>
                                 <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
                             </template>
@@ -364,6 +364,14 @@
             @navigate="navigateToFolder"
             @goBack="handleGoBack"
         />
+        <!-- 移动文件对话框 -->
+        <MoveFileDialog
+            v-model="showMoveDialog"
+            :current-directory="currentPath"
+            :is-batch-move="isBatchMove"
+            :initial-path="moveTargetPath"
+            @confirm="confirmMove"
+        />
     </div>
 </template>
 
@@ -376,6 +384,7 @@ import BatchTagDialog from '@/components/dashboard/BatchTagDialog.vue';
 import SkeletonLoader from '@/components/dashboard/SkeletonLoader.vue';
 import FileCard from '@/components/dashboard/FileCard.vue';
 import FolderCard from '@/components/dashboard/FolderCard.vue';
+import MoveFileDialog from '@/components/dashboard/MoveFileDialog.vue';
 import FileListItem from '@/components/dashboard/FileListItem.vue';
 import FileDetailDialog from '@/components/dashboard/FileDetailDialog.vue';
 import MobileActionSheet from '@/components/dashboard/MobileActionSheet.vue';
@@ -439,7 +448,13 @@ data() {
             channel: [],       // 渠道类型: 'TelegramNew', 'CloudflareR2', 'S3', 'Discord', 'HuggingFace', 'External'
             channelName: []    // 渠道名称: 动态获取
         },
-        channelNameOptions: [] // 动态从文件列表中提取
+        channelNameOptions: [], // 动态从文件列表中提取
+        // 移动文件对话框相关状态
+        showMoveDialog: false, // 移动文件对话框
+        moveTargetPath: '/', // 移动目标路径
+        moveFileKey: '', // 当前移动的文件key
+        moveFileIndex: -1, // 当前移动的文件索引
+        isBatchMove: false // 是否为批量移动
     }
 },
 components: {
@@ -453,7 +468,8 @@ components: {
     FileDetailDialog,
     MobileActionSheet,
     MobileDirectoryDrawer,
-    FilterDropdown
+    FilterDropdown,
+    MoveFileDialog
 },
 setup() {
     const cardContainerRef = ref(null);
@@ -613,7 +629,7 @@ computed: {
         return selectedCount > 0 && selectedCount < this.paginatedTableData.length;
     },
     pagerCount() {
-        return window.innerWidth < 768 ? 3 : 7;
+        return window.innerWidth < 768 ? 5 : 7;
     }
 },
 watch: {
@@ -1271,140 +1287,122 @@ methods: {
         }
     },
     handleMove(index, key) {
-        // 弹窗输入新的文件夹路径
-        this.$prompt('请输入新的目录', '移动文件', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            inputValue: '/',
-            beforeClose: (action, instance, done) => {
-                if (action === 'confirm') {
-                    const value = instance.inputValue;
-                    // 使用共享验证器验证路径
-                    const validation = validateFolderPath(value);
-                    if (!validation.valid) {
-                        this.$message.error(validation.error);
-                        return; // 验证失败，不关闭弹窗
-                    }
-                    done(); // 验证通过，关闭弹窗
-                } else {
-                    done(); // 取消操作，直接关闭
-                }
-            }
-        }).then(({ value }) => {
-            // 去掉开头的 /，结尾若没有 /，则加上
-            const newPath = value.replace(/^\/+/, '') + (value.endsWith('/') ? '' : value === '' ? '' : '/');
-            const isFolder = this.tableData.find(file => file.name === key).isFolder;
-            // 判断目标文件夹是否是当前文件夹
-            if (newPath === this.currentPath) {
-                this.$message.warning('目标文件夹不能是当前文件夹');
-                return;
-            }
-            fetchWithAuth(`/api/manage/move/${key}?folder=${isFolder}&dist=${encodeURIComponent(newPath)}`, { method: 'GET' })
-                .then(response => {
-                    if (response.ok) {
-                        const fileIndex = this.tableData.findIndex(file => file.name === key);
-                        if (fileIndex !== -1) {
-                            // 更新本地文件管理器
-                            const newKey = newPath + key.split('/').pop();
-                            fileManager.moveFile(key, newKey, isFolder, this.currentPath);
-                            // 移除文件
-                            this.tableData.splice(fileIndex, 1);
-                            // 强制重新渲染内容
-                            this.$nextTick(() => {
-                                // 创建临时数组
-                                const tempData = [...this.tableData];
-                                // 清空数组
-                                this.tableData = [];
-                                // 在下一个tick中恢复数据
-                                this.$nextTick(() => {
-                                    this.tableData = tempData;
-                                });
-                            });
-                        }
-                        this.updateStats(-1, false);
-                        this.$message.success('移动成功');
-                    } else {
-                        return Promise.reject('请求失败');
-                    }
-                })
-                .then(() => {
-                    // 刷新本地文件列表
-                    this.refreshLocalFileList();
-                })
-                .catch(() => this.$message.error('移动失败'));
-        }).catch(() => console.log('已取消移动文件'));
+        // 打开自定义移动对话框
+        this.moveFileKey = key;
+        this.moveFileIndex = index;
+        this.isBatchMove = false;
+        this.moveTargetPath = '/';
+        this.showMoveDialog = true;
     },
     handleBatchMove() {
-        // 弹窗输入新的文件夹路径
-        this.$prompt('请输入新的目录', '移动文件', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            inputValue: '/',
-            beforeClose: (action, instance, done) => {
-                if (action === 'confirm') {
-                    const value = instance.inputValue;
-                    // 使用共享验证器验证路径
-                    const validation = validateFolderPath(value);
-                    if (!validation.valid) {
-                        this.$message.error(validation.error);
-                        return; // 验证失败，不关闭弹窗
-                    }
-                    done(); // 验证通过，关闭弹窗
-                } else {
-                    done(); // 取消操作，直接关闭
-                }
-            }
-        }).then(({ value }) => {
-            // 去掉开头的 /，结尾若没有 /，则加上
-            const newPath = value.replace(/^\/+/, '') + (value.endsWith('/') ? '' : value === '' ? '' : '/');
-            // 判断目标文件夹是否是当前文件夹
-            if (newPath === this.currentPath) {
-                this.$message.warning('目标文件夹不能是当前文件夹');
-                return;
-            }
-            const promises = this.selectedFiles.map(file => {
-                const isFolder = file.isFolder;
-                return fetchWithAuth(`/api/manage/move/${file.name}?folder=${isFolder}&dist=${encodeURIComponent(newPath)}`, { method: 'GET' });
-            });
-
-            Promise.all(promises)
-                .then(results => {
-                    let successNum = 0;
-                    results.forEach((response, index) => {
-                        if (response.ok) {
-                            successNum++;
-                            const file = this.selectedFiles[index];
-                            file.selected = false;
-                            const fileIndex = this.tableData.findIndex(f => f.name === file.name);
-                            if (fileIndex !== -1) {
-                                // 更新本地文件管理器
-                                const newKey = newPath + file.name.split('/').pop();
-                                fileManager.moveFile(file.name, newKey, file.isFolder, this.currentPath);
-                                // 移除文件
-                                this.tableData.splice(fileIndex, 1);
-                            }
-                        }
-                    });
-                    // 强制重新渲染内容
-                    this.$nextTick(() => {
-                        // 创建临时数组
-                        const tempData = [...this.tableData];
-                        // 清空数组
-                        this.tableData = [];
-                        // 在下一个tick中恢复数据
+        // 打开自定义移动对话框（批量模式）
+        this.isBatchMove = true;
+        this.moveTargetPath = '/';
+        this.showMoveDialog = true;
+    },
+    // 确认移动操作
+    confirmMove(targetPath) {
+        const value = targetPath;
+        // 使用共享验证器验证路径
+        const validation = validateFolderPath(value);
+        if (!validation.valid) {
+            this.$message.error(validation.error);
+            return;
+        }
+        // 去掉开头的 /，结尾若没有 /，则加上
+        const newPath = value.replace(/^\/+/, '') + (value.endsWith('/') ? '' : value === '' ? '' : '/');
+        // 判断目标文件夹是否是当前文件夹
+        if (newPath === this.currentPath) {
+            this.$message.warning('目标文件夹不能是当前文件夹');
+            return;
+        }
+        
+        // 关闭对话框
+        this.showMoveDialog = false;
+        
+        if (this.isBatchMove) {
+            // 批量移动
+            this.executeBatchMove(newPath);
+        } else {
+            // 单个文件移动
+            this.executeSingleMove(newPath);
+        }
+    },
+    // 执行单个文件移动
+    executeSingleMove(newPath) {
+        const key = this.moveFileKey;
+        const isFolder = this.tableData.find(file => file.name === key)?.isFolder;
+        
+        fetchWithAuth(`/api/manage/move/${key}?folder=${isFolder}&dist=${encodeURIComponent(newPath)}`, { method: 'GET' })
+            .then(response => {
+                if (response.ok) {
+                    const fileIndex = this.tableData.findIndex(file => file.name === key);
+                    if (fileIndex !== -1) {
+                        // 更新本地文件管理器
+                        const newKey = newPath + key.split('/').pop();
+                        fileManager.moveFile(key, newKey, isFolder, this.currentPath);
+                        // 移除文件
+                        this.tableData.splice(fileIndex, 1);
+                        // 强制重新渲染内容
                         this.$nextTick(() => {
-                            this.tableData = tempData;
+                            const tempData = [...this.tableData];
+                            this.tableData = [];
+                            this.$nextTick(() => {
+                                this.tableData = tempData;
+                            });
                         });
-                    });
-                    this.updateStats(-successNum, false);
+                    }
+                    this.updateStats(-1, false);
                     this.$message.success('移动成功');
-                })
-                .then(() => {
-                    // 刷新本地文件列表
-                    this.refreshLocalFileList();
-                })
-                .catch(() => this.$message.error('移动失败'));
-        }).catch(() => console.log('已取消移动文件'));
+                } else {
+                    return Promise.reject('请求失败');
+                }
+            })
+            .then(() => {
+                this.refreshLocalFileList();
+            })
+            .catch(() => this.$message.error('移动失败'));
+    },
+    // 执行批量移动
+    executeBatchMove(newPath) {
+        const promises = this.selectedFiles.map(file => {
+            const isFolder = file.isFolder;
+            return fetchWithAuth(`/api/manage/move/${file.name}?folder=${isFolder}&dist=${encodeURIComponent(newPath)}`, { method: 'GET' });
+        });
+
+        Promise.all(promises)
+            .then(results => {
+                let successNum = 0;
+                results.forEach((response, index) => {
+                    if (response.ok) {
+                        successNum++;
+                        const file = this.selectedFiles[index];
+                        file.selected = false;
+                        const fileIndex = this.tableData.findIndex(f => f.name === file.name);
+                        if (fileIndex !== -1) {
+                            // 更新本地文件管理器
+                            const newKey = newPath + file.name.split('/').pop();
+                            fileManager.moveFile(file.name, newKey, file.isFolder, this.currentPath);
+                            // 移除文件
+                            this.tableData.splice(fileIndex, 1);
+                        }
+                    }
+                });
+                // 强制重新渲染内容
+                this.$nextTick(() => {
+                    const tempData = [...this.tableData];
+                    this.tableData = [];
+                    this.$nextTick(() => {
+                        this.tableData = tempData;
+                    });
+                });
+                this.updateStats(-successNum, false);
+                this.$message.success('移动成功');
+            })
+            .then(() => {
+                this.refreshLocalFileList();
+            })
+            .catch(() => this.$message.error('移动失败'));
     },
     handleBatchBlock(){
         this.$confirm('此操作将把选中的文件加入黑名单, 是否继续?', '提示', {
