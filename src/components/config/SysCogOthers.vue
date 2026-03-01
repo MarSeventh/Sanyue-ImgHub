@@ -12,6 +12,22 @@
                     <el-switch v-model="settings.telemetry.enabled" :disabled="settings.telemetry.fixed"></el-switch>
                 </el-form-item>
             </el-form>
+            <h3 class="first-title">CloudFlare API Token
+                <el-tooltip content="设置后可以使后端拉黑、删除等操作不受CDN缓存限制 <br/> 建议设置,设置方式请查阅文档" placement="right" raw-content>
+                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                </el-tooltip>
+            </h3>
+            <el-form :model="settings.cloudflareApiToken" label-width="120px">
+                <el-form-item label="区域ID">
+                    <el-input v-model="settings.cloudflareApiToken.CF_ZONE_ID" :disabled="settings.cloudflareApiToken.fixed"></el-input>
+                </el-form-item>
+                <el-form-item label="账户邮箱">
+                    <el-input v-model="settings.cloudflareApiToken.CF_EMAIL" :disabled="settings.cloudflareApiToken.fixed"></el-input>
+                </el-form-item>
+                <el-form-item label="API Key">
+                    <el-input v-model="settings.cloudflareApiToken.CF_API_KEY" :disabled="settings.cloudflareApiToken.fixed" type="password" show-password autocomplete="new-password"></el-input>
+                </el-form-item>
+            </el-form>
             <h3 class="first-title">随机图像API
                 <el-tooltip content="API具体用法请查阅文档" placement="right">
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
@@ -56,22 +72,6 @@
                         </el-tooltip>
                     </template>
                     <el-input v-model="settings.publicBrowse.allowedDir" :disabled="settings.publicBrowse.fixed" placeholder="wallpaper,photos,album"></el-input>
-                </el-form-item>
-            </el-form>
-            <h3 class="first-title">CloudFlare API Token
-                <el-tooltip content="设置后可以使后端拉黑、删除等操作不受CDN缓存限制 <br/> 建议设置,设置方式请查阅文档" placement="right" raw-content>
-                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                </el-tooltip>
-            </h3>
-            <el-form :model="settings.cloudflareApiToken" label-width="120px">
-                <el-form-item label="区域ID">
-                    <el-input v-model="settings.cloudflareApiToken.CF_ZONE_ID" :disabled="settings.cloudflareApiToken.fixed"></el-input>
-                </el-form-item>
-                <el-form-item label="账户邮箱">
-                    <el-input v-model="settings.cloudflareApiToken.CF_EMAIL" :disabled="settings.cloudflareApiToken.fixed"></el-input>
-                </el-form-item>
-                <el-form-item label="API Key">
-                    <el-input v-model="settings.cloudflareApiToken.CF_API_KEY" :disabled="settings.cloudflareApiToken.fixed" type="password" show-password autocomplete="new-password"></el-input>
                 </el-form-item>
             </el-form>
             <h3 class="first-title">WebDAV
