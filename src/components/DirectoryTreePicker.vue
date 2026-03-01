@@ -8,6 +8,10 @@
             :width="320"
             trigger="click"
             popper-class="directory-tree-popover"
+            :show-arrow="true"
+            :hide-after="0"
+            :show-after="50"
+            transition="el-zoom-in-top"
         >
             <template #reference>
                 <span class="popover-trigger-wrapper" @click.stop>
@@ -327,6 +331,12 @@ export default {
     padding: 0 !important;
     border-radius: 12px !important;
     box-shadow: var(--el-box-shadow-light) !important;
+}
+
+/* 加速 popover 动画 */
+.el-zoom-in-top-enter-active.directory-tree-popover,
+.el-zoom-in-top-leave-active.directory-tree-popover {
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out !important;
 }
 
 .directory-tree-drawer {
