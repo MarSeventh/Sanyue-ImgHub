@@ -341,7 +341,6 @@ export default {
 }
 
 .tree-container :deep(.el-loading-mask) {
-    background-color: rgba(255, 255, 255, 0.8);
     border-radius: 8px;
 }
 </style>
