@@ -138,11 +138,31 @@ export default {
         popoverVisible(newVal) {
             if (newVal) {
                 this.fetchDirectoryTree();
+            } else {
+                // 弹窗关闭后延迟折叠所有节点，避免下次打开时出现折叠动画
+                setTimeout(() => {
+                    if (!this.popoverVisible && this.$refs.treeRef) {
+                        const store = this.$refs.treeRef.store;
+                        for (const key in store.nodesMap) {
+                            store.nodesMap[key].expanded = false;
+                        }
+                    }
+                }, 200);
             }
         },
         drawerVisible(newVal) {
             if (newVal) {
                 this.fetchDirectoryTree();
+            } else {
+                // 抽屉关闭后延迟折叠所有节点
+                setTimeout(() => {
+                    if (!this.drawerVisible && this.$refs.treeRefMobile) {
+                        const store = this.$refs.treeRefMobile.store;
+                        for (const key in store.nodesMap) {
+                            store.nodesMap[key].expanded = false;
+                        }
+                    }
+                }, 300);
             }
         },
         currentDirectory(newVal) {
