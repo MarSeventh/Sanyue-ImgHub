@@ -9,21 +9,32 @@
             </a>
         </el-tooltip>
         <div class="upload-folder-container" :class="{ 'no-announcement': !announcementAvailable }">
-            <el-input class="upload-folder" :class="{ 'active': isFolderInputActive }" v-model="uploadFolder" placeholder="上传目录" @focus="isFolderInputActive = true" @blur="handleFolderInputBlur"></el-input>
-            <DirectoryTreePicker
-                v-if="showDirectorySuggestions"
-                :current-directory="uploadFolder"
-                source="upload"
-                @select="handleDirectorySelect"
-            >
-                <template #trigger>
-                    <el-tooltip content="选择目录" placement="bottom" :disabled="disableTooltip">
-                        <el-button class="directory-picker-trigger">
-                            <font-awesome-icon icon="folder-tree" size="lg"/>
-                        </el-button>
-                    </el-tooltip>
-                </template>
-            </DirectoryTreePicker>
+            <div class="upload-folder" :class="{ 'active': isFolderInputActive }">
+                <el-autocomplete
+                    ref="folderAutocomplete"
+                    v-if="showDirectorySuggestions"
+                    v-model="uploadFolder"
+                    class="inner-folder-input"
+                    :popper-class="showFolderSuggestions ? '' : 'hidden-folder-popper'"
+                    :hide-loading="true"
+                    placeholder="上传目录"
+                    value-key="value"
+                    :fetch-suggestions="queryDirectorySuggestions"
+                    :trigger-on-focus="true"
+                    :debounce="0"
+                    @focus="handleFolderInputFocus"
+                    @blur="handleFolderInputBlur"
+                    @select="handleDirectoryAutocompleteSelect"
+                />
+                <el-input
+                    v-else
+                    class="inner-folder-input"
+                    v-model="uploadFolder"
+                    placeholder="上传目录"
+                    @focus="handleFolderInputFocus"
+                    @blur="handleFolderInputBlur"
+                />
+            </div>
         </div>
         <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button desktop-only" @click="handleChangeUploadMethod">
@@ -203,7 +214,6 @@ import ToggleDark from '@/components/ToggleDark.vue'
 import Logo from '@/components/Logo.vue'
 import UploadHistory from '@/components/upload/UploadHistory.vue'
 import UploadSettingsDialog from '@/components/upload/UploadSettingsDialog.vue'
-import DirectoryTreePicker from '@/components/DirectoryTreePicker.vue'
 import backgroundManager from '@/mixins/backgroundManager'
 import axios from '@/utils/axios'
 import { ref } from 'vue'
@@ -236,6 +246,12 @@ export default {
             uploadMethod: 'default', //上传方式
             uploadFolder: '', // 上传文件夹
             isFolderInputActive: false,
+            directoryTreeRoot: null,
+            directoryTreeLoaded: false,
+            directoryTreeLoading: false,
+            directoryChildrenMap: {},
+            folderFocusTime: null, // 记录输入框获取焦点的时间
+            showFolderSuggestions: false, // 控制实际是否可见下拉框
             showAnnouncementDialog: false, // 控制公告弹窗的显示
             announcementContent: '', // 公告内容
             showHistory: false,
@@ -387,13 +403,6 @@ export default {
             this.showAnnouncementDialog = true
             localStorage.setItem('visitedUploadHome', 'true')
         }
-
-        // 初始化目录树选择器触发按钮引用
-        this.$nextTick(() => {
-            if (this.$refs.directoryPickerTriggerRef) {
-                this.directoryPickerTriggerRef = this.$refs.directoryPickerTriggerRef.$el || this.$refs.directoryPickerTriggerRef
-            }
-        })
     },
     components: {
         UploadForm,
@@ -401,8 +410,7 @@ export default {
         ToggleDark,
         Logo,
         UploadHistory,
-        UploadSettingsDialog,
-        DirectoryTreePicker
+        UploadSettingsDialog
     },
     methods: {
         // 获取可用渠道列表
@@ -448,7 +456,21 @@ export default {
             }
             return true
         },
+        handleFolderInputFocus() {
+            this.isFolderInputActive = true
+            this.folderFocusTime = Date.now() // 记录焦点获取时间，用于延迟展开建议列表
+            this.showFolderSuggestions = false // 展开前隐藏弹出框，避免尺寸跳跃
+            setTimeout(() => {
+                if (this.isFolderInputActive) {
+                    this.showFolderSuggestions = true // 动画彻底完成后再显示
+                }
+            }, 400)
+            if (this.showDirectorySuggestions) {
+                this.ensureDirectoryTreeLoaded()
+            }
+        },
         handleFolderInputBlur() {
+            this.showFolderSuggestions = false // 失焦瞬间立刻隐藏下来框，防止动画向左飘
             this.isFolderInputActive = false
             // 失焦时自动补全前导 /
             if (this.uploadFolder && !this.uploadFolder.startsWith('/')) {
@@ -460,6 +482,120 @@ export default {
                     this.uploadFolder = this.storeUploadFolder
                 })
             }
+        },
+        normalizeDirectoryPath(path) {
+            if (!path) {
+                return '/'
+            }
+            let normalized = path
+            if (!normalized.startsWith('/')) {
+                normalized = '/' + normalized
+            }
+            if (normalized !== '/' && !normalized.endsWith('/')) {
+                normalized += '/'
+            }
+            return normalized
+        },
+        buildDirectoryChildrenMap(treeRoot) {
+            const map = {}
+
+            const walk = (node) => {
+                const parentPath = this.normalizeDirectoryPath(node.path)
+                const children = Array.isArray(node.children) ? node.children : []
+                map[parentPath] = children.map((child) => ({
+                    name: child.name,
+                    path: this.normalizeDirectoryPath(child.path)
+                }))
+                children.forEach(walk)
+            }
+
+            walk(treeRoot)
+            this.directoryChildrenMap = map
+        },
+        async ensureDirectoryTreeLoaded() {
+            if (this.directoryTreeLoaded || this.directoryTreeLoading) {
+                return
+            }
+
+            this.directoryTreeLoading = true
+            try {
+                const response = await axios.get('/api/directoryTree', {
+                    withAuthCode: true
+                })
+                const tree = response?.data?.tree
+                if (tree) {
+                    this.directoryTreeRoot = tree
+                    this.buildDirectoryChildrenMap(tree)
+                    this.directoryTreeLoaded = true
+                }
+            } catch (error) {
+                console.error('Failed to load directory tree for autocomplete:', error)
+            } finally {
+                this.directoryTreeLoading = false
+            }
+        },
+        parseDirectoryQuery(value) {
+            const normalizedInput = value && value.startsWith('/') ? value : `/${value || ''}`
+            const raw = normalizedInput.slice(1)
+            const parts = raw.split('/')
+            const segmentInput = parts[parts.length - 1] || ''
+            const parentSegments = parts.slice(0, -1).filter(Boolean)
+            const parentPath = parentSegments.length > 0 ? `/${parentSegments.join('/')}/` : '/'
+            return {
+                segmentInput,
+                parentPath
+            }
+        },
+        getDirectorySuggestions(queryString) {
+            const { segmentInput, parentPath } = this.parseDirectoryQuery(queryString)
+
+            const parentChildren = this.directoryChildrenMap[parentPath] || []
+            if (!segmentInput) {
+                return parentChildren.slice(0, 10).map((item) => ({
+                    value: item.path
+                }))
+            }
+
+            const keyword = segmentInput.toLowerCase()
+            const matched = parentChildren
+                .filter((item) => item.name.toLowerCase().startsWith(keyword))
+                .map((item) => ({ value: item.path }))
+            return matched.slice(0, 10)
+        },
+        async queryDirectorySuggestions(queryString, callback) {
+            await this.ensureDirectoryTreeLoaded()
+            
+            // 为了等宽度伸展动画 (0.4s) 结束再展示弹出框，以获取正确的弹出框宽度
+            let waitTime = 0
+            if (this.folderFocusTime) {
+                const elapsed = Date.now() - this.folderFocusTime
+                if (elapsed < 400) {
+                    waitTime = 400 - elapsed
+                }
+            }
+
+            if (waitTime > 0) {
+                setTimeout(() => {
+                    callback(this.getDirectorySuggestions(queryString))
+                }, waitTime)
+            } else {
+                callback(this.getDirectorySuggestions(queryString))
+            }
+        },
+        handleDirectoryAutocompleteSelect(item) {
+            const path = item?.value || ''
+            this.handleDirectorySelect(path)
+
+            // 选中某级目录后保持下拉框开启，自动展示下级目录建议
+            setTimeout(() => {
+                const inputEl = this.$el.querySelector('.upload-folder input')
+                if (inputEl) {
+                    inputEl.focus()
+                    // 派发 input 事件来重新激活 el-autocomplete 的匹配查询
+                    inputEl.dispatchEvent(new Event('input'))
+                    this.showFolderSuggestions = true // 确保此时弹框状态正常
+                }
+            }, 50)
         },
         handleManage() {
             this.$router.push('/dashboard')
@@ -808,7 +944,6 @@ export default {
 .upload-folder-container {
     display: flex;
     align-items: center;
-    gap: 8px;
     position: fixed;
     top: 30px;
     right: 280px;
@@ -845,43 +980,24 @@ export default {
         width: 120px;
     }
 }
+
+.upload-folder :deep(.inner-folder-input) {
+    width: 100%;
+    height: 100%;
+}
+
+.upload-folder :deep(.el-input) {
+    height: 100%;
+}
+
 .upload-folder :deep(.el-input__wrapper) {
     border-radius: 12px;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
     backdrop-filter: blur(10px);
     border: none;
+    height: 100%;
 }
-
-/* 目录选择器触发按钮样式 */
-.directory-picker-trigger {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
-    color: var(--theme-toggle-color);
-    border-radius: 12px;
-    outline: none;
-    padding: 0;
-    flex-shrink: 0;
-}
-.directory-picker-trigger:hover {
-    transform: scale(1.05);
-    box-shadow: var(--toolbar-button-shadow-hover);
-}
-@media (max-width: 768px) {
-    .directory-picker-trigger {
-        width: 2rem;
-        height: 2rem;
-    }
-}
-
 
 .info-container {
     width: 2.5rem;
@@ -1175,5 +1291,16 @@ export default {
 
 .footer {
     height: 6vh;
+}
+</style>
+
+<style>
+/* 全局样式覆盖 el-popper 防止动画异常跳动或飘移 */
+.hidden-folder-popper {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: none !important;
+    transform: scale(0) !important;
 }
 </style>
