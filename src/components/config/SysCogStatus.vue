@@ -117,7 +117,7 @@
           <span>系统维护</span>
         </div>
         <div class="action-content">
-          <!-- 进度显示 UI (Requirements 3.6, 4.6, 9.1, 9.2) -->
+          <!-- 进度显示 UI -->
           <div v-if="isProcessing" class="progress-container">
             <div class="progress-header">
               <span class="progress-phase">{{ phaseDescription }}</span>
@@ -130,7 +130,7 @@
               class="progress-bar"
             />
             <div class="progress-details">
-              <!-- 当前/总数显示 (Requirement 9.1) -->
+              <!-- 当前/总数显示 -->
               <span class="progress-count" v-if="processingProgress.current > 0">
                 <font-awesome-icon icon="file-alt" />
                 {{ processingProgress.current.toLocaleString() }}
@@ -139,7 +139,7 @@
                 </template>
                 条记录
               </span>
-              <!-- 预计剩余时间 (Requirement 9.2) -->
+              <!-- 预计剩余时间 -->
               <span class="progress-time" v-if="estimatedTimeRemaining">
                 <font-awesome-icon icon="clock" />
                 {{ estimatedTimeRemaining }}
@@ -161,7 +161,7 @@
             </el-button>
           </div>
           
-          <!-- 错误显示 (Requirement 9.3) -->
+          <!-- 错误显示 -->
           <div v-else-if="processingError" class="error-container">
             <div class="error-icon">
               <font-awesome-icon icon="exclamation-triangle" />
@@ -453,7 +453,7 @@ export default {
         }
       }
     },
-    // 预计剩余时间（Requirements 9.2）
+    // 预计剩余时间
     estimatedTimeRemaining() {
       if (!this.isProcessing || !this.processingStartTime) return ''
       if (this.processingProgress.current === 0 || this.processingProgress.percentage === 0) return ''
@@ -526,7 +526,7 @@ export default {
       }
     },
 
-    // 重建索引 - 使用前端辅助重建流程 (Requirements 3.6, 9.1, 9.2, 9.3, 9.4)
+    // 重建索引 - 使用前端辅助重建流程
     async rebuildIndex() {
       if (this.isProcessing) {
         this.$message.warning('已有操作正在进行中')
@@ -548,7 +548,7 @@ export default {
       try {
         const result = await this.currentRebuilder.rebuild()
         
-        // 成功完成 (Requirement 9.4)
+        // 成功完成
         this.$message.success(`索引重建完成！共处理 ${result.totalFiles.toLocaleString()} 个文件`)
         
         // 刷新索引信息
@@ -556,7 +556,7 @@ export default {
           this.fetchIndexInfo()
         }, 1000)
       } catch (error) {
-        // 错误处理 (Requirement 9.3)
+        // 错误处理
         if (error.code !== 'ABORTED') {
           const errorMessage = error.suggestion 
             ? `${error.message}。${error.suggestion}`
@@ -576,7 +576,7 @@ export default {
       }
     },
 
-    // 备份数据 - 使用前端辅助备份流程 (Requirements 4.6, 9.1, 9.2, 9.3, 9.4)
+    // 备份数据 - 使用前端辅助备份流程
     async backupData() {
       if (this.isProcessing) {
         this.$message.warning('已有操作正在进行中')
@@ -597,11 +597,11 @@ export default {
       try {
         const result = await this.currentBackupGenerator.generateBackup()
         
-        // 成功完成 (Requirement 9.4)
+        // 成功完成
         const settingsMsg = result.settingsCount > 0 ? `，${result.settingsCount} 个设置项` : ''
         this.$message.success(`备份完成！共备份 ${result.fileCount.toLocaleString()} 个文件${settingsMsg}`)
       } catch (error) {
-        // 错误处理 (Requirement 9.3)
+        // 错误处理
         if (error.code !== 'ABORTED') {
           const errorMessage = error.suggestion 
             ? `${error.message}。${error.suggestion}`
@@ -810,7 +810,7 @@ export default {
       window.open('/file/' + file.id, '_blank')
     },
     
-    // 处理进度更新 (Requirements 3.6, 4.6, 9.1, 9.2)
+    // 处理进度更新
     handleProgress(progress) {
       this.processingPhase = progress.phase
       this.processingProgress.message = progress.message || ''
@@ -863,7 +863,7 @@ export default {
       }
     },
     
-    // 处理错误 (Requirement 9.3)
+    // 处理错误
     handleError(error) {
       console.error('批量操作错误:', error)
       this.processingError = {
@@ -873,7 +873,7 @@ export default {
       }
     },
     
-    // 取消当前操作 (Requirement 2.4)
+    // 取消当前操作
     cancelOperation() {
       if (this.currentRebuilder) {
         this.currentRebuilder.abort()
@@ -1552,7 +1552,7 @@ html.dark .legend-item:hover {
   }
 }
 
-/* 进度显示样式 (Requirements 3.6, 4.6, 9.1, 9.2) */
+/* 进度显示样式 */
 .progress-container {
   width: 100%;
   padding: 20px;
@@ -1645,7 +1645,7 @@ html.dark .legend-item:hover {
   margin-right: 8px;
 }
 
-/* 错误显示样式 (Requirement 9.3) */
+/* 错误显示样式 */
 .error-container {
   width: 100%;
   padding: 20px;
