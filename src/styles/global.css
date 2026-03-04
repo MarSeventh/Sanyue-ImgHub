@@ -1091,50 +1091,6 @@ body {
 }
 
 /* ==============================
-   目录建议下拉框样式
-   ============================== */
-.directory-suggestion-popper {
-    border-radius: 12px !important;
-    border: none !important;
-    background-color: var(--popper-bg-color) !important;
-    backdrop-filter: blur(10px) !important;
-    box-shadow: var(--popper-shadow) !important;
-    padding: 6px 0 !important;
-    width: 200px !important;
-}
-
-@media (max-width: 768px) {
-    .directory-suggestion-popper {
-        width: 120px !important;
-    }
-}
-
-.directory-suggestion-popper .el-autocomplete-suggestion__list li {
-    padding: 8px 16px;
-    font-size: 13px;
-    border-radius: 6px;
-    margin: 2px 6px;
-    transition: background-color 0.2s ease;
-}
-
-.directory-suggestion-popper .el-autocomplete-suggestion__list li:hover {
-    background-color: var(--el-fill-color-light);
-}
-
-.directory-suggestion-popper .el-scrollbar {
-    border-radius: 12px;
-}
-
-/* 隐藏状态的目录建议弹框 */
-.directory-suggestion-popper-hidden {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    transition: none !important;
-    transform: scale(0) !important;
-}
-
-/* ==============================
    OverlayScrollbars 悬浮滚动条主题
    macOS 风格：悬浮、自动隐藏、胶囊滑块
    ============================== */

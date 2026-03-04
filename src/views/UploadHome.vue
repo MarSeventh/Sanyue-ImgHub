@@ -976,13 +976,15 @@ export default {
 }
 
 /* 按钮悬停效果 */
-.upload-folder:hover,
 .toggle-dark-button:hover,
 .info-container:hover,
 .upload-method-button:hover,
 .toolbar-manage-button:hover,
 .toolbar-button:hover {
     transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
+}
+.upload-folder:hover {
     box-shadow: var(--toolbar-button-shadow-hover);
 }
 
