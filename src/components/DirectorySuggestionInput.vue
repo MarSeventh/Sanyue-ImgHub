@@ -11,7 +11,7 @@
         :trigger-on-focus="true"
         :debounce="0"
         :fit-input-width="false"
-        placement="bottom-start"
+        placement="bottom"
         @focus="handleFocus"
         @blur="handleBlur"
         @select="handleSelect"
@@ -63,16 +63,8 @@ export default {
             setTimeout(() => {
                 if (this.isFocused) {
                     this.showSuggestions = true
-                    // 输入框 width 过渡动画可能尚未完全结束，
-                    // 延迟一帧让 popper 重新计算定位，避免错位
-                    this.$nextTick(() => {
-                        // 额外等 50ms 确保 CSS 过渡完成
-                        setTimeout(() => {
-                            this.updatePopperPosition()
-                        }, 50)
-                    })
                 }
-            }, 400)
+            }, 500)
             this.ensureDirectoryTreeLoaded()
             this.$emit('focus')
         },
@@ -184,8 +176,8 @@ export default {
             let waitTime = 0
             if (this.focusTime) {
                 const elapsed = Date.now() - this.focusTime
-                if (elapsed < 400) {
-                    waitTime = 400 - elapsed
+                if (elapsed < 500) {
+                    waitTime = 500 - elapsed
                 }
             }
 
@@ -195,16 +187,6 @@ export default {
                 }, waitTime)
             } else {
                 callback(this.getDirectorySuggestions(queryString))
-            }
-        },
-        updatePopperPosition() {
-            try {
-                const popperRef = this.$refs.autocompleteRef?.popperRef
-                if (popperRef?.popperInstanceRef) {
-                    popperRef.popperInstanceRef.update()
-                }
-            } catch {
-                // ignore
             }
         }
     }

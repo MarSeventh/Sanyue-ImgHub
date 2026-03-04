@@ -1100,7 +1100,13 @@ body {
     backdrop-filter: blur(10px) !important;
     box-shadow: var(--popper-shadow) !important;
     padding: 6px 0 !important;
-    min-width: 200px !important;
+    width: 200px !important;
+}
+
+@media (max-width: 768px) {
+    .directory-suggestion-popper {
+        width: 120px !important;
+    }
 }
 
 .directory-suggestion-popper .el-autocomplete-suggestion__list li {
