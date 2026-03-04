@@ -11,7 +11,7 @@
         :trigger-on-focus="true"
         :debounce="0"
         :fit-input-width="false"
-        placement="bottom"
+        placement="bottom-start"
         @focus="handleFocus"
         @blur="handleBlur"
         @select="handleSelect"
