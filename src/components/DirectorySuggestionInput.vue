@@ -39,7 +39,8 @@ export default {
             directoryTreeLoading: false,
             directoryChildrenMap: {},
             focusTime: null,
-            showSuggestions: false
+            showSuggestions: false,
+            isFocused: false
         }
     },
     computed: {
@@ -54,10 +55,11 @@ export default {
     },
     methods: {
         handleFocus() {
+            this.isFocused = true
             this.focusTime = Date.now()
             this.showSuggestions = false
             setTimeout(() => {
-                if (this.showSuggestions === false && this.focusTime) {
+                if (this.isFocused) {
                     this.showSuggestions = true
                 }
             }, 400)
@@ -65,6 +67,7 @@ export default {
             this.$emit('focus')
         },
         handleBlur() {
+            this.isFocused = false
             this.showSuggestions = false
             this.$emit('blur')
         },
