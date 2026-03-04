@@ -1100,6 +1100,7 @@ body {
     backdrop-filter: blur(10px) !important;
     box-shadow: var(--popper-shadow) !important;
     padding: 6px 0 !important;
+    min-width: 200px !important;
 }
 
 .directory-suggestion-popper .el-autocomplete-suggestion__list li {
