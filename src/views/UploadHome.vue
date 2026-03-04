@@ -29,6 +29,7 @@
                 />
             </div>
             <DirectoryTreePicker
+                v-if="showDirectorySuggestions"
                 :current-directory="uploadFolder"
                 source="upload"
                 @select="handleDirectorySelect"
@@ -866,7 +867,7 @@ export default {
     justify-content: center;
     align-items: center;
     border: none;
-    margin-left: 6px;
+    margin-left: 10px;
     transition: all 0.3s ease;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);

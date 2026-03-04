@@ -75,15 +75,19 @@ export default {
             const path = item?.value || ''
             this.$emit('select', path)
 
-            // 选中某级目录后保持下拉框开启，自动展示下级目录建议
-            setTimeout(() => {
-                const inputEl = this.$refs.autocompleteRef?.$el?.querySelector('input')
-                if (inputEl) {
-                    inputEl.focus()
-                    inputEl.dispatchEvent(new Event('input'))
-                    this.showSuggestions = true
-                }
-            }, 50)
+            // 选中某级目录后，仅当存在下级子目录时才保持下拉框开启
+            const normalizedPath = this.normalizeDirectoryPath(path)
+            const children = this.directoryChildrenMap[normalizedPath]
+            if (children && children.length > 0) {
+                setTimeout(() => {
+                    const inputEl = this.$refs.autocompleteRef?.inputRef?.input
+                    if (inputEl) {
+                        inputEl.focus()
+                        inputEl.dispatchEvent(new Event('input'))
+                        this.showSuggestions = true
+                    }
+                }, 50)
+            }
         },
         normalizeDirectoryPath(path) {
             if (!path) {
