@@ -383,13 +383,28 @@ class IndexRebuilder {
    * @returns {Promise<string>} 十六进制格式的校验和
    */
   async calculateChecksum(data) {
-    const text = JSON.stringify(data);
-    const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(text);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
+      const text = JSON.stringify(data);
+      const encoder = new TextEncoder();
+      const dataBuffer = encoder.encode(text);
+
+      // crypto.subtle 仅在安全上下文（HTTPS / localhost）下可用
+      // 通过 0.0.0.0 等非安全上下文访问时需要 fallback
+      if (typeof crypto !== 'undefined' && crypto.subtle) {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      // Fallback: 简单但足够用于校验的哈希实现 (FNV-1a 变体, 产生 64 位十六进制)
+      let h1 = 0x811c9dc5 >>> 0;
+      let h2 = 0x811c9dc5 >>> 0;
+      for (let i = 0; i < dataBuffer.length; i++) {
+        h1 = Math.imul(h1 ^ dataBuffer[i], 0x01000193) >>> 0;
+        h2 = Math.imul(h2 ^ dataBuffer[i], 0x01000193 + 0x10) >>> 0;
+      }
+      return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+    }
+
 
   /**
    * 根据 HTTP 状态码创建错误对象
