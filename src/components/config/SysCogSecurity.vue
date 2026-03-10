@@ -186,6 +186,7 @@
                         <el-checkbox label="upload">上传</el-checkbox>
                         <el-checkbox label="delete">删除</el-checkbox>
                         <el-checkbox label="list">列出</el-checkbox>
+                        <el-checkbox label="manage">管理</el-checkbox>
                     </el-checkbox-group>
                 </el-form-item>
                 <el-form-item label="永不过期">
@@ -222,6 +223,7 @@
                         <el-checkbox label="upload">上传</el-checkbox>
                         <el-checkbox label="delete">删除</el-checkbox>
                         <el-checkbox label="list">列出</el-checkbox>
+                        <el-checkbox label="manage">管理</el-checkbox>
                     </el-checkbox-group>
                 </el-form-item>
                 <el-form-item label="永不过期">
@@ -442,7 +444,8 @@ methods: {
         const permissionMap = {
             'upload': '上传',
             'delete': '删除', 
-            'list': '列出'
+            'list': '列出',
+            'manage': '管理'
         };
         return permissionMap[permission] || permission;
     },
