@@ -41,6 +41,7 @@ export default {
           height: 100%;
           object-fit: cover;
           z-index: -1;
+          pointer-events: none;
           opacity: 0;
           transition: opacity 1.2s ease-in-out, filter 0.3s ease;
           filter: var(--background-image-filter, brightness(1));
@@ -53,6 +54,7 @@ export default {
           height: 100%;
           object-fit: cover;
           z-index: -1;
+          pointer-events: none;
           opacity: 0;
           transition: opacity 1.2s ease-in-out, filter 0.3s ease;
           filter: var(--background-image-filter, brightness(1));
@@ -167,8 +169,10 @@ export default {
       }
 
       // 如果需要自动创建元素且元素不存在，则创建
+      const container = document.querySelector(containerSelector)
+      this.prepareBackgroundContainer(container)
+
       if (autoCreateElements) {
-        const container = document.querySelector(containerSelector)
         if (container && (!document.getElementById('bg1') || !document.getElementById('bg2'))) {
           this.createBackgroundElements(container)
         }
@@ -245,15 +249,45 @@ export default {
      * 加载背景图片
      */
     loadBackgroundImage(imgElement, imageSrc, containerSelector) {
-      imgElement.src = imageSrc
-      imgElement.onload = () => {
-        imgElement.style.opacity = this.bkOpacity
-        // 设置容器背景为透明
-        const container = document.querySelector(containerSelector)
-        if (container) {
-          container.style.background = 'transparent'
-        }
+      // 确保初始化时层级正确
+      imgElement.style.zIndex = -1
+      imgElement.style.opacity = 0
+      const container = document.querySelector(containerSelector)
+      this.prepareBackgroundContainer(container)
+
+      const showImage = () => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            imgElement.style.opacity = this.bkOpacity
+          })
+        })
       }
+
+      const preload = new Image()
+      preload.onload = () => {
+        imgElement.src = imageSrc
+        showImage()
+      }
+      preload.onerror = () => {
+        imgElement.src = imageSrc
+        showImage()
+      }
+      preload.src = imageSrc
+    },
+    
+    prepareBackgroundContainer(container) {
+      if (!container) return
+
+      const computedStyle = window.getComputedStyle(container)
+      if (computedStyle.position === 'static') {
+        container.style.position = 'relative'
+      }
+
+      if (computedStyle.zIndex === 'auto') {
+        container.style.zIndex = '0'
+      }
+
+      container.style.isolation = 'isolate'
     },
 
     /**
@@ -262,18 +296,30 @@ export default {
     switchBingWallpaper(bg1, bg2) {
       if (this.bingWallPapers.length === 0) return
 
-      const curBg = bg1.style.opacity != 0 ? bg1 : bg2
-      const nextBg = bg1.style.opacity != 0 ? bg2 : bg1
+      const isBg1Current = bg1.style.opacity != 0
+      const curBg = isBg1Current ? bg1 : bg2
+      const nextBg = isBg1Current ? bg2 : bg1
       
       this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
       const nextUrl = this.bingWallPapers[this.bingWallPaperIndex]?.url
 
-      // Preload, then crossfade
+      // 【层级魔法】：让旧图垫底，新图置顶
+      curBg.style.zIndex = -2
+      nextBg.style.zIndex = -1
+
       const preload = new Image()
       preload.onload = () => {
         nextBg.src = nextUrl
-        nextBg.style.opacity = this.bkOpacity
-        setTimeout(() => { curBg.style.opacity = 0 }, 800)
+        
+        // 稍微延迟 50ms，确保浏览器把新图渲染到 DOM 上且层级已更新
+        setTimeout(() => {
+          nextBg.style.opacity = this.bkOpacity // 新图直接在顶层优雅淡入
+          
+          // 等新图 1.2s 完全覆盖后，在底下默默把旧图透明度归零，毫无视觉断层
+          setTimeout(() => { 
+            curBg.style.opacity = 0 
+          }, 1200)
+        }, 50)
       }
       preload.src = nextUrl
     },
@@ -282,18 +328,28 @@ export default {
      * 切换自定义壁纸
      */
     switchCustomWallpaper(bg1, bg2, wallpapers) {
-      const curBg = bg1.style.opacity != 0 ? bg1 : bg2
-      const nextBg = bg1.style.opacity != 0 ? bg2 : bg1
+      const isBg1Current = bg1.style.opacity != 0
+      const curBg = isBg1Current ? bg1 : bg2
+      const nextBg = isBg1Current ? bg2 : bg1
       
       this.customWallPaperIndex = (this.customWallPaperIndex + 1) % wallpapers.length
       const nextUrl = wallpapers[this.customWallPaperIndex]
 
-      // Preload, then crossfade
+      // 旧图垫底，新图置顶
+      curBg.style.zIndex = -2
+      nextBg.style.zIndex = -1
+
       const preload = new Image()
       preload.onload = () => {
         nextBg.src = nextUrl
-        nextBg.style.opacity = this.bkOpacity
-        setTimeout(() => { curBg.style.opacity = 0 }, 800)
+        
+        setTimeout(() => {
+          nextBg.style.opacity = this.bkOpacity
+          
+          setTimeout(() => { 
+            curBg.style.opacity = 0 
+          }, 1200)
+        }, 50)
       }
       preload.src = nextUrl
     },
@@ -403,12 +459,6 @@ export default {
           // 稍微延迟后淡入新背景，确保过渡效果平滑
           setTimeout(() => {
             nextBg.style.opacity = this.bkOpacity
-            
-            // 设置容器背景为透明
-            const container = document.querySelector(containerSelector)
-            if (container) {
-              container.style.background = 'transparent'
-            }
           }, 50) // 50ms 延迟，让淡出效果先开始
         }
       }
