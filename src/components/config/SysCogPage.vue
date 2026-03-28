@@ -6,17 +6,17 @@
             <el-form :model="settings" label-width="150px">
                 <el-form-item v-for="(setting, index) in categoryGroup" :key="setting.id">
                     <template #label>
-                        {{ setting.label }}
-                        <el-tooltip v-if="setting.tooltip" :content="setting.tooltip" placement="top" raw-content>
+                        {{ localized(setting, 'label') }}
+                        <el-tooltip v-if="setting.tooltip" :content="localized(setting, 'tooltip')" placement="top" raw-content>
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                         </el-tooltip>
                     </template>
                     <!-- 如果是select类型则使用下拉选择器 -->
-                    <el-select v-if="setting.type === 'select'" v-model="setting.value" :disabled="setting.fixed" :placeholder="setting.placeholder" style="width: 100%">
+                    <el-select v-if="setting.type === 'select'" v-model="setting.value" :disabled="setting.fixed" :placeholder="localized(setting, 'placeholder')" style="width: 100%">
                         <el-option
                             v-for="option in setting.options"
                             :key="option.value"
-                            :label="option.label"
+                            :label="localizedOption(option)"
                             :value="option.value">
                         </el-option>
                     </el-select>
@@ -32,9 +32,9 @@
                     <!-- 如果是boolean类型则使用切换按钮 -->
                     <el-switch v-else-if="setting.type === 'boolean'" v-model="setting.value" :disabled="setting.fixed"></el-switch>
                     <!-- 如果是textarea类型则使用可拖拽文本域 -->
-                    <el-input v-else-if="setting.type === 'textarea'" v-model="setting.value" type="textarea" :autosize="{ minRows: 2 }" resize="vertical" :disabled="setting.fixed" :placeholder="setting.placeholder"></el-input>
+                    <el-input v-else-if="setting.type === 'textarea'" v-model="setting.value" type="textarea" :autosize="{ minRows: 2 }" resize="vertical" :disabled="setting.fixed" :placeholder="localized(setting, 'placeholder')"></el-input>
                     <!-- 否则使用输入框 -->
-                    <el-input v-else v-model="setting.value" :disabled="setting.fixed" :placeholder="setting.placeholder"></el-input>
+                    <el-input v-else v-model="setting.value" :disabled="setting.fixed" :placeholder="localized(setting, 'placeholder')"></el-input>
                 </el-form-item>
             </el-form>
         </div>
@@ -66,12 +66,17 @@ data() {
     };
 },
 computed: {
+    isEn() {
+        return this.$i18n.locale === 'en';
+    },
     // 根据category将配置项分组
     groupedSettings() {
         const grouped = {};
         if (this.settings.config) {
             this.settings.config.forEach(setting => {
-                const category = setting.category || this.$t('sysPage.otherSettings');
+                const category = this.isEn
+                    ? (setting.category_en || setting.category || this.$t('sysPage.otherSettings'))
+                    : (setting.category || this.$t('sysPage.otherSettings'));
                 if (!grouped[category]) {
                     grouped[category] = [];
                 }
@@ -105,6 +110,14 @@ watch: {
     }
 },
 methods: {
+    localized(item, field) {
+        if (this.isEn && item[field + '_en']) return item[field + '_en'];
+        return item[field] || '';
+    },
+    localizedOption(option) {
+        if (this.isEn && option.label_en) return option.label_en;
+        return option.label;
+    },
     saveSettings() {
         fetchWithAuth('/api/manage/sysConfig/page', {
             method: 'POST',
