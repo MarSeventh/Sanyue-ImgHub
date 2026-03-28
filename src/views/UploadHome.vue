@@ -23,7 +23,7 @@
                     </el-dropdown-item>
                     <el-dropdown-item command="toggleLanguage">
                         <font-awesome-icon icon="globe" style="width: 16px; margin-right: 8px; text-align: center;"/>
-                        {{ $i18n.locale === 'zh-CN' ? 'English' : '中文' }}
+                        {{ $i18n.locale === 'zh-CN' ? 'English' : '简体中文' }}
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </template>
@@ -83,6 +83,10 @@
                         <font-awesome-icon :icon="uploadMethod === 'default' ? 'paste' : 'folder-open'" style="width: 16px; margin-right: 8px; text-align: center;"/>
                         {{ uploadMethod === 'default' ? $t('upload.pasteUpload') : $t('upload.fileUpload') }}
                     </el-dropdown-item>
+                    <el-dropdown-item command="viewDocs">
+                        <font-awesome-icon icon="book" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ $t('upload.viewDocs') }}
+                    </el-dropdown-item>
                     <el-dropdown-item command="showHistory">
                         <font-awesome-icon icon="history" style="width: 16px; margin-right: 8px; text-align: center;"/>
                         {{ $t('upload.history') }}
@@ -93,7 +97,7 @@
                     </el-dropdown-item>
                     <el-dropdown-item command="toggleLanguage">
                         <font-awesome-icon icon="globe" style="width: 16px; margin-right: 8px; text-align: center;"/>
-                        {{ $i18n.locale === 'zh-CN' ? 'English' : '中文' }}
+                        {{ $i18n.locale === 'zh-CN' ? 'English' : '简体中文' }}
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </template>
@@ -561,6 +565,8 @@ export default {
                 }
             } else if (command === 'toggleUploadMethod') {
                 this.handleChangeUploadMethod()
+            } else if (command === 'viewDocs') {
+                window.open('https://cfbed.sanyue.de/qa/', '_blank')
             } else if (command === 'showHistory') {
                 this.showHistory = true
             } else if (command === 'showAnnouncement') {
