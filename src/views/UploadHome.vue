@@ -3,18 +3,38 @@
     <div class="upload-home">
         <!-- 桌面端按钮 -->
         <ToggleDark class="toggle-dark-button desktop-only"/>
-        <el-tooltip content="查看文档" placement="bottom" :disabled="disableTooltip">
-            <a href="https://cfbed.sanyue.de/qa/" target="_blank" class="info-container">
-                <font-awesome-icon icon="book" class="info-icon" size="lg"/>
-            </a>
-        </el-tooltip>
+        <el-dropdown class="more-dropdown desktop-only" trigger="click" @command="handleDesktopMenuCommand">
+            <el-button class="more-button">
+                <font-awesome-icon icon="ellipsis-v" size="lg"/>
+            </el-button>
+            <template #dropdown>
+                <el-dropdown-menu>
+                    <el-dropdown-item command="viewDocs">
+                        <font-awesome-icon icon="book" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ $t('upload.viewDocs') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="showHistory">
+                        <font-awesome-icon icon="history" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ $t('upload.history') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="showAnnouncement" :disabled="!announcementAvailable">
+                        <font-awesome-icon icon="bullhorn" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ $t('upload.announcement') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="toggleLanguage">
+                        <font-awesome-icon icon="globe" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ $i18n.locale === 'zh-CN' ? 'English' : '中文' }}
+                    </el-dropdown-item>
+                </el-dropdown-menu>
+            </template>
+        </el-dropdown>
         <div class="upload-folder-container" :class="{ 'no-announcement': !announcementAvailable }">
             <div class="upload-folder" :class="{ 'active': isFolderInputActive }">
                 <DirectorySuggestionInput
                     v-if="showDirectorySuggestions"
                     v-model="uploadFolder"
                     class="inner-folder-input"
-                    placeholder="上传目录"
+                    :placeholder="$t('upload.folderPlaceholder')"
                     @focus="handleFolderInputFocus"
                     @blur="handleFolderInputBlur"
                     @select="handleDirectorySelect"
@@ -23,7 +43,7 @@
                     v-else
                     class="inner-folder-input"
                     v-model="uploadFolder"
-                    placeholder="上传目录"
+                    :placeholder="$t('upload.folderPlaceholder')"
                     @focus="handleFolderInputFocus"
                     @blur="handleFolderInputBlur"
                 />
@@ -41,20 +61,10 @@
                 </template>
             </DirectoryTreePicker>
         </div>
-        <el-tooltip content="切换上传方式" placement="bottom" :disabled="disableTooltip">
+        <el-tooltip :content="$t('upload.switchUploadMethod')" placement="bottom" :disabled="disableTooltip">
             <el-button class="upload-method-button desktop-only" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
                 <font-awesome-icon v-else-if="uploadMethod === 'paste'" icon="paste" class="upload-method-icon" size="lg"/>
-            </el-button>
-        </el-tooltip>
-        <el-tooltip content="上传记录" placement="bottom" :disabled="disableTooltip">
-            <el-button class="history-button desktop-only" @click="showHistory = true">
-                <font-awesome-icon icon="history" class="history-icon" size="lg"/>
-            </el-button>
-        </el-tooltip>
-        <el-tooltip v-if="announcementAvailable" content="查看公告" placement="bottom" :disabled="disableTooltip">
-            <el-button class="announcement-button desktop-only" @click="handleShowAnnouncement">
-                <font-awesome-icon icon="bullhorn" class="announcement-icon" size="lg"/>
             </el-button>
         </el-tooltip>
 
@@ -66,20 +76,24 @@
             <template #dropdown>
                 <el-dropdown-menu>
                     <el-dropdown-item command="toggleTheme">
-                        <font-awesome-icon :icon="getThemeIcon()" style="margin-right: 8px;"/>
+                        <font-awesome-icon :icon="getThemeIcon()" style="width: 16px; margin-right: 8px; text-align: center;"/>
                         {{ getThemeText() }}
                     </el-dropdown-item>
                     <el-dropdown-item command="toggleUploadMethod">
-                        <font-awesome-icon :icon="uploadMethod === 'default' ? 'paste' : 'folder-open'" style="margin-right: 8px;"/>
-                        {{ uploadMethod === 'default' ? '粘贴上传' : '文件上传' }}
+                        <font-awesome-icon :icon="uploadMethod === 'default' ? 'paste' : 'folder-open'" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ uploadMethod === 'default' ? $t('upload.pasteUpload') : $t('upload.fileUpload') }}
                     </el-dropdown-item>
                     <el-dropdown-item command="showHistory">
-                        <font-awesome-icon icon="history" style="margin-right: 8px;"/>
-                        上传记录
+                        <font-awesome-icon icon="history" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ $t('upload.history') }}
                     </el-dropdown-item>
                     <el-dropdown-item command="showAnnouncement" :disabled="!announcementAvailable">
-                        <font-awesome-icon icon="bullhorn" style="margin-right: 8px;"/>
-                        查看公告
+                        <font-awesome-icon icon="bullhorn" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ $t('upload.announcement') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="toggleLanguage">
+                        <font-awesome-icon icon="globe" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                        {{ $i18n.locale === 'zh-CN' ? 'English' : '中文' }}
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </template>
@@ -91,22 +105,22 @@
             </el-button>
         </div>
         <div class="toolbar">
-            <el-tooltip :disabled="disableTooltip" content="上传设置" placement="top">
+            <el-tooltip :disabled="disableTooltip" :content="$t('upload.settings')" placement="top">
                 <el-button class="toolbar-button compress-button" :class="{ 'active': isToolBarOpen}" size="large" @click="openCompressDialog" circle>
                     <font-awesome-icon icon="cloud-upload" class="compress-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
-            <el-tooltip :disabled="disableTooltip" content="链接格式" placement="left">
+            <el-tooltip :disabled="disableTooltip" :content="$t('upload.linkFormat')" placement="left">
                 <el-button class="toolbar-button link-button" :class="{ 'active': isToolBarOpen}" size="large" @click="openUrlDialog" circle>
                     <font-awesome-icon icon="link" class="link-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
-            <el-tooltip :disabled="disableTooltip" content="系统管理" placement="left">
+            <el-tooltip :disabled="disableTooltip" :content="$t('upload.manage')" placement="left">
                 <el-button class="toolbar-button config-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleManage" circle>
                     <font-awesome-icon icon="cog" class="config-icon" size="lg"/>
                 </el-button>
             </el-tooltip>
-            <el-tooltip :disabled="disableTooltip" content="退出登录" placement="left">
+            <el-tooltip :disabled="disableTooltip" :content="$t('upload.logout')" placement="left">
                 <el-button class="toolbar-button sign-out-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleLogout" circle>
                     <font-awesome-icon icon="sign-out-alt" class="sign-out-icon" size="lg"/>
                 </el-button>
@@ -134,16 +148,16 @@
             :convertToWebp="convertToWebp"
             class="upload"
         />
-        <el-dialog title="链接格式设置" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
+        <el-dialog :title="$t('settings.linkFormatTitle')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
             <div class="dialog-section">
                 <div class="section-header">
-                    <span class="section-title">默认复制链接</span>
+                    <span class="section-title">{{ $t('settings.defaultCopyLink') }}</span>
                 </div>
                 <div class="section-content">
                     <el-radio-group v-model="selectedUrlForm" @change="changeUrlForm" class="radio-card-group grid-2x2">
                         <el-radio value="url" class="radio-card">
                             <font-awesome-icon icon="link" class="radio-icon"/>
-                            <span>原始链接</span>
+                            <span>{{ $t('settings.rawLink') }}</span>
                         </el-radio>
                         <el-radio value="md" class="radio-card">
                             <font-awesome-icon icon="code" class="radio-icon"/>
@@ -163,25 +177,25 @@
             
             <div class="dialog-section">
                 <div class="section-header">
-                    <span class="section-title">自定义链接</span>
-                    <el-tooltip content="默认链接为https://your.domain/file/xxx.jpg <br> 如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入" placement="top" raw-content>
+                    <span class="section-title">{{ $t('settings.customLink') }}</span>
+                    <el-tooltip :content="$t('settings.customLinkTooltip')" placement="top" raw-content>
                         <font-awesome-icon icon="question-circle" class="section-help-icon"/>
                     </el-tooltip>
                 </div>
                 <div class="section-content">
                     <div class="setting-item">
-                        <span class="setting-label">启用自定义</span>
+                        <span class="setting-label">{{ $t('settings.enableCustom') }}</span>
                         <el-switch v-model="useCustomUrl" active-value="true" inactive-value="false" />
                     </div>
                     <div class="setting-item" v-if="useCustomUrl === 'true'">
-                        <span class="setting-label">自定义前缀</span>
-                        <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀" class="setting-input"/>
+                        <span class="setting-label">{{ $t('settings.customPrefix') }}</span>
+                        <el-input v-model="customUrlPrefix" :placeholder="$t('settings.customPrefixPlaceholder')" class="setting-input"/>
                     </div>
                 </div>
             </div>
             
             <div class="dialog-action">
-                <el-button type="primary" @click="showUrlDialog = false" class="confirm-btn">确定</el-button>
+                <el-button type="primary" @click="showUrlDialog = false" class="confirm-btn">{{ $t('settings.confirm') }}</el-button>
             </div>
         </el-dialog>
         <UploadSettingsDialog
@@ -200,11 +214,11 @@
         />
     </div>
     <Footer class="footer"/>
-    <el-dialog title="公告" v-model="showAnnouncementDialog" :width="dialogWidth" :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false" center>
+    <el-dialog :title="$t('upload.announcementTitle')" v-model="showAnnouncementDialog" :width="dialogWidth" :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false" center>
         <div v-html="announcementContent"></div>
         <template #footer>
             <span class="dialog-footer">
-                <el-button type="primary" @click="showAnnouncementDialog = false">我已知晓！</el-button>
+                <el-button type="primary" @click="showAnnouncementDialog = false">{{ $t('upload.announcementAck') }}</el-button>
             </span>
         </template>
     </el-dialog>
@@ -217,6 +231,7 @@ import UploadForm from '@/components/upload/UploadForm.vue'
 import Footer from '@/components/Footer.vue'
 import ToggleDark from '@/components/ToggleDark.vue'
 import Logo from '@/components/Logo.vue'
+import { setLocale } from '@/locales'
 import UploadHistory from '@/components/upload/UploadHistory.vue'
 import UploadSettingsDialog from '@/components/upload/UploadSettingsDialog.vue'
 import DirectoryTreePicker from '@/components/DirectoryTreePicker.vue'
@@ -453,7 +468,7 @@ export default {
             const result = validateFolderPath(path, { strict })
             if (!result.valid) {
                 // 将错误消息中的"目标目录"替换为"上传目录"以保持原有的提示风格
-                const errorMessage = result.error.replace('目标目录', '上传目录')
+                const errorMessage = result.error.replace('目标目录', this.$t('validation.uploadDirReplace'))
                 this.$message.error(errorMessage)
                 return false
             }
@@ -497,7 +512,7 @@ export default {
         handleLogout() {
             cookies.remove('authCode')
             this.$router.push('/login')
-            this.$message.success('已退出登录')
+            this.$message.success(this.$t('upload.logoutSuccess'))
         },
         changeUrlForm() {
             this.$store.commit('setUploadCopyUrlForm', this.selectedUrlForm)
@@ -552,6 +567,21 @@ export default {
                 this.showHistory = true
             } else if (command === 'showAnnouncement') {
                 this.handleShowAnnouncement()
+            } else if (command === 'toggleLanguage') {
+                const next = this.$i18n.locale === 'zh-CN' ? 'en' : 'zh-CN'
+                setLocale(next)
+            }
+        },
+        handleDesktopMenuCommand(command) {
+            if (command === 'viewDocs') {
+                window.open('https://cfbed.sanyue.de/qa/', '_blank')
+            } else if (command === 'showHistory') {
+                this.showHistory = true
+            } else if (command === 'showAnnouncement') {
+                this.handleShowAnnouncement()
+            } else if (command === 'toggleLanguage') {
+                const next = this.$i18n.locale === 'zh-CN' ? 'en' : 'zh-CN'
+                setLocale(next)
             }
         },
         getThemeIcon() {
@@ -562,9 +592,9 @@ export default {
         },
         getThemeText() {
             // 显示下一个模式的文字
-            if (this.themeMode === 'auto') return '浅色模式'
-            if (this.themeMode === 'light') return '深色模式'
-            return '自动模式'
+            if (this.themeMode === 'auto') return this.$t('theme.lightMode')
+            if (this.themeMode === 'light') return this.$t('theme.darkMode')
+            return this.$t('theme.autoMode')
         },
         handleShowAnnouncement() {
             const announcement = this.userConfig?.announcement
@@ -572,7 +602,7 @@ export default {
                 this.announcementContent = announcement
                 this.showAnnouncementDialog = true
             } else {
-                this.$message.info('暂无公告')
+                this.$message.info(this.$t('upload.noAnnouncement'))
             }
         },
         // 处理目录选择
@@ -698,7 +728,34 @@ export default {
     border-radius: 12px;
     position: fixed;
     top: 30px;
+    right: 80px;
+}
+
+.more-dropdown {
+    position: fixed;
+    top: 30px;
     right: 30px;
+    z-index: 100;
+}
+.more-dropdown .more-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    color: var(--theme-toggle-color);
+    border-radius: 12px;
+    outline: none;
+    padding: 0;
+}
+.more-dropdown .more-button:hover {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
 }
 
 .upload-method-button {
@@ -727,67 +784,6 @@ export default {
 }
 .upload-method-icon {
     outline: none;
-}
-
-.history-button {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    top: 30px;
-    right: 180px;
-    border: none;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
-    color: var(--theme-toggle-color);
-    z-index: 100;
-    border-radius: 12px;
-    outline: none;
-}
-@media (max-width: 768px) {
-    .history-button {
-        width: 2rem;
-        height: 2rem;
-        top: 85px;
-        right: 80px;
-    }
-}
-.history-button:hover {
-    transform: scale(1.05);
-    box-shadow: var(--toolbar-button-shadow-hover);
-}
-
-/* 公告按钮 */
-.announcement-button {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    top: 30px;
-    right: 230px;
-    border: none;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
-    color: var(--theme-toggle-color);
-    z-index: 100;
-    border-radius: 12px;
-    outline: none;
-}
-.announcement-button:hover:not(:disabled) {
-    transform: scale(1.05);
-    box-shadow: var(--toolbar-button-shadow-hover);
-}
-.announcement-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 /* 移动端更多按钮 */
@@ -824,18 +820,18 @@ export default {
     align-items: center;
     position: fixed;
     top: 30px;
-    right: 280px;
+    right: 180px;
     z-index: 100;
 }
 .upload-folder-container.no-announcement {
-    right: 230px;
+    right: 180px;
 }
 @media (max-width: 768px) {
     .upload-folder-container {
-        right: 110px;
+        right: 70px;
     }
     .upload-folder-container.no-announcement {
-        right: 110px;
+        right: 70px;
     }
 }
 
@@ -903,35 +899,6 @@ export default {
     backdrop-filter: blur(10px);
     border: none;
     height: 100%;
-}
-
-.info-container {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    color: var(--theme-toggle-color);
-    transition: all 0.3s ease;
-    position: fixed;
-    top: 30px;
-    right: 80px;
-    cursor: pointer;
-}
-.info-icon {
-    outline: none;
-}
-@media (max-width: 768px) {
-    .info-container {
-        width: 2rem;
-        height: 2rem;
-        right: 70px;
-    }
 }
 
 .toolbar-manage {

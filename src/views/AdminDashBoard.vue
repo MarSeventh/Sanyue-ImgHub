@@ -6,7 +6,7 @@
                 <DashboardTabs activeTab="dashboard"></DashboardTabs>
                 <div class="search-area">
                     <div class="search-card">
-                        <el-input v-model="tempSearch" size="small" placeholder="搜索：#标签 -#排除标签" @keyup.enter="handleSearch">
+                        <el-input v-model="tempSearch" size="small" :placeholder="$t('dashboard.searchPlaceholder')" @keyup.enter="handleSearch">
                             <template #suffix>
                                 <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
                             </template>
@@ -26,12 +26,12 @@
                     </span>
                     <template #dropdown>
                         <el-dropdown-menu>
-                            <el-dropdown-item command="dateDesc">按时间倒序</el-dropdown-item>
-                            <el-dropdown-item command="nameAsc">按名称升序</el-dropdown-item>
+                            <el-dropdown-item command="dateDesc">{{ $t('dashboard.sortByDateDesc') }}</el-dropdown-item>
+                            <el-dropdown-item command="nameAsc">{{ $t('dashboard.sortByNameAsc') }}</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
-                <el-tooltip :disabled="disableTooltip" content="全选此页" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.selectPage')" placement="bottom">
                     <font-awesome-icon :icon="selectPageIcon" class="header-icon" @click="handleSelectPage"></font-awesome-icon>
                 </el-tooltip>
                 <el-dropdown @command="handleBatchAction" :hide-on-click="false" :disabled="selectedFiles.length === 0">
@@ -42,44 +42,44 @@
                         <el-dropdown-menu>
                             <el-dropdown-item command="copy">
                                 <font-awesome-icon icon="copy" class="batch-action-item-icon"></font-awesome-icon>
-                                复制
+                                {{ $t('dashboard.copy') }}
                             </el-dropdown-item>
                             <el-dropdown-item command="delete">
                                 <font-awesome-icon icon="trash-alt" class="batch-action-item-icon"></font-awesome-icon>
-                                删除
+                                {{ $t('dashboard.delete') }}
                             </el-dropdown-item>
                             <el-dropdown-item command="download">
                                 <font-awesome-icon icon="download" class="batch-action-item-icon"></font-awesome-icon>
-                                下载
+                                {{ $t('dashboard.download') }}
                             </el-dropdown-item>
                             <el-dropdown-item command="move">
                                 <font-awesome-icon icon="file-export" class="batch-action-item-icon"></font-awesome-icon>
-                                移动
+                                {{ $t('dashboard.move') }}
                             </el-dropdown-item>
                             <el-dropdown-item command="tagManagement">
                                 <font-awesome-icon icon="tags" class="batch-action-item-icon"></font-awesome-icon>
-                                标签管理
+                                {{ $t('dashboard.tagManagement') }}
                             </el-dropdown-item>
                             <el-dropdown-item command="ban">
                                 <font-awesome-icon icon="ban" class="batch-action-item-icon"></font-awesome-icon>
-                                加入黑名单
+                                {{ $t('dashboard.addToBlacklist') }}
                             </el-dropdown-item>
                             <el-dropdown-item command="white">
                                 <font-awesome-icon icon="user-plus" class="batch-action-item-icon"></font-awesome-icon>
-                                加入白名单
+                                {{ $t('dashboard.addToWhitelist') }}
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
-                <el-tooltip :disabled="disableTooltip" content="链接格式" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.linkFormat')" placement="bottom">
                     <span class="el-dropdown-link">
                         <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
                     </span>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" :content="viewMode === 'card' ? '列表视图' : '卡片视图'" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" :content="viewMode === 'card' ? $t('dashboard.listView') : $t('dashboard.cardView')" placement="bottom">
                     <font-awesome-icon :icon="viewMode === 'card' ? 'list' : 'th-large'" class="header-icon" @click="toggleViewMode"></font-awesome-icon>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" content="退出登录" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.logout')" placement="bottom">
                     <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                 </el-tooltip>
                 </div>
@@ -91,7 +91,7 @@
                 <!-- 移动端目录按钮 -->
                 <div class="mobile-directory-trigger" @click="showMobileDirectoryDrawer = true">
                     <font-awesome-icon icon="folder-open" class="mobile-directory-icon"/>
-                    <span class="mobile-directory-path">{{ currentPath && currentPath.split('/').filter(Boolean).length > 0 ? currentPath.split('/').filter(Boolean).pop() : '根目录' }}</span>
+                    <span class="mobile-directory-path">{{ currentPath && currentPath.split('/').filter(Boolean).length > 0 ? currentPath.split('/').filter(Boolean).pop() : $t('dashboard.rootDirectory') }}</span>
                     <font-awesome-icon icon="chevron-down" class="mobile-directory-arrow"/>
                 </div>
                 <!-- 桌面端面包屑 -->
@@ -108,7 +108,7 @@
                         </el-breadcrumb-item>
                     </el-breadcrumb>
                 </div>
-                <span class="stats-badge" :title="`共 ${$data.Number} 个文件`">
+                <span class="stats-badge" :title="$t('dashboard.totalFiles', { count: $data.Number })">
                     <font-awesome-icon icon="database" class="stats-badge-icon"/>
                     {{ Number }}
                 </span>
@@ -121,8 +121,8 @@
                 <!-- 空状态 -->
                 <div v-else-if="paginatedTableData.length === 0" class="empty-state">
                     <font-awesome-icon icon="folder-open" class="empty-icon" />
-                    <p class="empty-text">{{ hasSearchOrFilter ? '未找到匹配的文件或文件夹' : '当前目录为空' }}</p>
-                    <p class="empty-hint">{{ hasSearchOrFilter ? '尝试调整搜索条件或筛选器' : '上传文件后将显示在这里' }}</p>
+                    <p class="empty-text">{{ hasSearchOrFilter ? $t('dashboard.noMatchingFiles') : $t('dashboard.currentDirEmpty') }}</p>
+                    <p class="empty-hint">{{ hasSearchOrFilter ? $t('dashboard.adjustSearchHint') : $t('dashboard.uploadHint') }}</p>
                 </div>
                 <!-- 文件夹和文件列表 -->
                 <template v-else v-for="(item, index) in paginatedTableData" :key="index">
@@ -169,23 +169,23 @@
                             <font-awesome-icon v-else-if="isIndeterminate" icon="minus" class="check-icon"/>
                         </span>
                     </div>
-                    <div class="list-col list-col-preview">预览</div>
-                    <div class="list-col list-col-name">文件名</div>
-                    <div class="list-col list-col-tags">标签</div>
-                    <div class="list-col list-col-channel">渠道类型</div>
-                    <div class="list-col list-col-channel-name">渠道名称</div>
-                    <div class="list-col list-col-address">上传地址</div>
-                    <div class="list-col list-col-size">大小</div>
-                    <div class="list-col list-col-date">上传时间</div>
-                    <div class="list-col list-col-actions">操作</div>
+                    <div class="list-col list-col-preview">{{ $t('dashboard.preview') }}</div>
+                    <div class="list-col list-col-name">{{ $t('dashboard.fileName') }}</div>
+                    <div class="list-col list-col-tags">{{ $t('dashboard.tags') }}</div>
+                    <div class="list-col list-col-channel">{{ $t('dashboard.channelType') }}</div>
+                    <div class="list-col list-col-channel-name">{{ $t('dashboard.channelNameCol') }}</div>
+                    <div class="list-col list-col-address">{{ $t('dashboard.uploadAddress') }}</div>
+                    <div class="list-col list-col-size">{{ $t('dashboard.fileSize') }}</div>
+                    <div class="list-col list-col-date">{{ $t('dashboard.uploadTime') }}</div>
+                    <div class="list-col list-col-actions">{{ $t('dashboard.actions') }}</div>
                 </div>
                 <!-- 列表骨架屏 -->
                 <SkeletonLoader v-if="loading" type="list" :count="15" />
                 <!-- 空状态 -->
                 <div v-else-if="paginatedTableData.length === 0" class="empty-state list-empty">
                     <font-awesome-icon icon="folder-open" class="empty-icon" />
-                    <p class="empty-text">{{ hasSearchOrFilter ? '未找到匹配的文件或文件夹' : '当前目录为空' }}</p>
-                    <p class="empty-hint">{{ hasSearchOrFilter ? '尝试调整搜索条件或筛选器' : '上传文件后将显示在这里' }}</p>
+                    <p class="empty-text">{{ hasSearchOrFilter ? $t('dashboard.noMatchingFiles') : $t('dashboard.currentDirEmpty') }}</p>
+                    <p class="empty-hint">{{ hasSearchOrFilter ? $t('dashboard.adjustSearchHint') : $t('dashboard.uploadHint') }}</p>
                 </div>
                 <!-- 实际数据 -->
                 <template v-else>
@@ -245,13 +245,13 @@
                         @click="loadMoreData" 
                         :loading="loading" 
                         class="load-more">
-                        加载更多
+                        {{ $t('dashboard.loadMore') }}
                     </el-button>
                 </div>
                 <div class="pagination-right">
-                    <span class="page-total">共 {{ realTotalPages }} 页</span>
+                    <span class="page-total">{{ $t('dashboard.totalPages', { count: realTotalPages }) }}</span>
                     <div class="page-jump">
-                        <span>跳至</span>
+                        <span>{{ $t('dashboard.jumpTo') }}</span>
                         <el-input 
                             v-model="jumpPage" 
                             size="small" 
@@ -278,16 +278,16 @@
             @metadataUpdated="handleMetadataUpdated"
             @fileRenamed="handleFileRenamed"
         />
-        <el-dialog title="链接格式" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
+        <el-dialog :title="$t('dashboard.linkFormat')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
             <div class="dialog-section">
                 <div class="section-header">
-                    <span class="section-title">默认复制链接</span>
+                    <span class="section-title">{{ $t('settings.defaultCopyLink') }}</span>
                 </div>
                 <div class="section-content">
                     <el-radio-group v-model="defaultUrlFormat" class="radio-card-group grid-2x2">
                         <el-radio label="originUrl" class="radio-card">
                             <font-awesome-icon icon="link" class="radio-icon"/>
-                            <span>原始链接</span>
+                            <span>{{ $t('settings.rawLink') }}</span>
                         </el-radio>
                         <el-radio label="mdUrl" class="radio-card">
                             <font-awesome-icon icon="code" class="radio-icon"/>
@@ -307,7 +307,7 @@
                         </el-radio>
                         <el-radio label="s3Location" class="radio-card">
                             <font-awesome-icon icon="cloud" class="radio-icon"/>
-                            <span>S3链接</span>
+                            <span>{{ $t('settings.s3Link') }}</span>
                         </el-radio>
                     </el-radio-group>
                 </div>
@@ -315,25 +315,25 @@
 
             <div class="dialog-section">
                 <div class="section-header">
-                    <span class="section-title">自定义链接</span>
-                    <el-tooltip content="默认链接为https://your.domain/file/xxx.jpg <br> 如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入" placement="top" raw-content>
+                    <span class="section-title">{{ $t('settings.customLink') }}</span>
+                    <el-tooltip :content="$t('settings.customLinkTooltip')" placement="top" raw-content>
                         <font-awesome-icon icon="question-circle" class="section-help-icon"/>
                     </el-tooltip>
                 </div>
                 <div class="section-content">
                     <div class="setting-item">
-                        <span class="setting-label">启用自定义</span>
+                        <span class="setting-label">{{ $t('settings.enableCustom') }}</span>
                         <el-switch v-model="useCustomUrl" active-value="true" inactive-value="false" />
                     </div>
                     <div class="setting-item" v-if="useCustomUrl === 'true'">
-                        <span class="setting-label">自定义前缀</span>
-                        <el-input v-model="customUrlPrefix" placeholder="请输入自定义链接前缀" class="setting-input"/>
+                        <span class="setting-label">{{ $t('settings.customPrefix') }}</span>
+                        <el-input v-model="customUrlPrefix" :placeholder="$t('settings.customPrefixPlaceholder')" class="setting-input"/>
                     </div>
                 </div>
             </div>
 
             <div class="dialog-action">
-                <el-button type="primary" @click="showUrlDialog = false" class="confirm-btn">确定</el-button>
+                <el-button type="primary" @click="showUrlDialog = false" class="confirm-btn">{{ $t('settings.confirm') }}</el-button>
             </div>
         </el-dialog>
 
@@ -390,6 +390,7 @@ import FileDetailDialog from '@/components/dashboard/FileDetailDialog.vue';
 import MobileActionSheet from '@/components/dashboard/MobileActionSheet.vue';
 import MobileDirectoryDrawer from '@/components/dashboard/MobileDirectoryDrawer.vue';
 import FilterDropdown from '@/components/dashboard/FilterDropdown.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFolderPath } from '@/utils/pathValidator';
@@ -469,7 +470,8 @@ components: {
     MobileActionSheet,
     MobileDirectoryDrawer,
     FilterDropdown,
-    MoveFileDialog
+    MoveFileDialog,
+    LanguageSwitcher
 },
 setup() {
     const cardContainerRef = ref(null);
@@ -542,9 +544,9 @@ computed: {
             } else if (file.metadata?.Channel === 'HuggingFace') {
                 file.channelTag = 'HF';
             } else if (file.metadata?.Channel === 'External') {
-                file.channelTag = '外链';
+                file.channelTag = this.$t('dashboard.externalTag');
             } else {
-                file.channelTag = '未知';
+                file.channelTag = this.$t('dashboard.unknownTag');
             }
         });
         return data;
@@ -560,11 +562,11 @@ computed: {
     },
     accessType() {
         if (this.detailFile?.metadata?.ListType === 'White') {
-            return '正常';
+            return this.$t('filter.normal');
         } else if (this.detailFile?.metadata?.ListType === 'Block' || this.detailFile?.metadata?.Label === 'adult') {
-            return '受限';
+            return this.$t('filter.blocked');
         } else {
-            return '正常';
+            return this.$t('filter.normal');
         }
     },
     allUrl() {
@@ -575,9 +577,9 @@ computed: {
                 'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.detailFile?.metadata?.ExternalLink})`,
                 'htmlUrl': `<img src="${this.detailFile?.metadata?.ExternalLink}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
                 'bbUrl': `[img]${this.detailFile?.metadata?.ExternalLink}[/img]`,
-                'tgId': this.detailFile?.metadata?.TgFileId || '未知',
-                'S3Location': this.detailFile?.metadata?.S3Location || '未知',
-                'S3CdnFileUrl': this.detailFile?.metadata?.S3CdnFileUrl || '未知'
+                'tgId': this.detailFile?.metadata?.TgFileId || this.$t('fileDetail.unknown'),
+                'S3Location': this.detailFile?.metadata?.S3Location || this.$t('fileDetail.unknown'),
+                'S3CdnFileUrl': this.detailFile?.metadata?.S3CdnFileUrl || this.$t('fileDetail.unknown')
             }
         } else {
             return {
@@ -585,9 +587,9 @@ computed: {
                 'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.rootUrl}${this.detailFile?.name})`,
                 'htmlUrl': `<img src="${this.rootUrl}${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
                 'bbUrl': `[img]${this.rootUrl}${this.detailFile?.name}[/img]`,
-                'tgId': this.detailFile?.metadata?.TgFileId || '未知',
-                'S3Location': this.detailFile?.metadata?.S3Location || '未知',
-                'S3CdnFileUrl': this.detailFile?.metadata?.S3CdnFileUrl || '未知'
+                'tgId': this.detailFile?.metadata?.TgFileId || this.$t('fileDetail.unknown'),
+                'S3Location': this.detailFile?.metadata?.S3Location || this.$t('fileDetail.unknown'),
+                'S3CdnFileUrl': this.detailFile?.metadata?.S3CdnFileUrl || this.$t('fileDetail.unknown')
             }
         }
     },
@@ -926,20 +928,20 @@ methods: {
             .then(() => {
                 this.$message({
                     type: 'success',
-                    message: '复制成功'
+                    message: this.$t('dashboard.copySuccess')
                 });
             })
             .catch(() => {
                 this.$message({
                     type: 'error',
-                    message: '复制失败'
+                    message: this.$t('dashboard.copyFailed')
                 });
             });
     },
     handleDetailDelete(key) {
-        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        this.$confirm(this.$t('dashboard.deleteConfirm'), this.$t('dashboard.deleteConfirmTitle'), {
+        confirmButtonText: this.$t('dashboard.deleteConfirmOk'),
+        cancelButtonText: this.$t('dashboard.deleteConfirmCancel'),
         type: 'warning'
         }).then(() => {
         fetchWithAuth(`/api/manage/delete/${key}`, { method: 'GET' })
@@ -950,21 +952,21 @@ methods: {
                 this.tableData.splice(fileIndex, 1);
                 }
             } else {
-                return Promise.reject('请求失败');
+                return Promise.reject('Request failed');
             }
             })
             .then(() => {
             this.updateStats(-1, false);
-            this.$message.success('删除成功');
+            this.$message.success(this.$t('dashboard.deleteSuccess'));
             this.showdetailDialog = false;
             })
-            .catch(() => this.$message.error('删除失败'));
-        }).catch(() => console.log('已取消删除'));
+            .catch(() => this.$message.error(this.$t('dashboard.deleteFailed')));
+        }).catch(() => console.log('Delete cancelled'));
     },
     handleBlock(key) {
-        this.$confirm('此操作将把该文件加入黑名单, 是否继续?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+        this.$confirm(this.$t('dashboard.blockConfirm'), this.$t('dashboard.deleteConfirmTitle'), {
+            confirmButtonText: this.$t('dashboard.deleteConfirmOk'),
+            cancelButtonText: this.$t('dashboard.deleteConfirmCancel'),
             type: 'warning'
         }).then(() => {
         fetchWithAuth(`/api/manage/block/${key}`, { method: 'GET' })
@@ -975,21 +977,21 @@ methods: {
                         this.tableData[fileIndex].metadata.ListType = 'Block';
                     }
                 } else {
-                    return Promise.reject('请求失败');
+                    return Promise.reject('Request failed');
                 }
             })
             .then(() => {
-                this.$message.success('加入黑名单成功');
+                this.$message.success(this.$t('dashboard.blockSuccess'));
             })
-            .catch(() => this.$message.error('加入黑名单失败'));
+            .catch(() => this.$message.error(this.$t('dashboard.blockFailed')));
         }).catch(
-            () => console.log('已取消加入黑名单')
+            () => console.log('Block cancelled')
         );
     },
     handleWhite(key) {
-        this.$confirm('此操作将把该文件加入白名单, 是否继续?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+        this.$confirm(this.$t('dashboard.whiteConfirm'), this.$t('dashboard.deleteConfirmTitle'), {
+            confirmButtonText: this.$t('dashboard.deleteConfirmOk'),
+            cancelButtonText: this.$t('dashboard.deleteConfirmCancel'),
             type: 'warning'
         }).then(() => {
         fetchWithAuth(`/api/manage/white/${key}`, { method: 'GET' })
@@ -1000,24 +1002,24 @@ methods: {
                         this.tableData[fileIndex].metadata.ListType = 'White';
                     }
                 } else {
-                    return Promise.reject('请求失败');
+                    return Promise.reject('Request failed');
                 }
             })
             .then(() => {
-                this.$message.success('加入白名单成功');
+                this.$message.success(this.$t('dashboard.whiteSuccess'));
             })
-            .catch(() => this.$message.error('加入白名单失败'));
+            .catch(() => this.$message.error(this.$t('dashboard.whiteFailed')));
         }).catch(
-            () => console.log('已取消加入白名单')
+            () => console.log('White cancelled')
         );
     },
     handleDelete(index, key) {
         // 判断是否为文件夹
         const isFolder = this.tableData.find(file => file.name === key).isFolder;
 
-        this.$confirm(`此操作将永久删除${isFolder ? '文件夹' : '该文件'}, 是否继续?`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        this.$confirm(isFolder ? this.$t('dashboard.deleteFolderConfirm') : this.$t('dashboard.deleteFileConfirm'), this.$t('dashboard.deleteConfirmTitle'), {
+        confirmButtonText: this.$t('dashboard.deleteConfirmOk'),
+        cancelButtonText: this.$t('dashboard.deleteConfirmCancel'),
         type: 'warning'
         }).then(() => {
         fetchWithAuth(`/api/manage/delete/${key}?folder=${isFolder}`, { method: 'GET' })
@@ -1028,21 +1030,21 @@ methods: {
                         this.tableData.splice(fileIndex, 1);
                     }
                 } else {
-                    return Promise.reject('请求失败');
+                    return Promise.reject('Request failed');
                 }
             })
             .then(() => {
                 this.updateStats(-1, false);
                 fileManager.removeFile(key);
-                this.$message.success('删除成功');
+                this.$message.success(this.$t('dashboard.deleteSuccess'));
             })
-            .catch(() => this.$message.error('删除失败'));
-        }).catch(() => console.log('已取消删除'));
+            .catch(() => this.$message.error(this.$t('dashboard.deleteFailed')));
+        }).catch(() => console.log('Delete cancelled'));
     },
     handleBatchDelete() {
-        this.$confirm('此操作将永久删除选中的文件及文件夹, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        this.$confirm(this.$t('dashboard.batchDeleteConfirm'), this.$t('dashboard.deleteConfirmTitle'), {
+        confirmButtonText: this.$t('dashboard.deleteConfirmOk'),
+        cancelButtonText: this.$t('dashboard.deleteConfirmCancel'),
         type: 'warning'
         }).then(() => {
         const promises = this.selectedFiles.map(file => {
@@ -1065,10 +1067,10 @@ methods: {
                 });
                 this.selectedFiles = [];
                 this.updateStats(-successNum, false);
-                this.$message.success('批量删除成功');
+                this.$message.success(this.$t('dashboard.batchDeleteSuccess'));
             })
-            .catch(() => this.$message.error('批量删除失败'));
-        }).catch(() => console.log('已取消批量删除'));
+            .catch(() => this.$message.error(this.$t('dashboard.batchDeleteFailed')));
+        }).catch(() => console.log('Batch delete cancelled'));
     },
     async handleBatchCopy() {
         // 分离文件和文件夹
@@ -1080,7 +1082,7 @@ methods: {
         if (folders.length > 0) {
             loading = this.$loading({
                 lock: true,
-                text: '正在获取文件列表...'
+                text: this.$t('dashboard.fetchingFileList')
             });
         }
         
@@ -1107,17 +1109,17 @@ methods: {
             if (loading) loading.close();
             
             if (allFiles.length === 0) {
-                this.$message.warning('没有可复制的链接');
+                this.$message.warning(this.$t('dashboard.noLinksAvailable'));
                 return;
             }
             
             // 生成所有链接
             const links = allFiles.map(file => {
                 return this.generateFileLink(file.name, file.metadata);
-            }).filter(link => link); // 过滤掉空链接
+            }).filter(link => link);
             
             if (links.length === 0) {
-                this.$message.warning('没有可复制的链接');
+                this.$message.warning(this.$t('dashboard.noLinksAvailable'));
                 return;
             }
             
@@ -1125,14 +1127,14 @@ methods: {
             const text = links.join('\n');
             if (navigator.clipboard) {
                 await navigator.clipboard.writeText(text);
-                this.$message.success(`批量复制 ${links.length} 个链接成功`);
+                this.$message.success(this.$t('dashboard.batchCopySuccess', { count: links.length }));
             } else {
                 this.copyToClipboardFallback(text);
             }
         } catch (error) {
             if (loading) loading.close();
-            console.error('批量复制链接失败:', error);
-            this.$message.error('批量复制链接失败，请重试');
+            console.error('Batch copy failed:', error);
+            this.$message.error(this.$t('dashboard.batchCopyFailed'));
         }
     },
     copyToClipboardFallback(text) {
@@ -1145,7 +1147,7 @@ methods: {
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        this.$message.success('批量复制链接成功');
+        this.$message.success(this.$t('dashboard.batchCopyLinksSuccess'));
     },
     handleCopy(index, key) {
         let text = '';
@@ -1192,7 +1194,7 @@ methods: {
                     break;
             }
         }
-        navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success('复制文件链接成功')) :
+        navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success(this.$t('dashboard.copyFileLinkSuccess'))) :
         this.copyToClipboardFallback(text);
     },
     async loadMoreData() {
@@ -1211,7 +1213,7 @@ methods: {
             // 获取新的文件列表后
             await this.fetchFileList();
         } catch (error) {
-            this.$message.error('加载更多文件失败，请检查网络连接');
+            this.$message.error(this.$t('dashboard.loadMoreFailed'));
         } finally {
             this.loading = false;
         }
@@ -1313,7 +1315,7 @@ methods: {
         const newPath = value.replace(/^\/+/, '') + (value.endsWith('/') ? '' : value === '' ? '' : '/');
         // 判断目标文件夹是否是当前文件夹
         if (newPath === this.currentPath) {
-            this.$message.warning('目标文件夹不能是当前文件夹');
+            this.$message.warning(this.$t('dashboard.moveTargetSameAsCurrent'));
             return;
         }
         
@@ -1353,15 +1355,15 @@ methods: {
                         });
                     }
                     this.updateStats(-1, false);
-                    this.$message.success('移动成功');
+                    this.$message.success(this.$t('dashboard.moveSuccess'));
                 } else {
-                    return Promise.reject('请求失败');
+                    return Promise.reject('Request failed');
                 }
             })
             .then(() => {
                 this.refreshLocalFileList();
             })
-            .catch(() => this.$message.error('移动失败'));
+            .catch(() => this.$message.error(this.$t('dashboard.moveFailed')));
     },
     // 执行批量移动
     executeBatchMove(newPath) {
@@ -1397,17 +1399,17 @@ methods: {
                     });
                 });
                 this.updateStats(-successNum, false);
-                this.$message.success('移动成功');
+                this.$message.success(this.$t('dashboard.moveSuccess'));
             })
             .then(() => {
                 this.refreshLocalFileList();
             })
-            .catch(() => this.$message.error('移动失败'));
+            .catch(() => this.$message.error(this.$t('dashboard.moveFailed')));
     },
     handleBatchBlock(){
-        this.$confirm('此操作将把选中的文件加入黑名单, 是否继续?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+        this.$confirm(this.$t('dashboard.batchBlockConfirm'), this.$t('dashboard.deleteConfirmTitle'), {
+            confirmButtonText: this.$t('dashboard.deleteConfirmOk'),
+            cancelButtonText: this.$t('dashboard.deleteConfirmCancel'),
             type: 'warning'
         }).then(() => {
             // 跳过文件夹
@@ -1428,15 +1430,15 @@ methods: {
                             }
                         }
                     });
-                    this.$message.success('批量加入黑名单成功');
+                    this.$message.success(this.$t('dashboard.batchBlockSuccess'));
                 })
-                .catch(() => this.$message.error('批量加入黑名单失败'));
-        }).catch(() => console.log('已取消批量加入黑名单'));
+                .catch(() => this.$message.error(this.$t('dashboard.batchBlockFailed')));
+        }).catch(() => console.log('Batch block cancelled'));
     },
     handleBatchWhite(){
-        this.$confirm('此操作将把选中的文件加入白名单, 是否继续?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+        this.$confirm(this.$t('dashboard.batchWhiteConfirm'), this.$t('dashboard.deleteConfirmTitle'), {
+            confirmButtonText: this.$t('dashboard.deleteConfirmOk'),
+            cancelButtonText: this.$t('dashboard.deleteConfirmCancel'),
             type: 'warning'
         }).then(() => {
             // 跳过文件夹
@@ -1457,10 +1459,10 @@ methods: {
                             }
                         }
                     });
-                    this.$message.success('批量加入白名单成功');
+                    this.$message.success(this.$t('dashboard.batchWhiteSuccess'));
                 })
-                .catch(() => this.$message.error('批量加入白名单失败'));
-        }).catch(() => console.log('已取消批量加入白名单'));
+                .catch(() => this.$message.error(this.$t('dashboard.batchWhiteFailed')));
+        }).catch(() => console.log('Batch white cancelled'));
     },
     handleBatchDownload() {
         // 将选中文件打包成 zip 文件下载
@@ -1548,16 +1550,16 @@ methods: {
     handleJumpPage() {
         const page = parseInt(this.jumpPage);
         if (isNaN(page) || page < 1) {
-            this.$message.warning('请输入有效的页码');
+            this.$message.warning(this.$t('dashboard.invalidPageNumber'));
             return;
         }
         if (page > this.realTotalPages) {
-            this.$message.warning(`页码不能超过 ${this.realTotalPages}`);
+            this.$message.warning(this.$t('dashboard.pageExceedsMax', { max: this.realTotalPages }));
             return;
         }
         // 如果目标页超过当前已加载的页数，需要先加载更多数据
         if (page > this.totalPages) {
-            this.$message.info('正在加载数据，请稍候...');
+            this.$message.info(this.$t('dashboard.loadingData'));
             this.loadMoreDataUntilPage(page);
         } else {
             this.currentPage = page;
@@ -1592,7 +1594,7 @@ methods: {
 
             this.currentPage = Math.min(targetPage, this.totalPages);
         } catch (error) {
-            this.$message.error('加载数据失败，请检查网络连接');
+            this.$message.error(this.$t('dashboard.loadDataFailed'));
         } finally {
             this.loading = false;
         }
@@ -1759,7 +1761,7 @@ methods: {
 
         } catch (error) {
             console.error('Error fetching file list:', error);
-            this.$message.error('获取文件列表失败');
+            this.$message.error(this.$t('dashboard.fetchFileListFailed'));
         } finally {
             this.loading = false;
         }
@@ -1784,7 +1786,7 @@ methods: {
             }
         } catch (error) {
             console.error('Error refreshing file list:', error);
-            this.$message.error('刷新失败，请重试');
+            this.$message.error(this.$t('dashboard.refreshFailed'));
         } finally {
             this.refreshLoading = false;
             this.loading = false;
@@ -1798,7 +1800,7 @@ methods: {
             await this.fetchFileList();
         } catch (error) {
             console.error('Error refreshing local file list:', error);
-            this.$message.error('刷新失败，请重试');
+            this.$message.error(this.$t('dashboard.refreshFailed'));
         } finally {
             this.refreshLoading = false;
             this.loading = false;
@@ -1811,7 +1813,7 @@ methods: {
     },
     handleBatchTagManagement() {
         if (this.selectedFiles.length === 0) {
-            this.$message.warning('请先选择文件');
+            this.$message.warning(this.$t('dashboard.selectFilesFirst'));
             return;
         }
         this.showBatchTagDialog = true;
@@ -1896,7 +1898,7 @@ methods: {
         // 显示加载状态
         const loading = this.$loading({
             lock: true,
-            text: '正在获取文件列表...'
+            text: this.$t('dashboard.fetchingFileList')
         });
         
         try {
@@ -1910,17 +1912,17 @@ methods: {
             loading.close();
             
             if (!data.files || data.files.length === 0) {
-                this.$message.warning('文件夹为空，没有可复制的链接');
+                this.$message.warning(this.$t('dashboard.folderEmptyNoLinks'));
                 return;
             }
             
             // 根据当前链接格式生成所有文件链接
             const links = data.files.map(file => {
                 return this.generateFileLink(file.name, file.metadata);
-            }).filter(link => link); // 过滤掉空链接
+            }).filter(link => link);
             
             if (links.length === 0) {
-                this.$message.warning('没有可复制的链接');
+                this.$message.warning(this.$t('dashboard.noLinksAvailable'));
                 return;
             }
             
@@ -1928,15 +1930,15 @@ methods: {
             const text = links.join('\n');
             if (navigator.clipboard) {
                 await navigator.clipboard.writeText(text);
-                this.$message.success(`已复制 ${links.length} 个文件链接`);
+                this.$message.success(this.$t('dashboard.copiedFileLinks', { count: links.length }));
             } else {
                 this.copyToClipboardFallback(text);
-                this.$message.success(`已复制 ${links.length} 个文件链接`);
+                this.$message.success(this.$t('dashboard.copiedFileLinks', { count: links.length }));
             }
         } catch (error) {
             loading.close();
-            console.error('复制文件夹链接失败:', error);
-            this.$message.error('复制文件夹链接失败，请重试');
+            console.error('Copy folder links failed:', error);
+            this.$message.error(this.$t('dashboard.copyFolderLinksFailed'));
         }
     },
 },
@@ -1967,7 +1969,7 @@ mounted() {
         })
         .catch((err) => {
             if (err.message !== 'Unauthorized') {
-                this.$message.error('同步数据时出错，请检查网络连接');
+                this.$message.error(this.$t('dashboard.syncDataError'));
             }
         })
         .finally(() => {

@@ -7,9 +7,9 @@
           <font-awesome-icon icon="database" />
         </div>
         <div class="card-content">
-          <div class="card-title">文件总数</div>
+          <div class="card-title">{{ $t('sysStatus.totalFiles') }}</div>
           <div class="card-value">{{ indexInfo.totalFiles?.toLocaleString() || '0' }}</div>
-          <div class="card-subtitle">点击刷新</div>
+          <div class="card-subtitle">{{ $t('sysStatus.clickToRefresh') }}</div>
         </div>
       </div>
 
@@ -18,7 +18,7 @@
           <font-awesome-icon icon="clock" />
         </div>
         <div class="card-content">
-          <div class="card-title">索引更新时间</div>
+          <div class="card-title">{{ $t('sysStatus.indexUpdateTime') }}</div>
           <div class="card-value">{{ formatTime(indexInfo.lastUpdated) }}</div>
           <div class="card-subtitle">{{ getTimeAgo(indexInfo.lastUpdated) }}</div>
         </div>
@@ -29,9 +29,9 @@
           <font-awesome-icon icon="code-branch" />
         </div>
         <div class="card-content">
-          <div class="card-title">系统版本</div>
+          <div class="card-title">{{ $t('sysStatus.systemVersion') }}</div>
           <div class="card-value">v{{ version }}</div>
-          <div class="card-subtitle">点击查看更新日志</div>
+          <div class="card-subtitle">{{ $t('sysStatus.clickToViewChangelog') }}</div>
         </div>
       </div>
     </div>
@@ -42,19 +42,19 @@
       <div class="chart-card">
         <div class="chart-header">
           <font-awesome-icon icon="share-alt" />
-          <span>上传渠道分布</span>
+          <span>{{ $t('sysStatus.channelDistribution') }}</span>
         </div>
         <div class="chart-content">
           <div v-if="Object.keys(indexInfo.channelStats || {}).length === 0" class="empty-state">
             <font-awesome-icon icon="inbox" />
-            <span>暂无数据</span>
+            <span>{{ $t('sysStatus.noData') }}</span>
           </div>
           <div v-else class="pie-chart-container">
             <div class="pie-chart-wrapper">
               <Doughnut :data="channelChartData" :options="chartOptions" />
               <div class="chart-center-text">
                 <div class="center-value">{{ indexInfo.totalFiles?.toLocaleString() || '0' }}</div>
-                <div class="center-label">文件总数</div>
+                <div class="center-label">{{ $t('sysStatus.totalFilesLabel') }}</div>
               </div>
             </div>
             <div class="chart-legend">
@@ -77,19 +77,19 @@
       <div class="chart-card">
         <div class="chart-header">
           <font-awesome-icon icon="file-alt" />
-          <span>文件状态分布</span>
+          <span>{{ $t('sysStatus.fileStatusDistribution') }}</span>
         </div>
         <div class="chart-content">
           <div v-if="Object.keys(indexInfo.typeStats || {}).length === 0" class="empty-state">
             <font-awesome-icon icon="inbox" />
-            <span>暂无数据</span>
+            <span>{{ $t('sysStatus.noData') }}</span>
           </div>
           <div v-else class="pie-chart-container">
             <div class="pie-chart-wrapper">
               <Doughnut :data="typeChartData" :options="chartOptions" />
               <div class="chart-center-text">
                 <div class="center-value">{{ Object.keys(indexInfo.typeStats).length }}</div>
-                <div class="center-label">状态类型</div>
+                <div class="center-label">{{ $t('sysStatus.statusTypes') }}</div>
               </div>
             </div>
             <div class="chart-legend">
@@ -114,7 +114,7 @@
       <div class="action-card">
         <div class="action-header">
           <font-awesome-icon icon="tools" />
-          <span>系统维护</span>
+          <span>{{ $t('sysStatus.systemMaintenance') }}</span>
         </div>
         <div class="action-content">
           <!-- 进度显示 UI -->
@@ -137,7 +137,7 @@
                 <template v-if="processingProgress.total > 0">
                   / {{ processingProgress.total.toLocaleString() }}
                 </template>
-                条记录
+                {{ $t('sysStatus.records') }}
               </span>
               <!-- 预计剩余时间 -->
               <span class="progress-time" v-if="estimatedTimeRemaining">
@@ -157,7 +157,7 @@
               class="cancel-btn"
             >
               <font-awesome-icon icon="times" />
-              取消操作
+              {{ $t('sysStatus.cancelOperation') }}
             </el-button>
           </div>
           
@@ -180,21 +180,21 @@
                 @click="retryOperation"
               >
                 <font-awesome-icon icon="redo" />
-                重试
+                {{ $t('sysStatus.retry') }}
               </el-button>
               <el-button 
                 type="default" 
                 size="small"
                 @click="dismissError"
               >
-                关闭
+                {{ $t('sysStatus.close') }}
               </el-button>
             </div>
           </div>
           
           <!-- 操作按钮 -->
           <div v-else class="action-buttons">
-            <el-tooltip content="重新扫描所有文件并更新索引数据，适用于数据不一致时的修复" placement="top">
+            <el-tooltip :content="$t('sysStatus.rebuildTooltip')" placement="top">
               <el-button 
                 type="primary" 
                 :loading="rebuilding"
@@ -203,11 +203,11 @@
                 class="action-btn rebuild-btn"
               >
                 <font-awesome-icon icon="sync-alt" />
-                {{ rebuilding ? '重建中...' : '重建索引' }}
+                {{ rebuilding ? $t('sysStatus.rebuilding') : $t('sysStatus.rebuildIndex') }}
               </el-button>
             </el-tooltip>
 
-            <el-tooltip content="备份所有文件元数据和系统设置到JSON文件" placement="top">
+            <el-tooltip :content="$t('sysStatus.backupTooltip')" placement="top">
               <el-button 
                 type="success" 
                 :loading="backing"
@@ -216,11 +216,11 @@
                 class="action-btn backup-btn"
               >
                 <font-awesome-icon icon="download" />
-                {{ backing ? '备份中...' : '备份数据' }}
+                {{ backing ? $t('sysStatus.backingUp') : $t('sysStatus.backupData') }}
               </el-button>
             </el-tooltip>
 
-            <el-tooltip content="从备份文件恢复数据，将覆盖现有的文件元数据和系统设置" placement="top">
+            <el-tooltip :content="$t('sysStatus.restoreTooltip')" placement="top">
               <div class="restore-section">
                 <input 
                   type="file" 
@@ -237,7 +237,7 @@
                   class="action-btn restore-btn"
                 >
                   <font-awesome-icon icon="upload" />
-                  {{ restoring ? '恢复中...' : '恢复数据' }}
+                  {{ restoring ? $t('sysStatus.restoring') : $t('sysStatus.restoreData') }}
                 </el-button>
               </div>
             </el-tooltip>
@@ -274,7 +274,7 @@
         <!-- 顶部标题浮层 -->
         <div class="file-card-header">
           <font-awesome-icon icon="arrow-up" />
-          <span>最近上传</span>
+          <span>{{ $t('sysStatus.latestUpload') }}</span>
         </div>
         
         <!-- 底部信息浮层 -->
@@ -312,7 +312,7 @@
         <!-- 顶部标题浮层 -->
         <div class="file-card-header warning">
           <font-awesome-icon icon="arrow-down" />
-          <span>最早上传</span>
+          <span>{{ $t('sysStatus.earliestUpload') }}</span>
         </div>
 
         <!-- 底部信息浮层 -->
@@ -410,7 +410,7 @@ export default {
       const stats = this.indexInfo.typeStats || {}
       const aggregatedStats = {}
       for (const [status, count] of Object.entries(stats)) {
-        const mappedStatus = status === 'Block' ? '已屏蔽' : '正常'
+        const mappedStatus = status === 'Block' ? this.$t('sysStatus.blocked') : this.$t('sysStatus.normalStatus')
         aggregatedStats[mappedStatus] = (aggregatedStats[mappedStatus] || 0) + count
       }
       return aggregatedStats
@@ -465,29 +465,29 @@ export default {
       const totalEstimated = elapsed / progress
       const remaining = totalEstimated - elapsed
       
-      if (remaining <= 0) return '即将完成'
+      if (remaining <= 0) return this.$t('sysStatus.aboutToComplete')
       
       const seconds = Math.ceil(remaining / 1000)
-      if (seconds < 60) return `约 ${seconds} 秒`
+      if (seconds < 60) return this.$t('sysStatus.seconds', { count: seconds })
       const minutes = Math.ceil(seconds / 60)
-      if (minutes < 60) return `约 ${minutes} 分钟`
+      if (minutes < 60) return this.$t('sysStatus.minutes', { count: minutes })
       const hours = Math.floor(minutes / 60)
       const remainingMinutes = minutes % 60
-      return `约 ${hours} 小时 ${remainingMinutes} 分钟`
+      return this.$t('sysStatus.hoursMinutes', { hours, minutes: remainingMinutes })
     },
     // 处理阶段描述
     phaseDescription() {
       const phaseMap = {
-        'fetching': '正在获取数据',
-        'sorting': '正在排序',
-        'uploading': '正在上传',
-        'finalizing': '正在完成',
-        'building': '正在构建备份',
-        'downloading': '正在生成下载',
-        'restoring_files': '正在恢复文件',
-        'restoring_settings': '正在恢复设置',
-        'completed': '已完成',
-        'retrying': '正在重试'
+        'fetching': this.$t('sysStatus.phaseFetching'),
+        'sorting': this.$t('sysStatus.phaseSorting'),
+        'uploading': this.$t('sysStatus.phaseUploading'),
+        'finalizing': this.$t('sysStatus.phaseFinalizing'),
+        'building': this.$t('sysStatus.phaseBuilding'),
+        'downloading': this.$t('sysStatus.phaseDownloading'),
+        'restoring_files': this.$t('sysStatus.phaseRestoringFiles'),
+        'restoring_settings': this.$t('sysStatus.phaseRestoringSettings'),
+        'completed': this.$t('sysStatus.phaseCompleted'),
+        'retrying': this.$t('sysStatus.phaseRetrying')
       }
       return phaseMap[this.processingPhase] || this.processingPhase
     }
@@ -520,7 +520,7 @@ export default {
         }
       } catch (error) {
         console.error('获取索引信息失败:', error)
-        this.$message.error('获取索引信息失败')
+        this.$message.error(this.$t('sysStatus.fetchIndexFailed'))
       } finally {
         this.loading = false
       }
@@ -529,7 +529,7 @@ export default {
     // 重建索引 - 使用前端辅助重建流程
     async rebuildIndex() {
       if (this.isProcessing) {
-        this.$message.warning('已有操作正在进行中')
+        this.$message.warning(this.$t('sysStatus.operationInProgress'))
         return
       }
       
@@ -549,7 +549,7 @@ export default {
         const result = await this.currentRebuilder.rebuild()
         
         // 成功完成
-        this.$message.success(`索引重建完成！共处理 ${result.totalFiles.toLocaleString()} 个文件`)
+        this.$message.success(this.$t('sysStatus.rebuildSuccess', { count: result.totalFiles.toLocaleString() }))
         
         // 刷新索引信息
         setTimeout(() => {
@@ -579,7 +579,7 @@ export default {
     // 备份数据 - 使用前端辅助备份流程
     async backupData() {
       if (this.isProcessing) {
-        this.$message.warning('已有操作正在进行中')
+        this.$message.warning(this.$t('sysStatus.operationInProgress'))
         return
       }
       
@@ -598,8 +598,8 @@ export default {
         const result = await this.currentBackupGenerator.generateBackup()
         
         // 成功完成
-        const settingsMsg = result.settingsCount > 0 ? `，${result.settingsCount} 个设置项` : ''
-        this.$message.success(`备份完成！共备份 ${result.fileCount.toLocaleString()} 个文件${settingsMsg}`)
+        const settingsMsg = result.settingsCount > 0 ? this.$t('sysStatus.backupSuccessWithSettings', { fileCount: result.fileCount.toLocaleString(), settingsCount: result.settingsCount }) : this.$t('sysStatus.backupSuccess', { count: result.fileCount.toLocaleString() })
+        this.$message.success(settingsMsg)
       } catch (error) {
         // 错误处理
         if (error.code !== 'ABORTED') {
@@ -633,18 +633,18 @@ export default {
       if (!file) return
 
       if (!file.name.endsWith('.json')) {
-        this.$message.error('请选择JSON格式的备份文件')
+        this.$message.error(this.$t('sysStatus.selectJsonFile'))
         return
       }
 
       // 确认恢复操作
       try {
         await this.$confirm(
-          '恢复操作将覆盖现有的文件元数据和系统设置，此操作不可逆。确定要继续吗？',
-          '确认恢复',
+          this.$t('sysStatus.restoreConfirmMessage'),
+          this.$t('sysStatus.restoreConfirmTitle'),
           {
-            confirmButtonText: '确定恢复',
-            cancelButtonText: '取消',
+            confirmButtonText: this.$t('sysStatus.restoreConfirmOk'),
+            cancelButtonText: this.$t('sysStatus.restoreConfirmCancel'),
             type: 'warning'
           }
         )
@@ -663,7 +663,7 @@ export default {
     // 恢复数据 - 使用前端辅助分批恢复流程
     async restoreData(file) {
       if (this.isProcessing) {
-        this.$message.warning('已有操作正在进行中')
+        this.$message.warning(this.$t('sysStatus.operationInProgress'))
         return
       }
 
@@ -680,7 +680,7 @@ export default {
         try {
           backupData = JSON.parse(fileContent)
         } catch (parseError) {
-          throw new Error('备份文件格式无效，请选择有效的 JSON 文件')
+          throw new Error(this.$t('sysStatus.invalidBackupFile'))
         }
 
         // 创建 RestoreProcessor 实例
@@ -700,7 +700,7 @@ export default {
 
         // 显示恢复成功消息
         this.$message.success(
-          `恢复完成！已恢复 ${result.restoredFiles} 个文件和 ${result.restoredSettings} 个设置项，正在重建索引...`
+          this.$t('sysStatus.restoreSuccess', { files: result.restoredFiles, settings: result.restoredSettings })
         )
 
         // 短暂延迟后自动开始重建索引
@@ -719,7 +719,7 @@ export default {
           const errorMessage = error.suggestion
             ? `${error.message}。${error.suggestion}`
             : error.message
-          this.$message.error('恢复数据失败: ' + errorMessage)
+          this.$message.error(this.$t('sysStatus.restoreFailed') + ': ' + errorMessage)
           this.processingError = {
             message: error.message,
             suggestion: error.suggestion,
@@ -731,7 +731,7 @@ export default {
 
     // 格式化时间
     formatTime(timestamp) {
-      if (!timestamp) return '未知'
+      if (!timestamp) return this.$t('sysStatus.unknown')
       const date = new Date(timestamp)
       return date.toLocaleString('zh-CN', {
         year: 'numeric',
@@ -757,10 +757,10 @@ export default {
       const hours = Math.floor(diff / 3600000)
       const days = Math.floor(diff / 86400000)
       
-      if (days > 0) return `${days}天前`
-      if (hours > 0) return `${hours}小时前`
-      if (minutes > 0) return `${minutes}分钟前`
-      return '刚刚'
+      if (days > 0) return this.$t('sysStatus.daysAgo', { count: days })
+      if (hours > 0) return this.$t('sysStatus.hoursAgo', { count: hours })
+      if (minutes > 0) return this.$t('sysStatus.minutesAgo', { count: minutes })
+      return this.$t('sysStatus.justNow')
     },
     
     // 图片加载失败处理
@@ -877,15 +877,15 @@ export default {
     cancelOperation() {
       if (this.currentRebuilder) {
         this.currentRebuilder.abort()
-        this.$message.info('正在取消索引重建...')
+        this.$message.info(this.$t('sysStatus.cancellingRebuild'))
       }
       if (this.currentBackupGenerator) {
         this.currentBackupGenerator.abort()
-        this.$message.info('正在取消备份...')
+        this.$message.info(this.$t('sysStatus.cancellingRebuild'))
       }
       if (this.currentRestoreProcessor) {
         this.currentRestoreProcessor.abort()
-        this.$message.info('正在取消恢复...')
+        this.$message.info(this.$t('sysStatus.cancellingRebuild'))
       }
     },
     

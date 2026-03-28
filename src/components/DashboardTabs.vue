@@ -18,29 +18,31 @@
                 <el-dropdown-menu>
                     <el-dropdown-item command="dashboard" v-if="activeTab !== 'dashboard'">
                         <font-awesome-icon icon="images" style="margin-right: 5px; width: 16px;"></font-awesome-icon>
-                        文件管理
+                        {{ $t('dashboardTabs.fileManagement') }}
                     </el-dropdown-item>
                     <el-dropdown-item command="customerConfig" v-if="activeTab !== 'customerConfig'">
                         <font-awesome-icon icon="user-cog" style="margin-right: 5px; width: 16px;"></font-awesome-icon>
-                        用户管理
+                        {{ $t('dashboardTabs.userManagement') }}
                     </el-dropdown-item>
                     <el-dropdown-item command="systemConfig" v-if="activeTab !== 'systemConfig'">
                         <font-awesome-icon icon="cogs" style="margin-right: 5px; width: 16px;"></font-awesome-icon>
-                        系统设置
+                        {{ $t('dashboardTabs.systemSettings') }}
                     </el-dropdown-item>
                     <el-dropdown-item command="">
                         <font-awesome-icon icon="upload" style="margin-right: 5px; width: 16px;"></font-awesome-icon>
-                        文件上传
+                        {{ $t('dashboardTabs.fileUpload') }}
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </template>
         </el-dropdown>
         <AdminToggleDark/>
+        <LanguageSwitcher class="tabs-language-switcher"/>
     </div>
 </template>
 
 <script>
 import AdminToggleDark from './dashboard/AdminToggleDark.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 
 export default {
     name: 'DashboardTabs',
@@ -51,18 +53,19 @@ export default {
         }
     },
     components: {
-        AdminToggleDark
+        AdminToggleDark,
+        LanguageSwitcher
     },
     computed: {
         titleName() {
             if (this.activeTab === 'dashboard') {
-                return '文件管理';
+                return this.$t('dashboardTabs.fileManagement');
             } else if (this.activeTab === 'customerConfig') {
-                return '用户管理';
+                return this.$t('dashboardTabs.userManagement');
             } else if (this.activeTab === 'systemConfig') {
-                return '系统设置';
+                return this.$t('dashboardTabs.systemSettings');
             } else {
-                return '上传页面';
+                return this.$t('dashboardTabs.fileUpload');
             }
         },
         iconName() {
@@ -101,19 +104,19 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 .title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 1.2em;
+    gap: 8px;
+    font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
     color: var(--admin-container-color);
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 10px;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
     border: 1px solid rgba(99, 102, 241, 0.15);
@@ -141,10 +144,10 @@ export default {
 
 .tabs-dropdown-link {
     cursor: pointer;
-    font-size: 1.5em;
+    font-size: 1.3em;
     transition: all 0.3s ease;
     color: var(--admin-container-color);
-    padding: 6px 10px;
+    padding: 5px 8px;
     border-radius: 8px;
     background: transparent;
 }
@@ -161,17 +164,34 @@ export default {
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-    .title {
-        font-size: 1.3em;
-        padding: 4px 10px;
+    .tabs {
         gap: 6px;
+    }
+
+    .title {
+        font-size: 1em;
+        padding: 3px 8px;
+        gap: 5px;
     }
     
     .tabs-dropdown-link {
-        font-size: 1.3em;
-        padding: 4px 8px;
+        font-size: 1.1em;
+        padding: 3px 6px;
+    }
+
+    .tabs-language-switcher {
+        font-size: 0.9em;
+        padding: 3px;
     }
 }
+
+.tabs-language-switcher {
+    font-size: 1.05em;
+    color: var(--admin-container-color);
+    transition: color 0.3s ease;
+    padding: 5px;
+}
+
 /* el-dropdown有关的全局样式在index.html中定义 */
 </style>
 

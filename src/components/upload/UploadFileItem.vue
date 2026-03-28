@@ -111,10 +111,10 @@ export default {
         selectAllText(event) {
             navigator.clipboard.writeText(event.target.value)
                 .then(() => {
-                    this.$message({ type: 'success', message: '复制成功' })
+                    this.$message({ type: 'success', message: this.$t('uploadForm.copySuccess') })
                 })
                 .catch(() => {
-                    this.$message({ type: 'error', message: '复制失败' })
+                    this.$message({ type: 'error', message: this.$t('uploadForm.copyFailed') })
                 })
         }
     }

@@ -24,7 +24,7 @@
             <div v-if="videoLoading" class="skeleton-wrapper"></div>
             <div v-else-if="videoError" class="error-wrapper" @click="$emit('detail')">
                 <font-awesome-icon icon="exclamation-triangle" class="error-icon"/>
-                <span class="error-text">加载失败</span>
+                <span class="error-text">{{ $t('dashboard.loadFailed') }}</span>
             </div>
             <video 
                 v-show="!videoLoading && !videoError"
@@ -64,7 +64,7 @@
             <template #error>
                 <div class="error-wrapper" @click.stop="$emit('detail')">
                     <font-awesome-icon icon="image" class="error-icon"/>
-                    <span class="error-text">加载失败</span>
+                    <span class="error-text">{{ $t('dashboard.loadFailed') }}</span>
                 </div>
             </template>
         </el-image>
@@ -81,29 +81,29 @@
             </div>
             <div class="action-bar">
                 <div class="action-bar-left">
-                    <el-tooltip :disabled="disableTooltip" content="详情" placement="top">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.detail')" placement="top">
                         <button class="action-btn" @click.stop="$emit('detail')">
                             <font-awesome-icon icon="info-circle"></font-awesome-icon>
                         </button>
                     </el-tooltip>
                 </div>
                 <div class="action-bar-right">
-                    <el-tooltip :disabled="disableTooltip" content="移动" placement="top">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.moveFile')" placement="top">
                         <button class="action-btn" @click.stop="$emit('move')">
                             <font-awesome-icon icon="file-export"></font-awesome-icon>
                         </button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip" content="删除" placement="top">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.delete')" placement="top">
                         <button class="action-btn action-btn-danger" @click.stop="$emit('delete')">
                             <font-awesome-icon icon="trash-alt"></font-awesome-icon>
                         </button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip" content="下载" placement="top">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.downloadFile')" placement="top">
                         <button class="action-btn" @click.stop="$emit('download')">
                             <font-awesome-icon icon="download"></font-awesome-icon>
                         </button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip" content="复制链接" placement="top">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.copyLink')" placement="top">
                         <button class="action-btn" @click.stop="$emit('copy')">
                             <font-awesome-icon icon="copy"></font-awesome-icon>
                         </button>

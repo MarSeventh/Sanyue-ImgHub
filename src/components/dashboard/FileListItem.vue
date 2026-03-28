@@ -71,35 +71,35 @@
         <!-- 操作 -->
         <div class="list-col list-col-actions">
             <template v-if="!isFolder">
-                <el-tooltip content="复制链接" placement="top">
+                <el-tooltip :content="$t('dashboard.copyLink')" placement="top">
                     <button class="list-action-btn" @click.stop="$emit('copy')">
                         <font-awesome-icon icon="copy"/>
                     </button>
                 </el-tooltip>
-                <el-tooltip content="下载" placement="top">
+                <el-tooltip :content="$t('dashboard.downloadFile')" placement="top">
                     <button class="list-action-btn" @click.stop="$emit('download')">
                         <font-awesome-icon icon="download"/>
                     </button>
                 </el-tooltip>
-                <el-tooltip content="移动" placement="top">
+                <el-tooltip :content="$t('dashboard.moveFile')" placement="top">
                     <button class="list-action-btn" @click.stop="$emit('move')">
                         <font-awesome-icon icon="file-export"/>
                     </button>
                 </el-tooltip>
             </template>
             <template v-else>
-                <el-tooltip content="复制链接" placement="top">
+                <el-tooltip :content="$t('dashboard.copyLink')" placement="top">
                     <button class="list-action-btn" @click.stop="$emit('folderCopy')">
                         <font-awesome-icon icon="copy"/>
                     </button>
                 </el-tooltip>
-                <el-tooltip content="移动" placement="top">
+                <el-tooltip :content="$t('dashboard.moveFile')" placement="top">
                     <button class="list-action-btn" @click.stop="$emit('move')">
                         <font-awesome-icon icon="file-export"/>
                     </button>
                 </el-tooltip>
             </template>
-            <el-tooltip content="删除" placement="top">
+            <el-tooltip :content="$t('dashboard.delete')" placement="top">
                 <button class="list-action-btn list-action-danger" @click.stop="$emit('delete')">
                     <font-awesome-icon icon="trash-alt"/>
                 </button>

@@ -243,15 +243,15 @@ export default {
           <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
             <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
           </svg>
-          <span>播放模式</span>
+          <span>${this.$t('transformMedia.playMode')}</span>
           <svg class="arrow" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
             <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
           </svg>
         </div>
         <div class="plyr-playmode-submenu">
-          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'stop' ? 'active' : ''}" data-mode="stop">播完停止</div>
-          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'sequence' ? 'active' : ''}" data-mode="sequence">顺序播放</div>
-          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'loop' ? 'active' : ''}" data-mode="loop">单曲循环</div>
+          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'stop' ? 'active' : ''}" data-mode="stop">${this.$t('transformMedia.stopAfterPlay')}</div>
+          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'sequence' ? 'active' : ''}" data-mode="sequence">${this.$t('transformMedia.sequentialPlay')}</div>
+          <div class="plyr-menu-item plyr-playmode-option ${currentMode === 'loop' ? 'active' : ''}" data-mode="loop">${this.$t('transformMedia.loopSingle')}</div>
         </div>
       ` : '';
       
@@ -259,7 +259,7 @@ export default {
       const menuContainer = document.createElement('div');
       menuContainer.className = 'plyr-custom-menu';
       menuContainer.innerHTML = `
-        <button type="button" class="plyr__controls__item plyr__control plyr-menu-btn" aria-label="更多">
+        <button type="button" class="plyr__controls__item plyr__control plyr-menu-btn" aria-label="${this.$t('transformMedia.more')}">
           <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
             <circle cx="12" cy="5" r="2"/>
             <circle cx="12" cy="12" r="2"/>
@@ -271,14 +271,14 @@ export default {
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
               <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
             </svg>
-            <span>下载</span>
+            <span>${this.$t('transformMedia.download')}</span>
           </div>
           <div class="plyr-menu-item plyr-menu-speed">
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
               <path d="M10 8v8l6-4-6-4zm1.5 4l2-1.33v2.67l-2-1.34z"/>
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
             </svg>
-            <span>播放速度</span>
+            <span>${this.$t('transformMedia.playbackSpeed')}</span>
             <svg class="arrow" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
               <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
             </svg>
@@ -286,7 +286,7 @@ export default {
           <div class="plyr-speed-submenu">
             <div class="plyr-menu-item plyr-speed-option" data-speed="0.5">0.5x</div>
             <div class="plyr-menu-item plyr-speed-option" data-speed="0.75">0.75x</div>
-            <div class="plyr-menu-item plyr-speed-option active" data-speed="1">正常</div>
+            <div class="plyr-menu-item plyr-speed-option active" data-speed="1">${this.$t('transformMedia.normalSpeed')}</div>
             <div class="plyr-menu-item plyr-speed-option" data-speed="1.25">1.25x</div>
             <div class="plyr-menu-item plyr-speed-option" data-speed="1.5">1.5x</div>
             <div class="plyr-menu-item plyr-speed-option" data-speed="2">2x</div>

@@ -2,48 +2,48 @@
     <div class="security-settings" v-loading="loading">
         <!-- 一级设置：认证管理 -->
         <div class="first-settings">
-            <h3 class="first-title">认证管理</h3>
+            <h3 class="first-title">{{ $t('sysSecurity.authManagement') }}</h3>
 
-            <h4 class="second-title">用户端认证</h4>
+            <h4 class="second-title">{{ $t('sysSecurity.userAuth') }}</h4>
             <el-form 
                 :model="authSettings.user" 
                 :rules = "userPassRules"
                 ref = "userPassForm"
                 label-width="120px"
             >
-                <el-form-item label="上传密码" prop="authCode">
+                <el-form-item :label="$t('sysSecurity.uploadPassword')" prop="authCode">
                     <el-input v-model="authSettings.user.authCode" type="password" show-password @input="handleUserPassInput" autocomplete="new-password"/>
                 </el-form-item>
 
                 <transition name="fade-slide" mode="out-in">
-                    <el-form-item label="确认密码" prop="confirmNewUserPassword" v-if="showUserPassConfirm" key="user-confirm">
+                    <el-form-item :label="$t('sysSecurity.confirmPassword')" prop="confirmNewUserPassword" v-if="showUserPassConfirm" key="user-confirm">
                         <el-input v-model="authSettings.user.confirmNewUserPassword" type="password" show-password autocomplete="new-password"/>
                     </el-form-item>
                 </transition>
             </el-form>
             
-            <h4 class="second-title">管理端认证</h4>
+            <h4 class="second-title">{{ $t('sysSecurity.adminAuth') }}</h4>
             <el-form 
                 :model="authSettings.admin"
                 :rules = "adminPassRules"
                 ref = "adminPassForm"
                 label-width="120px"
             >
-                <el-form-item label="用户名" prop="adminUsername">
+                <el-form-item :label="$t('sysSecurity.adminUsername')" prop="adminUsername">
                     <el-input v-model="authSettings.admin.adminUsername" autocomplete="new-password"/>
                 </el-form-item>
-                <el-form-item label="密码" prop="adminPassword">
+                <el-form-item :label="$t('sysSecurity.adminPassword')" prop="adminPassword">
                     <el-input v-model="authSettings.admin.adminPassword" type="password" show-password @input="handleAdminPassInput" autocomplete="new-password"/>
                 </el-form-item>
 
                 <transition name="fade-slide" mode="out-in">
-                    <el-form-item label="确认密码" prop="confirmNewAdminPassword" v-if="showAdminPassConfirm" key="admin-confirm">
+                    <el-form-item :label="$t('sysSecurity.confirmPassword')" prop="confirmNewAdminPassword" v-if="showAdminPassConfirm" key="admin-confirm">
                         <el-input v-model="authSettings.admin.confirmNewAdminPassword" type="password" show-password autocomplete="new-password"/>
                     </el-form-item>
                 </transition>
             </el-form>
 
-            <h4 class="second-title token-title">API Token 管理
+            <h4 class="second-title token-title">{{ $t('sysSecurity.apiTokenManagement') }}
                 <a class="token-actions">
                     <el-button type="primary" size="small" @click="showCreateTokenDialog = true" circle>
                         <font-awesome-icon icon="plus"/>
@@ -56,19 +56,19 @@
                     class="token-table"
                     v-loading="tokenLoading"
                 >
-                    <el-table-column prop="name" label="名称" header-align="center">
+                    <el-table-column prop="name" :label="$t('sysSecurity.tokenName')" header-align="center">
                         <template #default="scope">
                             <div class="table-cell-content">{{ scope.row.name }}</div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="token" label="Token" header-align="center">
+                    <el-table-column prop="token" :label="$t('sysSecurity.tokenValue')" header-align="center">
                         <template #default="scope">
                             <div class="table-cell-content">
                                 <span class="token-display">{{ scope.row.token }}</span>
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="permissions" label="权限" header-align="center">
+                    <el-table-column prop="permissions" :label="$t('sysSecurity.permissions')" header-align="center">
                         <template #default="scope">
                             <div class="table-cell-content">
                                 <el-tag 
@@ -82,12 +82,12 @@
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="createdAt" label="创建时间" header-align="center">
+                    <el-table-column prop="createdAt" :label="$t('sysSecurity.createdAt')" header-align="center">
                         <template #default="scope">
                             <div class="table-cell-content">{{ formatDate(scope.row.createdAt) }}</div>
                         </template>
                     </el-table-column>
-                    <el-table-column label="状态" header-align="center" width="90">
+                    <el-table-column :label="$t('sysSecurity.status')" header-align="center" width="90">
                         <template #default="scope">
                             <div class="table-cell-content">
                                 <el-tag
@@ -99,16 +99,16 @@
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column label="过期时间" header-align="center">
+                    <el-table-column :label="$t('sysSecurity.expiresAt')" header-align="center">
                         <template #default="scope">
                             <div class="table-cell-content">{{ getTokenStatus(scope.row.expiresAt).expiresText }}</div>
                         </template>
                     </el-table-column>
-                    <el-table-column label="操作" fixed="right" header-align="center">
+                    <el-table-column :label="$t('sysSecurity.operation')" fixed="right" header-align="center">
                         <template #default="scope">
                             <div class="table-cell-content action-buttons">
-                                <el-button class="action-button" size="small" @click="editToken(scope.row)">编辑</el-button>
-                                <el-button class="action-button" size="small" type="danger" @click="deleteToken(scope.row.id)">删除</el-button>
+                                <el-button class="action-button" size="small" @click="editToken(scope.row)">{{ $t('sysSecurity.editBtn') }}</el-button>
+                                <el-button class="action-button" size="small" type="danger" @click="deleteToken(scope.row.id)">{{ $t('sysSecurity.deleteBtn') }}</el-button>
                             </div>
                         </template>
                     </el-table-column>
@@ -118,26 +118,26 @@
 
         <!-- 一级设置：上传管理 -->
         <div class="first-settings">
-            <h3 class="first-title">上传管理</h3>            
-            <h4 class="second-title">图像审查
-                <el-tooltip content="仅对非分块上传文件生效，支持 nsfwjs 和 moderatecontent.com 渠道" placement="top">
+            <h3 class="first-title">{{ $t('sysSecurity.uploadManagement') }}</h3>            
+            <h4 class="second-title">{{ $t('sysSecurity.imageReview') }}
+                <el-tooltip :content="$t('sysSecurity.imageReviewTooltip')" placement="top">
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h4>         
             <el-form :model="uploadSettings.moderate" label-width="120px">
-                <el-form-item label="开启审查">
+                <el-form-item :label="$t('sysSecurity.enableReview')">
                     <el-switch v-model="uploadSettings.moderate.enabled"/>
                 </el-form-item>
-                <el-form-item label="审查渠道">
-                    <el-select v-model="uploadSettings.moderate.channel" placeholder="请选择审查渠道">
+                <el-form-item :label="$t('sysSecurity.reviewChannel')">
+                    <el-select v-model="uploadSettings.moderate.channel" :placeholder="$t('sysSecurity.reviewChannelPlaceholder')">
                         <el-option label="moderatecontent.com" value="moderatecontent.com"></el-option>
                         <el-option label="nsfwjs" value="nsfwjs"></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item v-if="uploadSettings.moderate.channel === 'moderatecontent.com'" label="API Key">
+                <el-form-item v-if="uploadSettings.moderate.channel === 'moderatecontent.com'" :label="$t('sysSecurity.apiKey')">
                     <el-input v-model="uploadSettings.moderate.moderateContentApiKey"/>
                 </el-form-item>
-                <el-form-item v-if="uploadSettings.moderate.channel === 'nsfwjs'" label="API 路径">
+                <el-form-item v-if="uploadSettings.moderate.channel === 'nsfwjs'" :label="$t('sysSecurity.apiPath')">
                     <el-input v-model="uploadSettings.moderate.nsfwApiPath" placeholder="https://nsfwjs.your.domain"/>
                 </el-form-item>
             </el-form>
@@ -145,25 +145,25 @@
 
         <!-- 一级设置：访问管理 -->
         <div class="first-settings">
-            <h3 class="first-title">访问管理</h3>
-            <h4 class="second-title">域名过滤</h4>
+            <h3 class="first-title">{{ $t('sysSecurity.accessManagement') }}</h3>
+            <h4 class="second-title">{{ $t('sysSecurity.domainFilter') }}</h4>
             <el-form :model="accessSettings" label-width="120px">
                 <el-form-item>
                     <template #label>
-                        放行域名
-                        <el-tooltip content="1.针对访问域名设置权限 <br/> 2.留空默认全部放行，多个域名请用英文逗号分隔" placement="top" raw-content>
+                        {{ $t('sysSecurity.allowedDomains') }}
+                        <el-tooltip :content="$t('sysSecurity.allowedDomainsTooltip')" placement="top" raw-content>
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                         </el-tooltip>
                     </template>
                     <el-input v-model="accessSettings.allowedDomains"/>
                 </el-form-item>
             </el-form>
-            <h4 class="second-title">白名单模式</h4>
+            <h4 class="second-title">{{ $t('sysSecurity.whiteListMode') }}</h4>
             <el-form :model="accessSettings" label-width="120px">
                 <el-form-item>
                     <template #label>
-                        是否开启
-                        <el-tooltip content="1.针对文件设置权限 <br> 2.开启后，仅被加入白名单的文件可被访问" placement="top" raw-content>
+                        {{ $t('sysSecurity.enableWhiteList') }}
+                        <el-tooltip :content="$t('sysSecurity.enableWhiteListTooltip')" placement="top" raw-content>
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                         </el-tooltip>
                     </template>
@@ -176,94 +176,94 @@
         <FloatingSaveButton :show="!loading" @click="saveSettings" />
 
         <!-- 创建Token对话框 -->
-        <el-dialog v-model="showCreateTokenDialog" title="创建新 API Token" :width="dialogWidth">
+        <el-dialog v-model="showCreateTokenDialog" :title="$t('sysSecurity.createTokenTitle')" :width="dialogWidth">
             <el-form :model="newToken" :rules="tokenRules" ref="tokenForm" label-width="100px">
-                <el-form-item label="Token 名称" prop="name">
-                    <el-input v-model="newToken.name" placeholder="请输入Token名称"/>
+                <el-form-item :label="$t('sysSecurity.tokenNameLabel')" prop="name">
+                    <el-input v-model="newToken.name" :placeholder="$t('sysSecurity.tokenNamePlaceholder')"/>
                 </el-form-item>
-                <el-form-item label="权限" prop="permissions">
+                <el-form-item :label="$t('sysSecurity.permissionsLabel')" prop="permissions">
                     <el-checkbox-group v-model="newToken.permissions">
-                        <el-checkbox label="upload">上传</el-checkbox>
-                        <el-checkbox label="delete">删除</el-checkbox>
-                        <el-checkbox label="list">列出</el-checkbox>
-                        <el-checkbox label="manage">管理</el-checkbox>
+                        <el-checkbox label="upload">{{ $t('sysSecurity.permUpload') }}</el-checkbox>
+                        <el-checkbox label="delete">{{ $t('sysSecurity.permDelete') }}</el-checkbox>
+                        <el-checkbox label="list">{{ $t('sysSecurity.permList') }}</el-checkbox>
+                        <el-checkbox label="manage">{{ $t('sysSecurity.permManage') }}</el-checkbox>
                     </el-checkbox-group>
                 </el-form-item>
-                <el-form-item label="永不过期">
+                <el-form-item :label="$t('sysSecurity.neverExpire')">
                     <el-switch v-model="newToken.neverExpire" @change="onCreateNeverExpireChange"/>
                 </el-form-item>
-                <el-form-item v-if="!newToken.neverExpire" label="有效期" prop="expirationValue">
+                <el-form-item v-if="!newToken.neverExpire" :label="$t('sysSecurity.validPeriod')" prop="expirationValue">
                     <div style="display: flex; gap: 10px; width: 100%;">
                         <el-input-number v-model="newToken.expirationValue" :min="1" :step="1" controls-position="right" style="flex: 1;"/>
                         <el-select v-model="newToken.expirationUnit" style="width: 100px;">
-                            <el-option v-for="opt in timeUnitOptions" :key="opt.value" :label="opt.label" :value="opt.value"/>
+                            <el-option v-for="opt in timeUnitOptions" :key="opt.value" :label="$t(opt.labelKey)" :value="opt.value"/>
                         </el-select>
                     </div>
                 </el-form-item>
-                <el-form-item v-if="!newToken.neverExpire" label="过期自动删除">
+                <el-form-item v-if="!newToken.neverExpire" :label="$t('sysSecurity.autoDeleteOnExpire')">
                     <el-switch v-model="newToken.autoDelete"/>
                 </el-form-item>
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button @click="showCreateTokenDialog = false">取消</el-button>
-                    <el-button type="primary" @click="createToken">创建</el-button>
+                    <el-button @click="showCreateTokenDialog = false">{{ $t('common.cancel') }}</el-button>
+                    <el-button type="primary" @click="createToken">{{ $t('sysSecurity.createBtn') }}</el-button>
                 </span>
             </template>
         </el-dialog>
 
         <!-- 编辑Token对话框 -->
-        <el-dialog v-model="showEditTokenDialog" title="编辑 API Token" :width="dialogWidth">
+        <el-dialog v-model="showEditTokenDialog" :title="$t('sysSecurity.editTokenTitle')" :width="dialogWidth">
             <el-form :model="editingToken" :rules="editTokenRules" ref="editTokenForm" label-width="100px">
-                <el-form-item label="Token 名称">
+                <el-form-item :label="$t('sysSecurity.tokenNameLabel')">
                     <el-input v-model="editingToken.name" disabled/>
                 </el-form-item>
-                <el-form-item label="权限" prop="permissions">
+                <el-form-item :label="$t('sysSecurity.permissionsLabel')" prop="permissions">
                     <el-checkbox-group v-model="editingToken.permissions">
-                        <el-checkbox label="upload">上传</el-checkbox>
-                        <el-checkbox label="delete">删除</el-checkbox>
-                        <el-checkbox label="list">列出</el-checkbox>
-                        <el-checkbox label="manage">管理</el-checkbox>
+                        <el-checkbox label="upload">{{ $t('sysSecurity.permUpload') }}</el-checkbox>
+                        <el-checkbox label="delete">{{ $t('sysSecurity.permDelete') }}</el-checkbox>
+                        <el-checkbox label="list">{{ $t('sysSecurity.permList') }}</el-checkbox>
+                        <el-checkbox label="manage">{{ $t('sysSecurity.permManage') }}</el-checkbox>
                     </el-checkbox-group>
                 </el-form-item>
-                <el-form-item label="永不过期">
+                <el-form-item :label="$t('sysSecurity.neverExpire')">
                     <el-switch v-model="editingToken.neverExpire" @change="onEditNeverExpireChange"/>
                 </el-form-item>
-                <el-form-item v-if="!editingToken.neverExpire" label="有效期" prop="expirationValue">
+                <el-form-item v-if="!editingToken.neverExpire" :label="$t('sysSecurity.validPeriod')" prop="expirationValue">
                     <div style="display: flex; gap: 10px; width: 100%;">
                         <el-input-number v-model="editingToken.expirationValue" :min="1" :step="1" controls-position="right" style="flex: 1;"/>
                         <el-select v-model="editingToken.expirationUnit" style="width: 100px;">
-                            <el-option v-for="opt in timeUnitOptions" :key="opt.value" :label="opt.label" :value="opt.value"/>
+                            <el-option v-for="opt in timeUnitOptions" :key="opt.value" :label="$t(opt.labelKey)" :value="opt.value"/>
                         </el-select>
                     </div>
                 </el-form-item>
-                <el-form-item v-if="!editingToken.neverExpire" label="过期自动删除">
+                <el-form-item v-if="!editingToken.neverExpire" :label="$t('sysSecurity.autoDeleteOnExpire')">
                     <el-switch v-model="editingToken.autoDelete"/>
                 </el-form-item>
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button @click="showEditTokenDialog = false">取消</el-button>
-                    <el-button type="primary" @click="updateToken">更新</el-button>
+                    <el-button @click="showEditTokenDialog = false">{{ $t('common.cancel') }}</el-button>
+                    <el-button type="primary" @click="updateToken">{{ $t('sysSecurity.updateBtn') }}</el-button>
                 </span>
             </template>
         </el-dialog>
 
         <!-- Token创建成功对话框 -->
-        <el-dialog v-model="showTokenResultDialog" title="Token 创建成功" :width="dialogWidth">
+        <el-dialog v-model="showTokenResultDialog" :title="$t('sysSecurity.tokenCreatedTitle')" :width="dialogWidth">
             <div class="token-result">
                 <p style="margin-bottom: 15px; color: #e6a23c;">
                     <font-awesome-icon icon="exclamation-triangle" style="margin-right: 5px;"/>
-                    请妥善保存以下Token，关闭此窗口后将无法再次查看完整Token！
+                    {{ $t('sysSecurity.tokenCreatedWarning') }}
                 </p>
                 <el-form label-width="100px">
-                    <el-form-item label="Token 名称">
+                    <el-form-item :label="$t('sysSecurity.tokenNameLabel')">
                         <span>{{ createdToken.name }}</span>
                     </el-form-item>
-                    <el-form-item label="完整Token">
+                    <el-form-item :label="$t('sysSecurity.fullToken')">
                         <el-input v-model="createdToken.token" readonly>
                             <template #append>
-                                <el-button @click="copyToken">复制</el-button>
+                                <el-button @click="copyToken">{{ $t('sysSecurity.copyBtn') }}</el-button>
                             </template>
                         </el-input>
                     </el-form-item>
@@ -271,7 +271,7 @@
             </div>
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button type="primary" @click="showTokenResultDialog = false">我已保存</el-button>
+                    <el-button type="primary" @click="showTokenResultDialog = false">{{ $t('sysSecurity.savedBtn') }}</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -315,12 +315,12 @@ data() {
         showTokenResultDialog: false,
         
         timeUnitOptions: [
-            { label: '秒', value: 's' },
-            { label: '分钟', value: 'm' },
-            { label: '小时', value: 'h' },
-            { label: '天', value: 'd' },
-            { label: '月', value: 'M' },
-            { label: '年', value: 'Y' }
+            { labelKey: 'sysSecurity.timeUnitSeconds', value: 's' },
+            { labelKey: 'sysSecurity.timeUnitMinutes', value: 'm' },
+            { labelKey: 'sysSecurity.timeUnitHours', value: 'h' },
+            { labelKey: 'sysSecurity.timeUnitDays', value: 'd' },
+            { labelKey: 'sysSecurity.timeUnitMonths', value: 'M' },
+            { labelKey: 'sysSecurity.timeUnitYears', value: 'Y' }
         ],
         newToken: {
             name: '',
@@ -344,83 +344,88 @@ data() {
         createdToken: {
             name: '',
             token: ''
-        },
-
-        userPassRules: {
-            authCode: [
-                { validator: (rule, value, callback) => {
-                    // URL保留字符列表
-                    const urlReservedChars = ['%', '&', '?', '#', '/'];
-                    const hasReservedChar = urlReservedChars.some(char => value && value.includes(char));
-                    
-                    if (hasReservedChar) {
-                        callback(new Error('密码不能包含部分URL保留字符: % & ? # /'));
-                    } else {
-                        callback();
-                    }
-                }, trigger: 'blur' }
-            ],
-            confirmNewUserPassword: [
-                { message: '请再次输入上传密码', trigger: 'blur' },
-                { validator: (rule, value, callback) => {
-                    if (value && value !== this.authSettings.user.authCode) {
-                        callback(new Error('两次输入密码不一致'));
-                    } else {
-                        callback();
-                    }
-                }, trigger: 'blur' }
-            ]
-        },
-
-        adminPassRules: {
-            confirmNewAdminPassword: [
-                { message: '请再次输入管理密码', trigger: 'blur' },
-                { validator: (rule, value, callback) => {
-                    if (value && value !== this.authSettings.admin.adminPassword) {
-                        callback(new Error('两次输入密码不一致'));
-                    } else {
-                        callback();
-                    }
-                }, trigger: 'blur' }
-            ]
-        },
-
-        tokenRules: {
-            name: [
-                { required: true, message: '请输入Token名称', trigger: 'blur' }
-            ],
-            permissions: [
-                { required: true, message: '请选择权限', trigger: 'change' }
-            ],
-            expirationValue: [
-                { validator: (rule, value, callback) => {
-                    if (!this.newToken.neverExpire && (!value || value <= 0)) {
-                        callback(new Error('有效期数值必须大于 0'));
-                    } else {
-                        callback();
-                    }
-                }, trigger: 'blur' }
-            ]
-        },
-        editTokenRules: {
-            permissions: [
-                { required: true, message: '请选择权限', trigger: 'change' }
-            ],
-            expirationValue: [
-                { validator: (rule, value, callback) => {
-                    if (!this.editingToken.neverExpire && (!value || value <= 0)) {
-                        callback(new Error('有效期数值必须大于 0'));
-                    } else {
-                        callback();
-                    }
-                }, trigger: 'blur' }
-            ]
         }
     };
 },
 computed: {
     dialogWidth() {
         return window.innerWidth > 768 ? '50%' : '90%';
+    },
+    userPassRules() {
+        return {
+            authCode: [
+                { validator: (rule, value, callback) => {
+                    const urlReservedChars = ['%', '&', '?', '#', '/'];
+                    const hasReservedChar = urlReservedChars.some(char => value && value.includes(char));
+                    if (hasReservedChar) {
+                        callback(new Error(this.$t('sysSecurity.passwordUrlReserved')));
+                    } else {
+                        callback();
+                    }
+                }, trigger: 'blur' }
+            ],
+            confirmNewUserPassword: [
+                { validator: (rule, value, callback) => {
+                    if (!value) {
+                        callback(new Error(this.$t('sysSecurity.confirmUploadPassword')));
+                    } else if (value !== this.authSettings.user.authCode) {
+                        callback(new Error(this.$t('sysSecurity.passwordMismatch')));
+                    } else {
+                        callback();
+                    }
+                }, trigger: 'blur' }
+            ]
+        };
+    },
+    adminPassRules() {
+        return {
+            confirmNewAdminPassword: [
+                { validator: (rule, value, callback) => {
+                    if (!value) {
+                        callback(new Error(this.$t('sysSecurity.confirmAdminPassword')));
+                    } else if (value !== this.authSettings.admin.adminPassword) {
+                        callback(new Error(this.$t('sysSecurity.passwordMismatch')));
+                    } else {
+                        callback();
+                    }
+                }, trigger: 'blur' }
+            ]
+        };
+    },
+    tokenRules() {
+        return {
+            name: [
+                { required: true, message: this.$t('sysSecurity.tokenNameRequired'), trigger: 'blur' }
+            ],
+            permissions: [
+                { required: true, message: this.$t('sysSecurity.permissionsRequired'), trigger: 'change' }
+            ],
+            expirationValue: [
+                { validator: (rule, value, callback) => {
+                    if (!this.newToken.neverExpire && (!value || value <= 0)) {
+                        callback(new Error(this.$t('sysSecurity.validPeriodRequired')));
+                    } else {
+                        callback();
+                    }
+                }, trigger: 'blur' }
+            ]
+        };
+    },
+    editTokenRules() {
+        return {
+            permissions: [
+                { required: true, message: this.$t('sysSecurity.permissionsRequired'), trigger: 'change' }
+            ],
+            expirationValue: [
+                { validator: (rule, value, callback) => {
+                    if (!this.editingToken.neverExpire && (!value || value <= 0)) {
+                        callback(new Error(this.$t('sysSecurity.validPeriodRequired')));
+                    } else {
+                        callback();
+                    }
+                }, trigger: 'blur' }
+            ]
+        };
     },
 },
 methods: {
@@ -442,10 +447,10 @@ methods: {
     // Token相关方法
     getPermissionText(permission) {
         const permissionMap = {
-            'upload': '上传',
-            'delete': '删除', 
-            'list': '列出',
-            'manage': '管理'
+            'upload': this.$t('sysSecurity.permUpload'),
+            'delete': this.$t('sysSecurity.permDelete'), 
+            'list': this.$t('sysSecurity.permList'),
+            'manage': this.$t('sysSecurity.permManage')
         };
         return permissionMap[permission] || permission;
     },
@@ -461,7 +466,7 @@ methods: {
             const data = await response.json();
             this.apiTokens = data.tokens || [];
         } catch (error) {
-            this.$message.error('获取Token列表失败');
+            this.$message.error(this.$t('sysSecurity.tokenListFailed'));
         } finally {
             this.tokenLoading = false;
         }
@@ -506,12 +511,12 @@ methods: {
                     this.showTokenResultDialog = true;
                     this.newToken = { name: '', owner: '', permissions: [], neverExpire: true, expirationValue: 1, expirationUnit: 'd', autoDelete: false };
                     await this.loadApiTokens();
-                    this.$message.success('Token创建成功');
+                    this.$message.success(this.$t('sysSecurity.tokenCreateSuccess'));
                 } else {
-                    this.$message.error(data.error || 'Token创建失败');
+                    this.$message.error(data.error || this.$t('sysSecurity.tokenCreateFailed'));
                 }
             } catch (error) {
-                this.$message.error('Token创建失败');
+                this.$message.error(this.$t('sysSecurity.tokenCreateFailed'));
             }
         });
     },
@@ -561,21 +566,21 @@ methods: {
                 if (response.ok) {
                     this.showEditTokenDialog = false;
                     await this.loadApiTokens();
-                    this.$message.success('Token更新成功');
+                    this.$message.success(this.$t('sysSecurity.tokenUpdateSuccess'));
                 } else {
-                    this.$message.error(data.error || 'Token更新失败');
+                    this.$message.error(data.error || this.$t('sysSecurity.tokenUpdateFailed'));
                 }
             } catch (error) {
-                this.$message.error('Token更新失败');
+                this.$message.error(this.$t('sysSecurity.tokenUpdateFailed'));
             }
         });
     },
     
     async deleteToken(tokenId) {
         try {
-            await this.$confirm('此操作将永久删除该Token，是否继续？', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            await this.$confirm(this.$t('sysSecurity.tokenDeleteConfirm'), this.$t('sysSecurity.tokenDeleteConfirmTitle'), {
+                confirmButtonText: this.$t('sysSecurity.tokenDeleteConfirmOk'),
+                cancelButtonText: this.$t('sysSecurity.tokenDeleteConfirmCancel'),
                 type: 'warning'
             });
             
@@ -587,13 +592,13 @@ methods: {
             
             if (response.ok) {
                 await this.loadApiTokens();
-                this.$message.success('Token删除成功');
+                this.$message.success(this.$t('sysSecurity.tokenDeleteSuccess'));
             } else {
-                this.$message.error(data.error || 'Token删除失败');
+                this.$message.error(data.error || this.$t('sysSecurity.tokenDeleteFailed'));
             }
         } catch (error) {
             if (error !== 'cancel') {
-                this.$message.error('Token删除失败');
+                this.$message.error(this.$t('sysSecurity.tokenDeleteFailed'));
             }
         }
     },
@@ -601,9 +606,9 @@ methods: {
     async copyToken() {
         try {
             await navigator.clipboard.writeText(this.createdToken.token);
-            this.$message.success('Token已复制到剪贴板');
+            this.$message.success(this.$t('sysSecurity.tokenCopied'));
         } catch (error) {
-            this.$message.error('复制失败，请手动复制');
+            this.$message.error(this.$t('sysSecurity.copyFailed'));
         }
     },
     
@@ -665,7 +670,7 @@ methods: {
                 },
                 body: JSON.stringify(settings)
             }).then(() => {
-                this.$message.success('设置已保存');
+                this.$message.success(this.$t('sysSecurity.settingsSaved'));
                 // 更新原密码
                 this.oriUserPassword = this.authSettings.user.authCode;
                 this.oriAdminPassword = this.authSettings.admin.adminPassword;

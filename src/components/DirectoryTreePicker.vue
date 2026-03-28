@@ -23,7 +23,7 @@
                     <font-awesome-icon icon="exclamation-circle" class="error-icon" />
                     <span class="error-text">{{ error }}</span>
                     <el-button type="primary" size="small" @click="fetchDirectoryTree">
-                        重试
+                        {{ $t('directoryTree.retry') }}
                     </el-button>
                 </div>
                 <el-tree
@@ -61,7 +61,7 @@
                 :show-close="true"
                 :with-header="true"
                 :z-index="3000"
-                title="选择目录"
+                :title="$t('directoryTree.selectDirectory')"
                 class="directory-tree-drawer"
             >
                 <div class="tree-container" v-loading="loading">
@@ -69,7 +69,7 @@
                         <font-awesome-icon icon="exclamation-circle" class="error-icon" />
                         <span class="error-text">{{ error }}</span>
                         <el-button type="primary" size="small" @click="fetchDirectoryTree">
-                            重试
+                            {{ $t('directoryTree.retry') }}
                         </el-button>
                     </div>
                     <el-tree
@@ -203,9 +203,9 @@ export default {
                     
                     if (!response.ok) {
                         if (response.status === 401) {
-                            this.error = '认证失败，请重新登录';
+                            this.error = this.$t('directoryTree.authFailed');
                         } else {
-                            this.error = '服务器错误，请稍后重试';
+                            this.error = this.$t('directoryTree.serverError');
                         }
                         return;
                     }
@@ -225,9 +225,9 @@ export default {
             } catch (err) {
                 console.error('Failed to fetch directory tree:', err);
                 if (err.response?.status === 401) {
-                    this.error = '认证失败，请重新登录';
+                    this.error = this.$t('directoryTree.authFailed');
                 } else {
-                    this.error = '加载目录树失败，请检查网络连接';
+                    this.error = this.$t('directoryTree.loadFailed');
                 }
             } finally {
                 this.loading = false;

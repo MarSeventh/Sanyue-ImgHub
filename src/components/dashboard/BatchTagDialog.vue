@@ -1,6 +1,6 @@
 <template>
     <el-dialog
-        title="批量标签管理"
+        :title="$t('batchTag.title')"
         v-model="visible"
         :width="dialogWidth"
         @close="handleClose"
@@ -8,14 +8,14 @@
         <div class="batch-tag-container">
             <el-tabs v-model="activeTab" type="border-card">
                 <!-- 添加标签 -->
-                <el-tab-pane label="添加" name="add">
+                <el-tab-pane :label="$t('batchTag.addTab')" name="add">
                     <div class="tab-content">
-                        <p class="tab-description">为选中的 {{ fileCount }} 个文件添加标签</p>
+                        <p class="tab-description">{{ $t('batchTag.addDescription', { count: fileCount }) }}</p>
 
                         <div class="input-section">
                             <el-input
                                 v-model="inputTag"
-                                placeholder="输入标签名称"
+                                :placeholder="$t('batchTag.inputPlaceholder')"
                                 @keyup.enter="handleAddInputTag"
                                 @input="handleInputChange"
                                 clearable
@@ -41,7 +41,7 @@
                         </div>
 
                         <div class="tags-to-add-section">
-                            <h4>待添加的标签</h4>
+                            <h4>{{ $t('batchTag.pendingTags') }}</h4>
                             <div v-if="tagsToAdd.length > 0" class="tags-container">
                                 <el-tag
                                     v-for="tag in tagsToAdd"
@@ -54,7 +54,7 @@
                                 </el-tag>
                             </div>
                             <div v-else class="empty-message">
-                                暂无待添加标签
+                                {{ $t('batchTag.noPendingTags') }}
                             </div>
                         </div>
 
@@ -65,19 +65,19 @@
                                 :loading="loading"
                                 :disabled="tagsToAdd.length === 0"
                             >
-                                添加到所有文件
+                                {{ $t('batchTag.addToAllFiles') }}
                             </el-button>
                         </div>
                     </div>
                 </el-tab-pane>
 
                 <!-- 移除标签 -->
-                <el-tab-pane label="移除" name="remove">
+                <el-tab-pane :label="$t('batchTag.removeTab')" name="remove">
                     <div class="tab-content">
-                        <p class="tab-description">移除选中文件的共有标签</p>
+                        <p class="tab-description">{{ $t('batchTag.removeDescription') }}</p>
 
                         <div v-if="commonTags.length > 0" class="common-tags-section">
-                            <h4>共有标签</h4>
+                            <h4>{{ $t('batchTag.commonTags') }}</h4>
                             <div class="tags-container">
                                 <el-tag
                                     v-for="tag in commonTags"
@@ -92,20 +92,20 @@
                             </div>
                         </div>
                         <div v-else class="empty-message">
-                            选中的文件没有共有标签
+                            {{ $t('batchTag.noCommonTags') }}
                         </div>
                     </div>
                 </el-tab-pane>
 
                 <!-- 清空标签 -->
-                <el-tab-pane label="清空" name="clear">
+                <el-tab-pane :label="$t('batchTag.clearTab')" name="clear">
                     <div class="tab-content">
-                        <p class="tab-description">清空选中的 {{ fileCount }} 个文件的所有标签</p>
+                        <p class="tab-description">{{ $t('batchTag.clearDescription', { count: fileCount }) }}</p>
 
                         <el-alert
-                            title="⚠️警告"
+                            :title="$t('batchTag.clearWarningTitle')"
                             type="warning"
-                            description="此操作将清空所有选中文件的标签，且不可恢复"
+                            :description="$t('batchTag.clearWarningDesc')"
                             :closable="false"
                             style="margin-bottom: 20px;"
                             center
@@ -117,7 +117,7 @@
                                 @click="handleClearAllTags"
                                 :loading="loading"
                             >
-                                确认清空所有标签
+                                {{ $t('batchTag.confirmClearAll') }}
                             </el-button>
                         </div>
                     </div>
@@ -236,7 +236,7 @@ export default {
                 }
             } catch (error) {
                 console.error('Error loading common tags:', error);
-                ElMessage.error('加载共有标签失败');
+                ElMessage.error(this.$t('batchTag.loadCommonTagsFailed'));
             }
         },
 
@@ -285,7 +285,7 @@ export default {
             }
 
             if (this.tagsToAdd.includes(tag)) {
-                ElMessage.warning('标签已在列表中');
+                ElMessage.warning(this.$t('batchTag.tagAlreadyInList'));
                 this.inputTag = '';
                 this.showSuggestions = false;
                 return;
@@ -305,7 +305,7 @@ export default {
 
         async executeAddTags() {
             if (this.tagsToAdd.length === 0) {
-                ElMessage.warning('请先添加要批量添加的标签');
+                ElMessage.warning(this.$t('batchTag.pleaseAddTags'));
                 return;
             }
 
@@ -327,18 +327,18 @@ export default {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success || data.updated > 0) {
-                        ElMessage.success(`成功为 ${data.updated} 个文件添加标签`);
+                        ElMessage.success(this.$t('batchTag.addSuccess', { count: data.updated }));
                         this.$emit('tagsUpdated');
                         this.tagsToAdd = [];
                     } else {
-                        throw new Error('批量添加标签失败');
+                        throw new Error(this.$t('batchTag.addFailed'));
                     }
                 } else {
-                    throw new Error('批量添加标签失败');
+                    throw new Error(this.$t('batchTag.addFailed'));
                 }
             } catch (error) {
                 console.error('Error adding tags:', error);
-                ElMessage.error('批量添加标签失败');
+                ElMessage.error(this.$t('batchTag.addFailed'));
             } finally {
                 this.loading = false;
             }
@@ -363,18 +363,18 @@ export default {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success || data.updated > 0) {
-                        ElMessage.success(`成功从 ${data.updated} 个文件中移除标签`);
+                        ElMessage.success(this.$t('batchTag.removeSuccess', { count: data.updated }));
                         this.$emit('tagsUpdated');
                         await this.loadCommonTags();
                     } else {
-                        throw new Error('移除标签失败');
+                        throw new Error(this.$t('batchTag.removeFailed'));
                     }
                 } else {
-                    throw new Error('移除标签失败');
+                    throw new Error(this.$t('batchTag.removeFailed'));
                 }
             } catch (error) {
                 console.error('Error removing tag:', error);
-                ElMessage.error('移除标签失败');
+                ElMessage.error(this.$t('batchTag.removeFailed'));
             } finally {
                 this.loading = false;
             }
@@ -382,17 +382,17 @@ export default {
 
         handleClearAllTags() {
             ElMessageBox.confirm(
-                `确定要清空选中的 ${this.fileCount} 个文件的所有标签吗？此操作不可恢复。`,
-                '确认清空',
+                this.$t('batchTag.clearConfirmMessage', { count: this.fileCount }),
+                this.$t('batchTag.clearConfirmTitle'),
                 {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
+                    confirmButtonText: this.$t('batchTag.clearConfirmOk'),
+                    cancelButtonText: this.$t('batchTag.clearConfirmCancel'),
                     type: 'warning'
                 }
             ).then(() => {
                 this.executeClearTags();
             }).catch(() => {
-                ElMessage.info('已取消清空操作');
+                ElMessage.info(this.$t('batchTag.clearCancelled'));
             });
         },
 
@@ -415,18 +415,18 @@ export default {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success || data.updated > 0) {
-                        ElMessage.success(`成功清空 ${data.updated} 个文件的标签`);
+                        ElMessage.success(this.$t('batchTag.clearSuccess', { count: data.updated }));
                         this.$emit('tagsUpdated');
                         this.commonTags = [];
                     } else {
-                        throw new Error('清空标签失败');
+                        throw new Error(this.$t('batchTag.clearFailed'));
                     }
                 } else {
-                    throw new Error('清空标签失败');
+                    throw new Error(this.$t('batchTag.clearFailed'));
                 }
             } catch (error) {
                 console.error('Error clearing tags:', error);
-                ElMessage.error('清空标签失败');
+                ElMessage.error(this.$t('batchTag.clearFailed'));
             } finally {
                 this.loading = false;
             }

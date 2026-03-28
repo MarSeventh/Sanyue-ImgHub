@@ -1,6 +1,6 @@
 <template>
     <el-dialog
-        title="标签管理"
+        :title="$t('tagManagement.title')"
         v-model="visible"
         :width="dialogWidth"
         @close="handleClose"
@@ -10,7 +10,7 @@
             <div class="input-section">
                 <el-input
                     v-model="inputTag"
-                    placeholder="输入标签名称"
+                    :placeholder="$t('tagManagement.inputPlaceholder')"
                     @keyup.enter="handleAddTag"
                     @input="handleInputChange"
                     clearable
@@ -37,7 +37,7 @@
 
             <!-- 当前标签 -->
             <div class="current-tags-section">
-                <h4>当前标签</h4>
+                <h4>{{ $t('tagManagement.currentTags') }}</h4>
                 <div v-if="currentTags.length > 0" class="tags-container">
                     <el-tag
                         v-for="tag in currentTags"
@@ -50,13 +50,13 @@
                     </el-tag>
                 </div>
                 <div v-else class="empty-message">
-                    暂无标签
+                    {{ $t('tagManagement.noTags') }}
                 </div>
             </div>
 
             <!-- 常用标签 -->
             <div class="popular-tags-section">
-                <h4>常用标签</h4>
+                <h4>{{ $t('tagManagement.popularTags') }}</h4>
                 <div v-if="popularTags.length > 0" class="tags-container">
                     <el-tag
                         v-for="tag in popularTags"
@@ -70,17 +70,17 @@
                 </div>
                 <div v-else-if="loadingPopularTags" class="empty-message">
                     <el-icon class="is-loading"><Loading /></el-icon>
-                    加载中...
+                    {{ $t('tagManagement.loading') }}
                 </div>
                 <div v-else class="empty-message">
-                    暂无常用标签
+                    {{ $t('tagManagement.noPopularTags') }}
                 </div>
             </div>
         </div>
 
         <template #footer>
             <span class="dialog-footer">
-                <el-button @click="handleClose">关闭</el-button>
+                <el-button @click="handleClose">{{ $t('tagManagement.close') }}</el-button>
             </span>
         </template>
     </el-dialog>
@@ -155,7 +155,7 @@ export default {
                 }
             } catch (error) {
                 console.error('Error loading file tags:', error);
-                ElMessage.error('加载标签失败');
+                ElMessage.error(this.$t('tagManagement.loadFailed'));
             }
         },
 
@@ -222,7 +222,7 @@ export default {
             }
 
             if (this.currentTags.includes(tag)) {
-                ElMessage.warning('标签已存在');
+                ElMessage.warning(this.$t('tagManagement.tagExists'));
                 this.inputTag = '';
                 this.showSuggestions = false;
                 return;
@@ -245,18 +245,18 @@ export default {
                     this.currentTags = data.tags || [];
                     this.inputTag = '';
                     this.showSuggestions = false;
-                    ElMessage.success('标签添加成功');
+                    ElMessage.success(this.$t('tagManagement.addSuccess'));
                     this.$emit('tagsUpdated', this.currentTags);
 
                     // 重新加载常用标签
                     this.loadPopularTags();
                 } else {
                     const error = await response.json();
-                    throw new Error(error.message || '添加标签失败');
+                    throw new Error(error.message || this.$t('tagManagement.addFailed'));
                 }
             } catch (error) {
                 console.error('Error adding tag:', error);
-                ElMessage.error(error.message || '添加标签失败');
+                ElMessage.error(error.message || this.$t('tagManagement.addFailed'));
             }
         },
 
@@ -276,17 +276,17 @@ export default {
                 if (response.ok) {
                     const data = await response.json();
                     this.currentTags = data.tags || [];
-                    ElMessage.success('标签删除成功');
+                    ElMessage.success(this.$t('tagManagement.removeSuccess'));
                     this.$emit('tagsUpdated', this.currentTags);
 
                     // 重新加载常用标签
                     this.loadPopularTags();
                 } else {
-                    throw new Error('删除标签失败');
+                    throw new Error(this.$t('tagManagement.removeFailed'));
                 }
             } catch (error) {
                 console.error('Error removing tag:', error);
-                ElMessage.error('删除标签失败');
+                ElMessage.error(this.$t('tagManagement.removeFailed'));
             }
         },
 

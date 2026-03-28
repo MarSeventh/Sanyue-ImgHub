@@ -1,6 +1,7 @@
 <template>
     <div class="login" :class="{ 'is-focused': isFocused }">
         <ToggleDark class="toggle-dark"/>
+        <LanguageSwitcher class="language-switcher"/>
         <Logo />
         <div class="login-container">
             <h1 class="login-title" tabindex="0">{{ title }}</h1>
@@ -40,7 +41,7 @@
                 :disabled="loading"
             >
                 <div v-if="loading" class="loading-ring"></div>
-                <span v-else>{{ submitText }}</span>
+                <span v-else>{{ computedSubmitText }}</span>
             </el-button>
         </div>
         <Footer class="footer"/>
@@ -50,6 +51,7 @@
 <script>
 import Footer from '@/components/Footer.vue';
 import ToggleDark from '@/components/ToggleDark.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import Logo from '@/components/Logo.vue';
 import { mapGetters } from 'vuex';
 import backgroundManager from '@/mixins/backgroundManager';
@@ -72,7 +74,7 @@ export default {
         // 提交按钮文本
         submitText: {
             type: String,
-            default: '登录'
+            default: ''
         },
         // 背景图配置键名
         backgroundKey: {
@@ -99,6 +101,9 @@ export default {
     },
     computed: {
         ...mapGetters(['userConfig']),
+        computedSubmitText() {
+            return this.submitText || this.$t('login.submit');
+        }
     },
     watch: {
         fields: {
@@ -113,6 +118,7 @@ export default {
     components: {
         Footer,
         ToggleDark,
+        LanguageSwitcher,
         Logo
     },
     mounted() {
@@ -520,6 +526,28 @@ export default {
     border-radius: 12px;
 }
 .toggle-dark:hover {
+    transform: scale(1.05);
+    box-shadow: var(--toolbar-button-shadow-hover);
+}
+.language-switcher {
+    position: fixed;
+    top: 30px;
+    right: 80px;
+    transition: all 0.3s ease;
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    color: var(--theme-toggle-color);
+    font-size: 13px;
+}
+.language-switcher:hover {
     transform: scale(1.05);
     box-shadow: var(--toolbar-button-shadow-hover);
 }

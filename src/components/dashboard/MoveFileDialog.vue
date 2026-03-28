@@ -4,7 +4,7 @@
         <el-dialog
             v-if="isDesktop"
             v-model="dialogVisible"
-            :title="isBatchMove ? '批量移动文件' : '移动文件'"
+            :title="isBatchMove ? $t('moveFile.batchTitle') : $t('moveFile.title')"
             width="500px"
             :show-close="true"
             class="move-dialog"
@@ -14,10 +14,10 @@
                 <div class="move-path-input-container">
                     <el-input
                         v-model="targetPath"
-                        placeholder="请输入目标目录路径"
+                        :placeholder="$t('moveFile.targetPlaceholder')"
                         class="move-path-input"
                     >
-                        <template #prepend>目标目录</template>
+                        <template #prepend>{{ $t('moveFile.targetDirectory') }}</template>
                     </el-input>
                     <DirectoryTreePicker
                         :current-directory="currentDirectory"
@@ -31,12 +31,12 @@
                         </template>
                     </DirectoryTreePicker>
                 </div>
-                <p class="move-dialog-hint">提示：路径以 / 开头表示根目录，如 /photos/2024/</p>
+                <p class="move-dialog-hint">{{ $t('moveFile.hint') }}</p>
             </div>
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button @click="handleClose">取消</el-button>
-                    <el-button type="primary" :loading="loading" @click="handleConfirm">确定</el-button>
+                    <el-button @click="handleClose">{{ $t('moveFile.cancel') }}</el-button>
+                    <el-button type="primary" :loading="loading" @click="handleConfirm">{{ $t('moveFile.confirm') }}</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -45,7 +45,7 @@
         <el-drawer
             v-else
             v-model="dialogVisible"
-            :title="isBatchMove ? '批量移动文件' : '移动文件'"
+            :title="isBatchMove ? $t('moveFile.batchTitle') : $t('moveFile.title')"
             direction="btt"
             size="auto"
             :show-close="true"
@@ -54,24 +54,24 @@
         >
             <div class="move-drawer-content">
                 <div class="move-path-section">
-                    <div class="move-path-label">目标目录</div>
+                    <div class="move-path-label">{{ $t('moveFile.targetDirectory') }}</div>
                     <div class="move-path-input-row">
                         <el-input
                             v-model="targetPath"
-                            placeholder="请输入目标目录路径"
+                            :placeholder="$t('moveFile.targetPlaceholder')"
                             class="move-path-input"
                         />
                         <el-button class="directory-picker-trigger" @click="showTreePicker = true">
                             <font-awesome-icon icon="folder-tree" />
                         </el-button>
                     </div>
-                    <p class="move-dialog-hint">提示：路径以 / 开头表示根目录</p>
+                    <p class="move-dialog-hint">{{ $t('moveFile.hintMobile') }}</p>
                 </div>
                 
                 <!-- 内嵌目录树 -->
                 <div v-if="showTreePicker" class="embedded-tree-section">
                     <div class="tree-section-header">
-                        <span class="tree-section-title">选择目录</span>
+                        <span class="tree-section-title">{{ $t('moveFile.selectDirectory') }}</span>
                         <el-button text @click="showTreePicker = false">
                             <font-awesome-icon icon="times" />
                         </el-button>
@@ -81,7 +81,7 @@
                             <font-awesome-icon icon="exclamation-circle" class="error-icon" />
                             <span class="error-text">{{ treeError }}</span>
                             <el-button type="primary" size="small" @click="fetchDirectoryTree">
-                                重试
+                                {{ $t('moveFile.retry') }}
                             </el-button>
                         </div>
                         <el-tree
@@ -109,8 +109,8 @@
             </div>
             <template #footer>
                 <div class="drawer-footer">
-                    <el-button @click="handleClose" class="footer-btn">取消</el-button>
-                    <el-button type="primary" :loading="loading" @click="handleConfirm" class="footer-btn">确定</el-button>
+                    <el-button @click="handleClose" class="footer-btn">{{ $t('moveFile.cancel') }}</el-button>
+                    <el-button type="primary" :loading="loading" @click="handleConfirm" class="footer-btn">{{ $t('moveFile.confirm') }}</el-button>
                 </div>
             </template>
         </el-drawer>
@@ -219,9 +219,9 @@ export default {
                 
                 if (!response.ok) {
                     if (response.status === 401) {
-                        this.treeError = '认证失败，请重新登录';
+                        this.treeError = this.$t('moveFile.authFailed');
                     } else {
-                        this.treeError = '服务器错误，请稍后重试';
+                        this.treeError = this.$t('moveFile.serverError');
                     }
                     return;
                 }
@@ -234,7 +234,7 @@ export default {
                 }
             } catch (err) {
                 console.error('Failed to fetch directory tree:', err);
-                this.treeError = '加载目录树失败，请检查网络连接';
+                this.treeError = this.$t('moveFile.loadTreeFailed');
             } finally {
                 this.treeLoading = false;
             }

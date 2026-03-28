@@ -2,70 +2,66 @@
     <div class="others-settings" v-loading="loading">
         <!-- 一级设置：其他设置 -->
         <div class="first-settings">
-            <h3 class="first-title">远端遥测
-                <el-tooltip content="便于问题查找和定位，建议开启" placement="right">
+            <h3 class="first-title">{{ $t('sysOthers.remoteTelemetry') }}
+                <el-tooltip :content="$t('sysOthers.remoteTelemetryTooltip')" placement="right">
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h3>
             <el-form :model="settings.telemetry" label-width="120px">
-                <el-form-item label="启用">
+                <el-form-item :label="$t('sysOthers.enable')">
                     <el-switch v-model="settings.telemetry.enabled" :disabled="settings.telemetry.fixed"></el-switch>
                 </el-form-item>
             </el-form>
-            <h3 class="first-title">CloudFlare API Token
-                <el-tooltip content="设置后可以使后端拉黑、删除等操作不受CDN缓存限制 <br/> 建议设置,设置方式请查阅文档" placement="right" raw-content>
+            <h3 class="first-title">{{ $t('sysOthers.cloudflareApiToken') }}
+                <el-tooltip :content="$t('sysOthers.cloudflareApiTokenTooltip')" placement="right" raw-content>
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h3>
             <el-form :model="settings.cloudflareApiToken" label-width="120px">
-                <el-form-item label="区域ID">
+                <el-form-item :label="$t('sysOthers.zoneId')">
                     <el-input v-model="settings.cloudflareApiToken.CF_ZONE_ID" :disabled="settings.cloudflareApiToken.fixed"></el-input>
                 </el-form-item>
-                <el-form-item label="账户邮箱">
+                <el-form-item :label="$t('sysOthers.accountEmail')">
                     <el-input v-model="settings.cloudflareApiToken.CF_EMAIL" :disabled="settings.cloudflareApiToken.fixed"></el-input>
                 </el-form-item>
                 <el-form-item label="API Key">
                     <el-input v-model="settings.cloudflareApiToken.CF_API_KEY" :disabled="settings.cloudflareApiToken.fixed" type="password" show-password autocomplete="new-password"></el-input>
                 </el-form-item>
             </el-form>
-            <h3 class="first-title">随机图像API
-                <el-tooltip content="API具体用法请查阅文档" placement="right">
+            <h3 class="first-title">{{ $t('sysOthers.randomImageApi') }}
+                <el-tooltip :content="$t('sysOthers.randomImageApiTooltip')" placement="right">
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h3>
             <el-form :model="settings.randomImageAPI" label-width="120px">
-                <el-form-item label="启用">
+                <el-form-item :label="$t('sysOthers.enable')">
                     <el-switch v-model="settings.randomImageAPI.enabled" :disabled="settings.randomImageAPI.fixed"></el-switch>
                 </el-form-item>
                 <el-form-item prop="randomImageAPI.allowedDir">
                     <template #label>
-                        <span>目录</span>
-                        <el-tooltip content="1. 开放随机图权限的目录，默认为根目录，多个目录用逗号分隔 <br/> 2. 目录均采用绝对路径，例如/img/cover，表示该目录及其所有子目录的文件可被随机图API访问" placement="right" raw-content>
+                        <span>{{ $t('sysOthers.directory') }}</span>
+                        <el-tooltip :content="$t('sysOthers.directoryTooltip')" placement="right" raw-content>
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                         </el-tooltip>
                     </template>
                     <el-input v-model="settings.randomImageAPI.allowedDir" :disabled="settings.randomImageAPI.fixed"></el-input>
                 </el-form-item>
             </el-form>
-            <h3 class="first-title">访客图库
-                <el-tooltip content="启用后，访客可通过 /browse 路径浏览指定目录的图片（只读，无法删除/移动）" placement="right" raw-content>
+            <h3 class="first-title">{{ $t('sysOthers.publicBrowse') }}
+                <el-tooltip :content="$t('sysOthers.publicBrowseTooltip')" placement="right" raw-content>
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h3>
             <el-form :model="settings.publicBrowse" label-width="120px">
-                <el-form-item label="启用">
+                <el-form-item :label="$t('sysOthers.enable')">
                     <el-switch v-model="settings.publicBrowse.enabled" :disabled="settings.publicBrowse.fixed"></el-switch>
                 </el-form-item>
                 <el-form-item prop="publicBrowse.allowedDir">
                     <template #label>
-                        <span>开放目录</span>
+                        <span>{{ $t('sysOthers.openDirectory') }}</span>
                         <el-tooltip placement="right" raw-content>
                             <template #content>
-                                <div style="max-width: 320px; line-height: 1.6;">
-                                    <p style="margin: 0 0 8px 0;"><b>允许公开浏览的目录，多个目录用逗号分隔</b></p>
-                                    <p style="margin: 0 0 8px 0;">示例：wallpaper,photos,album</p>
-                                    <p style="margin: 0 0 8px 0; color: #909399;">支持子目录：2026/lucky,2026/rich</p>
-                                    <p style="margin: 0; color: #67c23a;">访问链接：https://你的域名/browse/2026/lucky</p>
+                                <div style="max-width: 320px; line-height: 1.6;" v-html="$t('sysOthers.openDirectoryTooltip')">
                                 </div>
                             </template>
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
@@ -74,23 +70,23 @@
                     <el-input v-model="settings.publicBrowse.allowedDir" :disabled="settings.publicBrowse.fixed" placeholder="wallpaper,photos,album"></el-input>
                 </el-form-item>
             </el-form>
-            <h3 class="first-title">WebDAV
-                <el-tooltip content="启用后，可以通过WebDAV协议访问和管理图片" placement="right" raw-content>
+            <h3 class="first-title">{{ $t('sysOthers.webdav') }}
+                <el-tooltip :content="$t('sysOthers.webdavTooltip')" placement="right" raw-content>
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h3>
             <el-form :model="settings.webDAV" label-width="120px">
-                <el-form-item label="启用">
+                <el-form-item :label="$t('sysOthers.enable')">
                     <el-switch v-model="settings.webDAV.enabled" :disabled="settings.webDAV.fixed"></el-switch>
                 </el-form-item>
-                <el-form-item label="用户名">
+                <el-form-item :label="$t('sysOthers.webdavUsername')">
                     <el-input v-model="settings.webDAV.username" :disabled="settings.webDAV.fixed"></el-input>
                 </el-form-item>
-                <el-form-item label="密码">
+                <el-form-item :label="$t('sysOthers.webdavPassword')">
                     <el-input v-model="settings.webDAV.password" :disabled="settings.webDAV.fixed" type="password" show-password autocomplete="new-password"></el-input>
                 </el-form-item>
-                <el-form-item label="上传渠道">
-                    <el-select v-model="settings.webDAV.uploadChannel" :disabled="settings.webDAV.fixed" placeholder="默认渠道" clearable>
+                <el-form-item :label="$t('sysOthers.webdavUploadChannel')">
+                    <el-select v-model="settings.webDAV.uploadChannel" :disabled="settings.webDAV.fixed" :placeholder="$t('sysOthers.webdavDefaultChannel')" clearable>
                         <el-option label="Telegram" value="telegram"></el-option>
                         <el-option label="Cloudflare R2" value="cfr2"></el-option>
                         <el-option label="S3" value="s3"></el-option>
@@ -98,8 +94,8 @@
                         <el-option label="HuggingFace" value="huggingface"></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="指定渠道名" v-if="settings.webDAV.uploadChannel && webdavChannelList.length > 1">
-                    <el-select v-model="settings.webDAV.channelName" :disabled="settings.webDAV.fixed" placeholder="自动选择" clearable>
+                <el-form-item :label="$t('sysOthers.webdavChannelName')" v-if="settings.webDAV.uploadChannel && webdavChannelList.length > 1">
+                    <el-select v-model="settings.webDAV.channelName" :disabled="settings.webDAV.fixed" :placeholder="$t('uploadSettings.autoSelect')" clearable>
                         <el-option
                             v-for="ch in webdavChannelList"
                             :key="ch.name"
@@ -163,7 +159,7 @@ methods: {
             },
             body: JSON.stringify(this.settings)
         })
-        .then(() => this.$message.success('设置已保存'));
+        .then(() => this.$message.success(this.$t('sysOthers.settingsSaved')));
     },
     async fetchAvailableChannels() {
         try {

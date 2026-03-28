@@ -4,14 +4,14 @@
             <div v-if="modelValue" class="mobile-drawer-overlay" @click="close">
                 <div class="mobile-drawer" @click.stop>
                     <div class="mobile-drawer-header">
-                        <span class="mobile-drawer-title">目录导航</span>
+                        <span class="mobile-drawer-title">{{ $t('mobileDirectory.title') }}</span>
                         <font-awesome-icon icon="times" class="mobile-drawer-close" @click="close"/>
                     </div>
                     <div class="mobile-drawer-content">
                         <!-- 根目录 -->
                         <div class="mobile-drawer-item" :class="{ active: !currentPath }" @click="navigate('')">
                             <font-awesome-icon icon="home" class="mobile-drawer-item-icon"/>
-                            <span>根目录</span>
+                            <span>{{ $t('mobileDirectory.rootDirectory') }}</span>
                         </div>
                         <!-- 当前路径层级 -->
                         <div 
@@ -28,7 +28,7 @@
                         <!-- 返回上一级 -->
                         <div v-if="currentPath" class="mobile-drawer-back" @click="goBack">
                             <font-awesome-icon icon="arrow-left" class="mobile-drawer-item-icon"/>
-                            <span>返回上一级</span>
+                            <span>{{ $t('mobileDirectory.goBack') }}</span>
                         </div>
                     </div>
                 </div>

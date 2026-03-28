@@ -25,7 +25,7 @@
               type="text" 
               v-model="searchInput" 
               @keyup.enter="handleSearch"
-              placeholder="搜索文件名 或 #页码"
+              :placeholder="$t('publicBrowse.searchPlaceholder')"
               class="search-input"
               ref="searchInputRef"
             />
@@ -35,22 +35,22 @@
           </template>
         </div>
         <ToggleDark class="theme-toggle-btn" />
-        <span class="file-count">{{ totalCount }} 个文件</span>
+        <span class="file-count">{{ $t('publicBrowse.fileCount', { count: totalCount }) }}</span>
       </div>
     </header>
 
     <!-- 加载状态 -->
     <div v-if="loading && files.length === 0" class="loading-container">
       <div class="loading-spinner"></div>
-      <p>加载中...</p>
+      <p>{{ $t('publicBrowse.loading') }}</p>
     </div>
 
     <!-- 错误提示 -->
     <div v-else-if="error" class="error-container">
       <p>{{ error }}</p>
-      <button v-if="canRetry" @click="loadFiles" class="retry-btn">重试</button>
+      <button v-if="canRetry" @click="loadFiles" class="retry-btn">{{ $t('publicBrowse.retry') }}</button>
       <div class="error-credit">
-        <p>该图库由林酱贡献代码</p>
+        <p>{{ $t('publicBrowse.creditText') }}</p>
         <div class="error-credit-links">
           <a href="https://github.com/axibayuit-a11y" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
@@ -126,10 +126,10 @@
               <!-- 悬浮操作层 -->
               <div class="overlay">
                 <div class="overlay-actions">
-                  <button class="action-btn" @click.stop="copyLink(file.name)" title="复制链接">
+                  <button class="action-btn" @click.stop="copyLink(file.name)" :title="$t('publicBrowse.copyLink')">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
                   </button>
-                  <button class="action-btn" @click.stop="downloadFile(file.name)" title="下载">
+                  <button class="action-btn" @click.stop="downloadFile(file.name)" :title="$t('publicBrowse.downloadBtn')">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                   </button>
                 </div>
@@ -148,13 +148,13 @@
       <div ref="loadTrigger" class="load-trigger">
         <div v-if="loading && files.length > 0" class="loading-more">
           <div class="loading-spinner-small"></div>
-          <span>加载中...</span>
+          <span>{{ $t('publicBrowse.loadingMore') }}</span>
         </div>
         <div v-else-if="!hasMore && mediaFiles.length > 0" class="no-more">
-          已加载全部
+          {{ $t('publicBrowse.allLoaded') }}
         </div>
         <a v-if="!hasMore && mediaFiles.length > 0" class="credit-link" href="https://github.com/axibayuit-a11y" target="_blank" rel="noopener">
-          林酱贡献
+          {{ $t('publicBrowse.creditLink') }}
         </a>
       </div>
     </div>
@@ -241,7 +241,7 @@
             :is-active="true"
             @audio-ended="onAudioEnded"
           />
-          <div class="swipe-hint">← 滑动切换 →</div>
+          <div class="swipe-hint">{{ $t('publicBrowse.swipeHint') }}</div>
         </div>
         
         <!-- 其他文件：直接显示 -->
@@ -291,7 +291,7 @@
       </button>
       
       <!-- 桌面端旋转按钮 -->
-      <button class="rotate-btn" @click.stop="rotateImage" v-if="!isMobile" title="旋转90°">
+      <button class="rotate-btn" @click.stop="rotateImage" v-if="!isMobile" :title="$t('publicBrowse.rotate90')">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.89 8.53l1.41-1.42C19.2 8.27 19.76 9.61 19.93 11h-2.02c-.14-.87-.49-1.72-1.02-2.47zM17.91 13h2.02c-.17 1.39-.72 2.73-1.62 3.89l-1.41-1.42c.52-.75.87-1.59 1.01-2.47zm-1.01 5.32c-1.16.9-2.51 1.44-3.9 1.61V17.9c.87-.15 1.71-.49 2.46-1.03l1.44 1.45zM11 4.07V1l4.55 4.55L11 10V6.09c-2.84.48-5 2.94-5 5.91s2.16 5.43 5 5.91v2.02c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93z"/></svg>
       </button>
       
@@ -375,7 +375,7 @@ export default {
       return this.userConfig?.siteTitle || 'Sanyue ImgHub';
     },
     rootDirName() {
-      return this.rootDir.split('/').filter(Boolean).pop() || '根目录';
+      return this.rootDir.split('/').filter(Boolean).pop() || this.$t('publicBrowse.rootDirectory');
     },
     pathParts() {
       if (!this.currentPath || !this.rootDir) return [];
@@ -723,15 +723,15 @@ export default {
         if (err.response?.status === 403) {
           const msg = err.response?.data?.error || '';
           if (msg.includes('disabled')) {
-            this.error = '公开浏览功能未启用';
+            this.error = this.$t('publicBrowse.browseDisabled');
           } else if (msg.includes('not allowed') || msg.includes('No public')) {
-            this.error = '该目录不允许公开访问';
+            this.error = this.$t('publicBrowse.directoryNotAllowed');
           } else {
-            this.error = '访问被拒绝';
+            this.error = this.$t('publicBrowse.accessDenied');
           }
           this.canRetry = false;
         } else {
-          this.error = '加载失败，请重试';
+          this.error = this.$t('publicBrowse.loadFailed');
         }
       } finally {
         this.loading = false;
@@ -832,7 +832,7 @@ export default {
     copyLink(name) {
       const url = this.getFileUrl(name);
       navigator.clipboard?.writeText(url).then(() => {
-        this.showToast('已复制');
+        this.showToast(this.$t('publicBrowse.copied'));
       }).catch(() => {
         const input = document.createElement('input');
         input.value = url;
@@ -840,7 +840,7 @@ export default {
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
-        this.showToast('已复制');
+        this.showToast(this.$t('publicBrowse.copied'));
       });
     },
 

@@ -3,8 +3,8 @@
         <!-- 页面标题和操作 -->
         <div class="page-header">
             <h3 class="first-title">
-                上传渠道管理
-                <el-tooltip content="管理所有上传渠道的配置，点击卡片查看详情或编辑" placement="right">
+                {{ $t('sysUpload.title') }}
+                <el-tooltip :content="$t('sysUpload.titleTooltip')" placement="right">
                     <font-awesome-icon icon="question-circle" class="help-icon"/>
                 </el-tooltip>
             </h3>
@@ -12,12 +12,12 @@
                 <CustomSelect
                     v-model="channelFilter"
                     :options="filterOptions"
-                    placeholder="筛选渠道类型"
+                    :placeholder="$t('sysUpload.filterPlaceholder')"
                     width="160px"
                 />
                 <el-button type="primary" @click="showAddDialog = true" class="add-btn">
                     <font-awesome-icon icon="plus" style="margin-right: 6px;"/>
-                    添加渠道
+                    {{ $t('sysUpload.addChannel') }}
                 </el-button>
             </div>
         </div>
@@ -34,7 +34,7 @@
                 </div>
                 <!-- 负载均衡开关 -->
                 <div v-if="hasLoadBalance(channelType.value)" class="load-balance-switch">
-                    <span class="switch-label">负载均衡</span>
+                    <span class="switch-label">{{ $t('sysUpload.loadBalance') }}</span>
                     <el-switch v-model="getSettings(channelType.value).loadBalance.enabled" size="small" @change="saveSettings"/>
                 </div>
             </div>
@@ -52,8 +52,8 @@
                     <div class="card-glow" :ref="`glow-${channelType.value}-${index}`"></div>
                     <div class="card-header">
                         <div class="card-title">
-                            <span class="channel-name">{{ channel.name || '未命名渠道' }}</span>
-                            <el-tag v-if="channel.fixed" size="small" type="warning">环境变量</el-tag>
+                            <span class="channel-name">{{ channel.name || $t('sysUpload.unnamedChannel') }}</span>
+                            <el-tag v-if="channel.fixed" size="small" type="warning">{{ $t('sysUpload.envVariable') }}</el-tag>
                         </div>
                         <el-switch v-model="channel.enabled" size="small" @click.stop @change="saveSettings"/>
                     </div>
@@ -72,13 +72,13 @@
                             <template v-else-if="channelType.value === 'cfr2'">
                                 <div class="info-item">
                                     <font-awesome-icon icon="link" class="info-icon"/>
-                                    <span class="info-text" :title="channel.publicUrl">{{ channel.publicUrl || '未设置公开链接' }}</span>
+                                    <span class="info-text" :title="channel.publicUrl">{{ channel.publicUrl || $t('sysUpload.notSet') }}</span>
                                 </div>
                             </template>
                             <template v-else-if="channelType.value === 's3'">
                                 <div class="info-item">
                                     <font-awesome-icon icon="server" class="info-icon"/>
-                                    <span class="info-text">{{ channel.bucketName || '未设置' }}</span>
+                                    <span class="info-text">{{ channel.bucketName || $t('sysUpload.notSet') }}</span>
                                 </div>
                                 <div class="info-item" v-if="channel.endpoint">
                                     <font-awesome-icon icon="link" class="info-icon"/>
@@ -99,9 +99,9 @@
                             <template v-else-if="channelType.value === 'huggingface'">
                                 <div class="info-item">
                                     <font-awesome-icon icon="database" class="info-icon"/>
-                                    <span class="info-text">{{ channel.repo || '未设置仓库' }}</span>
+                                    <span class="info-text">{{ channel.repo || $t('sysUpload.notSet') }}</span>
                                 </div>
-                                <el-tag v-if="channel.isPrivate" size="small" type="warning">私有</el-tag>
+                                <el-tag v-if="channel.isPrivate" size="small" type="warning">{{ $t('sysUpload.privateRepo') }}</el-tag>
                             </template>
                         </div>
                         <!-- 容量显示 -->
@@ -116,28 +116,28 @@
                     </div>
                     <div class="card-actions">
                         <el-button text type="primary" size="small" @click="openDetailDialog(channelType.value, index)">
-                            <font-awesome-icon icon="eye" style="margin-right: 4px;"/>详情
+                            <font-awesome-icon icon="eye" style="margin-right: 4px;"/>{{ $t('sysUpload.detail') }}
                         </el-button>
                         <el-button text type="primary" size="small" @click="openEditDialog(channelType.value, index)">
-                            <font-awesome-icon icon="edit" style="margin-right: 4px;"/>编辑
+                            <font-awesome-icon icon="edit" style="margin-right: 4px;"/>{{ $t('sysUpload.editBtn') }}
                         </el-button>
                         <el-button text type="danger" size="small" @click="deleteChannel(channelType.value, index)" :disabled="channel.fixed">
-                            <font-awesome-icon icon="trash-alt" style="margin-right: 4px;"/>删除
+                            <font-awesome-icon icon="trash-alt" style="margin-right: 4px;"/>{{ $t('sysUpload.deleteBtn') }}
                         </el-button>
                     </div>
                 </div>
             </div>
             <div v-else class="empty-tip">
                 <font-awesome-icon icon="inbox" class="empty-icon"/>
-                <span>暂无 {{ channelType.label }} 渠道</span>
+                <span>{{ $t('sysUpload.noChannels', { type: channelType.label }) }}</span>
             </div>
         </div>
 
         <!-- 添加渠道弹窗 -->
-        <el-dialog v-model="showAddDialog" title="添加新渠道" class="channel-dialog" destroy-on-close @closed="resetAddForm">
+        <el-dialog v-model="showAddDialog" :title="$t('sysUpload.addDialogTitle')" class="channel-dialog" destroy-on-close @closed="resetAddForm">
             <el-form :model="newChannel" label-position="top" ref="addForm" :rules="addRules">
-                <el-form-item label="渠道类型" prop="type">
-                    <el-select v-model="newChannel.type" placeholder="请选择渠道类型" style="width: 100%;" @change="onChannelTypeChange">
+                <el-form-item :label="$t('sysUpload.channelTypeLabel')" prop="type">
+                    <el-select v-model="newChannel.type" :placeholder="$t('sysUpload.channelTypePlaceholder')" style="width: 100%;" @change="onChannelTypeChange">
                         <el-option v-for="ch in addableChannels" :key="ch.value" :label="ch.label" :value="ch.value">
                             <font-awesome-icon :icon="getChannelIcon(ch.value)" class="select-option-icon"/>
                             {{ ch.label }}
@@ -147,152 +147,152 @@
                 <template v-if="newChannel.type === 'cfr2'">
                     <div class="form-warning" style="margin-top: 0;">
                         <font-awesome-icon icon="info-circle" style="margin-right: 6px;"/>
-                        请按照 <a href="https://cfbed.sanyue.de/deployment/configuration.html#配置-r2-渠道" target="_blank" style="color: var(--el-color-primary);">配置 R2 渠道</a> 文档说明添加 R2 渠道
+                        <span v-html="$t('sysUpload.r2ConfigNote')"></span>
                     </div>
                 </template>
                 <template v-else>
-                <el-form-item label="渠道名称" prop="name">
-                    <el-input v-model="newChannel.name" placeholder="请输入渠道名称"/>
+                <el-form-item :label="$t('sysUpload.channelNameLabel')" prop="name">
+                    <el-input v-model="newChannel.name" :placeholder="$t('sysUpload.channelNamePlaceholder')"/>
                 </el-form-item>
                 <!-- 根据类型显示不同字段 -->
                 <template v-if="newChannel.type === 'telegram'">
-                    <el-form-item label="Bot Token" prop="botToken">
-                        <el-input v-model="newChannel.botToken" type="password" show-password placeholder="请输入 Bot Token"/>
+                    <el-form-item :label="$t('sysUpload.botTokenLabel')" prop="botToken">
+                        <el-input v-model="newChannel.botToken" type="password" show-password :placeholder="$t('sysUpload.botTokenPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="Chat ID" prop="chatId">
-                        <el-input v-model="newChannel.chatId" type="password" show-password placeholder="请输入 Chat ID"/>
+                    <el-form-item :label="$t('sysUpload.chatIdLabel')" prop="chatId">
+                        <el-input v-model="newChannel.chatId" type="password" show-password :placeholder="$t('sysUpload.chatIdPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="代理域名">
-                        <el-input v-model="newChannel.proxyUrl" placeholder="可选，例如: your-proxy.example.com"/>
+                    <el-form-item :label="$t('sysUpload.proxyDomain')">
+                        <el-input v-model="newChannel.proxyUrl" :placeholder="$t('sysUpload.proxyDomainPlaceholder')"/>
                     </el-form-item>
                 </template>
                 <template v-else-if="newChannel.type === 's3'">
-                    <el-form-item label="Endpoint" prop="endpoint">
-                        <el-input v-model="newChannel.endpoint" placeholder="例如: https://s3.us-east-005.backblazeb2.com"/>
+                    <el-form-item :label="$t('sysUpload.endpointLabel')" prop="endpoint">
+                        <el-input v-model="newChannel.endpoint" :placeholder="$t('sysUpload.endpointPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="CDN 域名">
-                        <el-input v-model="newChannel.cdnDomain" placeholder="如果有 CDN，请配置 CDN 域名，例如：https://cdn.example.com"/>
-                        <span class="form-tip">可选配置。配置后将优先通过 CDN 读取文件，提高访问速度和降低成本</span>
+                    <el-form-item :label="$t('sysUpload.cdnDomain')">
+                        <el-input v-model="newChannel.cdnDomain" :placeholder="$t('sysUpload.cdnDomainPlaceholder')"/>
+                        <span class="form-tip">{{ $t('sysUpload.cdnDomainTip') }}</span>
                     </el-form-item>
-                    <el-form-item label="存储桶名称" prop="bucketName">
-                        <el-input v-model="newChannel.bucketName" placeholder="请输入存储桶名称"/>
+                    <el-form-item :label="$t('sysUpload.bucketName')" prop="bucketName">
+                        <el-input v-model="newChannel.bucketName" :placeholder="$t('sysUpload.bucketNamePlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="存储桶区域" prop="region">
-                        <el-input v-model="newChannel.region" placeholder="默认填写 auto"/>
+                    <el-form-item :label="$t('sysUpload.bucketRegion')" prop="region">
+                        <el-input v-model="newChannel.region" :placeholder="$t('sysUpload.bucketRegionPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="访问密钥 ID" prop="accessKeyId">
-                        <el-input v-model="newChannel.accessKeyId" type="password" show-password placeholder="请输入访问密钥 ID"/>
+                    <el-form-item :label="$t('sysUpload.accessKeyId')" prop="accessKeyId">
+                        <el-input v-model="newChannel.accessKeyId" type="password" show-password :placeholder="$t('sysUpload.accessKeyIdPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="机密访问密钥" prop="secretAccessKey">
-                        <el-input v-model="newChannel.secretAccessKey" type="password" show-password placeholder="请输入机密访问密钥"/>
+                    <el-form-item :label="$t('sysUpload.secretAccessKey')" prop="secretAccessKey">
+                        <el-input v-model="newChannel.secretAccessKey" type="password" show-password :placeholder="$t('sysUpload.secretAccessKeyPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="路径风格">
+                    <el-form-item :label="$t('sysUpload.pathStyle')">
                         <el-switch v-model="newChannel.pathStyle"/>
-                        <span class="form-tip">使用 OpenList 等不兼容主机风格服务时需开启</span>
+                        <span class="form-tip">{{ $t('sysUpload.pathStyleTip') }}</span>
                     </el-form-item>
-                    <el-form-item label="容量限制">
+                    <el-form-item :label="$t('sysUpload.quotaLimit')">
                         <el-switch v-model="newChannel.quota.enabled"/>
                     </el-form-item>
                     <template v-if="newChannel.quota?.enabled">
-                        <el-form-item label="容量上限 (GB)">
+                        <el-form-item :label="$t('sysUpload.quotaLimitGB')">
                             <el-input-number v-model="newChannel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
                         </el-form-item>
-                        <el-form-item label="停用阈值 (%)">
+                        <el-form-item :label="$t('sysUpload.quotaThreshold')">
                             <el-input-number v-model="newChannel.quota.threshold" :min="50" :max="100" :step="5"/>
                         </el-form-item>
                     </template>
                 </template>
                 <template v-else-if="newChannel.type === 'discord'">
-                    <el-form-item label="Bot Token" prop="botToken">
-                        <el-input v-model="newChannel.botToken" type="password" show-password placeholder="请输入 Bot Token"/>
+                    <el-form-item :label="$t('sysUpload.botTokenLabel')" prop="botToken">
+                        <el-input v-model="newChannel.botToken" type="password" show-password :placeholder="$t('sysUpload.botTokenPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="Channel ID" prop="channelId">
-                        <el-input v-model="newChannel.channelId" type="password" show-password placeholder="请输入 Channel ID"/>
+                    <el-form-item :label="$t('sysUpload.channelIdLabel')" prop="channelId">
+                        <el-input v-model="newChannel.channelId" type="password" show-password :placeholder="$t('sysUpload.channelIdPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="代理域名">
-                        <el-input v-model="newChannel.proxyUrl" placeholder="可选，例如: your-proxy.example.com"/>
+                    <el-form-item :label="$t('sysUpload.proxyDomain')">
+                        <el-input v-model="newChannel.proxyUrl" :placeholder="$t('sysUpload.proxyDomainPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="Nitro 会员">
+                    <el-form-item :label="$t('sysUpload.nitroMember')">
                         <el-switch v-model="newChannel.isNitro"/>
-                        <span class="form-tip">会员单文件限制 25MB，否则为 10MB</span>
+                        <span class="form-tip">{{ $t('sysUpload.nitroTip') }}</span>
                     </el-form-item>
                     <div class="form-warning">
                         <font-awesome-icon icon="exclamation-triangle" style="margin-right: 6px;"/>
-                        Discord 有接口频率限制，不建议将其用作大规模并发场景
+                        {{ $t('sysUpload.discordWarning') }}
                     </div>
                 </template>
                 <template v-else-if="newChannel.type === 'huggingface'">
-                    <el-form-item label="仓库名" prop="repo">
-                        <el-input v-model="newChannel.repo" placeholder="格式: username/repo-name"/>
+                    <el-form-item :label="$t('sysUpload.repoName')" prop="repo">
+                        <el-input v-model="newChannel.repo" :placeholder="$t('sysUpload.repoNamePlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="Access Token" prop="token">
-                        <el-input v-model="newChannel.token" type="password" show-password placeholder="请输入 Access Token"/>
+                    <el-form-item :label="$t('sysUpload.accessToken')" prop="token">
+                        <el-input v-model="newChannel.token" type="password" show-password :placeholder="$t('sysUpload.accessTokenPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="私有仓库">
+                    <el-form-item :label="$t('sysUpload.privateRepo')">
                         <el-switch v-model="newChannel.isPrivate"/>
-                        <span class="form-tip">私有仓库限制 100GB</span>
+                        <span class="form-tip">{{ $t('sysUpload.privateRepoTip') }}</span>
                     </el-form-item>
                 </template>
                 </template>
             </el-form>
             <template #footer>
-                <el-button @click="showAddDialog = false">取消</el-button>
-                <el-button type="primary" @click="confirmAddChannel" v-if="newChannel.type !== 'cfr2'">确认添加</el-button>
+                <el-button @click="showAddDialog = false">{{ $t('sysUpload.cancel') }}</el-button>
+                <el-button type="primary" @click="confirmAddChannel" v-if="newChannel.type !== 'cfr2'">{{ $t('sysUpload.confirmAdd') }}</el-button>
             </template>
         </el-dialog>
 
         <!-- 详情弹窗 -->
-        <el-dialog v-model="showDetailDialog" :title="'渠道详情 - ' + (currentChannel?.name || '')" class="channel-dialog" @closed="resetDetailData">
+        <el-dialog v-model="showDetailDialog" :title="$t('sysUpload.detailDialogTitle', { name: currentChannel?.name || '' })" class="channel-dialog" @closed="resetDetailData">
             <el-descriptions :column="1" border>
-                <el-descriptions-item label="渠道名称">{{ currentChannel?.name }}</el-descriptions-item>
-                <el-descriptions-item label="渠道类型">{{ getChannelTypeLabel(currentChannelType) }}</el-descriptions-item>
-                <el-descriptions-item label="状态">
+                <el-descriptions-item :label="$t('sysUpload.channelNameDetail')">{{ currentChannel?.name }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('sysUpload.channelTypeDetail')">{{ getChannelTypeLabel(currentChannelType) }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('sysUpload.statusLabel')">
                     <el-tag :type="currentChannel?.enabled ? 'success' : 'info'">
-                        {{ currentChannel?.enabled ? '已启用' : '已禁用' }}
+                        {{ currentChannel?.enabled ? $t('sysUpload.enabled') : $t('sysUpload.disabled') }}
                     </el-tag>
                 </el-descriptions-item>
-                <el-descriptions-item v-if="currentChannel?.fixed" label="配置来源">
-                    <el-tag type="warning">环境变量</el-tag>
+                <el-descriptions-item v-if="currentChannel?.fixed" :label="$t('sysUpload.configSource')">
+                    <el-tag type="warning">{{ $t('sysUpload.envVariable') }}</el-tag>
                 </el-descriptions-item>
                 <template v-if="currentChannelType === 'telegram'">
-                    <el-descriptions-item label="Bot Token">{{ maskText(currentChannel?.botToken, 10) }}</el-descriptions-item>
-                    <el-descriptions-item label="Chat ID">{{ maskText(currentChannel?.chatId, 6) }}</el-descriptions-item>
-                    <el-descriptions-item label="代理域名">{{ currentChannel?.proxyUrl || '未设置' }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.botTokenLabel')">{{ maskText(currentChannel?.botToken, 10) }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.chatIdLabel')">{{ maskText(currentChannel?.chatId, 6) }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.proxyDomain')">{{ currentChannel?.proxyUrl || $t('sysUpload.notSet') }}</el-descriptions-item>
                 </template>
                 <template v-else-if="currentChannelType === 'cfr2'">
-                    <el-descriptions-item label="公开访问链接">
-                        <el-input :model-value="currentChannel?.publicUrl || '未设置'" readonly />
+                    <el-descriptions-item :label="$t('sysUpload.publicUrl')">
+                        <el-input :model-value="currentChannel?.publicUrl || $t('sysUpload.notSet')" readonly />
                     </el-descriptions-item>
                 </template>
                 <template v-else-if="currentChannelType === 's3'">
-                    <el-descriptions-item label="Endpoint">
+                    <el-descriptions-item :label="$t('sysUpload.endpointLabel')">
                         <el-input :model-value="currentChannel?.endpoint" readonly />
                     </el-descriptions-item>
-                    <el-descriptions-item label="CDN 域名">
-                        <el-input :model-value="currentChannel?.cdnDomain || '未设置'" readonly />
+                    <el-descriptions-item :label="$t('sysUpload.cdnDomain')">
+                        <el-input :model-value="currentChannel?.cdnDomain || $t('sysUpload.notSet')" readonly />
                     </el-descriptions-item>
-                    <el-descriptions-item label="存储桶名称">{{ currentChannel?.bucketName }}</el-descriptions-item>
-                    <el-descriptions-item label="存储桶区域">{{ currentChannel?.region }}</el-descriptions-item>
-                    <el-descriptions-item label="路径风格">{{ currentChannel?.pathStyle ? '是' : '否' }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.bucketName')">{{ currentChannel?.bucketName }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.bucketRegion')">{{ currentChannel?.region }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.pathStyle')">{{ currentChannel?.pathStyle ? $t('sysUpload.isPathStyle') : $t('sysUpload.isNotPathStyle') }}</el-descriptions-item>
                 </template>
                 <template v-else-if="currentChannelType === 'discord'">
-                    <el-descriptions-item label="Bot Token">{{ maskText(currentChannel?.botToken, 10) }}</el-descriptions-item>
-                    <el-descriptions-item label="Channel ID">{{ maskText(currentChannel?.channelId, 6) }}</el-descriptions-item>
-                    <el-descriptions-item label="代理域名">{{ currentChannel?.proxyUrl || '未设置' }}</el-descriptions-item>
-                    <el-descriptions-item label="Nitro 会员">{{ currentChannel?.isNitro ? '是' : '否' }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.botTokenLabel')">{{ maskText(currentChannel?.botToken, 10) }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.channelIdLabel')">{{ maskText(currentChannel?.channelId, 6) }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.proxyDomain')">{{ currentChannel?.proxyUrl || $t('sysUpload.notSet') }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.nitroMember')">{{ currentChannel?.isNitro ? $t('sysUpload.isPathStyle') : $t('sysUpload.isNotPathStyle') }}</el-descriptions-item>
                 </template>
                 <template v-else-if="currentChannelType === 'huggingface'">
-                    <el-descriptions-item label="仓库名">{{ currentChannel?.repo }}</el-descriptions-item>
-                    <el-descriptions-item label="私有仓库">{{ currentChannel?.isPrivate ? '是' : '否' }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.repoName')">{{ currentChannel?.repo }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.privateRepo')">{{ currentChannel?.isPrivate ? $t('sysUpload.isPathStyle') : $t('sysUpload.isNotPathStyle') }}</el-descriptions-item>
                 </template>
                 <!-- 容量信息 -->
                 <template v-if="currentChannel?.quota?.enabled">
-                    <el-descriptions-item label="容量限制">{{ currentChannel?.quota?.limitGB }} GB</el-descriptions-item>
-                    <el-descriptions-item label="停用阈值">{{ currentChannel?.quota?.threshold }}%</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.quotaLimit')">{{ currentChannel?.quota?.limitGB }} GB</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.quotaThreshold')">{{ currentChannel?.quota?.threshold }}%</el-descriptions-item>
                     <el-descriptions-item>
                         <template #label>
                             <span class="quota-label">
-                                当前用量
+                                {{ $t('sysUpload.currentUsage') }}
                                 <el-button link type="primary" @click="refreshQuota" class="refresh-btn">
                                     <font-awesome-icon icon="sync-alt" :class="{ 'fa-spin': quotaLoading }" />
                                 </el-button>
@@ -314,112 +314,112 @@
                 </template>
             </el-descriptions>
             <template #footer>
-                <el-button @click="showDetailDialog = false">关闭</el-button>
-                <el-button type="primary" @click="openEditFromDetail">编辑</el-button>
+                <el-button @click="showDetailDialog = false">{{ $t('sysUpload.closeBtn') }}</el-button>
+                <el-button type="primary" @click="openEditFromDetail">{{ $t('sysUpload.editBtn') }}</el-button>
             </template>
         </el-dialog>
 
         <!-- 编辑弹窗 -->
-        <el-dialog v-model="showEditDialog" :title="'编辑渠道 - ' + (editChannel?.name || '')" class="channel-dialog" destroy-on-close @closed="resetEditData">
+        <el-dialog v-model="showEditDialog" :title="$t('sysUpload.editDialogTitle', { name: editChannel?.name || '' })" class="channel-dialog" destroy-on-close @closed="resetEditData">
             <el-form :model="editChannel" label-position="top" ref="editForm" :rules="editRules">
-                <el-form-item label="渠道名称" prop="name">
+                <el-form-item :label="$t('sysUpload.channelNameLabel')" prop="name">
                     <el-input v-model="editChannel.name" :disabled="editChannel.fixed"/>
                 </el-form-item>
-                <el-form-item label="启用渠道">
+                <el-form-item :label="$t('sysUpload.enableChannel')">
                     <el-switch v-model="editChannel.enabled"/>
                 </el-form-item>
                 <!-- 根据类型显示不同字段 -->
                 <template v-if="currentChannelType === 'telegram'">
-                    <el-form-item label="Bot Token" prop="botToken">
+                    <el-form-item :label="$t('sysUpload.botTokenLabel')" prop="botToken">
                         <el-input v-model="editChannel.botToken" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item label="Chat ID" prop="chatId">
+                    <el-form-item :label="$t('sysUpload.chatIdLabel')" prop="chatId">
                         <el-input v-model="editChannel.chatId" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item label="代理域名">
-                        <el-input v-model="editChannel.proxyUrl" placeholder="例如: your-proxy.example.com"/>
+                    <el-form-item :label="$t('sysUpload.proxyDomain')">
+                        <el-input v-model="editChannel.proxyUrl" :placeholder="$t('sysUpload.proxyDomainPlaceholder')"/>
                     </el-form-item>
                 </template>
                 <template v-else-if="currentChannelType === 'cfr2'">
-                    <el-form-item label="公开访问链接">
+                    <el-form-item :label="$t('sysUpload.publicUrl')">
                         <el-input v-model="editChannel.publicUrl"/>
                     </el-form-item>
-                    <el-form-item label="容量限制">
+                    <el-form-item :label="$t('sysUpload.quotaLimit')">
                         <el-switch v-model="editChannel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, editChannel)"/>
                     </el-form-item>
                     <template v-if="editChannel.quota?.enabled">
-                        <el-form-item label="容量上限 (GB)">
+                        <el-form-item :label="$t('sysUpload.quotaLimitGB')">
                             <el-input-number v-model="editChannel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
                         </el-form-item>
-                        <el-form-item label="停用阈值 (%)">
+                        <el-form-item :label="$t('sysUpload.quotaThreshold')">
                             <el-input-number v-model="editChannel.quota.threshold" :min="50" :max="100" :step="5"/>
                         </el-form-item>
                     </template>
                 </template>
                 <template v-else-if="currentChannelType === 's3'">
-                    <el-form-item label="Endpoint" prop="endpoint">
+                    <el-form-item :label="$t('sysUpload.endpointLabel')" prop="endpoint">
                         <el-input v-model="editChannel.endpoint" :disabled="editChannel.fixed"/>
                     </el-form-item>
-                    <el-form-item label="CDN 域名">
-                        <el-input v-model="editChannel.cdnDomain" placeholder="如果有 CDN，请配置 CDN 域名，例如：https://cdn.example.com"/>
-                        <span class="form-tip">可选配置。配置后将优先通过 CDN 读取文件，提高访问速度和降低成本</span>
+                    <el-form-item :label="$t('sysUpload.cdnDomain')">
+                        <el-input v-model="editChannel.cdnDomain" :placeholder="$t('sysUpload.cdnDomainPlaceholder')"/>
+                        <span class="form-tip">{{ $t('sysUpload.cdnDomainTip') }}</span>
                     </el-form-item>
-                    <el-form-item label="存储桶名称" prop="bucketName">
+                    <el-form-item :label="$t('sysUpload.bucketName')" prop="bucketName">
                         <el-input v-model="editChannel.bucketName" :disabled="editChannel.fixed"/>
                     </el-form-item>
-                    <el-form-item label="存储桶区域" prop="region">
+                    <el-form-item :label="$t('sysUpload.bucketRegion')" prop="region">
                         <el-input v-model="editChannel.region" :disabled="editChannel.fixed"/>
                     </el-form-item>
-                    <el-form-item label="访问密钥 ID" prop="accessKeyId">
+                    <el-form-item :label="$t('sysUpload.accessKeyId')" prop="accessKeyId">
                         <el-input v-model="editChannel.accessKeyId" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item label="机密访问密钥" prop="secretAccessKey">
+                    <el-form-item :label="$t('sysUpload.secretAccessKey')" prop="secretAccessKey">
                         <el-input v-model="editChannel.secretAccessKey" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item label="路径风格">
+                    <el-form-item :label="$t('sysUpload.pathStyle')">
                         <el-switch v-model="editChannel.pathStyle" :disabled="editChannel.fixed"/>
                     </el-form-item>
-                    <el-form-item label="容量限制">
+                    <el-form-item :label="$t('sysUpload.quotaLimit')">
                         <el-switch v-model="editChannel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, editChannel)"/>
                     </el-form-item>
                     <template v-if="editChannel.quota?.enabled">
-                        <el-form-item label="容量上限 (GB)">
+                        <el-form-item :label="$t('sysUpload.quotaLimitGB')">
                             <el-input-number v-model="editChannel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
                         </el-form-item>
-                        <el-form-item label="停用阈值 (%)">
+                        <el-form-item :label="$t('sysUpload.quotaThreshold')">
                             <el-input-number v-model="editChannel.quota.threshold" :min="50" :max="100" :step="5"/>
                         </el-form-item>
                     </template>
                 </template>
                 <template v-else-if="currentChannelType === 'discord'">
-                    <el-form-item label="Bot Token" prop="botToken">
+                    <el-form-item :label="$t('sysUpload.botTokenLabel')" prop="botToken">
                         <el-input v-model="editChannel.botToken" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item label="Channel ID" prop="channelId">
+                    <el-form-item :label="$t('sysUpload.channelIdLabel')" prop="channelId">
                         <el-input v-model="editChannel.channelId" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item label="代理域名">
-                        <el-input v-model="editChannel.proxyUrl" placeholder="例如: your-proxy.example.com"/>
+                    <el-form-item :label="$t('sysUpload.proxyDomain')">
+                        <el-input v-model="editChannel.proxyUrl" :placeholder="$t('sysUpload.proxyDomainPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item label="Nitro 会员">
+                    <el-form-item :label="$t('sysUpload.nitroMember')">
                         <el-switch v-model="editChannel.isNitro"/>
                     </el-form-item>
                 </template>
                 <template v-else-if="currentChannelType === 'huggingface'">
-                    <el-form-item label="仓库名" prop="repo">
+                    <el-form-item :label="$t('sysUpload.repoName')" prop="repo">
                         <el-input v-model="editChannel.repo" :disabled="editChannel.fixed"/>
                     </el-form-item>
-                    <el-form-item label="Access Token" prop="token">
+                    <el-form-item :label="$t('sysUpload.accessToken')" prop="token">
                         <el-input v-model="editChannel.token" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item label="私有仓库">
+                    <el-form-item :label="$t('sysUpload.privateRepo')">
                         <el-switch v-model="editChannel.isPrivate"/>
                     </el-form-item>
                 </template>
             </el-form>
             <template #footer>
-                <el-button @click="showEditDialog = false">取消</el-button>
-                <el-button type="primary" @click="confirmEditChannel">保存修改</el-button>
+                <el-button @click="showEditDialog = false">{{ $t('sysUpload.cancel') }}</el-button>
+                <el-button type="primary" @click="confirmEditChannel">{{ $t('sysUpload.saveChanges') }}</el-button>
             </template>
         </el-dialog>
     </div>
@@ -499,43 +499,6 @@ data() {
         isPrivate: false
     },
 
-    // 添加表单验证规则
-    addRules: {
-        type: [{ required: true, message: '请选择渠道类型', trigger: 'change' }],
-        name: [
-            { required: true, message: '请输入渠道名称', trigger: 'blur' },
-            { pattern: /^[\u4e00-\u9fa5a-zA-Z0-9_-]+$/, message: '渠道名称只能包含中英文、数字、下划线和横线', trigger: 'blur' }
-        ],
-        botToken: [{ required: true, message: '请输入 Bot Token', trigger: 'blur' }],
-        chatId: [{ required: true, message: '请输入 Chat ID', trigger: 'blur' }],
-        channelId: [{ required: true, message: '请输入 Channel ID', trigger: 'blur' }],
-        endpoint: [{ required: true, message: '请输入 Endpoint', trigger: 'blur' }],
-        bucketName: [{ required: true, message: '请输入存储桶名称', trigger: 'blur' }],
-        region: [{ required: true, message: '请输入存储桶区域', trigger: 'blur' }],
-        accessKeyId: [{ required: true, message: '请输入访问密钥 ID', trigger: 'blur' }],
-        secretAccessKey: [{ required: true, message: '请输入机密访问密钥', trigger: 'blur' }],
-        repo: [{ required: true, message: '请输入仓库名', trigger: 'blur' }],
-        token: [{ required: true, message: '请输入 Access Token', trigger: 'blur' }]
-    },
-
-    // 编辑表单验证规则
-    editRules: {
-        name: [
-            { required: true, message: '请输入渠道名称', trigger: 'blur' },
-            { pattern: /^[\u4e00-\u9fa5a-zA-Z0-9_-]+$/, message: '渠道名称只能包含中英文、数字、下划线和横线', trigger: 'blur' }
-        ],
-        botToken: [{ required: true, message: '请输入 Bot Token', trigger: 'blur' }],
-        chatId: [{ required: true, message: '请输入 Chat ID', trigger: 'blur' }],
-        channelId: [{ required: true, message: '请输入 Channel ID', trigger: 'blur' }],
-        endpoint: [{ required: true, message: '请输入 Endpoint', trigger: 'blur' }],
-        bucketName: [{ required: true, message: '请输入存储桶名称', trigger: 'blur' }],
-        region: [{ required: true, message: '请输入存储桶区域', trigger: 'blur' }],
-        accessKeyId: [{ required: true, message: '请输入访问密钥 ID', trigger: 'blur' }],
-        secretAccessKey: [{ required: true, message: '请输入机密访问密钥', trigger: 'blur' }],
-        repo: [{ required: true, message: '请输入仓库名', trigger: 'blur' }],
-        token: [{ required: true, message: '请输入 Access Token', trigger: 'blur' }]
-    },
-
     // 容量统计数据
     quotaStats: {},
     quotaLoading: false,
@@ -555,7 +518,7 @@ computed: {
             huggingface: 'robot'
         };
         return [
-            { value: '', label: '全部类型' },
+            { value: '', label: this.$t('common.all') || '全部类型' },
             ...this.channels.map(ch => ({
                 value: ch.value,
                 label: ch.label,
@@ -569,6 +532,43 @@ computed: {
             return this.channels;
         }
         return this.channels.filter(ch => ch.value === this.channelFilter);
+    },
+    addRules() {
+        return {
+            type: [{ required: true, message: this.$t('sysUpload.channelTypePlaceholder'), trigger: 'change' }],
+            name: [
+                { required: true, message: this.$t('sysUpload.channelNamePlaceholder'), trigger: 'blur' },
+                { pattern: /^[\u4e00-\u9fa5a-zA-Z0-9_-]+$/, message: this.$t('sysUpload.channelNamePlaceholder'), trigger: 'blur' }
+            ],
+            botToken: [{ required: true, message: this.$t('sysUpload.botTokenPlaceholder'), trigger: 'blur' }],
+            chatId: [{ required: true, message: this.$t('sysUpload.chatIdPlaceholder'), trigger: 'blur' }],
+            channelId: [{ required: true, message: this.$t('sysUpload.channelIdPlaceholder'), trigger: 'blur' }],
+            endpoint: [{ required: true, message: this.$t('sysUpload.endpointPlaceholder'), trigger: 'blur' }],
+            bucketName: [{ required: true, message: this.$t('sysUpload.bucketNamePlaceholder'), trigger: 'blur' }],
+            region: [{ required: true, message: this.$t('sysUpload.bucketRegionPlaceholder'), trigger: 'blur' }],
+            accessKeyId: [{ required: true, message: this.$t('sysUpload.accessKeyIdPlaceholder'), trigger: 'blur' }],
+            secretAccessKey: [{ required: true, message: this.$t('sysUpload.secretAccessKeyPlaceholder'), trigger: 'blur' }],
+            repo: [{ required: true, message: this.$t('sysUpload.repoNamePlaceholder'), trigger: 'blur' }],
+            token: [{ required: true, message: this.$t('sysUpload.accessTokenPlaceholder'), trigger: 'blur' }]
+        };
+    },
+    editRules() {
+        return {
+            name: [
+                { required: true, message: this.$t('sysUpload.channelNamePlaceholder'), trigger: 'blur' },
+                { pattern: /^[\u4e00-\u9fa5a-zA-Z0-9_-]+$/, message: this.$t('sysUpload.channelNamePlaceholder'), trigger: 'blur' }
+            ],
+            botToken: [{ required: true, message: this.$t('sysUpload.botTokenPlaceholder'), trigger: 'blur' }],
+            chatId: [{ required: true, message: this.$t('sysUpload.chatIdPlaceholder'), trigger: 'blur' }],
+            channelId: [{ required: true, message: this.$t('sysUpload.channelIdPlaceholder'), trigger: 'blur' }],
+            endpoint: [{ required: true, message: this.$t('sysUpload.endpointPlaceholder'), trigger: 'blur' }],
+            bucketName: [{ required: true, message: this.$t('sysUpload.bucketNamePlaceholder'), trigger: 'blur' }],
+            region: [{ required: true, message: this.$t('sysUpload.bucketRegionPlaceholder'), trigger: 'blur' }],
+            accessKeyId: [{ required: true, message: this.$t('sysUpload.accessKeyIdPlaceholder'), trigger: 'blur' }],
+            secretAccessKey: [{ required: true, message: this.$t('sysUpload.secretAccessKeyPlaceholder'), trigger: 'blur' }],
+            repo: [{ required: true, message: this.$t('sysUpload.repoNamePlaceholder'), trigger: 'blur' }],
+            token: [{ required: true, message: this.$t('sysUpload.accessTokenPlaceholder'), trigger: 'blur' }]
+        };
     }
 },
 methods: {
@@ -631,7 +631,7 @@ methods: {
     },
     // 文本脱敏
     maskText(text, showLength = 4) {
-        if (!text) return '未设置';
+        if (!text) return this.$t('sysUpload.notSet');
         if (text.length <= showLength * 2) return '****';
         return text.slice(0, showLength) + '****' + text.slice(-showLength);
     },
@@ -716,14 +716,14 @@ methods: {
             // 检查是否为保留名称（{type}_env）
             const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env'];
             if (reservedNames.includes(name)) {
-                this.$message.warning('该名称为系统保留名称，请使用其他名称');
+                this.$message.warning(this.$t('sysUpload.reservedName'));
                 return;
             }
 
             // 检查名称是否重复
             const isDuplicate = settings.channels.some(ch => ch.name === name);
             if (isDuplicate) {
-                this.$message.warning('该类型下已存在同名渠道，请使用其他名称');
+                this.$message.warning(this.$t('sysUpload.duplicateName'));
                 return;
             }
 
@@ -790,14 +790,14 @@ methods: {
                 // 检查是否为保留名称（{type}_env）
                 const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env'];
                 if (reservedNames.includes(newName)) {
-                    this.$message.warning('该名称为系统保留名称，请使用其他名称');
+                    this.$message.warning(this.$t('sysUpload.reservedName'));
                     return;
                 }
 
                 // 检查名称是否与其他渠道重复（排除当前编辑的渠道）
                 const isDuplicate = settings.channels.some((ch, idx) => idx !== currentIndex && ch.name === newName);
                 if (isDuplicate) {
-                    this.$message.warning('该类型下已存在同名渠道，请使用其他名称');
+                    this.$message.warning(this.$t('sysUpload.duplicateName'));
                     return;
                 }
             }
@@ -812,12 +812,12 @@ methods: {
     deleteChannel(type, index) {
         const channel = this.getChannelList(type)[index];
         if (channel.fixed) {
-            this.$message.warning('环境变量配置的渠道无法删除');
+            this.$message.warning(this.$t('sysUpload.fixedChannelCannotDelete'));
             return;
         }
-        this.$confirm('确定要删除该渠道吗？', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+        this.$confirm(this.$t('sysUpload.deleteChannelConfirm'), this.$t('common.info'), {
+            confirmButtonText: this.$t('common.confirm'),
+            cancelButtonText: this.$t('common.cancel'),
             type: 'warning'
         }).then(() => {
             const settings = this.getSettings(type);
@@ -845,7 +845,7 @@ methods: {
             body: JSON.stringify(settings)
         })
         .then(() => {
-            this.$message.success('设置已保存');
+            this.$message.success(this.$t('sysOthers.settingsSaved'));
         });
     },
     // 获取容量统计（重新计算）
@@ -938,17 +938,17 @@ methods: {
             if (!stats) {
                 // 没有统计数据，提示用户需要重新统计
                 this.$confirm(
-                    '首次启用容量限制需要统计现有文件容量，这可能需要一些时间。是否立即统计？',
-                    '初始化容量统计',
+                    this.$t('sysUpload.quotaInitConfirm'),
+                    this.$t('sysUpload.quotaInitTitle'),
                     {
-                        confirmButtonText: '立即统计',
-                        cancelButtonText: '稍后手动统计',
+                        confirmButtonText: this.$t('sysUpload.quotaInitConfirmBtn'),
+                        cancelButtonText: this.$t('sysUpload.quotaInitCancelBtn'),
                         type: 'info'
                     }
                 ).then(async () => {
                     await this.recalculateQuota();
                 }).catch(() => {
-                    this.$message.info('您可以稍后点击刷新按钮手动统计');
+                    this.$message.info(this.$t('sysUpload.quotaInitLater'));
                 });
             }
         }
@@ -957,20 +957,20 @@ methods: {
     async recalculateQuota() {
         this.quotaLoading = true;
         try {
-            this.$message.info('正在统计容量，请稍候...');
+            this.$message.info(this.$t('sysUpload.quotaCalculating'));
             const response = await fetchWithAuth('/api/manage/quota', {
                 method: 'POST'
             });
             const data = await response.json();
             if (data.success) {
                 this.quotaStats = data.channelStats || {};
-                this.$message.success('容量统计完成');
+                this.$message.success(this.$t('sysUpload.quotaCalculateSuccess'));
             } else {
-                this.$message.error('统计失败: ' + (data.error || '未知错误'));
+                this.$message.error(this.$t('sysUpload.quotaCalculateError') + (data.error || ''));
             }
         } catch (error) {
             console.error('Failed to recalculate quota:', error);
-            this.$message.error('统计失败');
+            this.$message.error(this.$t('sysUpload.quotaCalculateFailed'));
         } finally {
             this.quotaLoading = false;
         }

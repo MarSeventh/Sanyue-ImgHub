@@ -21,7 +21,7 @@
                         </el-option>
                     </el-select>
                     <!-- 如果是channelName类型则使用渠道名选择器 -->
-                    <el-select v-else-if="setting.type === 'channelName'" v-model="setting.value" :disabled="!currentUploadChannel || currentChannelList.length === 0" placeholder="请先选择上传渠道" clearable style="width: 100%">
+                    <el-select v-else-if="setting.type === 'channelName'" v-model="setting.value" :disabled="!currentUploadChannel || currentChannelList.length === 0" :placeholder="$t('sysPage.channelSelectPlaceholder')" clearable style="width: 100%">
                         <el-option
                             v-for="ch in currentChannelList"
                             :key="ch.name"
@@ -71,7 +71,7 @@ computed: {
         const grouped = {};
         if (this.settings.config) {
             this.settings.config.forEach(setting => {
-                const category = setting.category || '其他设置';
+                const category = setting.category || this.$t('sysPage.otherSettings');
                 if (!grouped[category]) {
                     grouped[category] = [];
                 }
@@ -113,7 +113,7 @@ methods: {
             },
             body: JSON.stringify(this.settings)
         })
-        .then(() => this.$message.success('设置已保存'));
+        .then(() => this.$message.success(this.$t('sysPage.settingsSaved')));
     },
     // 获取可用渠道列表
     async fetchAvailableChannels() {

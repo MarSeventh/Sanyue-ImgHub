@@ -4,7 +4,7 @@
             <div class="header-content">
                 <DashboardTabs activeTab="systemConfig"></DashboardTabs>
                 <div class="header-action">
-                    <el-tooltip :disabled="disableTooltip" content="退出登录" placement="bottom">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('sysConfig.logout')" placement="bottom">
                         <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                     </el-tooltip>
                 </div>

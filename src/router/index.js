@@ -3,6 +3,7 @@ import { ElMessage } from 'element-plus'
 import cookies from 'vue-cookies'
 import store from '../store'
 import axios from '@/utils/axios'
+import i18n from '@/locales'
 
 // 通用的管理员认证守卫
 const adminAuthGuard = (to, from, next) => {
@@ -18,12 +19,12 @@ const adminAuthGuard = (to, from, next) => {
       withCredentials: true
     }).then(res => {
       if (res.status !== 200) {
-        throw new Error('认证失败！')
+        throw new Error(i18n.global.t('login.authFailed'))
       }
       store.commit('setCredentials', credentials)
       next()
     }).catch(err => {
-      ElMessage.error('请先认证！')
+      ElMessage.error(i18n.global.t('login.authRequired'))
       next({ name: 'adminLogin' })
     })
   } else {
@@ -40,13 +41,13 @@ const userAuthGuard = (to, from, next) => {
       authCode: 'unset'
     }).then(res => {
       if (res.status !== 200) {
-        throw new Error('认证失败！')
+        throw new Error(i18n.global.t('login.authFailed'))
       }
       cookies.set('authCode', 'unset', '14d')
       authCode = 'unset'
       next()
     }).catch(err => {
-      ElMessage.error('请先认证！')
+      ElMessage.error(i18n.global.t('login.authRequired'))
       next({ name: 'login' })
     })
   } else {

@@ -1,36 +1,36 @@
 <template>
-    <el-dialog title="文件详情" v-model="visible" :width="dialogWidth">
+    <el-dialog :title="$t('fileDetail.title')" v-model="visible" :width="dialogWidth">
         <div class="detail-actions">
             <el-button type="primary" @click="$emit('download')" round size="small" class="detail-action" v-if="!isEditing">
-                <font-awesome-icon icon="download" style="margin-right: 3px;"></font-awesome-icon> 下载
+                <font-awesome-icon icon="download" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.download') }}
             </el-button>
             <el-button type="primary" @click="$emit('tagManagement')" round size="small" class="detail-action" v-if="!isEditing">
-                <font-awesome-icon icon="tags" style="margin-right: 3px;"></font-awesome-icon> 标签
+                <font-awesome-icon icon="tags" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.tags') }}
             </el-button>
             <el-button type="primary" @click="$emit('block')" round size="small" class="detail-action" v-if="!isEditing">
-                <font-awesome-icon icon="ban" style="margin-right: 3px;"></font-awesome-icon> 黑名单
+                <font-awesome-icon icon="ban" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.blacklist') }}
             </el-button>
             <el-button type="primary" @click="$emit('white')" round size="small" class="detail-action" v-if="!isEditing">
-                <font-awesome-icon icon="user-plus" style="margin-right: 3px;"></font-awesome-icon> 白名单
+                <font-awesome-icon icon="user-plus" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.whitelist') }}
             </el-button>
             <el-button type="danger" @click="$emit('delete')" round size="small" class="detail-action" v-if="!isEditing">
-                <font-awesome-icon icon="trash-alt" style="margin-right: 3px;"></font-awesome-icon> 删除
+                <font-awesome-icon icon="trash-alt" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.deleteBtn') }}
             </el-button>
             <el-button type="warning" @click="startEdit()" round size="small" class="detail-action" v-if="!isEditing">
-                <font-awesome-icon icon="edit" style="margin-right: 3px;"></font-awesome-icon> 编辑
+                <font-awesome-icon icon="edit" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.edit') }}
             </el-button>
             <el-button type="info" @click="openRenameDialog()" round size="small" class="detail-action" v-if="!isEditing">
-                <font-awesome-icon icon="i-cursor" style="margin-right: 3px;"></font-awesome-icon> 重命名
+                <font-awesome-icon icon="i-cursor" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.rename') }}
             </el-button>
             <el-button type="success" @click="saveMetadata()" round size="small" class="detail-action" v-if="isEditing" :loading="editSaving">
-                <font-awesome-icon icon="save" style="margin-right: 3px;" v-if="!editSaving"></font-awesome-icon> 保存
+                <font-awesome-icon icon="save" style="margin-right: 3px;" v-if="!editSaving"></font-awesome-icon> {{ $t('fileDetail.save') }}
             </el-button>
             <el-button @click="cancelEdit()" round size="small" class="detail-action" v-if="isEditing">
-                取消
+                {{ $t('fileDetail.cancel') }}
             </el-button>
         </div>
         <el-tabs v-model="activeTab" @tab-click="handleTabClick" style="margin-bottom: 10px;">
-            <el-tab-pane label="原始链接" name="originUrl">
+            <el-tab-pane :label="$t('fileDetail.originUrl')" name="originUrl">
                 <el-input v-model="urls.originUrl" readonly @click="handleUrlClick"></el-input>
             </el-tab-pane>
             <el-tab-pane label="Markdown" name="mdUrl">
@@ -71,60 +71,60 @@
         </div>
         <!-- 详细信息 -->
         <el-descriptions border :column="descColumn">
-            <el-descriptions-item label="文件名">
-                <el-input v-if="isEditing" v-model="editForm.FileName" size="small" placeholder="请输入文件名"></el-input>
+            <el-descriptions-item :label="$t('fileDetail.fileNameLabel')">
+                <el-input v-if="isEditing" v-model="editForm.FileName" size="small" :placeholder="$t('fileDetail.fileNamePlaceholder')"></el-input>
                 <span v-else>{{ file?.metadata?.FileName || file?.name }}</span>
             </el-descriptions-item>
-            <el-descriptions-item label="文件类型">
-                <el-input v-if="isEditing" v-model="editForm.FileType" size="small" placeholder="如 image/jpeg"></el-input>
-                <span v-else>{{ file?.metadata?.FileType || '未知' }}</span>
+            <el-descriptions-item :label="$t('fileDetail.fileType')">
+                <el-input v-if="isEditing" v-model="editForm.FileType" size="small" :placeholder="$t('fileDetail.fileTypePlaceholder')"></el-input>
+                <span v-else>{{ file?.metadata?.FileType || $t('fileDetail.unknown') }}</span>
             </el-descriptions-item>
-            <el-descriptions-item label="文件大小">{{ fileSizeDisplay }}</el-descriptions-item>
-            <el-descriptions-item label="图片尺寸">
+            <el-descriptions-item :label="$t('fileDetail.fileSizeLabel')">{{ fileSizeDisplay }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('fileDetail.imageDimensions')">
                 <div v-if="imageDimensions" style="display: flex; align-items: center; gap: 6px;">
                     <span>{{ file?.metadata?.Width }} × {{ file?.metadata?.Height }}</span>
                     <el-tag size="small" type="info" style="display: inline-flex; align-items: center; justify-content: center;">{{ orientationIcon }}</el-tag>
                 </div>
-                <span v-else style="color: #909399;">无</span>
+                <span v-else style="color: #909399;">{{ $t('fileDetail.noDimensions') }}</span>
             </el-descriptions-item>
-            <el-descriptions-item label="上传时间">{{ uploadTime }}</el-descriptions-item>
-            <el-descriptions-item label="渠道类型/名称">
-                <el-tag size="small" type="info" style="margin-right: 6px;">{{ file?.metadata?.Channel || '未知' }}</el-tag>
+            <el-descriptions-item :label="$t('fileDetail.uploadTimeLabel')">{{ uploadTime }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('fileDetail.channelTypeAndName')">
+                <el-tag size="small" type="info" style="margin-right: 6px;">{{ file?.metadata?.Channel || $t('fileDetail.unknown') }}</el-tag>
                 <span>{{ file?.metadata?.ChannelName || '-' }}</span>
             </el-descriptions-item>
-            <el-descriptions-item label="访问状态/审查">
+            <el-descriptions-item :label="$t('fileDetail.accessStatusAndReview')">
                 <el-tag size="small" :type="accessTagType" style="margin-right: 6px;">{{ accessType }}</el-tag>
-                <span>{{ file?.metadata?.Label || '无' }}</span>
+                <span>{{ file?.metadata?.Label || $t('fileDetail.noTags') }}</span>
             </el-descriptions-item>
-            <el-descriptions-item label="上传IP">{{ file?.metadata?.UploadIP || '未知' }}</el-descriptions-item>
-            <el-descriptions-item label="上传地址">{{ file?.metadata?.UploadAddress || '未知' }}</el-descriptions-item>
-            <el-descriptions-item label="文件标签">
+            <el-descriptions-item :label="$t('fileDetail.uploadIP')">{{ file?.metadata?.UploadIP || $t('fileDetail.unknown') }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('fileDetail.uploadAddressLabel')">{{ file?.metadata?.UploadAddress || $t('fileDetail.unknown') }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('fileDetail.fileTags')">
                 <div v-if="file?.metadata?.Tags && file?.metadata?.Tags.length > 0" style="display: flex; flex-wrap: wrap; gap: 5px;">
                     <el-tag v-for="tag in file?.metadata?.Tags" :key="tag" size="small">{{ tag }}</el-tag>
                 </div>
-                <span v-else style="color: #909399;">暂无标签</span>
+                <span v-else style="color: #909399;">{{ $t('fileDetail.noTags') }}</span>
             </el-descriptions-item>
         </el-descriptions>
         <!-- 重命名弹窗 -->
         <el-dialog
             v-model="showRenameDialog"
-            title="重命名 File ID"
+            :title="$t('fileDetail.renameTitle')"
             :width="dialogWidth"
             append-to-body
         >
             <el-form @submit.prevent>
-                <el-form-item label="新 File ID" :error="renameValidation.error">
+                <el-form-item :label="$t('fileDetail.renameLabel')" :error="renameValidation.error">
                     <el-input
                         v-model="renameForm.newFileId"
-                        placeholder="请输入新的 File ID"
+                        :placeholder="$t('fileDetail.renamePlaceholder')"
                         @input="validateRenameInput"
                         clearable
                     ></el-input>
                 </el-form-item>
             </el-form>
             <template #footer>
-                <el-button @click="closeRenameDialog()">取消</el-button>
-                <el-button type="primary" @click="submitRename()" :loading="renameSaving" :disabled="!renameValidation.valid">确认重命名</el-button>
+                <el-button @click="closeRenameDialog()">{{ $t('fileDetail.renameCancel') }}</el-button>
+                <el-button type="primary" @click="submitRename()" :loading="renameSaving" :disabled="!renameValidation.valid">{{ $t('fileDetail.renameConfirm') }}</el-button>
             </template>
         </el-dialog>
     </el-dialog>
@@ -214,15 +214,15 @@ export default {
             if (this.file?.metadata?.TimeStamp) {
                 return new Date(this.file.metadata.TimeStamp).toLocaleString();
             }
-            return '未知';
+            return this.$t('fileDetail.unknown');
         },
         accessType() {
             const listType = this.file?.metadata?.ListType;
             const label = this.file?.metadata?.Label;
-            if (listType === 'White') return '正常（白名单）';
-            if (listType === 'Block') return '已屏蔽（黑名单）';
-            if (label === 'adult') return '已屏蔽（审查不通过）'
-            return '正常';
+            if (listType === 'White') return this.$t('fileDetail.accessNormalWhitelist');
+            if (listType === 'Block') return this.$t('fileDetail.accessBlockedBlacklist');
+            if (label === 'adult') return this.$t('fileDetail.accessBlockedReview');
+            return this.$t('fileDetail.accessNormal');
         },
         accessTagType() {
             const listType = this.file?.metadata?.ListType;
@@ -243,9 +243,9 @@ export default {
             const height = this.file?.metadata?.Height;
             if (!width || !height) return '';
             const ratio = width / height;
-            if (ratio > 1.1) return '横';
-            if (ratio < 0.9) return '竖';
-            return '方';
+            if (ratio > 1.1) return this.$t('fileDetail.orientationLandscape');
+            if (ratio < 0.9) return this.$t('fileDetail.orientationPortrait');
+            return this.$t('fileDetail.orientationSquare');
         },
         fileSizeDisplay() {
             const sizeBytes = this.file?.metadata?.FileSizeBytes;
@@ -262,7 +262,7 @@ export default {
             } else if (sizeMB) {
                 return `${sizeMB} MB`;
             }
-            return '未知';
+            return this.$t('fileDetail.unknown');
         }
     },
     methods: {
@@ -276,7 +276,7 @@ export default {
             const input = e.target;
             input.select();
             navigator.clipboard.writeText(input.value).then(() => {
-                ElMessage.success('链接已复制');
+                ElMessage.success(this.$t('fileDetail.linkCopied'));
             });
         },
         openImageLink() {
@@ -311,16 +311,16 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
-                    ElMessage.success('元数据保存成功');
+                    ElMessage.success(this.$t('fileDetail.metadataSaved'));
                     this.isEditing = false;
                     this.$emit('metadataUpdated', fileId, data.metadata);
                 } else {
                     const error = await response.json().catch(() => ({}));
-                    throw new Error(error.message || '保存元数据失败');
+                    throw new Error(error.message || this.$t('fileDetail.metadataSaveFailed'));
                 }
             } catch (error) {
                 console.error('Error saving metadata:', error);
-                ElMessage.error(error.message || '保存元数据失败');
+                ElMessage.error(error.message || this.$t('fileDetail.metadataSaveFailed'));
             } finally {
                 this.editSaving = false;
             }
@@ -362,22 +362,22 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
-                    ElMessage.success('文件重命名成功');
+                    ElMessage.success(this.$t('fileDetail.renameSuccess'));
                     this.showRenameDialog = false;
                     this.$emit('fileRenamed', oldFileId, this.renameForm.newFileId, data.metadata);
                 } else if (response.status === 409) {
                     // Conflict — target File_ID already exists
                     this.renameValidation = {
                         valid: false,
-                        error: '目标文件名已存在'
+                        error: this.$t('fileDetail.renameConflict')
                     };
                 } else {
                     const error = await response.json().catch(() => ({}));
-                    throw new Error(error.message || '重命名失败');
+                    throw new Error(error.message || this.$t('fileDetail.renameFailed'));
                 }
             } catch (error) {
                 console.error('Error renaming file:', error);
-                ElMessage.error(error.message || '重命名失败');
+                ElMessage.error(error.message || this.$t('fileDetail.renameFailed'));
             } finally {
                 this.renameSaving = false;
             }

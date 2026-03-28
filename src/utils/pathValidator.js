@@ -2,6 +2,7 @@
  * 路径验证器模块
  * 提供共享的文件夹路径验证功能，供 AdminDashBoard 和 UploadHome 共同使用
  */
+import i18n from '@/locales'
 
 /**
  * 验证文件夹路径的合法性
@@ -24,7 +25,7 @@ export function validateFolderPath(path, { strict = true } = {}) {
     if (!path.startsWith('/')) {
         return { 
             valid: false, 
-            error: '目标目录必须以 "/" 开头' 
+            error: i18n.global.t('validation.pathMustStartWithSlash') 
         };
     }
 
@@ -32,7 +33,7 @@ export function validateFolderPath(path, { strict = true } = {}) {
     if (/(?:^|\/)\.\.(\/|$)/.test(path) || path.includes('..')) {
         return {
             valid: false,
-            error: '目标目录不能包含路径穿越字符 ".."'
+            error: i18n.global.t('validation.pathTraversalNotAllowed')
         };
     }
 
@@ -42,7 +43,7 @@ export function validateFolderPath(path, { strict = true } = {}) {
     if (dotPattern.test(path)) {
         return {
             valid: false,
-            error: '目标目录不能包含单独的 "." 路径段'
+            error: i18n.global.t('validation.singleDotNotAllowed')
         };
     }
 
@@ -50,7 +51,7 @@ export function validateFolderPath(path, { strict = true } = {}) {
     if (path.includes('//')) {
         return { 
             valid: false, 
-            error: '目标目录不能包含连续的斜杠' 
+            error: i18n.global.t('validation.consecutiveSlashNotAllowed') 
         };
     }
     
@@ -60,7 +61,7 @@ export function validateFolderPath(path, { strict = true } = {}) {
     if (invalidChars.test(path)) {
         return { 
             valid: false, 
-            error: '目标目录包含非法字符，请使用合法的路径格式' 
+            error: i18n.global.t('validation.invalidCharacters') 
         };
     }
     

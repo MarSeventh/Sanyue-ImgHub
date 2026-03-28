@@ -12,40 +12,40 @@
                         <template v-if="!isFolder">
                             <div class="bottom-sheet-item" @click="handleAction('detail')">
                                 <font-awesome-icon icon="info-circle" class="bottom-sheet-icon"></font-awesome-icon>
-                                <span>查看详情</span>
+                                <span>{{ $t('mobileAction.viewDetail') }}</span>
                             </div>
                             <div class="bottom-sheet-item" @click="handleAction('copy')">
                                 <font-awesome-icon icon="copy" class="bottom-sheet-icon"></font-awesome-icon>
-                                <span>复制链接</span>
+                                <span>{{ $t('mobileAction.copyLink') }}</span>
                             </div>
                             <div class="bottom-sheet-item" @click="handleAction('download')">
                                 <font-awesome-icon icon="download" class="bottom-sheet-icon"></font-awesome-icon>
-                                <span>下载文件</span>
+                                <span>{{ $t('mobileAction.downloadFile') }}</span>
                             </div>
                             <div class="bottom-sheet-item" @click="handleAction('move')">
                                 <font-awesome-icon icon="file-export" class="bottom-sheet-icon"></font-awesome-icon>
-                                <span>移动文件</span>
+                                <span>{{ $t('mobileAction.moveFile') }}</span>
                             </div>
                             <div class="bottom-sheet-item" @click="handleAction('tag')">
                                 <font-awesome-icon icon="tags" class="bottom-sheet-icon"></font-awesome-icon>
-                                <span>标签管理</span>
+                                <span>{{ $t('mobileAction.tagManagement') }}</span>
                             </div>
                         </template>
                         <!-- 文件夹操作 -->
                         <template v-else>
                             <div class="bottom-sheet-item" @click="handleAction('folderCopy')">
                                 <font-awesome-icon icon="copy" class="bottom-sheet-icon"></font-awesome-icon>
-                                <span>复制链接</span>
+                                <span>{{ $t('mobileAction.copyLink') }}</span>
                             </div>
                             <div class="bottom-sheet-item" @click="handleAction('move')">
                                 <font-awesome-icon icon="file-export" class="bottom-sheet-icon"></font-awesome-icon>
-                                <span>移动文件夹</span>
+                                <span>{{ $t('mobileAction.moveFolder') }}</span>
                             </div>
                         </template>
                         <!-- 删除操作 -->
                         <div class="bottom-sheet-item bottom-sheet-danger" @click="handleAction('delete')">
                             <font-awesome-icon icon="trash-alt" class="bottom-sheet-icon"></font-awesome-icon>
-                            <span>{{ isFolder ? '删除文件夹' : '删除文件' }}</span>
+                            <span>{{ isFolder ? $t('mobileAction.deleteFolder') : $t('mobileAction.deleteFile') }}</span>
                         </div>
                     </div>
                 </div>

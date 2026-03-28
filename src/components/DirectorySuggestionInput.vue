@@ -34,7 +34,7 @@ export default {
     name: 'DirectorySuggestionInput',
     props: {
         modelValue: { type: String, default: '' },
-        placeholder: { type: String, default: '上传目录' }
+        placeholder: { type: String, default: '' }
     },
     emits: ['update:modelValue', 'focus', 'blur', 'select'],
     data() {

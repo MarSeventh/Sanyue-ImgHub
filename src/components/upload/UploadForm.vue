@@ -23,7 +23,7 @@
                 <el-icon class="el-icon--upload" :class="{'upload-list-busy': fileList.length}">
                     <CameraFilled/>
                 </el-icon>
-                <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}"><em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传</div>
+                <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}" v-html="$t('upload.dragUploadText')"></div>
             </el-upload>
         </div>
         <div v-if="uploadMethod === 'paste'" class="upload-card">
@@ -34,7 +34,7 @@
                 <el-input
                     v-model="pastedUrls"
                     class="upload-card-textarea"
-                    placeholder="粘贴外链上传，多个外链用换行分隔"
+                    :placeholder="$t('upload.pasteUrlPlaceholder')"
                     type="textarea"
                     :rows="fileList.length ? 4 : 14"
                 />
@@ -45,15 +45,15 @@
                         :size="pasteCardMethodButtonSize"
                         @click="handleUploadPasteUrls"
                     >
-                        上 传
+                        {{ $t('upload.pasteUploadBtn') }}
                     </el-button>
                     <el-radio-group 
                         v-model="pasteUploadMethod" 
                         class="paste-card-method-group"
                         :size="pasteCardMethodButtonSize"
                     >
-                        <el-radio-button label="save">转存</el-radio-button>
-                        <el-radio-button label="external">外链</el-radio-button>
+                        <el-radio-button label="save">{{ $t('upload.pasteSave') }}</el-radio-button>
+                        <el-radio-button label="external">{{ $t('upload.pasteExternal') }}</el-radio-button>
                     </el-radio-group>
                 </div>
             </el-card>
@@ -69,12 +69,12 @@
                         </el-text>
                         <div class="upload-list-dashboard-action">
                             <div class="modern-action-group">
-                                <el-tooltip :disabled="disableTooltip" content="整体复制" placement="top">
+                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.copyAll')" placement="top">
                                     <button class="modern-action-btn" @click="copyAll">
                                         <font-awesome-icon icon="copy" />
                                     </button>
                                 </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" content="失败重试" placement="top">
+                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.retryFailed')" placement="top">
                                     <el-dropdown>
                                         <button class="modern-action-btn" @click="retryError">
                                             <font-awesome-icon icon="redo" />
@@ -83,7 +83,7 @@
                                             <el-dropdown-menu class="modern-dropdown-menu">
                                                 <el-dropdown-item>
                                                     <div class="modern-dropdown-item-content">
-                                                        <span>自动重试</span>
+                                                        <span>{{ $t('uploadForm.autoRetry') }}</span>
                                                         <el-switch v-model="autoReUpload" @change="handleAutoRetryChange" size="small" />
                                                     </div>
                                                 </el-dropdown-item>
@@ -91,15 +91,15 @@
                                         </template>
                                     </el-dropdown>
                                 </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" content="清空列表" placement="top">
+                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.clearList')" placement="top">
                                     <el-dropdown>
                                         <button class="modern-action-btn modern-action-btn-danger">
                                             <font-awesome-icon icon="trash-alt" />
                                         </button>
                                         <template #dropdown>
                                             <el-dropdown-menu class="modern-dropdown-menu">
-                                                <el-dropdown-item @click="clearFileList">清空全部</el-dropdown-item>
-                                                <el-dropdown-item @click="clearSuccessList">清空已上传</el-dropdown-item>
+                                                <el-dropdown-item @click="clearFileList">{{ $t('upload.clearAll') }}</el-dropdown-item>
+                                                <el-dropdown-item @click="clearSuccessList">{{ $t('upload.clearUploaded') }}</el-dropdown-item>
                                             </el-dropdown-menu>
                                         </template>
                                     </el-dropdown>
@@ -676,7 +676,7 @@ methods: {
             // 第三步：所有分块上传完成，发送合并请求
             this.$message({
                 type: 'info',
-                message: '分块上传完成，正在合并文件，请耐心等待...',
+                message: this.$t('uploadForm.chunkMerging'),
                 duration: 0 // 不自动关闭
             })
 
@@ -757,7 +757,7 @@ methods: {
         this.fileList = this.fileList.filter(item => item.uid !== file.uid)
         this.$message({
             type: 'info',
-            message: this.truncateFilename(file.name) + '已删除'
+            message: this.$t('uploadForm.deleted', { name: this.truncateFilename(file.name) })
         })
     },
 
@@ -798,14 +798,14 @@ methods: {
 
             this.$message({
                 type: 'success',
-                message: this.truncateFilename(file.name) + '上传成功'
+                message: this.$t('uploadForm.uploadSuccess', { name: this.truncateFilename(file.name) })
             })
             setTimeout(() => {
                 const item = this.fileList.find(item => item.uid === file.uid)
                 if (item) item.status = 'done'
             }, 1000)
         } catch (error) {
-            this.$message.error(this.truncateFilename(file.name) + '上传失败')
+            this.$message.error(this.$t('uploadForm.uploadFailed', { name: this.truncateFilename(file.name) }))
             fileItem.status = 'exception'
         }
         // 注意：并发控制的 onUploadComplete 已在各上传方法的 finally 中调用
@@ -829,7 +829,7 @@ methods: {
         const fileItem = this.fileList.find(item => item.uid === file.uid)
         if (!fileItem) return // 文件已被删除
         
-        this.$message.error(this.truncateFilename(file.name) + '上传失败')
+        this.$message.error(this.$t('uploadForm.uploadFailed', { name: this.truncateFilename(file.name) }))
         fileItem.status = 'exception'
         
         // 如果开启了自动重试，安排自动重试
@@ -841,11 +841,11 @@ methods: {
     handleCopy(file) {
         const status = this.fileList.find(item => item.uid === file.uid).status
         if (status !== 'done' && status !== 'success') {
-            this.$message({ type: 'warning', message: '文件未上传成功，无法复制链接' })
+            this.$message({ type: 'warning', message: this.$t('uploadForm.fileNotUploaded') })
             return
         }
         navigator.clipboard.writeText(getUrlByFormat(file, this.selectedUrlForm))
-        this.$message({ type: 'success', message: '复制成功' })
+        this.$message({ type: 'success', message: this.$t('uploadForm.copySuccess') })
     },
     beforeUpload(file) {
         return new Promise(async (resolve, reject) => {
@@ -900,8 +900,8 @@ methods: {
                 imageConversion.compressAccurately(processedFile, 1024 * this.compressQuality).then((res) => {
                     //如果压缩后大于1024MB，且上传渠道为telegram，则不上传
                     if (res.size / 1024 / 1024 > 1024 && this.uploadChannel === 'telegram') {
-                        this.$message.error(processedFile.name + '压缩后文件过大，无法上传!')
-                        reject('文件过大')
+                        this.$message.error(this.$t('uploadForm.compressedFileTooLarge', { name: processedFile.name }))
+                        reject(this.$t('uploadForm.fileSizeTooLarge'))
                     }
                     this.uploading = true
                     //将res包装成新的file
@@ -922,7 +922,7 @@ methods: {
                         }, 300 * myUploadCount)
                     }
                 }).catch((err) => {
-                    this.$message.error(processedFile.name + '压缩失败，无法上传!')
+                    this.$message.error(this.$t('uploadForm.compressFailedCannotUpload', { name: processedFile.name }))
                     reject(err)
                 })
             } else if (isLtLim) {
@@ -942,8 +942,8 @@ methods: {
                     }, 300 * myUploadCount)
                 }
             } else {
-                this.$message.error(processedFile.name + '文件过大，无法上传!')
-                reject('文件过大')
+                this.$message.error(this.$t('uploadForm.fileTooLarge', { name: processedFile.name }))
+                reject(this.$t('uploadForm.fileSizeTooLarge'))
             }
         })
     },
@@ -959,7 +959,7 @@ methods: {
             .map(item => getUrlByFormat(item, this.selectedUrlForm))
             .join('\n')
         navigator.clipboard.writeText(urls)
-        this.$message({ type: 'success', message: '整体复制成功' })
+        this.$message({ type: 'success', message: this.$t('uploadForm.copyAllSuccess') })
     },
     clearFileList() {
         if (this.fileList.length > 0) {
@@ -974,12 +974,12 @@ methods: {
             this.fileList = []
             this.$message({
                 type: 'success',
-                message: '文件列表已清空'
+                message: this.$t('uploadForm.fileListCleared')
             })
         } else {
             this.$message({
                 type: 'info',
-                message: '文件列表为空'
+                message: this.$t('uploadForm.fileListEmpty')
             })
         }
     },
@@ -988,12 +988,12 @@ methods: {
             this.fileList = this.fileList.filter(item => item.status !== 'done' && item.status !== 'success')
             this.$message({
                 type: 'success',
-                message: '成功上传文件已清空'
+                message: this.$t('uploadForm.successFilesCleared')
             })
         } else {
             this.$message({
                 type: 'info',
-                message: '成功上传文件为空'
+                message: this.$t('uploadForm.successFilesEmpty')
             })
         }
     },
@@ -1157,7 +1157,7 @@ methods: {
                         .catch(error => {
                             this.$message({
                                 type: 'warning',
-                                message: '粘贴板中的URL地址请求失败'
+                                message: this.$t('uploadForm.urlRequestFailed')
                             });
                         });
                     }
@@ -1175,14 +1175,14 @@ methods: {
         } else {
             this.$message({
                 type: 'info',
-                message: '无上传失败文件'
+                message: this.$t('uploadForm.noFailedFiles')
             })
         }
     },
     handleAutoRetryChange(val) {
         this.$message({
             type: val ? 'success' : 'info',
-            message: val ? '自动重试已开启' : '自动重试已关闭'
+            message: val ? this.$t('uploadForm.autoRetryOn') : this.$t('uploadForm.autoRetryOff')
         });
         
         // 如果开启自动重试且有失败文件，立即开始重试
@@ -1204,7 +1204,7 @@ methods: {
             } else {
                 this.$message({
                     type: 'warning',
-                    message: `${file.name} 已达到最大重试次数(${this.maxRetryCount})，停止重试`
+                    message: this.$t('uploadForm.maxRetryReached', { name: file.name, max: this.maxRetryCount })
                 });
             }
         });

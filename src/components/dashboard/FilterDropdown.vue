@@ -9,7 +9,7 @@
             <el-dropdown-menu class="filter-dropdown-menu">
                 <!-- 访问状态 -->
                 <div class="filter-section">
-                    <div class="filter-title">访问状态</div>
+                    <div class="filter-title">{{ $t('filter.accessStatus') }}</div>
                     <div class="filter-options">
                         <el-checkbox-group v-model="localFilters.accessStatus" @change="handleFilterChange('accessStatus')">
                             <el-checkbox
@@ -23,7 +23,7 @@
                 </div>
                 <!-- 黑白名单 -->
                 <div class="filter-section">
-                    <div class="filter-title">黑白名单</div>
+                    <div class="filter-title">{{ $t('filter.blackWhiteList') }}</div>
                     <div class="filter-options">
                         <el-checkbox-group v-model="localFilters.listType" @change="handleFilterChange('listType')">
                             <el-checkbox
@@ -37,7 +37,7 @@
                 </div>
                 <!-- 审查结果 -->
                 <div class="filter-section">
-                    <div class="filter-title">审查结果</div>
+                    <div class="filter-title">{{ $t('filter.reviewResult') }}</div>
                     <div class="filter-options">
                         <el-checkbox-group v-model="localFilters.label" @change="handleFilterChange('label')">
                             <el-checkbox 
@@ -51,7 +51,7 @@
                 </div>
                 <!-- 文件类型 -->
                 <div class="filter-section">
-                    <div class="filter-title">文件类型</div>
+                    <div class="filter-title">{{ $t('filter.fileType') }}</div>
                     <div class="filter-options">
                         <el-checkbox-group v-model="localFilters.fileType" @change="handleFilterChange('fileType')">
                             <el-checkbox 
@@ -65,7 +65,7 @@
                 </div>
                 <!-- 渠道类型 -->
                 <div class="filter-section">
-                    <div class="filter-title">渠道类型</div>
+                    <div class="filter-title">{{ $t('filter.channelType') }}</div>
                     <div class="filter-options">
                         <el-checkbox-group v-model="localFilters.channel" @change="handleFilterChange('channel')">
                             <el-checkbox 
@@ -79,7 +79,7 @@
                 </div>
                 <!-- 渠道名称 -->
                 <div class="filter-section" v-if="channelNameOptions.length > 0">
-                    <div class="filter-title">渠道名称</div>
+                    <div class="filter-title">{{ $t('filter.channelName') }}</div>
                     <div class="filter-options">
                         <el-checkbox-group v-model="localFilters.channelName" @change="handleFilterChange('channelName')">
                             <template v-for="(group, index) in groupedChannelNames" :key="'group-' + group.type">
@@ -97,7 +97,7 @@
                 </div>
                 <!-- 清除筛选按钮 -->
                 <div class="filter-actions">
-                    <el-button size="small" @click="clearFilters" :disabled="activeFilterCount === 0">清除筛选</el-button>
+                    <el-button size="small" @click="clearFilters" :disabled="activeFilterCount === 0">{{ $t('filter.clearFilters') }}</el-button>
                 </div>
             </el-dropdown-menu>
         </template>
@@ -127,40 +127,6 @@ export default {
     emits: ['update:filters', 'change'],
     data() {
         return {
-            // 访问状态选项（综合判断 ListType 和 Label）
-            // 正常: ListType !== 'Block' && Label !== 'adult'
-            // 已屏蔽: ListType === 'Block' || Label === 'adult'
-            accessStatusOptions: [
-                { label: '正常', value: 'normal' },
-                { label: '已屏蔽', value: 'blocked' }
-            ],
-            // 黑白名单选项（直接使用 ListType 字段值）
-            listTypeOptions: [
-                { label: '白名单', value: 'White' },
-                { label: '黑名单', value: 'Block' },
-                { label: '未设置', value: 'None' }
-            ],
-            // 审查结果选项
-            // 参考 FileDetailDialog: adult=已屏蔽（审查不通过）, 其他=正常
-            labelOptions: [
-                { label: '正常', value: 'normal' },
-                { label: '12+内容', value: 'teen' },
-                { label: '成人内容', value: 'adult' }
-            ],
-            fileTypeOptions: [
-                { label: '图片', value: 'image' },
-                { label: '视频', value: 'video' },
-                { label: '音频', value: 'audio' },
-                { label: '其他', value: 'other' }
-            ],
-            channelOptions: [
-                { label: 'Telegram', value: 'TelegramNew' },
-                { label: 'Cloudflare R2', value: 'CloudflareR2' },
-                { label: 'S3', value: 'S3' },
-                { label: 'Discord', value: 'Discord' },
-                { label: 'HuggingFace', value: 'HuggingFace' },
-                { label: '外链', value: 'External' }
-            ],
             localFilters: {
                 accessStatus: [],
                 listType: [],
@@ -172,6 +138,49 @@ export default {
         };
     },
     computed: {
+        // 访问状态选项（综合判断 ListType 和 Label）
+        // 正常: ListType !== 'Block' && Label !== 'adult'
+        // 已屏蔽: ListType === 'Block' || Label === 'adult'
+        accessStatusOptions() {
+            return [
+                { label: this.$t('filter.normal'), value: 'normal' },
+                { label: this.$t('filter.blocked'), value: 'blocked' }
+            ];
+        },
+        // 黑白名单选项（直接使用 ListType 字段值）
+        listTypeOptions() {
+            return [
+                { label: this.$t('filter.whiteList'), value: 'White' },
+                { label: this.$t('filter.blackList'), value: 'Block' },
+                { label: this.$t('filter.notSet'), value: 'None' }
+            ];
+        },
+        // 审查结果选项
+        labelOptions() {
+            return [
+                { label: this.$t('filter.normal'), value: 'normal' },
+                { label: this.$t('filter.teenContent'), value: 'teen' },
+                { label: this.$t('filter.adultContent'), value: 'adult' }
+            ];
+        },
+        fileTypeOptions() {
+            return [
+                { label: this.$t('filter.image'), value: 'image' },
+                { label: this.$t('filter.video'), value: 'video' },
+                { label: this.$t('filter.audio'), value: 'audio' },
+                { label: this.$t('filter.other'), value: 'other' }
+            ];
+        },
+        channelOptions() {
+            return [
+                { label: 'Telegram', value: 'TelegramNew' },
+                { label: 'Cloudflare R2', value: 'CloudflareR2' },
+                { label: 'S3', value: 'S3' },
+                { label: 'Discord', value: 'Discord' },
+                { label: 'HuggingFace', value: 'HuggingFace' },
+                { label: this.$t('filter.externalLink'), value: 'External' }
+            ];
+        },
         activeFilterCount() {
             return Object.values(this.localFilters).reduce((count, arr) => count + arr.length, 0);
         },

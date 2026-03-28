@@ -8,7 +8,7 @@
         >
             <font-awesome-icon v-if="loading" icon="spinner" spin />
             <font-awesome-icon v-else icon="save" />
-            <span class="save-text">{{ loading ? '保存中' : '保存' }}</span>
+            <span class="save-text">{{ loading ? $t('floatingSave.saving') : $t('floatingSave.save') }}</span>
         </div>
     </transition>
 </template>

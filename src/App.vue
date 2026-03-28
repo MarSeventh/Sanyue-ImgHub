@@ -1,10 +1,14 @@
 <template>
-  <router-view/>
+  <el-config-provider :locale="elementLocale">
+    <router-view/>
+  </el-config-provider>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { OverlayScrollbars } from 'overlayscrollbars'
+import zhCnLocale from 'element-plus/es/locale/lang/zh-cn'
+import enLocale from 'element-plus/es/locale/lang/en'
 
 export default {
   data() {
@@ -14,7 +18,10 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['userConfig', 'useDarkMode'])
+    ...mapGetters(['userConfig', 'useDarkMode']),
+    elementLocale() {
+      return this.$i18n.locale === 'zh-CN' ? zhCnLocale : enLocale
+    }
   },
   mounted() {
     // 初始化 OverlayScrollbars 悬浮滚动条

@@ -4,7 +4,7 @@
             <div class="header-content">
                 <DashboardTabs activeTab="customerConfig"></DashboardTabs>
                 <div class="header-action">
-                    <el-tooltip :disabled="disableTooltip" content="退出登录" placement="bottom">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('sysConfig.logout')" placement="bottom">
                         <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                     </el-tooltip>
                 </div>
@@ -15,10 +15,10 @@
                 <el-table-column type="expand">
                     <template v-slot="props">
                         <div style="margin: 8px;">
-                            <h3 style="text-align: center;">上传文件列表</h3>
+                            <h3 style="text-align: center;">{{ $t('customerConfig.uploadFileList') }}</h3>
                             <el-table :data="props.row.data" style="width: 100%" :default-sort="{ prop: 'metadata.TimeStamp', order: 'descending' }" table-layout="fixed" :max-height="400">
-                                <el-table-column prop="metadata.FileName" label="文件名"></el-table-column>
-                                <el-table-column label="文件预览">
+                                <el-table-column prop="metadata.FileName" :label="$t('customerConfig.fileNameCol')"></el-table-column>
+                                <el-table-column :label="$t('customerConfig.filePreview')">
                                     <template v-slot="{ row }">
                                         <el-image v-if="row.metadata?.FileType?.includes('image')" :src="'/file/' + row.id + '?from=admin'" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
                                         <video v-else-if="row.metadata?.FileType?.includes('video')" :src="'/file/' + row.id + '?from=admin'" controls style="width: 100px; height: 100px;"></video>
@@ -29,7 +29,7 @@
                                 </el-table-column>
                                 <el-table-column 
                                     :formatter="formatTimeStamp" 
-                                    label="上传时间" 
+                                    :label="$t('customerConfig.uploadTimeCol')" 
                                     prop="metadata.TimeStamp"
                                     sortable 
                                     :sort-method="sortByTimestamp">
@@ -41,17 +41,17 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="ip" label="IP地址"></el-table-column>
-                <el-table-column prop="address" label="地址"></el-table-column>
-                <el-table-column prop="count" label="上传次数" sortable></el-table-column>
-                <el-table-column label="允许上传">
+                <el-table-column prop="ip" :label="$t('customerConfig.ipAddress')"></el-table-column>
+                <el-table-column prop="address" :label="$t('customerConfig.address')"></el-table-column>
+                <el-table-column prop="count" :label="$t('customerConfig.uploadCount')" sortable></el-table-column>
+                <el-table-column :label="$t('customerConfig.allowUpload')">
                     <template v-slot="{ row }">
                         <el-switch
                             v-model="row.enable"
                             active-color="#13ce66"
                             inactive-color="#ff4949"
-                            active-text="允许"
-                            inactive-text="禁止"
+                            :active-text="$t('customerConfig.allow')"
+                            :inactive-text="$t('customerConfig.deny')"
                             @change="handleSwitchEnable(row)"
                         >
                         </el-switch>
@@ -70,7 +70,7 @@
                     :pager-count="pagerCount"
                     @current-change="handlePageChange"
                 ></el-pagination>
-                <el-button v-if="currentPage === Math.ceil(dealedData.length / pageSize)" type="primary" @click="loadMoreData" :loading="loading" class="load-more">加载更多</el-button>
+                <el-button v-if="currentPage === Math.ceil(dealedData.length / pageSize)" type="primary" @click="loadMoreData" :loading="loading" class="load-more">{{ $t('customerConfig.loadMore') }}</el-button>
             </div>
         </div>
     </div>
@@ -172,7 +172,7 @@ export default {
                 }));
             })
             .catch(() => {
-                this.$message.error('加载更多数据时出错，请检查网络连接');
+                this.$message.error(this.$t('customerConfig.loadError'));
             })
             .finally(() => {
                 this.loading = false;
@@ -220,7 +220,7 @@ export default {
         })
         .catch((err) => {
             if (err.message !== 'Unauthorized') {
-                this.$message.error('同步数据时出错，请检查网络连接');
+                this.$message.error(this.$t('customerConfig.syncError'));
             }
         })
         .finally(() => {

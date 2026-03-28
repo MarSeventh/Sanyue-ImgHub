@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import i18n from './locales'
 
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/theme-chalk/dark/css-vars.css'
@@ -125,8 +126,8 @@ store.dispatch('fetchUserConfig').then(() => {
         }
     });
 
-    app.use(store).use(router).use(ElementPlus).mount('#app');
+    app.use(store).use(router).use(ElementPlus).use(i18n).mount('#app');
 }).catch(error => {
     console.error('Failed to load user configuration:', error);
-    app.use(store).use(router).use(ElementPlus).use(head).mount('#app');
+    app.use(store).use(router).use(ElementPlus).use(i18n).use(head).mount('#app');
 })
