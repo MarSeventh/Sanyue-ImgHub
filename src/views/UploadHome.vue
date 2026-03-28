@@ -467,9 +467,7 @@ export default {
             }
             const result = validateFolderPath(path, { strict })
             if (!result.valid) {
-                // 将错误消息中的"目标目录"替换为"上传目录"以保持原有的提示风格
-                const errorMessage = result.error.replace('目标目录', this.$t('validation.uploadDirReplace'))
-                this.$message.error(errorMessage)
+                this.$message.error(result.error)
                 return false
             }
             return true

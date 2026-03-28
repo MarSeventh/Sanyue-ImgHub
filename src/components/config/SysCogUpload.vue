@@ -518,7 +518,7 @@ computed: {
             huggingface: 'robot'
         };
         return [
-            { value: '', label: this.$t('common.all') || '全部类型' },
+            { value: '', label: this.$t('common.all') },
             ...this.channels.map(ch => ({
                 value: ch.value,
                 label: ch.label,

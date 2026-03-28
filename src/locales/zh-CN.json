@@ -66,7 +66,10 @@
     "maxRetryReached": "{name} 已达到最大重试次数({max})，停止重试",
     "urlRequestFailed": "粘贴板中的URL地址请求失败",
     "chunkMerging": "分块上传完成，正在合并文件，请耐心等待...",
-    "fileSizeTooLarge": "文件过大"
+    "fileSizeTooLarge": "文件过大",
+    "chunkInitFailed": "初始化分块上传失败",
+    "uploadError": "上传过程中发生错误",
+    "imageLoadFailed": "图片加载失败"
   },
   "uploadSettings": {
     "title": "上传设置",
@@ -734,5 +737,14 @@
   "language": {
     "switchTo": "中/En",
     "switchLanguage": "切换语言"
+  },
+  "whitelist": {
+    "title": "白名单模式已启用",
+    "description": "抱歉，当前已开启白名单模式，上传的图片需要审核通过后才能展示，请等待审核通过后再进行访问。",
+    "goHome": "返回首页",
+    "goBack": "返回上页",
+    "helpText": "您可以尝试：",
+    "uploadImage": "图片上传",
+    "refreshPage": "刷新页面"
   }
 }

@@ -28,12 +28,9 @@
       
       <!-- 提示信息 -->
       <div class="status-info">
-        <h1 class="status-title">白名单模式已启用</h1>
+        <h1 class="status-title">{{ $t('whitelist.title') }}</h1>
         <p class="status-description">
-          抱歉，当前已开启白名单模式，上传的图片需要审核通过后才能展示，请等待审核通过后再进行访问。
-        </p>
-        <p class="status-description-en">
-          Sorry, the whitelist mode is currently enabled, the uploaded images need to be audited before they can be displayed, please wait for the audit to be passed before visiting.
+          {{ $t('whitelist.description') }}
         </p>
         
         <!-- 操作按钮 -->
@@ -45,7 +42,7 @@
             @click="goHome"
           >
             <font-awesome-icon icon="home" class="btn-icon" />
-            返回首页
+            {{ $t('whitelist.goHome') }}
           </el-button>
           
           <el-button 
@@ -54,21 +51,21 @@
             @click="goBack"
           >
             <font-awesome-icon icon="arrow-left" class="btn-icon" />
-            返回上页
+            {{ $t('whitelist.goBack') }}
           </el-button>
         </div>
         
         <!-- 帮助信息 -->
         <div class="help-info">
-          <p class="help-text">您可以尝试：</p>
+          <p class="help-text">{{ $t('whitelist.helpText') }}</p>
           <div class="quick-links">
             <a href="javascript:void(0)" @click="goHome" class="quick-link">
               <font-awesome-icon icon="cloud-upload-alt" />
-              图片上传
+              {{ $t('whitelist.uploadImage') }}
             </a>
             <a href="javascript:void(0)" @click="refreshPage" class="quick-link">
               <font-awesome-icon icon="redo" />
-              刷新页面
+              {{ $t('whitelist.refreshPage') }}
             </a>
           </div>
         </div>

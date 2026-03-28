@@ -65,7 +65,10 @@
     "maxRetryReached": "{name} reached max retry limit ({max}), stopping",
     "urlRequestFailed": "URL request from clipboard failed",
     "chunkMerging": "Chunk upload complete, merging file, please wait...",
-    "fileSizeTooLarge": "File too large"
+    "fileSizeTooLarge": "File too large",
+    "chunkInitFailed": "Failed to init chunked upload",
+    "uploadError": "Upload error occurred",
+    "imageLoadFailed": "Image load failed"
   },
   "uploadSettings": {
     "title": "Upload Settings",
@@ -726,5 +729,14 @@
   "language": {
     "switchTo": "中/En",
     "switchLanguage": "Switch Language"
+  },
+  "whitelist": {
+    "title": "Whitelist Mode Enabled",
+    "description": "Sorry, the whitelist mode is currently enabled. Uploaded images need to be approved before they can be displayed. Please wait for approval.",
+    "goHome": "Go Home",
+    "goBack": "Go Back",
+    "helpText": "You can try:",
+    "uploadImage": "Upload Image",
+    "refreshPage": "Refresh Page"
   }
 }

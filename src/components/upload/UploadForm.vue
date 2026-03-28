@@ -558,7 +558,7 @@ methods: {
             })
 
             if (!initResponse.data.success) {
-                throw new Error('初始化分块上传失败: ' + initResponse.data.message)
+                throw new Error(this.$t('uploadForm.chunkInitFailed') + ': ' + initResponse.data.message)
             }
 
             const uploadId = initResponse.data.uploadId
@@ -670,7 +670,7 @@ methods: {
             }
 
             if (hasError) {
-                throw new Error(errorMsg || '上传过程中发生错误')
+                throw new Error(errorMsg || this.$t('uploadForm.uploadError'))
             }
 
             // 第三步：所有分块上传完成，发送合并请求
@@ -1477,7 +1477,7 @@ methods: {
             
             img.onerror = () => {
                 URL.revokeObjectURL(img.src)
-                reject(new Error('图片加载失败'))
+                reject(new Error(this.$t('uploadForm.imageLoadFailed')))
             }
             
             img.src = URL.createObjectURL(file)
