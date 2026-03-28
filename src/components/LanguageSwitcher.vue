@@ -34,6 +34,7 @@ export default {
 }
 
 .lang-icon {
-  font-size: 1.2em;
+  font-size: var(--lang-icon-size, 1.5em);
+  color: var(--lang-icon-color, var(--theme-toggle-color));
 }
 </style>

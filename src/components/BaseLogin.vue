@@ -544,8 +544,12 @@ export default {
     align-items: center;
     justify-content: center;
     z-index: 100;
-    color: var(--theme-toggle-color);
-    font-size: 13px;
+}
+@media (max-width: 768px) {
+    .language-switcher {
+        width: 2rem;
+        height: 2rem;
+    }
 }
 .language-switcher:hover {
     transform: scale(1.05);

@@ -180,14 +180,14 @@ export default {
     }
 
     .tabs-language-switcher {
-        font-size: 0.9em;
+        --lang-icon-size: 1.1em;
         padding: 3px;
     }
 }
 
 .tabs-language-switcher {
-    font-size: 1.05em;
-    color: var(--admin-container-color);
+    --lang-icon-size: 1.3em;
+    --lang-icon-color: var(--admin-theme-toggle-color);
     transition: color 0.3s ease;
     padding: 5px;
 }
