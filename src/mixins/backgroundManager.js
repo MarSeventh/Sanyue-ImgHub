@@ -42,7 +42,7 @@ export default {
           object-fit: cover;
           z-index: -1;
           opacity: 0;
-          transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+          transition: opacity 1.2s ease-in-out, filter 0.3s ease;
           filter: var(--background-image-filter, brightness(1));
         }
         .background-image2 {
@@ -54,7 +54,7 @@ export default {
           object-fit: cover;
           z-index: -1;
           opacity: 0;
-          transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+          transition: opacity 1.2s ease-in-out, filter 0.3s ease;
           filter: var(--background-image-filter, brightness(1));
         }
       `
@@ -265,13 +265,17 @@ export default {
       const curBg = bg1.style.opacity != 0 ? bg1 : bg2
       const nextBg = bg1.style.opacity != 0 ? bg2 : bg1
       
-      curBg.style.opacity = 0
       this.bingWallPaperIndex = (this.bingWallPaperIndex + 1) % this.bingWallPapers.length
-      
-      nextBg.src = this.bingWallPapers[this.bingWallPaperIndex]?.url
-      nextBg.onload = () => {
+      const nextUrl = this.bingWallPapers[this.bingWallPaperIndex]?.url
+
+      // Preload, then crossfade
+      const preload = new Image()
+      preload.onload = () => {
+        nextBg.src = nextUrl
         nextBg.style.opacity = this.bkOpacity
+        setTimeout(() => { curBg.style.opacity = 0 }, 800)
       }
+      preload.src = nextUrl
     },
 
     /**
@@ -281,13 +285,17 @@ export default {
       const curBg = bg1.style.opacity != 0 ? bg1 : bg2
       const nextBg = bg1.style.opacity != 0 ? bg2 : bg1
       
-      curBg.style.opacity = 0
       this.customWallPaperIndex = (this.customWallPaperIndex + 1) % wallpapers.length
-      
-      nextBg.src = wallpapers[this.customWallPaperIndex]
-      nextBg.onload = () => {
+      const nextUrl = wallpapers[this.customWallPaperIndex]
+
+      // Preload, then crossfade
+      const preload = new Image()
+      preload.onload = () => {
+        nextBg.src = nextUrl
         nextBg.style.opacity = this.bkOpacity
+        setTimeout(() => { curBg.style.opacity = 0 }, 800)
       }
+      preload.src = nextUrl
     },
 
     /**
@@ -316,7 +324,7 @@ export default {
           bg1.src = ''
           // 恢复过渡效果
           setTimeout(() => {
-            if (bg1) bg1.style.transition = 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+            if (bg1) bg1.style.transition = 'opacity 1.2s ease-in-out'
           }, 50)
         }
         if (bg2) {
@@ -325,7 +333,7 @@ export default {
           bg2.src = ''
           // 恢复过渡效果
           setTimeout(() => {
-            if (bg2) bg2.style.transition = 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+            if (bg2) bg2.style.transition = 'opacity 1.2s ease-in-out'
           }, 50)
         }
       } else {
@@ -334,13 +342,13 @@ export default {
           bg1.style.opacity = 0
           setTimeout(() => {
             if (bg1) bg1.src = ''
-          }, 800) // 等待过渡完成后清除src
+          }, 1200)
         }
         if (bg2) {
           bg2.style.opacity = 0
           setTimeout(() => {
             if (bg2) bg2.src = ''
-          }, 800) // 等待过渡完成后清除src
+          }, 1200)
         }
       }
     },
