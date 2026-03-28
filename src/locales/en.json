@@ -716,7 +716,8 @@
     "info": "Notice",
     "yes": "Yes",
     "no": "No",
-    "all": "All Types"
+    "all": "All Types",
+    "select": "Select"
   },
   "validation": {
     "pathMustStartWithSlash": "Path must start with \"/\"",

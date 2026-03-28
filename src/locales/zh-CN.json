@@ -724,7 +724,8 @@
     "info": "提示",
     "yes": "是",
     "no": "否",
-    "all": "全部类型"
+    "all": "全部类型",
+    "select": "请选择"
   },
   "validation": {
     "pathMustStartWithSlash": "目标目录必须以 \"/\" 开头",

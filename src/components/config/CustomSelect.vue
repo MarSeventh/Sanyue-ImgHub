@@ -40,7 +40,7 @@ export default {
         },
         placeholder: {
             type: String,
-            default: '请选择'
+            default: ''
         },
         width: {
             type: String,
@@ -54,9 +54,12 @@ export default {
         };
     },
     computed: {
+        resolvedPlaceholder() {
+            return this.placeholder || this.$t('common.select');
+        },
         displayLabel() {
             const selected = this.options.find(opt => opt.value === this.modelValue);
-            return selected ? selected.label : this.placeholder;
+            return selected ? selected.label : this.resolvedPlaceholder;
         }
     },
     mounted() {
