@@ -1,5 +1,5 @@
 <template>
-<div class="sidebar-container" :class="{ 'is-collapsed': isCollapse }">
+<div class="sidebar-container" ref="sidebar" :class="{ 'is-collapsed': isCollapse }" :style="sidebarStyle">
     <div class="menu-list">
         <div 
             v-for="item in menuItems" 
@@ -34,6 +34,7 @@ props: {
 },
 data() {
     return {
+        expandedWidth: null,
         menuItems: [
             { index: 'status', icon: 'chart-bar', titleKey: 'sysConfigTabs.systemStatus' },
             { index: 'upload', icon: 'cloud-upload', titleKey: 'sysConfigTabs.uploadSettings' },
@@ -42,6 +43,22 @@ data() {
             { index: 'others', icon: 'cog', titleKey: 'sysConfigTabs.otherSettings' }
         ]
     };
+},
+computed: {
+    collapsedWidth() {
+        return window.innerWidth <= 768 ? 50 : 56;
+    },
+    sidebarStyle() {
+        if (this.isCollapse) {
+            return { width: this.collapsedWidth + 'px' };
+        }
+        return this.expandedWidth ? { width: this.expandedWidth + 'px' } : {};
+    }
+},
+watch: {
+    '$i18n.locale'() {
+        this.$nextTick(() => this.measureWidth());
+    }
 },
 methods: {
     toggleCollapse() {
@@ -54,9 +71,34 @@ methods: {
     handleSelect(index) {
         this.$emit('update:activeIndex', index);
     },
+    measureWidth() {
+        const el = this.$refs.sidebar;
+        if (!el) return;
+        // Temporarily expand to measure natural content width
+        const prevWidth = el.style.width;
+        const prevTransition = el.style.transition;
+        const wasCollapsed = el.classList.contains('is-collapsed');
+        el.style.transition = 'none';
+        if (wasCollapsed) {
+            el.classList.remove('is-collapsed');
+        }
+        el.style.width = 'auto';
+        // Force reflow to apply changes
+        void el.offsetWidth;
+        const natural = el.scrollWidth;
+        // Restore original state
+        el.style.width = prevWidth;
+        if (wasCollapsed) {
+            el.classList.add('is-collapsed');
+        }
+        void el.offsetWidth;
+        el.style.transition = prevTransition;
+        this.expandedWidth = natural;
+    },
 },
 mounted() {
     this.checkMobile();
+    this.$nextTick(() => this.measureWidth());
     window.addEventListener('resize', this.checkMobile);
 },
 beforeDestroy() {
@@ -74,8 +116,6 @@ beforeDestroy() {
     left: 8px;
     transform: translateY(-50%);
     z-index: 2001;
-    width: fit-content;
-    min-width: 56px;
     max-width: 200px;
     /* macOS 风格毛玻璃效果 */
     background: rgba(255, 255, 255, 0.72);
@@ -203,7 +243,6 @@ html.dark .toggle-button:hover {
 @media (max-width: 768px) {
     .sidebar-container {
         left: 4px;
-        width: fit-content;
         max-width: 170px;
     }
     
