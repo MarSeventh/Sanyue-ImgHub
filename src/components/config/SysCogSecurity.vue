@@ -12,7 +12,7 @@
                 label-width="120px"
             >
                 <el-form-item :label="$t('sysSecurity.uploadPassword')" prop="authCode">
-                    <el-input v-model="authSettings.user.authCode" type="password" show-password @input="handleUserPassInput" autocomplete="new-password"/>
+                    <el-input v-model="authSettings.user.authCode" type="password" show-password @input="handleUserPassInput" autocomplete="new-password" :placeholder="authSettings.user._hasPassword ? $t('sysSecurity.passwordUnchanged') : ''"/>
                 </el-form-item>
 
                 <transition name="fade-slide" mode="out-in">
@@ -33,7 +33,7 @@
                     <el-input v-model="authSettings.admin.adminUsername" autocomplete="new-password"/>
                 </el-form-item>
                 <el-form-item :label="$t('sysSecurity.adminPassword')" prop="adminPassword">
-                    <el-input v-model="authSettings.admin.adminPassword" type="password" show-password @input="handleAdminPassInput" autocomplete="new-password"/>
+                    <el-input v-model="authSettings.admin.adminPassword" type="password" show-password @input="handleAdminPassInput" autocomplete="new-password" :placeholder="authSettings.admin._hasPassword ? $t('sysSecurity.passwordUnchanged') : ''"/>
                 </el-form-item>
 
                 <transition name="fade-slide" mode="out-in">
@@ -669,13 +669,35 @@ methods: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(settings)
-            }).then(() => {
+            }).then(res => res.json()).then((data) => {
+                // 管理端密码变更后，当前会话已被清除，需要重新登录
+                if (data.adminPasswordChanged) {
+                    const msg = this.$t('sysSecurity.adminPasswordChangedRelogin');
+                    this.$message.warning(msg);
+                    setTimeout(() => {
+                        this.$store.commit('setAdminLoggedIn', false);
+                        this.$router.push('/adminLogin');
+                    }, 1500);
+                    return;
+                }
+
                 this.$message.success(this.$t('sysSecurity.settingsSaved'));
-                // 更新原密码
-                this.oriUserPassword = this.authSettings.user.authCode;
-                this.oriAdminPassword = this.authSettings.admin.adminPassword;
+                // 保存成功后重置密码字段为空（后端已处理）
+                this.authSettings.user.authCode = '';
+                this.authSettings.admin.adminPassword = '';
+                this.oriUserPassword = '';
+                this.oriAdminPassword = '';
+                // 标记已有密码（如果用户刚设置了密码）
+                if (settings.auth.user.authCode) {
+                    this.authSettings.user._hasPassword = true;
+                }
+                if (settings.auth.admin.adminPassword) {
+                    this.authSettings.admin._hasPassword = true;
+                }
                 this.showUserPassConfirm = false;
                 this.showAdminPassConfirm = false;
+            }).catch(() => {
+                // 如果请求过程中 session 已失效导致 fetchWithAuth 跳转，忽略后续错误
             });
         });
     }
@@ -690,9 +712,9 @@ mounted() {
         this.uploadSettings = data.upload;
         this.accessSettings = data.access;
 
-        // 保存原密码
-        this.oriUserPassword = this.authSettings.user.authCode;
-        this.oriAdminPassword = this.authSettings.admin.adminPassword;
+        // 密码从后端返回为空（安全考虑），记录原始空值
+        this.oriUserPassword = '';
+        this.oriAdminPassword = '';
         this.authSettings.user.confirmNewUserPassword = '';
         this.authSettings.admin.confirmNewAdminPassword = '';
         

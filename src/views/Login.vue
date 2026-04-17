@@ -11,7 +11,6 @@
 </template>
 
 <script>
-import cookies from 'vue-cookies'
 import axios from '@/utils/axios'
 import { mapGetters } from 'vuex'
 import BaseLogin from '@/components/BaseLogin.vue'
@@ -58,23 +57,24 @@ export default {
         },
         async handleLogin(formData) {
             const { password } = formData;
-            const writtenPass = password === '' ? 'unset' : password;
             
             this.isLoading = true;
             
             const minDelayPromise = new Promise(resolve => setTimeout(resolve, 500));
             const loginPromise = axios.post('/api/login', {
                 authCode: password
+            }, {
+                withCredentials: true
             }).then(res => ({ res })).catch(err => ({ err }));
 
             try {
                 const [result] = await Promise.all([loginPromise, minDelayPromise]);
                 
                 if (result.res && result.res.status === 200) {
-                    cookies.set('authCode', writtenPass, '14d')
+                    // 会话 Token 已通过 HttpOnly Cookie 由后端设置
+                    this.$store.commit('setUserLoggedIn', true);
                     this.$router.push('/')
                     this.$message.success(this.$t('login.success'))
-                    // Keep loading true to show animation relative to redirect
                 } else {
                     this.isLoading = false;
                     this.$message.error(this.$t('login.failed'))

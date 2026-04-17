@@ -598,6 +598,8 @@
     "confirmUploadPassword": "Please re-enter upload password",
     "confirmAdminPassword": "Please re-enter admin password",
     "passwordMismatch": "Passwords do not match",
+    "passwordUnchanged": "Unchanged (leave empty to keep current password)",
+    "adminPasswordChangedRelogin": "Admin password changed, redirecting to login page",
     "tokenNameRequired": "Please enter token name",
     "permissionsRequired": "Please select permissions",
     "validPeriodRequired": "Valid period must be greater than 0",

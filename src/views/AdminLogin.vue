@@ -72,8 +72,9 @@ export default {
                 const [result] = await Promise.all([loginPromise, minDelayPromise]);
                 
                 if (result.response && result.response.status === 200) {
-                    // 认证成功，存储认证信息，跳转到管理页面
-                    this.$store.commit('setCredentials', credentials);
+                    // 认证成功，标记已登录状态（不再存储密码）
+                    // 会话 Token 已通过 HttpOnly Cookie 由后端设置
+                    this.$store.commit('setAdminLoggedIn', true);
                     this.$router.push('/dashboard');
                 } else {
                     const error = result.error || new Error('Unknown error');

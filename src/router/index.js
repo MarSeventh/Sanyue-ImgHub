@@ -1,58 +1,77 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import cookies from 'vue-cookies'
 import store from '../store'
 import axios from '@/utils/axios'
 import i18n from '@/locales'
 
 // 通用的管理员认证守卫
 const adminAuthGuard = (to, from, next) => {
-  // 从store中获取凭据
-  const credentials = store.getters.credentials
-  if (credentials === null && to.name !== 'adminLogin') {
-    // 尝试未设置密码的情况
+  // 先通过 session cookie 检查会话
+  axios.get('/api/sessionCheck', {
+    withCredentials: true
+  }).then(res => {
+    if (res.data?.valid && res.data?.authType === 'admin') {
+      store.commit('setAdminLoggedIn', true);
+      return next()
+    }
+    throw new Error('no valid admin session')
+  }).catch(() => {
+    // session 无效，尝试无密码情况（管理端未设密码）
     const credentials = btoa('unset:unset')
     axios.get('/api/manage/check', {
-      headers: {
-        'Authorization': 'Basic ' + credentials
-      },
+      headers: { 'Authorization': 'Basic ' + credentials },
       withCredentials: true
     }).then(res => {
       if (res.status !== 200) {
         throw new Error(i18n.global.t('login.authFailed'))
       }
-      store.commit('setCredentials', credentials)
+      store.commit('setAdminLoggedIn', true);
       next()
-    }).catch(err => {
-      ElMessage.error(i18n.global.t('login.authRequired'))
-      next({ name: 'adminLogin' })
+    }).catch(() => {
+      store.commit('setAdminLoggedIn', false);
+      if (to.name !== 'adminLogin') {
+        ElMessage.error(i18n.global.t('login.authRequired'))
+        next({ name: 'adminLogin' })
+      } else {
+        next()
+      }
     })
-  } else {
-    next()
-  }
+  })
 }
 
 // 通用的用户认证守卫
 const userAuthGuard = (to, from, next) => {
-  let authCode = cookies.get('authCode');
-  if (authCode === null && to.name !== 'login') {
-    // 尝试未设置密码的情况
+  // 先通过 session cookie 检查会话
+  axios.get('/api/sessionCheck', {
+    withCredentials: true
+  }).then(res => {
+    if (res.data?.valid) {
+      store.commit('setUserLoggedIn', true);
+      return next()
+    }
+    throw new Error('no valid session')
+  }).catch(() => {
+    // session 无效，尝试无密码情况（用户端未设密码）
     axios.post('/api/login', {
       authCode: 'unset'
+    }, {
+      withCredentials: true
     }).then(res => {
       if (res.status !== 200) {
         throw new Error(i18n.global.t('login.authFailed'))
       }
-      cookies.set('authCode', 'unset', '14d')
-      authCode = 'unset'
+      store.commit('setUserLoggedIn', true);
       next()
-    }).catch(err => {
-      ElMessage.error(i18n.global.t('login.authRequired'))
-      next({ name: 'login' })
+    }).catch(() => {
+      store.commit('setUserLoggedIn', false);
+      if (to.name !== 'login') {
+        ElMessage.error(i18n.global.t('login.authRequired'))
+        next({ name: 'login' })
+      } else {
+        next()
+      }
     })
-  } else {
-    next()
-  }
+  })
 }
 
 const routes = [
