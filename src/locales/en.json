@@ -600,6 +600,7 @@
     "passwordMismatch": "Passwords do not match",
     "passwordUnchanged": "Unchanged (leave empty to keep current password)",
     "adminPasswordChangedRelogin": "Admin password changed, redirecting to login page",
+    "clearPassword": "Clear password",
     "tokenNameRequired": "Please enter token name",
     "permissionsRequired": "Please select permissions",
     "validPeriodRequired": "Valid period must be greater than 0",

@@ -606,6 +606,7 @@
     "passwordMismatch": "两次输入密码不一致",
     "passwordUnchanged": "未修改（留空保持原密码）",
     "adminPasswordChangedRelogin": "管理端密码已修改，即将跳转到登录页",
+    "clearPassword": "清除密码",
     "tokenNameRequired": "请输入Token名称",
     "permissionsRequired": "请选择权限",
     "validPeriodRequired": "有效期数值必须大于 0",
