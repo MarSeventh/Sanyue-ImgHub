@@ -12,7 +12,10 @@
                 label-width="120px"
             >
                 <el-form-item :label="$t('sysSecurity.uploadPassword')" prop="authCode">
-                    <el-input v-model="authSettings.user.authCode" type="password" show-password @input="handleUserPassInput" autocomplete="new-password"/>
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                        <el-input v-model="authSettings.user.authCode" type="password" show-password @input="handleUserPassInput" autocomplete="new-password" :placeholder="authSettings.user._hasPassword ? $t('sysSecurity.passwordUnchanged') : ''" :disabled="clearUserPassword"/>
+                        <el-checkbox v-if="authSettings.user._hasPassword" v-model="clearUserPassword" @change="handleClearUserPassword">{{ $t('sysSecurity.clearPassword') }}</el-checkbox>
+                    </div>
                 </el-form-item>
 
                 <transition name="fade-slide" mode="out-in">
@@ -30,10 +33,13 @@
                 label-width="120px"
             >
                 <el-form-item :label="$t('sysSecurity.adminUsername')" prop="adminUsername">
-                    <el-input v-model="authSettings.admin.adminUsername" autocomplete="new-password"/>
+                    <el-input v-model="authSettings.admin.adminUsername" autocomplete="new-password" :disabled="clearAdminPassword"/>
                 </el-form-item>
                 <el-form-item :label="$t('sysSecurity.adminPassword')" prop="adminPassword">
-                    <el-input v-model="authSettings.admin.adminPassword" type="password" show-password @input="handleAdminPassInput" autocomplete="new-password"/>
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                        <el-input v-model="authSettings.admin.adminPassword" type="password" show-password @input="handleAdminPassInput" autocomplete="new-password" :placeholder="authSettings.admin._hasPassword ? $t('sysSecurity.passwordUnchanged') : ''" :disabled="clearAdminPassword"/>
+                        <el-checkbox v-if="authSettings.admin._hasPassword" v-model="clearAdminPassword" @change="handleClearAdminPassword">{{ $t('sysSecurity.clearPassword') }}</el-checkbox>
+                    </div>
                 </el-form-item>
 
                 <transition name="fade-slide" mode="out-in">
@@ -308,6 +314,8 @@ data() {
 
         showUserPassConfirm: false, // 显示用户密码确认框
         showAdminPassConfirm: false, // 显示管理密码确认框
+        clearUserPassword: false, // 清除用户密码开关
+        clearAdminPassword: false, // 清除管理密码开关
 
         // Token对话框相关
         showCreateTokenDialog: false,
@@ -440,6 +448,19 @@ methods: {
         if (this.authSettings.admin.adminPassword !== this.oriAdminPassword) {
             this.showAdminPassConfirm = true;
         } else {
+            this.showAdminPassConfirm = false;
+        }
+    },
+    handleClearUserPassword(checked) {
+        if (checked) {
+            this.authSettings.user.authCode = '';
+            this.showUserPassConfirm = false;
+        }
+    },
+    handleClearAdminPassword(checked) {
+        if (checked) {
+            this.authSettings.admin.adminPassword = '';
+            this.authSettings.admin.adminUsername = '';
             this.showAdminPassConfirm = false;
         }
     },
@@ -663,19 +684,57 @@ methods: {
             delete settings.auth.user.confirmNewUserPassword;
             delete settings.auth.admin.confirmNewAdminPassword;
 
+            // 标记清除密码
+            if (this.clearUserPassword) {
+                settings.auth.user._clear = true;
+                settings.auth.user.authCode = '';
+            }
+            if (this.clearAdminPassword) {
+                settings.auth.admin._clear = true;
+                settings.auth.admin.adminPassword = '';
+            }
+
             fetchWithAuth('/api/manage/sysConfig/security', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(settings)
-            }).then(() => {
+            }).then(res => res.json()).then((data) => {
+                // 管理端密码变更后，当前会话已被清除，需要重新登录
+                if (data.adminPasswordChanged) {
+                    const msg = this.$t('sysSecurity.adminPasswordChangedRelogin');
+                    this.$message.warning(msg);
+                    setTimeout(() => {
+                        this.$store.commit('setAdminLoggedIn', false);
+                        this.$router.push('/adminLogin');
+                    }, 1500);
+                    return;
+                }
+
                 this.$message.success(this.$t('sysSecurity.settingsSaved'));
-                // 更新原密码
-                this.oriUserPassword = this.authSettings.user.authCode;
-                this.oriAdminPassword = this.authSettings.admin.adminPassword;
+                // 保存成功后重置密码字段为空（后端已处理）
+                this.authSettings.user.authCode = '';
+                this.authSettings.admin.adminPassword = '';
+                this.oriUserPassword = '';
+                this.oriAdminPassword = '';
+                // 标记已有密码（如果用户刚设置了密码，且不是清除操作）
+                if (settings.auth.user.authCode && !settings.auth.user._clear) {
+                    this.authSettings.user._hasPassword = true;
+                } else if (settings.auth.user._clear) {
+                    this.authSettings.user._hasPassword = false;
+                }
+                if (settings.auth.admin.adminPassword && !settings.auth.admin._clear) {
+                    this.authSettings.admin._hasPassword = true;
+                } else if (settings.auth.admin._clear) {
+                    this.authSettings.admin._hasPassword = false;
+                }
                 this.showUserPassConfirm = false;
                 this.showAdminPassConfirm = false;
+                this.clearUserPassword = false;
+                this.clearAdminPassword = false;
+            }).catch(() => {
+                // 如果请求过程中 session 已失效导致 fetchWithAuth 跳转，忽略后续错误
             });
         });
     }
@@ -690,9 +749,9 @@ mounted() {
         this.uploadSettings = data.upload;
         this.accessSettings = data.access;
 
-        // 保存原密码
-        this.oriUserPassword = this.authSettings.user.authCode;
-        this.oriAdminPassword = this.authSettings.admin.adminPassword;
+        // 密码从后端返回为空（安全考虑），记录原始空值
+        this.oriUserPassword = '';
+        this.oriAdminPassword = '';
         this.authSettings.user.confirmNewUserPassword = '';
         this.authSettings.admin.confirmNewAdminPassword = '';
         

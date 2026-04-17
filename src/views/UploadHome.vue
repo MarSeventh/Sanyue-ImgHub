@@ -243,7 +243,6 @@ import DirectorySuggestionInput from '@/components/DirectorySuggestionInput.vue'
 import backgroundManager from '@/mixins/backgroundManager'
 import axios from '@/utils/axios'
 import { ref } from 'vue'
-import cookies from 'vue-cookies'
 import { mapGetters } from 'vuex'
 import { validateFolderPath } from '@/utils/pathValidator'
 
@@ -512,9 +511,11 @@ export default {
             this.showUrlDialog = true
         },
         handleLogout() {
-            cookies.remove('authCode')
-            this.$router.push('/login')
-            this.$message.success(this.$t('upload.logoutSuccess'))
+            axios.post('/api/auth/logout', { authType: 'user' }, { withCredentials: true }).finally(() => {
+                this.$store.commit('setUserLoggedIn', false);
+                this.$router.push('/login')
+                this.$message.success(this.$t('upload.logoutSuccess'))
+            })
         },
         changeUrlForm() {
             this.$store.commit('setUploadCopyUrlForm', this.selectedUrlForm)

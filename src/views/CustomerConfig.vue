@@ -116,8 +116,16 @@ export default {
     },
     methods: {
         handleLogout() {
-            this.$store.commit('setCredentials', null);
-            this.$router.push('/adminLogin');
+            const url = process.env.NODE_ENV === 'production' ? '/api/auth/logout' : '/api/api/auth/logout';
+            fetch(url, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ authType: 'admin' })
+            }).finally(() => {
+                this.$store.commit('setAdminLoggedIn', false);
+                this.$router.push('/adminLogin');
+            });
         },
         formatTimeStamp(timeStamp) {
             return new Date(timeStamp).toLocaleString();
