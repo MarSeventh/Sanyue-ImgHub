@@ -511,7 +511,7 @@ export default {
             this.showUrlDialog = true
         },
         handleLogout() {
-            axios.post('/api/logout', { authType: 'user' }, { withCredentials: true }).finally(() => {
+            axios.post('/api/auth/logout', { authType: 'user' }, { withCredentials: true }).finally(() => {
                 this.$store.commit('setUserLoggedIn', false);
                 this.$router.push('/login')
                 this.$message.success(this.$t('upload.logoutSuccess'))

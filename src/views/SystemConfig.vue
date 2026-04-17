@@ -86,7 +86,7 @@ export default {
     },
     methods: {
         handleLogout() {
-            const url = process.env.NODE_ENV === 'production' ? '/api/logout' : '/api/api/logout';
+            const url = process.env.NODE_ENV === 'production' ? '/api/auth/logout' : '/api/api/auth/logout';
             fetch(url, {
                 method: 'POST',
                 credentials: 'include',

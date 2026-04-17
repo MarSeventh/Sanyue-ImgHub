@@ -61,7 +61,7 @@ export default {
             this.isLoading = true;
             
             const minDelayPromise = new Promise(resolve => setTimeout(resolve, 500));
-            const loginPromise = axios.post('/api/login', {
+            const loginPromise = axios.post('/api/auth/login', {
                 authCode: password
             }, {
                 withCredentials: true

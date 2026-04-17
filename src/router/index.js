@@ -6,7 +6,7 @@ import i18n from '@/locales'
 
 // 通用的管理员认证守卫
 const adminAuthGuard = (to, from, next) => {
-  axios.get('/api/sessionCheck', {
+  axios.get('/api/auth/sessionCheck', {
     withCredentials: true
   }).then(res => {
     const data = res.data || {}
@@ -43,7 +43,7 @@ const adminAuthGuard = (to, from, next) => {
 
 // 通用的用户认证守卫
 const userAuthGuard = (to, from, next) => {
-  axios.get('/api/sessionCheck', {
+  axios.get('/api/auth/sessionCheck', {
     withCredentials: true
   }).then(res => {
     const data = res.data || {}
