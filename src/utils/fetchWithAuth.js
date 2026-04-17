@@ -19,8 +19,12 @@ export default async function fetchWithAuth(url, options = {}) {
 
     if (response.status === 401 && !isRedirecting) {
         isRedirecting = true;
+        const wasLoggedIn = store.state.adminLoggedIn;
         store.commit('setAdminLoggedIn', false);
-        ElMessage.error('认证状态错误，请重新登录');
+        // 只有之前已登录（session 过期）才提示错误，首次未登录静默跳转
+        if (wasLoggedIn) {
+            ElMessage.error('认证状态错误，请重新登录');
+        }
         router.push('/adminLogin').finally(() => {
             isRedirecting = false;
         });

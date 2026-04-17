@@ -24,16 +24,24 @@ const adminAuthGuard = (to, from, next) => {
     }
 
     // 需要认证但没有有效 session，跳转登录
+    // 只有之前已登录（session 过期）才提示错误，首次未登录静默跳转
+    const wasLoggedIn = store.state.adminLoggedIn
     store.commit('setAdminLoggedIn', false)
     if (to.name !== 'adminLogin') {
-      ElMessage.error(i18n.global.t('login.authRequired'))
+      if (wasLoggedIn) {
+        ElMessage.error(i18n.global.t('login.authRequired'))
+      }
       next({ name: 'adminLogin' })
     } else {
       next()
     }
   }).catch(() => {
+    const wasLoggedIn = store.state.adminLoggedIn
     store.commit('setAdminLoggedIn', false)
     if (to.name !== 'adminLogin') {
+      if (wasLoggedIn) {
+        ElMessage.error(i18n.global.t('login.authRequired'))
+      }
       next({ name: 'adminLogin' })
     } else {
       next()
@@ -61,16 +69,24 @@ const userAuthGuard = (to, from, next) => {
     }
 
     // 需要认证但没有有效 session，跳转登录
+    // 只有之前已登录（session 过期）才提示错误，首次未登录静默跳转
+    const wasLoggedIn = store.state.userLoggedIn
     store.commit('setUserLoggedIn', false)
     if (to.name !== 'login') {
-      ElMessage.error(i18n.global.t('login.authRequired'))
+      if (wasLoggedIn) {
+        ElMessage.error(i18n.global.t('login.authRequired'))
+      }
       next({ name: 'login' })
     } else {
       next()
     }
   }).catch(() => {
+    const wasLoggedIn = store.state.userLoggedIn
     store.commit('setUserLoggedIn', false)
     if (to.name !== 'login') {
+      if (wasLoggedIn) {
+        ElMessage.error(i18n.global.t('login.authRequired'))
+      }
       next({ name: 'login' })
     } else {
       next()
