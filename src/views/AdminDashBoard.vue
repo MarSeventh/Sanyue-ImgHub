@@ -1793,8 +1793,11 @@ methods: {
                 throw new Error('Refresh failed');
             }
         } catch (error) {
-            console.error('Error refreshing file list:', error);
-            this.$message.error(this.$t('dashboard.refreshFailed'));
+            // 认证失败由 fetchWithAuth 统一处理跳转，不重复提示
+            if (!error.message?.includes('Unauthorized') && this.$store.state.adminLoggedIn) {
+                console.error('Error refreshing file list:', error);
+                this.$message.error(this.$t('dashboard.refreshFailed'));
+            }
         } finally {
             this.refreshLoading = false;
             this.loading = false;
