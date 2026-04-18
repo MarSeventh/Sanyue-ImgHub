@@ -1955,22 +1955,10 @@ mounted() {
     this.initializeBackground('adminBkImg', '.container', false, true);
 
     this.loading = true;
-    fetchWithAuth("/api/manage/check", { method: 'GET' })
-        .then(response => response.text())
-        .then(result => {
-            if(result == "true"){
-                this.showLogoutButton = true;
-                return true;
-            } else if(result == "Not using basic auth."){
-                return true;
-            } else {
-                throw new Error('Unauthorized');
-            }
-        })
-        .then(() => {
-            // 首次加载时刷新文件列表
-            return this.refreshFileList();
-        })
+    // 路由守卫已通过 /api/auth/sessionCheck 验证认证状态
+    this.showLogoutButton = this.$store.state.adminLoggedIn;
+    // 首次加载时刷新文件列表
+    this.refreshFileList()
         .then(() => {
             // 获取所有渠道名称
             return this.extractChannelNames();

@@ -54,17 +54,16 @@ export default {
         },
         async handleLogin(formData) {
             const { username, password } = formData;
-            const credentials = btoa(`${username}:${password}`); // Base64 编码
             
             this.isLoading = true;
             
             // Min delay promise
             const minDelayPromise = new Promise(resolve => setTimeout(resolve, 1000));
             // Request promise handling its own error to return it
-            const loginPromise = axios.get('/api/manage/check', {
-                headers: {
-                    'Authorization': `Basic ${credentials}`
-                },
+            const loginPromise = axios.post('/api/auth/adminLogin', {
+                username,
+                password
+            }, {
                 withCredentials: true
             }).then(response => ({ response })).catch(error => ({ error }));
 

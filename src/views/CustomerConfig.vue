@@ -197,19 +197,9 @@ export default {
 
         this.loading = true;
 
-        fetchWithAuth("/api/manage/check", { method: 'GET' })
-        .then(response => response.text())
-        .then(result => {
-            if(result == "true"){
-                this.showLogoutButton=true;
-                // 在 check 成功后再执行 list 的 fetch 请求
-                return fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' });
-            } else if(result=="Not using basic auth."){
-                return fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' });
-            } else{
-                throw new Error('Unauthorized');
-            }
-        })
+        // 路由守卫已通过 /api/auth/sessionCheck 验证认证状态
+        this.showLogoutButton = this.$store.state.adminLoggedIn;
+        fetchWithAuth("/api/manage/cusConfig/list?count=20", { method: 'GET' })
         .then(response => response.json())
         .then(async result => {
             // 读取blockipList, 接口返回格式为 'ip1,ip2,ip3'，需要转换为数组
