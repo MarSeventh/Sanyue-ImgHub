@@ -609,7 +609,14 @@
     "timeUnitHours": "hours",
     "timeUnitDays": "days",
     "timeUnitMonths": "months",
-    "timeUnitYears": "years"
+    "timeUnitYears": "years",
+    "sessionSecurityPolicy": "Session Security Policy",
+    "secureMode": "Secure Mode",
+    "secureModeTooltip": "When enabled, cookies are only transmitted over HTTPS. Make sure your site has HTTPS enabled",
+    "userSessionMaxAge": "User Session Max Age",
+    "adminSessionMaxAge": "Admin Session Max Age",
+    "sessionMaxAgeUnit": "days",
+    "sessionMaxAgeInvalid": "Session max age must be a positive integer greater than 0"
   },
   "sysPage": {
     "settingsSaved": "Settings saved",

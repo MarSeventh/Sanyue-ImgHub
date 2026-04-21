@@ -615,7 +615,14 @@
     "timeUnitHours": "小时",
     "timeUnitDays": "天",
     "timeUnitMonths": "月",
-    "timeUnitYears": "年"
+    "timeUnitYears": "年",
+    "sessionSecurityPolicy": "会话安全策略",
+    "secureMode": "Secure 模式",
+    "secureModeTooltip": "开启后，Cookie 仅通过 HTTPS 连接传输，请确保您的站点已启用 HTTPS",
+    "userSessionMaxAge": "用户端会话有效期",
+    "adminSessionMaxAge": "管理端会话有效期",
+    "sessionMaxAgeUnit": "天",
+    "sessionMaxAgeInvalid": "会话有效期必须为大于 0 的正整数"
   }
 ,
   "sysPage": {

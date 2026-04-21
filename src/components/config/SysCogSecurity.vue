@@ -176,6 +176,38 @@
                     <el-switch v-model="accessSettings.whiteListMode"/>
                 </el-form-item>
             </el-form>
+            <h4 class="second-title">{{ $t('sysSecurity.sessionSecurityPolicy') }}</h4>
+            <el-form :model="accessSettings" label-width="120px">
+                <el-form-item>
+                    <template #label>
+                        {{ $t('sysSecurity.secureMode') }}
+                        <el-tooltip :content="$t('sysSecurity.secureModeTooltip')" placement="top">
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-switch v-model="accessSettings.sessionSecure"/>
+                </el-form-item>
+                <el-form-item :label="$t('sysSecurity.userSessionMaxAge')">
+                    <el-input-number
+                        v-model="accessSettings.userSessionMaxAge"
+                        :min="1"
+                        :step="1"
+                        :precision="0"
+                        controls-position="right"
+                    />
+                    <span class="form-item-hint">{{ $t('sysSecurity.sessionMaxAgeUnit') }}</span>
+                </el-form-item>
+                <el-form-item :label="$t('sysSecurity.adminSessionMaxAge')">
+                    <el-input-number
+                        v-model="accessSettings.adminSessionMaxAge"
+                        :min="1"
+                        :step="1"
+                        :precision="0"
+                        controls-position="right"
+                    />
+                    <span class="form-item-hint">{{ $t('sysSecurity.sessionMaxAgeUnit') }}</span>
+                </el-form-item>
+            </el-form>
         </div>
 
         <!-- 悬浮保存按钮 -->
@@ -675,6 +707,15 @@ methods: {
                 return;
             }
 
+            // 验证会话有效期为大于 0 的正整数
+            if (this.accessSettings.userSessionMaxAge < 1 ||
+                !Number.isInteger(this.accessSettings.userSessionMaxAge) ||
+                this.accessSettings.adminSessionMaxAge < 1 ||
+                !Number.isInteger(this.accessSettings.adminSessionMaxAge)) {
+                this.$message.error(this.$t('sysSecurity.sessionMaxAgeInvalid'));
+                return;
+            }
+
             const settings = {
                 auth: this.authSettings,
                 upload: this.uploadSettings,
@@ -854,11 +895,12 @@ mounted() {
 }
 
 .form-item-hint {
-    display: block;
-    margin-top: 8px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-    line-height: 1.5;
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 14px;
+    color: var(--el-text-color-regular);
+    line-height: 32px;
+    vertical-align: middle;
 }
 
 .token-title {
