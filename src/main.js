@@ -87,13 +87,13 @@ const presetSiteIcon = (isDarkMode, userConfig) => {
     maskIconLink.rel = 'mask-icon';
 
     if (isDarkMode) {
-        iconLink.href = userConfig?.siteIcon || '/logo-dark.png';
-        appleIconLink.href = userConfig?.siteIcon || '/logo-dark.png';
-        maskIconLink.href = userConfig?.siteIcon || '/logo-dark.png';
+        iconLink.href = userConfig?.siteIcon || '/static/media/logo-dark.png';
+        appleIconLink.href = userConfig?.siteIcon || '/static/media/logo-dark.png';
+        maskIconLink.href = userConfig?.siteIcon || '/static/media/logo-dark.png';
     } else {
-        iconLink.href = userConfig?.siteIcon || '/logo.png';
-        appleIconLink.href = userConfig?.siteIcon || '/logo.png';
-        maskIconLink.href = userConfig?.siteIcon || '/logo.png';
+        iconLink.href = userConfig?.siteIcon || '/static/media/logo.png';
+        appleIconLink.href = userConfig?.siteIcon || '/static/media/logo.png';
+        maskIconLink.href = userConfig?.siteIcon || '/static/media/logo.png';
     }
 
     document.head.appendChild(iconLink);
