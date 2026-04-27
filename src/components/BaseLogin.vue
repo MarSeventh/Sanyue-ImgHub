@@ -1,5 +1,5 @@
 <template>
-    <div class="login" :class="{ 'is-focused': isFocused }">
+    <div class="login" :style="viewportStyle">
         <ToggleDark class="toggle-dark"/>
         <LanguageSwitcher class="language-switcher"/>
         <Logo />
@@ -96,13 +96,25 @@ export default {
         return {
             formData: {},
             labelUnderlineWidths: [],
-            isFocused: false
+            isFocused: false,
+            viewportHeight: 0
         }
     },
     computed: {
         ...mapGetters(['userConfig']),
         computedSubmitText() {
             return this.submitText || this.$t('login.submit');
+        },
+        viewportStyle() {
+            // 当检测到虚拟键盘弹出时，将容器高度收缩到可见视口高度
+            // 容器本身 flex 居中，高度缩小后登录卡片自然在可见区域内居中
+            if (this.viewportHeight > 0) {
+                return {
+                    height: `${this.viewportHeight}px`,
+                    minHeight: `${this.viewportHeight}px`
+                };
+            }
+            return {};
         }
     },
     watch: {
@@ -130,6 +142,17 @@ export default {
         this.$nextTick(() => {
             this.calculateLabelWidths();
         });
+        // 监听 visualViewport 变化，检测虚拟键盘弹出
+        this._handleViewportResize = this.handleViewportResize.bind(this);
+        if (window.visualViewport) {
+            this._initialHeight = window.visualViewport.height;
+            window.visualViewport.addEventListener('resize', this._handleViewportResize);
+        }
+    },
+    beforeDestroy() {
+        if (window.visualViewport && this._handleViewportResize) {
+            window.visualViewport.removeEventListener('resize', this._handleViewportResize);
+        }
     },
     methods: {
         initFormData() {
@@ -173,6 +196,22 @@ export default {
             // 触发父组件的提交事件，传递表单数据
             this.$emit('submit', { ...this.formData });
         },
+        handleViewportResize() {
+            if (!window.visualViewport) return;
+            const currentHeight = window.visualViewport.height;
+            // 键盘高度 = 初始视口高度 - 当前视口高度
+            const keyboardHeight = this._initialHeight - currentHeight;
+            // 设定阈值：视口缩小超过 150px 才认为是虚拟键盘弹出
+            // 避免地址栏收缩等小幅变化误触发
+            const KEYBOARD_THRESHOLD = 150;
+            if (keyboardHeight > KEYBOARD_THRESHOLD) {
+                // 将容器高度设为当前可见视口高度
+                // flex 居中会让登录卡片自然在可见区域内居中，不会顶部溢出或底部留白
+                this.viewportHeight = currentHeight;
+            } else {
+                this.viewportHeight = 0;
+            }
+        },
         handleInputFocus(event) {
             this.isFocused = true;
             const container = event.target.closest('.input-container');
@@ -209,6 +248,7 @@ export default {
     overflow-y: auto;
     padding: 20px 0;
     box-sizing: border-box;
+    transition: height 0.35s ease-out, min-height 0.35s ease-out;
 }
 
 .login-title {
@@ -223,21 +263,6 @@ export default {
 @media (max-width: 768px) {
     .login-title {
         font-size: 1.5rem;
-    }
-    .login {
-        transition: background-color 0.4s ease-out;
-    }
-    .login.is-focused {
-        justify-content: flex-start;
-        padding-top: 10vh;
-    }
-    .login-container {
-        transition: transform 0.4s ease-out, 
-                    box-shadow 0.4s ease-out;
-    }
-    .login.is-focused .login-container {
-        transform: translateY(-20px);
-        box-shadow: var(--login-container-hover-box-shadow), 0 20px 40px rgba(0, 0, 0, 0.15);
     }
 }
 
@@ -268,6 +293,8 @@ export default {
 @media (max-width: 768px) {
     .login-container {
         width: 85vw;
+        padding: 25px 0;
+        gap: 12px;
     }
 }
 .login-container:hover {
@@ -287,7 +314,8 @@ export default {
 @media (max-width: 768px) {
     .input-container {
         width: 85%;
-        gap: 6px;
+        gap: 4px;
+        margin-bottom: 8px;
     }
 }
 
@@ -501,11 +529,11 @@ export default {
 @media (max-width: 768px) {
     .password-input {
         width: 100%;
-        height: 45px;
+        height: 40px;
     }
     
     .password-input:deep(.el-input__wrapper) {
-        padding: 10px 14px;
+        padding: 8px 12px;
     }
 }
 
