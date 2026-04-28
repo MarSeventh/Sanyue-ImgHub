@@ -510,7 +510,7 @@
     "webdavPublicUrlPlaceholder": "可选公开访问地址，例如: https://cdn.example.com/imgbed/",
     "webdavPublicUrlTip": "可选配置。配置后服务端支持直接从该地址读取文件",
     "webdavHeaders": "自定义请求头",
-    "webdavHeadersPlaceholder": "可选 JSON 对象，例如: {\"X-Api-Key\":\"value\"}",
+    "webdavHeadersPlaceholder": "可选 JSON 对象，例如: {'{\"X-Api-Key\":\"value\"}'}",
     "webdavHeadersInvalid": "自定义请求头必须是有效的 JSON 对象",
     "webdavCreateDirectory": "自动创建目录",
     "webdavCreateDirectoryTip": "上传文件前自动创建父级目录",
