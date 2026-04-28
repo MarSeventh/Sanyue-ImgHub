@@ -502,7 +502,7 @@
     "webdavPassword": "Password",
     "webdavPasswordPlaceholder": "Optional password",
     "webdavPublicUrlPlaceholder": "Optional public URL, e.g.: https://cdn.example.com/imgbed/",
-    "webdavPublicUrlTip": "Optional. When configured, public links can be served directly from this base URL",
+    "webdavPublicUrlTip": "Optional. When configured, the server can read files directly from this URL",
     "webdavHeaders": "Custom Headers",
     "webdavHeadersPlaceholder": "Optional JSON object, e.g.: {\"X-Api-Key\":\"value\"}",
     "webdavHeadersInvalid": "Custom headers must be a valid JSON object",

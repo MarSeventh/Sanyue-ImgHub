@@ -508,7 +508,7 @@
     "webdavPassword": "密码",
     "webdavPasswordPlaceholder": "可选密码",
     "webdavPublicUrlPlaceholder": "可选公开访问地址，例如: https://cdn.example.com/imgbed/",
-    "webdavPublicUrlTip": "可选配置。配置后可直接通过该地址生成公开访问链接",
+    "webdavPublicUrlTip": "可选配置。配置后服务端支持直接从该地址读取文件",
     "webdavHeaders": "自定义请求头",
     "webdavHeadersPlaceholder": "可选 JSON 对象，例如: {\"X-Api-Key\":\"value\"}",
     "webdavHeadersInvalid": "自定义请求头必须是有效的 JSON 对象",
