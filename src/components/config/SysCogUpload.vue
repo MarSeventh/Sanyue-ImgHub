@@ -103,6 +103,16 @@
                                 </div>
                                 <el-tag v-if="channel.isPrivate" size="small" type="warning">{{ $t('sysUpload.privateRepo') }}</el-tag>
                             </template>
+                            <template v-else-if="channelType.value === 'webdav'">
+                                <div class="info-item">
+                                    <font-awesome-icon icon="folder" class="info-icon"/>
+                                    <span class="info-text" :title="channel.baseUrl">{{ channel.baseUrl || $t('sysUpload.notSet') }}</span>
+                                </div>
+                                <div class="info-item" v-if="channel.publicUrl">
+                                    <font-awesome-icon icon="link" class="info-icon"/>
+                                    <span class="info-text" :title="channel.publicUrl">{{ channel.publicUrl }}</span>
+                                </div>
+                            </template>
                         </div>
                         <!-- 容量显示 -->
                         <div v-if="channel.quota?.enabled" class="quota-mini">
@@ -233,6 +243,39 @@
                         <span class="form-tip">{{ $t('sysUpload.privateRepoTip') }}</span>
                     </el-form-item>
                 </template>
+                <template v-else-if="newChannel.type === 'webdav'">
+                    <el-form-item :label="$t('sysUpload.webdavBaseUrl')" prop="baseUrl">
+                        <el-input v-model="newChannel.baseUrl" :placeholder="$t('sysUpload.webdavBaseUrlPlaceholder')"/>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.webdavUsername')">
+                        <el-input v-model="newChannel.username" :placeholder="$t('sysUpload.webdavUsernamePlaceholder')"/>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.webdavPassword')">
+                        <el-input v-model="newChannel.password" type="password" show-password :placeholder="$t('sysUpload.webdavPasswordPlaceholder')"/>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.publicUrl')">
+                        <el-input v-model="newChannel.publicUrl" :placeholder="$t('sysUpload.webdavPublicUrlPlaceholder')"/>
+                        <span class="form-tip">{{ $t('sysUpload.webdavPublicUrlTip') }}</span>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.webdavHeaders')">
+                        <el-input v-model="newChannel.headersText" type="textarea" :autosize="{ minRows: 2 }" :placeholder="$t('sysUpload.webdavHeadersPlaceholder')"/>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.webdavCreateDirectory')">
+                        <el-switch v-model="newChannel.createDirectory"/>
+                        <span class="form-tip">{{ $t('sysUpload.webdavCreateDirectoryTip') }}</span>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.quotaLimit')">
+                        <el-switch v-model="newChannel.quota.enabled"/>
+                    </el-form-item>
+                    <template v-if="newChannel.quota?.enabled">
+                        <el-form-item :label="$t('sysUpload.quotaLimitGB')">
+                            <el-input-number v-model="newChannel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
+                        </el-form-item>
+                        <el-form-item :label="$t('sysUpload.quotaThreshold')">
+                            <el-input-number v-model="newChannel.quota.threshold" :min="50" :max="100" :step="5"/>
+                        </el-form-item>
+                    </template>
+                </template>
                 </template>
             </el-form>
             <template #footer>
@@ -284,6 +327,19 @@
                 <template v-else-if="currentChannelType === 'huggingface'">
                     <el-descriptions-item :label="$t('sysUpload.repoName')">{{ currentChannel?.repo }}</el-descriptions-item>
                     <el-descriptions-item :label="$t('sysUpload.privateRepo')">{{ currentChannel?.isPrivate ? $t('sysUpload.isPathStyle') : $t('sysUpload.isNotPathStyle') }}</el-descriptions-item>
+                </template>
+                <template v-else-if="currentChannelType === 'webdav'">
+                    <el-descriptions-item :label="$t('sysUpload.webdavBaseUrl')">
+                        <el-input :model-value="currentChannel?.baseUrl" readonly />
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.publicUrl')">
+                        <el-input :model-value="currentChannel?.publicUrl || $t('sysUpload.notSet')" readonly />
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.webdavUsername')">{{ currentChannel?.username || $t('sysUpload.notSet') }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.webdavHeaders')">
+                        <el-input :model-value="formatHeaders(currentChannel?.headers)" type="textarea" :autosize="{ minRows: 2 }" readonly />
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.webdavCreateDirectory')">{{ currentChannel?.createDirectory !== false ? $t('sysUpload.isPathStyle') : $t('sysUpload.isNotPathStyle') }}</el-descriptions-item>
                 </template>
                 <!-- 容量信息 -->
                 <template v-if="currentChannel?.quota?.enabled">
@@ -416,6 +472,39 @@
                         <el-switch v-model="editChannel.isPrivate"/>
                     </el-form-item>
                 </template>
+                <template v-else-if="currentChannelType === 'webdav'">
+                    <el-form-item :label="$t('sysUpload.webdavBaseUrl')" prop="baseUrl">
+                        <el-input v-model="editChannel.baseUrl" :disabled="editChannel.fixed"/>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.webdavUsername')">
+                        <el-input v-model="editChannel.username" :disabled="editChannel.fixed"/>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.webdavPassword')">
+                        <el-input v-model="editChannel.password" :disabled="editChannel.fixed" type="password" show-password/>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.publicUrl')">
+                        <el-input v-model="editChannel.publicUrl" :placeholder="$t('sysUpload.webdavPublicUrlPlaceholder')"/>
+                        <span class="form-tip">{{ $t('sysUpload.webdavPublicUrlTip') }}</span>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.webdavHeaders')">
+                        <el-input v-model="editChannel.headersText" type="textarea" :autosize="{ minRows: 2 }" :placeholder="$t('sysUpload.webdavHeadersPlaceholder')"/>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.webdavCreateDirectory')">
+                        <el-switch v-model="editChannel.createDirectory"/>
+                        <span class="form-tip">{{ $t('sysUpload.webdavCreateDirectoryTip') }}</span>
+                    </el-form-item>
+                    <el-form-item :label="$t('sysUpload.quotaLimit')">
+                        <el-switch v-model="editChannel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, editChannel)"/>
+                    </el-form-item>
+                    <template v-if="editChannel.quota?.enabled">
+                        <el-form-item :label="$t('sysUpload.quotaLimitGB')">
+                            <el-input-number v-model="editChannel.quota.limitGB" :min="0.1" :step="1" :precision="1"/>
+                        </el-form-item>
+                        <el-form-item :label="$t('sysUpload.quotaThreshold')">
+                            <el-input-number v-model="editChannel.quota.threshold" :min="50" :max="100" :step="5"/>
+                        </el-form-item>
+                    </template>
+                </template>
             </el-form>
             <template #footer>
                 <el-button @click="showEditDialog = false">{{ $t('sysUpload.cancel') }}</el-button>
@@ -443,7 +532,8 @@ data() {
         { value: 'cfr2', label: 'CloudFlare R2' },
         { value: 's3', label: 'S3' },
         { value: 'discord', label: 'Discord' },
-        { value: 'huggingface', label: 'HuggingFace' }
+        { value: 'huggingface', label: 'HuggingFace' },
+        { value: 'webdav', label: 'WebDAV' }
     ],
     // 可添加的渠道类型
     addableChannels: [
@@ -451,7 +541,8 @@ data() {
         { value: 'cfr2', label: 'CloudFlare R2' },
         { value: 's3', label: 'S3' },
         { value: 'discord', label: 'Discord' },
-        { value: 'huggingface', label: 'HuggingFace' }
+        { value: 'huggingface', label: 'HuggingFace' },
+        { value: 'webdav', label: 'WebDAV' }
     ],
 
     // 各渠道配置
@@ -460,6 +551,7 @@ data() {
     s3Settings: { loadBalance: { enabled: false }, channels: [] },
     discordSettings: { loadBalance: { enabled: false }, channels: [] },
     huggingfaceSettings: { loadBalance: { enabled: false }, channels: [] },
+    webdavSettings: { loadBalance: { enabled: false }, channels: [] },
 
     // 弹窗控制
     showAddDialog: false,
@@ -496,7 +588,14 @@ data() {
         // HuggingFace
         repo: '',
         token: '',
-        isPrivate: false
+        isPrivate: false,
+        // WebDAV
+        baseUrl: '',
+        username: '',
+        password: '',
+        publicUrl: '',
+        headersText: '',
+        createDirectory: true
     },
 
     // 容量统计数据
@@ -515,7 +614,8 @@ computed: {
             cfr2: 'cloud',
             s3: 'database',
             discord: 'comments',
-            huggingface: 'robot'
+            huggingface: 'robot',
+            webdav: 'folder'
         };
         return [
             { value: '', label: this.$t('common.all') },
@@ -549,7 +649,8 @@ computed: {
             accessKeyId: [{ required: true, message: this.$t('sysUpload.accessKeyIdPlaceholder'), trigger: 'blur' }],
             secretAccessKey: [{ required: true, message: this.$t('sysUpload.secretAccessKeyPlaceholder'), trigger: 'blur' }],
             repo: [{ required: true, message: this.$t('sysUpload.repoNamePlaceholder'), trigger: 'blur' }],
-            token: [{ required: true, message: this.$t('sysUpload.accessTokenPlaceholder'), trigger: 'blur' }]
+            token: [{ required: true, message: this.$t('sysUpload.accessTokenPlaceholder'), trigger: 'blur' }],
+            baseUrl: [{ required: true, message: this.$t('sysUpload.webdavBaseUrlPlaceholder'), trigger: 'blur' }]
         };
     },
     editRules() {
@@ -567,7 +668,8 @@ computed: {
             accessKeyId: [{ required: true, message: this.$t('sysUpload.accessKeyIdPlaceholder'), trigger: 'blur' }],
             secretAccessKey: [{ required: true, message: this.$t('sysUpload.secretAccessKeyPlaceholder'), trigger: 'blur' }],
             repo: [{ required: true, message: this.$t('sysUpload.repoNamePlaceholder'), trigger: 'blur' }],
-            token: [{ required: true, message: this.$t('sysUpload.accessTokenPlaceholder'), trigger: 'blur' }]
+            token: [{ required: true, message: this.$t('sysUpload.accessTokenPlaceholder'), trigger: 'blur' }],
+            baseUrl: [{ required: true, message: this.$t('sysUpload.webdavBaseUrlPlaceholder'), trigger: 'blur' }]
         };
     }
 },
@@ -601,7 +703,8 @@ methods: {
             cfr2: 'cloud',
             s3: 'database',
             discord: 'comments',
-            huggingface: 'robot'
+            huggingface: 'robot',
+            webdav: 'folder'
         };
         return icons[type] || 'server';
     },
@@ -621,19 +724,46 @@ methods: {
             cfr2: this.cfr2Settings,
             s3: this.s3Settings,
             discord: this.discordSettings,
-            huggingface: this.huggingfaceSettings
+            huggingface: this.huggingfaceSettings,
+            webdav: this.webdavSettings
         };
         return map[type];
     },
     // 是否有负载均衡选项
     hasLoadBalance(type) {
-        return ['telegram', 's3', 'discord', 'huggingface'].includes(type);
+        return ['telegram', 's3', 'discord', 'huggingface', 'webdav'].includes(type);
     },
     // 文本脱敏
     maskText(text, showLength = 4) {
         if (!text) return this.$t('sysUpload.notSet');
         if (text.length <= showLength * 2) return '****';
         return text.slice(0, showLength) + '****' + text.slice(-showLength);
+    },
+    formatHeaders(headers) {
+        if (!headers || (typeof headers === 'object' && Object.keys(headers).length === 0)) {
+            return this.$t('sysUpload.notSet');
+        }
+        if (typeof headers === 'string') {
+            return headers;
+        }
+        return JSON.stringify(headers, null, 2);
+    },
+    headersToText(headers) {
+        if (!headers) return '';
+        if (typeof headers === 'string') return headers;
+        return JSON.stringify(headers, null, 2);
+    },
+    parseHeadersText(text) {
+        if (!text || !text.trim()) return {};
+        try {
+            const parsed = JSON.parse(text);
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                return null;
+            }
+            return parsed;
+        } catch (error) {
+            return null;
+        }
     },
     // 打开详情弹窗
     openDetailDialog(type, index) {
@@ -648,6 +778,10 @@ methods: {
         this.currentChannelIndex = index;
         const channel = this.getChannelList(type)[index];
         this.editChannel = JSON.parse(JSON.stringify(channel));
+        if (type === 'webdav') {
+            this.editChannel.headersText = this.headersToText(this.editChannel.headers);
+            this.editChannel.createDirectory = this.editChannel.createDirectory !== false;
+        }
         // 确保 quota 对象存在
         if (!this.editChannel.quota) {
             this.editChannel.quota = { enabled: false, limitGB: 10, threshold: 95 };
@@ -668,7 +802,9 @@ methods: {
             accessKeyId: '', secretAccessKey: '', pathStyle: false,
             quota: { enabled: false, limitGB: 10, threshold: 95 },
             channelId: '', isNitro: false,
-            repo: '', token: '', isPrivate: false
+            repo: '', token: '', isPrivate: false,
+            baseUrl: '', username: '', password: '', publicUrl: '',
+            headersText: '', createDirectory: true
         };
     },
     // 重置详情弹窗数据
@@ -702,7 +838,13 @@ methods: {
             isNitro: false,
             repo: '',
             token: '',
-            isPrivate: false
+            isPrivate: false,
+            baseUrl: '',
+            username: '',
+            password: '',
+            publicUrl: '',
+            headersText: '',
+            createDirectory: true
         };
     },
     // 确认添加渠道
@@ -714,7 +856,7 @@ methods: {
             const settings = this.getSettings(type);
 
             // 检查是否为保留名称（{type}_env）
-            const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env'];
+            const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env', 'WebDAV_env'];
             if (reservedNames.includes(name)) {
                 this.$message.warning(this.$t('sysUpload.reservedName'));
                 return;
@@ -767,6 +909,21 @@ methods: {
                     token: this.newChannel.token,
                     isPrivate: this.newChannel.isPrivate
                 });
+            } else if (type === 'webdav') {
+                const headers = this.parseHeadersText(this.newChannel.headersText);
+                if (headers === null) {
+                    this.$message.warning(this.$t('sysUpload.webdavHeadersInvalid'));
+                    return;
+                }
+                Object.assign(newChannelData, {
+                    baseUrl: this.newChannel.baseUrl,
+                    username: this.newChannel.username,
+                    password: this.newChannel.password,
+                    publicUrl: this.newChannel.publicUrl,
+                    headers,
+                    createDirectory: this.newChannel.createDirectory !== false,
+                    quota: { ...this.newChannel.quota }
+                });
             }
 
             settings.channels.push(newChannelData);
@@ -788,7 +945,7 @@ methods: {
             // 非环境变量渠道才检查名称
             if (!isFixedChannel) {
                 // 检查是否为保留名称（{type}_env）
-                const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env'];
+                const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env', 'WebDAV_env'];
                 if (reservedNames.includes(newName)) {
                     this.$message.warning(this.$t('sysUpload.reservedName'));
                     return;
@@ -802,7 +959,19 @@ methods: {
                 }
             }
 
-            settings.channels[this.currentChannelIndex] = { ...this.editChannel };
+            const editedChannel = { ...this.editChannel };
+            if (this.currentChannelType === 'webdav') {
+                const headers = this.parseHeadersText(editedChannel.headersText);
+                if (headers === null) {
+                    this.$message.warning(this.$t('sysUpload.webdavHeadersInvalid'));
+                    return;
+                }
+                editedChannel.headers = headers;
+                editedChannel.createDirectory = editedChannel.createDirectory !== false;
+                delete editedChannel.headersText;
+            }
+
+            settings.channels[this.currentChannelIndex] = editedChannel;
             this.showEditDialog = false;
             // 自动保存全部设置
             this.saveSettings();
@@ -835,7 +1004,8 @@ methods: {
             cfr2: this.cfr2Settings,
             s3: this.s3Settings,
             discord: this.discordSettings,
-            huggingface: this.huggingfaceSettings
+            huggingface: this.huggingfaceSettings,
+            webdav: this.webdavSettings
         };
         fetchWithAuth('/api/manage/sysConfig/upload', {
             method: 'POST',
@@ -1016,6 +1186,19 @@ mounted() {
             }));
         }
         this.huggingfaceSettings = data.huggingface || { loadBalance: {}, channels: [] };
+        // 确保 WebDAV 渠道有默认值
+        if (data.webdav && data.webdav.channels) {
+            data.webdav.channels = data.webdav.channels.map(channel => ({
+                ...channel,
+                username: channel.username || '',
+                password: channel.password || '',
+                publicUrl: channel.publicUrl || '',
+                headers: channel.headers || {},
+                createDirectory: channel.createDirectory !== false,
+                quota: channel.quota || { enabled: false, limitGB: 10, threshold: 95 }
+            }));
+        }
+        this.webdavSettings = data.webdav || { loadBalance: {}, channels: [] };
         // 加载容量统计（仅读取，不重建索引）
         this.loadQuotaStats();
     })
@@ -1184,6 +1367,10 @@ mounted() {
     background: radial-gradient(circle, rgba(255, 210, 30, 0.2) 0%, transparent 70%);
 }
 
+.channel-card.webdav .card-glow {
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.2) 0%, transparent 70%);
+}
+
 .channel-card:hover {
     border-color: var(--glass-border-hover);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -1214,6 +1401,10 @@ mounted() {
 
 .channel-card.huggingface {
     border-left-color: #ffd21e;
+}
+
+.channel-card.webdav {
+    border-left-color: #14b8a6;
 }
 
 .channel-card.fixed {

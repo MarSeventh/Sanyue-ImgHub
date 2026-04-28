@@ -446,7 +446,7 @@ data() {
             listType: [],     // 黑白名单: 'White', 'Block', 'None'
             label: [],         // 审查结果: 'normal', 'teen', 'adult'
             fileType: [],      // 文件类型: 'image', 'video', 'audio', 'other'
-            channel: [],       // 渠道类型: 'TelegramNew', 'CloudflareR2', 'S3', 'Discord', 'HuggingFace', 'External'
+            channel: [],       // 渠道类型: 'TelegramNew', 'CloudflareR2', 'S3', 'Discord', 'HuggingFace', 'WebDAV', 'External'
             channelName: []    // 渠道名称: 动态获取
         },
         channelNameOptions: [], // 动态从文件列表中提取
@@ -543,6 +543,8 @@ computed: {
                 file.channelTag = 'DC';
             } else if (file.metadata?.Channel === 'HuggingFace') {
                 file.channelTag = 'HF';
+            } else if (file.metadata?.Channel === 'WebDAV') {
+                file.channelTag = 'WD';
             } else if (file.metadata?.Channel === 'External') {
                 file.channelTag = this.$t('dashboard.externalTag');
             } else {
@@ -875,7 +877,8 @@ methods: {
                     cfr2: 'Cloudflare R2',
                     s3: 'S3',
                     discord: 'Discord',
-                    huggingface: 'HuggingFace'
+                    huggingface: 'HuggingFace',
+                    webdav: 'WebDAV'
                 };
 
                 // 按类型提取渠道名称，channel.type是类型内部存储名称（可能根据版本有变化），type是类型对外名称
