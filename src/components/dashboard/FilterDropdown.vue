@@ -178,6 +178,7 @@ export default {
                 { label: 'S3', value: 'S3' },
                 { label: 'Discord', value: 'Discord' },
                 { label: 'HuggingFace', value: 'HuggingFace' },
+                { label: 'WebDAV', value: 'WebDAV' },
                 { label: this.$t('filter.externalLink'), value: 'External' }
             ];
         },

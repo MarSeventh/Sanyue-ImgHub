@@ -29,6 +29,10 @@
                             <font-awesome-icon icon="robot" class="channel-icon"/>
                             <span>HF</span>
                         </el-radio>
+                        <el-radio label="webdav" class="radio-card">
+                            <font-awesome-icon icon="folder" class="channel-icon"/>
+                            <span>WD</span>
+                        </el-radio>
                     </el-radio-group>
                 </div>
                 <div class="setting-item" v-if="currentChannelList.length > 1">
