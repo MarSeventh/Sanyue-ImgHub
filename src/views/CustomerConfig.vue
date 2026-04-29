@@ -11,12 +11,12 @@
             </div>
         </el-header>
         <div class="main-container">
-            <el-table :data="paginatedData" :default-sort="{ prop: 'count', order: 'descending' }" class="main-table" table-layout="fixed" v-loading="loading">
+            <el-table :data="paginatedData" :default-sort="{ prop: 'count', order: 'descending' }" row-key="ip" class="main-table" table-layout="fixed" v-loading="loading" @expand-change="handleExpandChange">
                 <el-table-column type="expand">
                     <template v-slot="props">
                         <div style="margin: 8px;">
                             <h3 style="text-align: center;">{{ $t('customerConfig.uploadFileList') }}</h3>
-                            <el-table :data="props.row.data" style="width: 100%" :default-sort="{ prop: 'metadata.TimeStamp', order: 'descending' }" table-layout="fixed" :max-height="400">
+                            <el-table :data="props.row.data" style="width: 100%" :default-sort="{ prop: 'metadata.TimeStamp', order: 'descending' }" table-layout="fixed" :max-height="400" v-loading="props.row.filesLoading">
                                 <el-table-column prop="metadata.FileName" :label="$t('customerConfig.fileNameCol')"></el-table-column>
                                 <el-table-column :label="$t('customerConfig.filePreview')">
                                     <template v-slot="{ row }">
@@ -161,6 +161,21 @@ export default {
                 this.loadMoreData();
             }
         },
+        async handleExpandChange(row, expandedRows) {
+            if (!expandedRows.some(item => item.ip === row.ip) || row.filesLoaded || row.filesLoading) return;
+
+            row.filesLoading = true;
+            try {
+                const response = await fetchWithAuth(`/api/manage/cusConfig/files?ip=${encodeURIComponent(row.ip)}&count=${row.count}`, { method: 'GET' });
+                const result = await response.json();
+                row.data = (result.data || []).sort(this.sortByTimestamp).reverse();
+                row.filesLoaded = true;
+            } catch (err) {
+                this.$message.error(this.$t('customerConfig.loadError'));
+            } finally {
+                row.filesLoading = false;
+            }
+        },
         loadMoreData() {
             this.loading = true;
             const start = this.dealedData.length;
@@ -174,7 +189,9 @@ export default {
                         ip: item.ip,
                         address: item.address,
                         count: item.count,
-                        data: item.data,
+                        data: [],
+                        filesLoaded: false,
+                        filesLoading: false,
                         enable: enable
                     };
                 }));
@@ -211,7 +228,9 @@ export default {
                     ip: item.ip,
                     address: item.address,
                     count: item.count,
-                    data: item.data,
+                    data: [],
+                    filesLoaded: false,
+                    filesLoading: false,
                     enable: enable
                 };
             });
