@@ -807,7 +807,7 @@ export default {
     // 在新窗口打开文件
     openFileInNewTab(file) {
       if (!file?.id) return
-      window.open('/file/' + file.id, '_blank')
+      window.open('/file/' + file.id + '?from=admin', '_blank')
     },
     
     // 处理进度更新

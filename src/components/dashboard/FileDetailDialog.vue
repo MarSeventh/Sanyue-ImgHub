@@ -281,9 +281,7 @@ export default {
         },
         openImageLink() {
             if (this.fileLink) {
-                // 移除 ?from=admin 参数
-                const cleanUrl = this.fileLink.replace(/\?from=admin$/, '');
-                window.open(cleanUrl, '_blank');
+                window.open(this.fileLink, '_blank');
             }
         },
         startEdit() {
