@@ -38,6 +38,60 @@
 
     <!-- 统计图表区域 -->
     <div class="charts-section">
+      <!-- 上传趋势 - 折线图 -->
+      <div class="chart-card trend-chart-card">
+        <div class="chart-header trend-chart-header">
+          <div class="chart-title">
+            <font-awesome-icon icon="chart-line" />
+            <span>{{ $t('sysStatus.uploadTrend') }}</span>
+            <el-button
+              class="trend-calendar-btn"
+              circle
+              :aria-label="$t('sysStatus.selectDateRange')"
+              @click="openTrendDateDialog"
+            >
+              <font-awesome-icon icon="calendar" />
+            </el-button>
+          </div>
+          <div class="trend-controls">
+            <el-radio-group
+              v-model="trendGroupBy"
+              size="small"
+              class="trend-group-switch"
+              :aria-label="$t('sysStatus.uploadTrendGroupBy')"
+            >
+              <el-radio-button label="channel">{{ $t('sysStatus.byChannelType') }}</el-radio-button>
+              <el-radio-button label="channelName">{{ $t('sysStatus.byChannelName') }}</el-radio-button>
+            </el-radio-group>
+          </div>
+        </div>
+        <el-dialog
+          v-model="trendDatePickerVisible"
+          :title="$t('sysStatus.selectDateRange')"
+          width="420px"
+          class="trend-date-dialog"
+          align-center
+          append-to-body
+        >
+          <div class="trend-date-panel">
+            <DateRangeCalendar
+              v-model="trendDateRange"
+              :locale="$i18n?.locale"
+              @change="handleTrendDateRangeChange"
+            />
+          </div>
+        </el-dialog>
+        <div class="chart-content trend-chart-content">
+          <div v-if="!hasTrendData" class="empty-state trend-empty-state">
+            <font-awesome-icon icon="inbox" />
+            <span>{{ $t('sysStatus.noData') }}</span>
+          </div>
+          <div v-else class="line-chart-wrapper">
+            <Line :data="uploadTrendChartData" :options="lineChartOptions" />
+          </div>
+        </div>
+      </div>
+
       <!-- 渠道统计 - 饼状图 -->
       <div class="chart-card">
         <div class="chart-header">
@@ -330,18 +384,38 @@
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth'
 import packageInfo from '../../../package.json'
-import { Doughnut } from 'vue-chartjs'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { Doughnut, Line } from 'vue-chartjs'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js'
 import IndexRebuilder from '@/utils/indexRebuilder'
 import BackupGenerator from '@/utils/backupGenerator'
 import RestoreProcessor from '@/utils/restoreProcessor'
+import DateRangeCalendar from '@/components/DateRangeCalendar.vue'
 
-ChartJS.register(ArcElement, Tooltip, Legend)
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler)
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+function padDatePart(value) {
+  return String(value).padStart(2, '0')
+}
+
+function formatDateInput(date) {
+  return `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`
+}
+
+function getDefaultTrendDateRange() {
+  const endDate = new Date()
+  endDate.setHours(0, 0, 0, 0)
+  const startDate = new Date(endDate.getTime() - 6 * DAY_MS)
+  return [formatDateInput(startDate), formatDateInput(endDate)]
+}
 
 export default {
   name: 'SysCogStatus',
   components: {
-    Doughnut
+    Doughnut,
+    Line,
+    DateRangeCalendar
   },
   data() {
     return {
@@ -355,6 +429,9 @@ export default {
         newest: false,
         oldest: false
       },
+      trendGroupBy: 'channel',
+      trendDatePickerVisible: false,
+      trendDateRange: getDefaultTrendDateRange(),
       // 渠道图表颜色
       channelColors: [
         '#8B5CF6', '#EC4899', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#84CC16'
@@ -362,6 +439,10 @@ export default {
       // 状态图表颜色
       typeColors: [
         '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
+      ],
+      // 上传趋势折线图颜色
+      trendColors: [
+        '#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16', '#64748B'
       ],
       // 批量操作进度状态
       isProcessing: false,
@@ -414,6 +495,141 @@ export default {
         aggregatedStats[mappedStatus] = (aggregatedStats[mappedStatus] || 0) + count
       }
       return aggregatedStats
+    },
+    // 当前趋势维度数据
+    currentTrendGroup() {
+      const trend = this.indexInfo.uploadTrend || {}
+      const groupBy = trend.groupBy || {}
+      return groupBy[this.trendGroupBy] || { series: [] }
+    },
+    // 趋势图原始日期标签
+    trendRawLabels() {
+      const trend = this.indexInfo.uploadTrend || {}
+      return trend.labels || []
+    },
+    // 当前范围是否跨年
+    trendRangeCrossesYear() {
+      const years = new Set()
+      this.trendRawLabels.forEach(label => {
+        this.extractTrendLabelDates(label).forEach(date => years.add(date.year))
+      })
+      return years.size > 1
+    },
+    // 用于横轴展示的短日期标签
+    trendDisplayLabels() {
+      return this.trendRawLabels.map(label => this.formatTrendAxisLabel(label))
+    },
+    // 是否存在趋势图数据
+    hasTrendData() {
+      const trend = this.indexInfo.uploadTrend || {}
+      return (trend.labels || []).length > 0
+    },
+    // 上传趋势折线图数据
+    uploadTrendChartData() {
+      const trend = this.indexInfo.uploadTrend || {}
+      const series = this.currentTrendGroup.series || []
+      const totalColor = '#F97316'
+      return {
+        labels: this.trendDisplayLabels,
+        datasets: [
+          {
+            label: this.$t('sysStatus.totalUploads'),
+            data: trend.total || [],
+            borderColor: totalColor,
+            backgroundColor: this.hexToRgba(totalColor, 0.1),
+            pointBackgroundColor: totalColor,
+            pointBorderColor: totalColor,
+            borderWidth: 3,
+            pointRadius: 2,
+            pointHoverRadius: 5,
+            tension: 0.28,
+            fill: false
+          },
+          ...series.map((item, index) => {
+            const color = this.getTrendColor(index)
+            return {
+              label: this.formatTrendSeriesName(item),
+              data: item.data || [],
+              borderColor: color,
+              backgroundColor: this.hexToRgba(color, 0.12),
+              pointBackgroundColor: color,
+              pointBorderColor: color,
+              borderWidth: 2,
+              pointRadius: 2,
+              pointHoverRadius: 5,
+              tension: 0.32,
+              fill: false
+            }
+          })
+        ]
+      }
+    },
+    // 折线图配置
+    lineChartOptions() {
+      const textColor = '#64748B'
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              boxWidth: 8,
+              boxHeight: 8,
+              padding: 16,
+              color: textColor
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: true,
+            callbacks: {
+              title: (items) => {
+                const index = items?.[0]?.dataIndex
+                return this.trendRawLabels[index] || ''
+              },
+              label: (context) => {
+                const parsed = context.parsed || {}
+                const value = parsed.y !== undefined ? parsed.y : context.raw
+                return ` ${context.dataset.label}: ${Number(value || 0).toLocaleString()} ${this.$t('sysStatus.uploadsUnit')}`
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: textColor,
+              maxTicksLimit: 8,
+              autoSkip: true
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(148, 163, 184, 0.18)'
+            },
+            ticks: {
+              color: textColor,
+              precision: 0,
+              callback: (value) => Number(value).toLocaleString()
+            }
+          }
+        }
+      }
     },
     // 图表配置
     chartOptions() {
@@ -504,11 +720,97 @@ export default {
     getTypeChartColor(index) {
       return this.typeColors[index % this.typeColors.length]
     },
+    // 获取趋势图表颜色
+    getTrendColor(index) {
+      return this.trendColors[index % this.trendColors.length]
+    },
+    // 格式化趋势序列名称
+    formatTrendSeriesName(series) {
+      if (series?.isOther || series?.name === '__other__') {
+        return this.$t('sysStatus.otherChannels')
+      }
+      return series?.name || this.$t('sysStatus.unknown')
+    },
+    // 十六进制颜色转换为 rgba
+    hexToRgba(hex, alpha) {
+      const normalized = (hex || '').replace('#', '')
+      if (normalized.length !== 6) {
+        return `rgba(37, 99, 235, ${alpha})`
+      }
+      const r = parseInt(normalized.slice(0, 2), 16)
+      const g = parseInt(normalized.slice(2, 4), 16)
+      const b = parseInt(normalized.slice(4, 6), 16)
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`
+    },
+    // 提取趋势标签中的日期
+    extractTrendLabelDates(label) {
+      const matches = String(label || '').match(/\d{4}-\d{2}-\d{2}/g) || []
+      return matches.map(item => {
+        const [year, month, day] = item.split('-').map(Number)
+        return { year, month, day }
+      })
+    },
+    // 横轴日期标签按范围简化，仅跨年时显示年份
+    formatTrendAxisLabel(label) {
+      const dates = this.extractTrendLabelDates(label)
+      if (dates.length === 0) return label
+
+      const formatSingleDate = (date, includeYear) => {
+        const monthDay = `${date.month}/${date.day}`
+        return includeYear ? `${date.year}/${monthDay}` : monthDay
+      }
+
+      if (dates.length === 1) {
+        return formatSingleDate(dates[0], this.trendRangeCrossesYear)
+      }
+
+      const [startDate, endDate] = dates
+      if (!this.trendRangeCrossesYear) {
+        return `${formatSingleDate(startDate, false)}-${formatSingleDate(endDate, false)}`
+      }
+
+      const endLabel = startDate.year === endDate.year
+        ? formatSingleDate(endDate, false)
+        : formatSingleDate(endDate, true)
+      return `${formatSingleDate(startDate, true)}-${endLabel}`
+    },
+    // 打开居中的日期范围选择弹窗
+    openTrendDateDialog() {
+      this.trendDatePickerVisible = true
+    },
+    // 日期范围变更后重新拉取趋势数据
+    handleTrendDateRangeChange(value) {
+      if (!Array.isArray(value) || value.length !== 2 || !value[0] || !value[1]) {
+        return
+      }
+
+      this.trendDatePickerVisible = false
+      this.fetchIndexInfo()
+    },
+    // 获取趋势查询参数
+    getTrendDateRangeParams() {
+      if (!Array.isArray(this.trendDateRange) || this.trendDateRange.length !== 2) {
+        this.trendDateRange = getDefaultTrendDateRange()
+      }
+      return {
+        startDate: this.trendDateRange[0],
+        endDate: this.trendDateRange[1]
+      }
+    },
     // 获取索引信息
     async fetchIndexInfo() {
       this.loading = true
       try {
-        const response = await fetchWithAuth('/api/manage/list?action=info', {
+        const { startDate, endDate } = this.getTrendDateRangeParams()
+        const params = new URLSearchParams({
+          action: 'info',
+          timezoneOffset: String(new Date().getTimezoneOffset()),
+          trendMaxPoints: '90',
+          trendSeriesLimit: '8',
+          trendStartDate: startDate,
+          trendEndDate: endDate
+        })
+        const response = await fetchWithAuth(`/api/manage/list?${params.toString()}`, {
           method: 'GET'
         })
         
@@ -1035,6 +1337,99 @@ export default {
   color: var(--admin-purple);
 }
 
+.trend-chart-card {
+  grid-column: 1 / -1;
+}
+
+.trend-chart-header {
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trend-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.trend-calendar-btn {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-container-color);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trend-calendar-btn:hover,
+.trend-calendar-btn:focus {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  background: rgba(64, 158, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.18);
+}
+
+.trend-date-dialog {
+  overflow: visible;
+}
+
+.trend-date-dialog :deep(.el-dialog__body) {
+  overflow: visible;
+  padding: 16px 24px 24px;
+}
+
+.trend-date-panel {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.trend-group-switch {
+  flex-shrink: 0;
+  height: 32px;
+  display: flex;
+}
+
+.trend-group-switch :deep(.el-radio-button__inner) {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0 14px;
+}
+
+.chart-content.trend-chart-content {
+  min-height: 320px;
+  padding: 0;
+  margin: 0;
+}
+
+.line-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 320px;
+}
+
+.trend-empty-state {
+  height: 320px;
+}
+
 .chart-content {
   min-height: 160px;
   padding: 15px;
@@ -1512,6 +1907,45 @@ html.dark .legend-item:hover {
   .charts-section {
     grid-template-columns: 1fr;
     gap: 15px;
+  }
+
+  .trend-chart-header {
+    align-items: stretch;
+  }
+
+  .chart-title {
+    width: 100%;
+  }
+
+  .trend-controls {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .trend-date-dialog {
+    width: 92vw !important;
+  }
+
+  .trend-date-dialog :deep(.el-dialog__body) {
+    padding: 12px 14px 22px;
+  }
+
+  .trend-group-switch {
+    width: 100%;
+  }
+
+  .trend-group-switch :deep(.el-radio-button) {
+    flex: 1;
+  }
+
+  .trend-group-switch :deep(.el-radio-button__inner) {
+    width: 100%;
+    padding: 0 10px;
+  }
+
+  .line-chart-wrapper,
+  .trend-empty-state {
+    height: 280px;
   }
   
   .file-info-section {
