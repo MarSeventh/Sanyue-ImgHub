@@ -1384,8 +1384,7 @@ export default {
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.trend-calendar-btn:hover,
-.trend-calendar-btn:focus {
+.trend-calendar-btn:hover {
   color: var(--el-color-primary);
   border-color: var(--el-color-primary);
   background: rgba(64, 158, 255, 0.08);
