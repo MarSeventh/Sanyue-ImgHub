@@ -112,7 +112,7 @@
             :width="dialogWidth"
             append-to-body
         >
-            <el-form @submit.prevent>
+            <el-form @submit.prevent="submitRename">
                 <el-form-item :label="$t('fileDetail.renameLabel')" :error="renameValidation.error">
                     <el-input
                         v-model="renameForm.newFileId"
@@ -341,6 +341,8 @@ export default {
             };
         },
         async submitRename() {
+            if (this.renameSaving) return;
+
             // Validate input first
             this.validateRenameInput();
             if (!this.renameValidation.valid) {
