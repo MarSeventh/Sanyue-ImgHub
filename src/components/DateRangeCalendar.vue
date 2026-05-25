@@ -248,6 +248,9 @@ export default {
 <style scoped>
 .date-range-calendar {
   width: min(336px, 100%);
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   color: var(--admin-container-color);
   user-select: none;
 }

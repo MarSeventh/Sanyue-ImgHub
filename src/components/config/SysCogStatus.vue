@@ -68,7 +68,7 @@
         <el-dialog
           v-model="trendDatePickerVisible"
           :title="$t('sysStatus.selectDateRange')"
-          width="420px"
+          :width="trendDateDialogWidth"
           class="trend-date-dialog"
           align-center
           append-to-body
@@ -522,6 +522,10 @@ export default {
     hasTrendData() {
       const trend = this.indexInfo.uploadTrend || {}
       return (trend.labels || []).length > 0
+    },
+    // 日期选择弹窗宽度保持与项目内其他弹窗一致
+    trendDateDialogWidth() {
+      return window.innerWidth > 768 ? '420px' : '90%'
     },
     // 上传趋势折线图数据
     uploadTrendChartData() {
@@ -1292,10 +1296,16 @@ export default {
 /* 图表区域 */
 .charts-section {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   margin-bottom: 30px;
   overflow: visible;
+}
+
+@media (max-width: 768px) {
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
 }
 
 .chart-card {
@@ -1384,6 +1394,8 @@ export default {
 
 .trend-date-dialog {
   overflow: visible;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
 }
 
 .trend-date-dialog :deep(.el-dialog__body) {
@@ -1393,6 +1405,9 @@ export default {
 
 .trend-date-panel {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   justify-content: center;
   overflow: hidden;
@@ -1417,12 +1432,24 @@ export default {
   min-height: 320px;
   padding: 0;
   margin: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .line-chart-wrapper {
   position: relative;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: 320px;
+  overflow: hidden;
+}
+
+.line-chart-wrapper :deep(canvas) {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .trend-empty-state {
@@ -1921,12 +1948,8 @@ html.dark .legend-item:hover {
     justify-content: stretch;
   }
 
-  .trend-date-dialog {
-    width: 92vw !important;
-  }
-
   .trend-date-dialog :deep(.el-dialog__body) {
-    padding: 12px 14px 22px;
+    padding: 12px 14px 18px;
   }
 
   .trend-group-switch {
