@@ -1,5 +1,27 @@
 <template>
   <div class="date-range-calendar">
+    <div class="selected-range">
+      <div class="selected-range-inputs">
+        <input
+          v-model.trim="inputStart"
+          class="date-input"
+          type="text"
+          inputmode="numeric"
+          :aria-label="startDateLabel"
+          @change="handleManualInput"
+        >
+        <span class="date-range-separator">{{ rangeSeparator }}</span>
+        <input
+          v-model.trim="inputEnd"
+          class="date-input"
+          type="text"
+          inputmode="numeric"
+          :aria-label="endDateLabel"
+          @change="handleManualInput"
+        >
+      </div>
+    </div>
+
     <div class="calendar-header">
       <button type="button" class="calendar-nav" :aria-label="previousMonthLabel" @click="goToPreviousMonth">
         <font-awesome-icon icon="chevron-left" />
@@ -48,7 +70,7 @@ function formatDateKey(date) {
 
 function parseDateKey(value) {
   if (typeof value !== 'string') return null
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  const match = value.trim().match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/)
   if (!match) return null
 
   const year = Number(match[1])
@@ -74,10 +96,6 @@ export default {
     modelValue: {
       type: Array,
       default: () => []
-    },
-    locale: {
-      type: String,
-      default: ''
     }
   },
   emits: ['update:modelValue', 'change'],
@@ -89,29 +107,43 @@ export default {
       displayMonth: today.getMonth(),
       draftStart: '',
       draftEnd: '',
+      inputStart: '',
+      inputEnd: '',
       awaitingEnd: false
     }
   },
   computed: {
-    activeLocale() {
-      return this.locale || this.$i18n?.locale || navigator.language || 'zh-CN'
-    },
     previousMonthLabel() {
-      return this.activeLocale.startsWith('zh') ? '上个月' : 'Previous month'
+      return this.$t('dateRangeCalendar.previousMonth')
     },
     nextMonthLabel() {
-      return this.activeLocale.startsWith('zh') ? '下个月' : 'Next month'
+      return this.$t('dateRangeCalendar.nextMonth')
+    },
+    startDateLabel() {
+      return this.$t('dateRangeCalendar.startDate')
+    },
+    endDateLabel() {
+      return this.$t('dateRangeCalendar.endDate')
+    },
+    rangeSeparator() {
+      return this.$t('dateRangeCalendar.rangeSeparator')
     },
     monthTitle() {
-      return new Intl.DateTimeFormat(this.activeLocale, {
-        year: 'numeric',
-        month: 'long'
-      }).format(new Date(this.displayYear, this.displayMonth, 1))
+      return this.$t('dateRangeCalendar.monthTitle', {
+        year: this.displayYear,
+        month: padDatePart(this.displayMonth + 1)
+      })
     },
     weekdayLabels() {
-      const baseSunday = new Date(2024, 0, 7)
-      const formatter = new Intl.DateTimeFormat(this.activeLocale, { weekday: 'short' })
-      return Array.from({ length: 7 }, (_, index) => formatter.format(new Date(baseSunday.getTime() + index * DAY_MS)))
+      return [
+        this.$t('dateRangeCalendar.weekdaySun'),
+        this.$t('dateRangeCalendar.weekdayMon'),
+        this.$t('dateRangeCalendar.weekdayTue'),
+        this.$t('dateRangeCalendar.weekdayWed'),
+        this.$t('dateRangeCalendar.weekdayThu'),
+        this.$t('dateRangeCalendar.weekdayFri'),
+        this.$t('dateRangeCalendar.weekdaySat')
+      ]
     },
     calendarDays() {
       const monthStart = new Date(this.displayYear, this.displayMonth, 1)
@@ -145,6 +177,8 @@ export default {
 
       this.draftStart = startDate ? formatDateKey(startDate) : ''
       this.draftEnd = endDate ? formatDateKey(endDate) : ''
+      this.inputStart = this.draftStart
+      this.inputEnd = this.draftEnd
       this.awaitingEnd = false
 
       const displayDate = startDate || endDate
@@ -167,6 +201,8 @@ export default {
       if (!this.draftStart || this.draftEnd || !this.awaitingEnd) {
         this.draftStart = key
         this.draftEnd = ''
+        this.inputStart = key
+        this.inputEnd = ''
         this.awaitingEnd = true
         return
       }
@@ -174,7 +210,31 @@ export default {
       const range = key < this.draftStart ? [key, this.draftStart] : [this.draftStart, key]
       this.draftStart = range[0]
       this.draftEnd = range[1]
+      this.inputStart = range[0]
+      this.inputEnd = range[1]
       this.awaitingEnd = false
+      this.commitRange(range)
+    },
+    handleManualInput() {
+      const startDate = parseDateKey(this.inputStart)
+      const endDate = parseDateKey(this.inputEnd)
+      if (!startDate || !endDate) return
+
+      const startKey = formatDateKey(startDate)
+      const endKey = formatDateKey(endDate)
+      const range = startKey <= endKey ? [startKey, endKey] : [endKey, startKey]
+
+      this.draftStart = range[0]
+      this.draftEnd = range[1]
+      this.inputStart = range[0]
+      this.inputEnd = range[1]
+      this.awaitingEnd = false
+
+      this.displayYear = startDate.getFullYear()
+      this.displayMonth = startDate.getMonth()
+      this.commitRange(range)
+    },
+    commitRange(range) {
       this.$emit('update:modelValue', range)
       this.$emit('change', range)
     },
@@ -190,6 +250,44 @@ export default {
   width: min(336px, 100%);
   color: var(--admin-container-color);
   user-select: none;
+}
+
+.selected-range {
+  margin-bottom: 16px;
+}
+
+.selected-range-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.date-input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  box-sizing: border-box;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0 8px;
+  background: var(--glass-bg);
+  color: var(--admin-container-color);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.date-input:hover,
+.date-input:focus {
+  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.12);
+}
+
+.date-range-separator {
+  color: #8a8f98;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .calendar-header {

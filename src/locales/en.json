@@ -380,6 +380,21 @@
     "pageSettings": "Page Settings",
     "otherSettings": "Other Settings"
   },
+  "dateRangeCalendar": {
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "rangeSeparator": "to",
+    "monthTitle": "{year}-{month}",
+    "weekdaySun": "Sun",
+    "weekdayMon": "Mon",
+    "weekdayTue": "Tue",
+    "weekdayWed": "Wed",
+    "weekdayThu": "Thu",
+    "weekdayFri": "Fri",
+    "weekdaySat": "Sat"
+  },
   "sysStatus": {
     "totalFiles": "Total Files",
     "clickToRefresh": "Click to refresh",

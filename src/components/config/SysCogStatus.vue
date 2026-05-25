@@ -76,7 +76,6 @@
           <div class="trend-date-panel">
             <DateRangeCalendar
               v-model="trendDateRange"
-              :locale="$i18n?.locale"
               @change="handleTrendDateRangeChange"
             />
           </div>

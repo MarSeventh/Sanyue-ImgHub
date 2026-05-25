@@ -385,6 +385,21 @@
     "pageSettings": "网页设置",
     "otherSettings": "其他设置"
   },
+  "dateRangeCalendar": {
+    "previousMonth": "上个月",
+    "nextMonth": "下个月",
+    "startDate": "起始日期",
+    "endDate": "结束日期",
+    "rangeSeparator": "至",
+    "monthTitle": "{year}-{month}",
+    "weekdaySun": "日",
+    "weekdayMon": "一",
+    "weekdayTue": "二",
+    "weekdayWed": "三",
+    "weekdayThu": "四",
+    "weekdayFri": "五",
+    "weekdaySat": "六"
+  },
   "sysStatus": {
     "totalFiles": "文件总数",
     "clickToRefresh": "点击刷新",
