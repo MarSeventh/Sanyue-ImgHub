@@ -204,6 +204,8 @@
     "batchCopyFailed": "批量复制链接失败，请重试",
     "batchCopyLinksSuccess": "批量复制链接成功",
     "copyFileLinkSuccess": "复制文件链接成功",
+    "fileListMemoryCacheWarning": "文件列表较大，已切换为内存缓存；刷新页面后需要重新加载列表。",
+    "indexingWarning": "索引构建中，当前搜索和排序结果可能不准确，请稍后再试。",
     "loadMoreFailed": "加载更多文件失败，请检查网络连接",
     "moveSuccess": "移动成功",
     "moveFailed": "移动失败",

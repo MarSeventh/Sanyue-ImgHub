@@ -202,6 +202,8 @@
     "batchCopyFailed": "Batch copy failed, please retry",
     "batchCopyLinksSuccess": "Batch copy successful",
     "copyFileLinkSuccess": "File link copied",
+    "fileListMemoryCacheWarning": "The file list is large, so it is being kept in memory. Refreshing the page will require loading it again.",
+    "indexingWarning": "The index is still building, so current search and sort results may be inaccurate. Please try again later.",
     "loadMoreFailed": "Failed to load more files, please check network",
     "moveSuccess": "Moved successfully",
     "moveFailed": "Move failed",

@@ -1,6 +1,7 @@
 // 文件管理器工具类
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { ElMessage } from 'element-plus';
+import i18n from '@/locales';
 
 class FileManager {
     constructor() {
@@ -11,6 +12,15 @@ class FileManager {
 
     // 从本地存储读取文件列表
     getLocalFileList() {
+        const fileList = this.getMutableFileList();
+        return {
+            ...fileList,
+            files: [...(fileList.files || [])],
+            directories: [...(fileList.directories || [])],
+        };
+    }
+
+    getMutableFileList() {
         if (this.fileListCache) {
             return this.fileListCache;
         }
@@ -26,16 +36,24 @@ class FileManager {
         }
     }
 
-    // 保存文件列表到本地存储
-    saveFileList(fileList) {
+    // 更新内存缓存，并尽量持久化到 localStorage
+    updateFileListCache(fileList) {
         this.fileListCache = fileList || this.createEmptyFileList();
+        const persisted = this.persistFileListCache();
 
+        return {
+            cacheUpdated: true,
+            persisted,
+        };
+    }
+
+    persistFileListCache() {
         try {
             localStorage.setItem(this.FILE_LIST_PATH, JSON.stringify(this.fileListCache));
             return true;
         } catch (error) {
             this.handleStoragePersistError(error);
-            return true;
+            return false;
         }
     }
 
@@ -54,16 +72,16 @@ class FileManager {
 
         if (!this.storageWarningShown) {
             this.storageWarningShown = true;
-            ElMessage.warning('文件列表较大，已切换为内存缓存；刷新页面后需要重新加载列表。');
+            ElMessage.warning(i18n.global.t('dashboard.fileListMemoryCacheWarning'));
         }
     }
 
     // 添加新文件到列表
     addFile(newFile) {
         try {
-            const fileList = this.getLocalFileList();
+            const fileList = this.getMutableFileList();
             fileList.files.push(newFile);
-            return this.saveFileList(fileList);
+            return this.updateFileListCache(fileList).cacheUpdated;
         } catch (error) {
             console.error('Error adding file:', error);
             return false;
@@ -73,10 +91,10 @@ class FileManager {
     // 添加新文件夹
     addFolder(folderName) {
         try {
-            const fileList = this.getLocalFileList();
+            const fileList = this.getMutableFileList();
             if (!fileList.directories.includes(folderName)) {
                 fileList.directories.push(folderName);
-                return this.saveFileList(fileList);
+                return this.updateFileListCache(fileList).cacheUpdated;
             }
             return false; // 文件夹已存在
         } catch (error) {
@@ -88,7 +106,7 @@ class FileManager {
     // 移动文件或文件夹
     moveFile(oldPath, newPath, isFolder = false, currentPath = '') {
         try {
-            let fileList = this.getLocalFileList();
+            let fileList = this.getMutableFileList();
             
             if (isFolder) {
                 // 更新目录列表
@@ -118,7 +136,7 @@ class FileManager {
                 }
             }
 
-            return this.saveFileList(fileList);
+            return this.updateFileListCache(fileList).cacheUpdated;
         } catch (error) {
             console.error('Error moving file:', error);
             return false;
@@ -128,9 +146,9 @@ class FileManager {
     // 从列表中删除文件
     removeFile(fileName) {
         try {
-            let fileList = this.getLocalFileList();
+            let fileList = this.getMutableFileList();
             fileList.files = fileList.files.filter(file => file.name !== fileName);
-            return this.saveFileList(fileList);
+            return this.updateFileListCache(fileList).cacheUpdated;
         } catch (error) {
             console.error('Error removing file:', error);
             return false;
@@ -140,10 +158,10 @@ class FileManager {
     // 从列表中删除文件夹（同时删除该文件夹下的所有文件）
     removeFolder(folderName) {
         try {
-            let fileList = this.getLocalFileList();
+            let fileList = this.getMutableFileList();
             fileList.files = fileList.files.filter(file => !file.name.startsWith(folderName + '/'));
             fileList.directories = fileList.directories.filter(dir => dir !== folderName);
-            return this.saveFileList(fileList);
+            return this.updateFileListCache(fileList).cacheUpdated;
         } catch (error) {
             console.error('Error removing folder:', error);
             return false;
@@ -153,7 +171,7 @@ class FileManager {
     // 获取指定目录下的文件和子目录
     getFilesInFolder(folderName) {
         try {
-            const fileList = this.getLocalFileList();
+            const fileList = this.getMutableFileList();
             const files = fileList.files.filter(file => file.name.startsWith(folderName + '/'));
             const subdirectories = fileList.directories.filter(dir => dir.startsWith(folderName + '/'));
             return { files, directories: subdirectories };
@@ -208,10 +226,10 @@ class FileManager {
             });
             const newFileList = await response.json();
             if (!newFileList.isIndexedResponse) {
-                ElMessage.warning('索引构建中，当前搜索和排序结果可能不准确，请稍后再试。');
+                ElMessage.warning(i18n.global.t('dashboard.indexingWarning'));
             }
             // 保存包含新字段的完整数据
-            return this.saveFileList(newFileList);
+            return this.updateFileListCache(newFileList).cacheUpdated;
         } catch (error) {
             console.error('Error refreshing file list:', error);
             return false;
@@ -222,7 +240,7 @@ class FileManager {
     async loadMoreFiles(dir, search = '', includeTags = '', excludeTags = '', count = 60, filters = {}) {
         search = search.trim();
         try {
-            const fileList = this.getLocalFileList();
+            const fileList = this.getMutableFileList();
             const start = fileList.files.length;
 
             let url = `/api/manage/list?dir=${dir}&start=${start}&count=${count}&search=${encodeURIComponent(search)}`;
@@ -241,7 +259,7 @@ class FileManager {
            
             const moreFiles = await response.json();
             fileList.files.push(...moreFiles.files);
-            return this.saveFileList(fileList);
+            return this.updateFileListCache(fileList).cacheUpdated;
         } catch (error) {
             console.error('Error loading more files:', error);
             return { files: [], directories: [] };
