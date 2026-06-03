@@ -5,27 +5,56 @@ import { ElMessage } from 'element-plus';
 class FileManager {
     constructor() {
         this.FILE_LIST_PATH = 'data/fileList.json';
+        this.fileListCache = null;
+        this.storageWarningShown = false;
     }
 
     // 从本地存储读取文件列表
     getLocalFileList() {
+        if (this.fileListCache) {
+            return this.fileListCache;
+        }
+
         try {
             const fileList = localStorage.getItem(this.FILE_LIST_PATH);
-            return fileList ? JSON.parse(fileList) : { files: [], directories: [] };
+            this.fileListCache = fileList ? JSON.parse(fileList) : this.createEmptyFileList();
+            return this.fileListCache;
         } catch (error) {
             console.error('Error reading local file list:', error);
-            return { files: [], directories: [] };
+            this.fileListCache = this.createEmptyFileList();
+            return this.fileListCache;
         }
     }
 
     // 保存文件列表到本地存储
     saveFileList(fileList) {
+        this.fileListCache = fileList || this.createEmptyFileList();
+
         try {
-            localStorage.setItem(this.FILE_LIST_PATH, JSON.stringify(fileList));
+            localStorage.setItem(this.FILE_LIST_PATH, JSON.stringify(this.fileListCache));
             return true;
         } catch (error) {
-            console.error('Error saving file list:', error);
-            return false;
+            this.handleStoragePersistError(error);
+            return true;
+        }
+    }
+
+    createEmptyFileList() {
+        return { files: [], directories: [] };
+    }
+
+    handleStoragePersistError(error) {
+        console.warn('File list is kept in memory because localStorage persistence failed:', error);
+
+        try {
+            localStorage.removeItem(this.FILE_LIST_PATH);
+        } catch (removeError) {
+            console.warn('Failed to remove stale file list cache:', removeError);
+        }
+
+        if (!this.storageWarningShown) {
+            this.storageWarningShown = true;
+            ElMessage.warning('文件列表较大，已切换为内存缓存；刷新页面后需要重新加载列表。');
         }
     }
 
