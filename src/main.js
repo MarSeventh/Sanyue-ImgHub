@@ -5,8 +5,8 @@ import 'element-plus/es/components/message/style/css'
 import 'element-plus/es/components/message-box/style/css'
 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas } from '@fortawesome/free-solid-svg-icons'; // 引入所有 solid 图标
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import fontAwesomeIcons from './utils/fontawesomeIcons';
 
 import App from './App.vue'
 import router from './router'
@@ -21,7 +21,7 @@ import './styles/global.css'
 import 'overlayscrollbars/overlayscrollbars.css'
 
 
-library.add(fas);
+library.add(...fontAwesomeIcons);
 
 const app = createApp(App);
 const head = createHead(); // 创建 head 对象

@@ -905,6 +905,30 @@ body {
     flex-shrink: 0;
 }
 
+.channel-brand-telegram {
+    color: #229ed9 !important;
+}
+
+.channel-brand-cfr2 {
+    color: #f38020 !important;
+}
+
+.channel-brand-s3 {
+    color: #ff9900 !important;
+}
+
+.channel-brand-discord {
+    color: #5865f2 !important;
+}
+
+.channel-brand-huggingface {
+    color: #ff9d00 !important;
+}
+
+.channel-brand-webdav {
+    color: #14b8a6 !important;
+}
+
 /* 2x2 网格布局单选组 */
 .radio-card-group.grid-2x2 {
     display: grid;

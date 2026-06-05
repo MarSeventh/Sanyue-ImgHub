@@ -26,7 +26,7 @@
         <div v-for="channelType in filteredChannels" :key="channelType.value" class="channel-group">
             <div class="group-header">
                 <div class="group-title">
-                    <font-awesome-icon :icon="getChannelIcon(channelType.value)" class="group-icon"/>
+                    <ChannelIcon :type="channelType.value" :class="['group-icon', getChannelIconClass(channelType.value)]"/>
                     <span>{{ channelType.label }}</span>
                     <el-tag size="small" type="info" class="channel-count">
                         {{ getChannelList(channelType.value).length }}
@@ -149,7 +149,7 @@
                 <el-form-item :label="$t('sysUpload.channelTypeLabel')" prop="type">
                     <el-select v-model="newChannel.type" :placeholder="$t('sysUpload.channelTypePlaceholder')" style="width: 100%;" @change="onChannelTypeChange">
                         <el-option v-for="ch in addableChannels" :key="ch.value" :label="ch.label" :value="ch.value">
-                            <font-awesome-icon :icon="getChannelIcon(ch.value)" class="select-option-icon"/>
+                            <ChannelIcon :type="ch.value" :class="['select-option-icon', getChannelIconClass(ch.value)]"/>
                             {{ ch.label }}
                         </el-option>
                     </el-select>
@@ -591,10 +591,12 @@
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import ChannelIcon from '@/components/icons/ChannelIcon.vue';
 import CustomSelect from './CustomSelect.vue';
 
 export default {
 components: {
+    ChannelIcon,
     CustomSelect
 },
 data() {
@@ -684,20 +686,13 @@ data() {
 computed: {
     // 筛选下拉框选项
     filterOptions() {
-        const iconMap = {
-            telegram: 'paper-plane',
-            cfr2: 'cloud',
-            s3: 'database',
-            discord: 'comments',
-            huggingface: 'robot',
-            webdav: 'folder'
-        };
         return [
             { value: '', label: this.$t('common.all') },
             ...this.channels.map(ch => ({
                 value: ch.value,
                 label: ch.label,
-                icon: iconMap[ch.value] || 'server'
+                channelType: ch.value,
+                iconClass: this.getChannelIconClass(ch.value)
             }))
         ];
     },
@@ -771,17 +766,8 @@ methods: {
             glowEl[0].style.opacity = '0';
         }
     },
-    // 获取渠道图标
-    getChannelIcon(type) {
-        const icons = {
-            telegram: 'paper-plane',
-            cfr2: 'cloud',
-            s3: 'database',
-            discord: 'comments',
-            huggingface: 'robot',
-            webdav: 'folder'
-        };
-        return icons[type] || 'server';
+    getChannelIconClass(type) {
+        return `channel-brand-${type}`;
     },
     // 获取渠道类型标签
     getChannelTypeLabel(type) {

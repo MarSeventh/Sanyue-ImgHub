@@ -16,7 +16,8 @@
                     @click="selectOption(option.value)"
                 >
                     <slot name="option" :option="option">
-                        <font-awesome-icon v-if="option.icon" :icon="option.icon" class="option-icon"/>
+                        <ChannelIcon v-if="option.channelType" :type="option.channelType" :class="['option-icon', option.iconClass]"/>
+                        <font-awesome-icon v-else-if="option.icon" :icon="option.icon" :class="['option-icon', option.iconClass]"/>
                         <span>{{ option.label }}</span>
                     </slot>
                 </div>
@@ -26,8 +27,13 @@
 </template>
 
 <script>
+import ChannelIcon from '@/components/icons/ChannelIcon.vue';
+
 export default {
     name: 'CustomSelect',
+    components: {
+        ChannelIcon
+    },
     props: {
         modelValue: {
             type: [String, Number],
@@ -36,7 +42,7 @@ export default {
         options: {
             type: Array,
             required: true,
-            // 格式: [{ value: '', label: '', icon?: '' }]
+            // 格式: [{ value: '', label: '', icon?: '', iconClass?: '', channelType?: '' }]
         },
         placeholder: {
             type: String,

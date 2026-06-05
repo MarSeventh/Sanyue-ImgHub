@@ -10,27 +10,27 @@
                     <span class="setting-label">{{ $t('uploadSettings.channelType') }}</span>
                     <el-radio-group :model-value="uploadChannel" @update:model-value="$emit('update:uploadChannel', $event)" class="radio-card-group compact">
                         <el-radio label="telegram" class="radio-card">
-                            <font-awesome-icon icon="paper-plane" class="channel-icon"/>
+                            <ChannelIcon type="telegram" class="channel-icon channel-brand-telegram"/>
                             <span>TG</span>
                         </el-radio>
                         <el-radio label="cfr2" class="radio-card">
-                            <font-awesome-icon icon="cloud" class="channel-icon"/>
+                            <ChannelIcon type="cfr2" class="channel-icon channel-brand-cfr2"/>
                             <span>R2</span>
                         </el-radio>
                         <el-radio label="s3" class="radio-card">
-                            <font-awesome-icon icon="database" class="channel-icon"/>
+                            <ChannelIcon type="s3" class="channel-icon channel-brand-s3"/>
                             <span>S3</span>
                         </el-radio>
                         <el-radio label="discord" class="radio-card">
-                            <font-awesome-icon icon="comments" class="channel-icon"/>
+                            <ChannelIcon type="discord" class="channel-icon channel-brand-discord"/>
                             <span>DC</span>
                         </el-radio>
                         <el-radio label="huggingface" class="radio-card">
-                            <font-awesome-icon icon="robot" class="channel-icon"/>
+                            <ChannelIcon type="huggingface" class="channel-icon channel-brand-huggingface"/>
                             <span>HF</span>
                         </el-radio>
                         <el-radio label="webdav" class="radio-card">
-                            <font-awesome-icon icon="folder" class="channel-icon"/>
+                            <ChannelIcon type="webdav" class="channel-icon channel-brand-webdav"/>
                             <span>WD</span>
                         </el-radio>
                     </el-radio-group>
@@ -172,9 +172,13 @@
 </template>
 
 <script>
+import ChannelIcon from '@/components/icons/ChannelIcon.vue';
 
 export default {
     name: 'UploadSettingsDialog',
+    components: {
+        ChannelIcon
+    },
     methods: {
         handleUploadFolderInput(val) {
             // 自动补全前导 /
