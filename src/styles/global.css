@@ -789,7 +789,8 @@ body {
     }
 
     .radio-card-group.compact .channel-icon {
-        width: 16px;
+        width: 18px;
+        font-size: 18px;
         text-align: center;
         flex-shrink: 0;
     }
@@ -900,7 +901,8 @@ body {
 
 /* 渠道图标样式 */
 .radio-card-group.compact .channel-icon {
-    width: 16px;
+    width: 18px;
+    font-size: 18px;
     text-align: center;
     flex-shrink: 0;
 }

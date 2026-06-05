@@ -149,8 +149,10 @@
                 <el-form-item :label="$t('sysUpload.channelTypeLabel')" prop="type">
                     <el-select v-model="newChannel.type" :placeholder="$t('sysUpload.channelTypePlaceholder')" style="width: 100%;" @change="onChannelTypeChange">
                         <el-option v-for="ch in addableChannels" :key="ch.value" :label="ch.label" :value="ch.value">
-                            <ChannelIcon :type="ch.value" :class="['select-option-icon', getChannelIconClass(ch.value)]"/>
-                            {{ ch.label }}
+                            <span class="channel-type-option">
+                                <ChannelIcon :type="ch.value" :class="['select-option-icon', getChannelIconClass(ch.value)]"/>
+                                <span>{{ ch.label }}</span>
+                            </span>
                         </el-option>
                     </el-select>
                 </el-form-item>
@@ -1345,7 +1347,7 @@ mounted() {
 }
 
 .group-icon {
-    font-size: 18px;
+    font-size: 20px;
     color: var(--el-color-primary);
 }
 
@@ -1582,9 +1584,17 @@ mounted() {
 }
 
 /* 下拉选项图标样式 */
+.channel-type-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1;
+}
+
 .select-option-icon {
-    width: 18px;
-    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
     text-align: center;
 }
 
