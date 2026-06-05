@@ -163,6 +163,7 @@
                 <template v-else>
                 <el-form-item :label="$t('sysUpload.channelNameLabel')" prop="name">
                     <el-input v-model="newChannel.name" :placeholder="$t('sysUpload.channelNamePlaceholder')"/>
+                    <span class="form-tip">{{ $t('sysUpload.channelNameImmutableTip') }}</span>
                 </el-form-item>
                 <!-- 根据类型显示不同字段 -->
                 <template v-if="newChannel.type === 'telegram'">
@@ -379,7 +380,8 @@
         <el-dialog v-model="showEditDialog" :title="$t('sysUpload.editDialogTitle', { name: editChannel?.name || '' })" class="channel-dialog" destroy-on-close @closed="resetEditData">
             <el-form :model="editChannel" label-position="top" ref="editForm" :rules="editRules">
                 <el-form-item :label="$t('sysUpload.channelNameLabel')" prop="name">
-                    <el-input v-model="editChannel.name" :disabled="editChannel.fixed"/>
+                    <el-input v-model="editChannel.name" disabled/>
+                    <span class="form-tip">{{ $t('sysUpload.channelNameEditDisabledTip') }}</span>
                 </el-form-item>
                 <el-form-item :label="$t('sysUpload.enableChannel')">
                     <el-switch v-model="editChannel.enabled"/>
@@ -938,28 +940,10 @@ methods: {
             if (!valid) return;
 
             const settings = this.getSettings(this.currentChannelType);
-            const newName = this.editChannel.name;
             const currentIndex = this.currentChannelIndex;
-            const isFixedChannel = this.editChannel.fixed;
+            const originalName = settings.channels[currentIndex]?.name || this.editChannel.name;
 
-            // 非环境变量渠道才检查名称
-            if (!isFixedChannel) {
-                // 检查是否为保留名称（{type}_env）
-                const reservedNames = ['Telegram_env', 'R2_env', 'S3_env', 'Discord_env', 'HuggingFace_env', 'WebDAV_env'];
-                if (reservedNames.includes(newName)) {
-                    this.$message.warning(this.$t('sysUpload.reservedName'));
-                    return;
-                }
-
-                // 检查名称是否与其他渠道重复（排除当前编辑的渠道）
-                const isDuplicate = settings.channels.some((ch, idx) => idx !== currentIndex && ch.name === newName);
-                if (isDuplicate) {
-                    this.$message.warning(this.$t('sysUpload.duplicateName'));
-                    return;
-                }
-            }
-
-            const editedChannel = { ...this.editChannel };
+            const editedChannel = { ...this.editChannel, name: originalName };
             if (this.currentChannelType === 'webdav') {
                 const headers = this.parseHeadersText(editedChannel.headersText);
                 if (headers === null) {
@@ -984,7 +968,7 @@ methods: {
             this.$message.warning(this.$t('sysUpload.fixedChannelCannotDelete'));
             return;
         }
-        this.$confirm(this.$t('sysUpload.deleteChannelConfirm'), this.$t('common.info'), {
+        this.$confirm(this.$t('sysUpload.deleteChannelConfirm'), this.$t('common.warning'), {
             confirmButtonText: this.$t('common.confirm'),
             cancelButtonText: this.$t('common.cancel'),
             type: 'warning'
