@@ -161,9 +161,14 @@
                     </div>
                 </template>
                 <template v-else>
-                <el-form-item :label="$t('sysUpload.channelNameLabel')" prop="name">
+                <el-form-item prop="name">
+                    <template #label>
+                        {{ $t('sysUpload.channelNameLabel') }}
+                        <el-tooltip :content="$t('sysUpload.channelNameImmutableTip')" placement="top">
+                            <font-awesome-icon icon="exclamation-triangle" class="inline-warning-icon"/>
+                        </el-tooltip>
+                    </template>
                     <el-input v-model="newChannel.name" :placeholder="$t('sysUpload.channelNamePlaceholder')"/>
-                    <span class="form-tip">{{ $t('sysUpload.channelNameImmutableTip') }}</span>
                 </el-form-item>
                 <!-- 根据类型显示不同字段 -->
                 <template v-if="newChannel.type === 'telegram'">
@@ -181,9 +186,14 @@
                     <el-form-item :label="$t('sysUpload.endpointLabel')" prop="endpoint">
                         <el-input v-model="newChannel.endpoint" :placeholder="$t('sysUpload.endpointPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.cdnDomain')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.cdnDomain') }}
+                            <el-tooltip :content="$t('sysUpload.cdnDomainTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-input v-model="newChannel.cdnDomain" :placeholder="$t('sysUpload.cdnDomainPlaceholder')"/>
-                        <span class="form-tip">{{ $t('sysUpload.cdnDomainTip') }}</span>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.bucketName')" prop="bucketName">
                         <el-input v-model="newChannel.bucketName" :placeholder="$t('sysUpload.bucketNamePlaceholder')"/>
@@ -197,9 +207,14 @@
                     <el-form-item :label="$t('sysUpload.secretAccessKey')" prop="secretAccessKey">
                         <el-input v-model="newChannel.secretAccessKey" type="password" show-password :placeholder="$t('sysUpload.secretAccessKeyPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.pathStyle')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.pathStyle') }}
+                            <el-tooltip :content="$t('sysUpload.pathStyleTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-switch v-model="newChannel.pathStyle"/>
-                        <span class="form-tip">{{ $t('sysUpload.pathStyleTip') }}</span>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.quotaLimit')">
                         <el-switch v-model="newChannel.quota.enabled"/>
@@ -223,9 +238,14 @@
                     <el-form-item :label="$t('sysUpload.proxyDomain')">
                         <el-input v-model="newChannel.proxyUrl" :placeholder="$t('sysUpload.proxyDomainPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.nitroMember')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.nitroMember') }}
+                            <el-tooltip :content="$t('sysUpload.nitroTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-switch v-model="newChannel.isNitro"/>
-                        <span class="form-tip">{{ $t('sysUpload.nitroTip') }}</span>
                     </el-form-item>
                     <div class="form-warning">
                         <font-awesome-icon icon="exclamation-triangle" style="margin-right: 6px;"/>
@@ -239,9 +259,14 @@
                     <el-form-item :label="$t('sysUpload.accessToken')" prop="token">
                         <el-input v-model="newChannel.token" type="password" show-password :placeholder="$t('sysUpload.accessTokenPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.privateRepo')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.privateRepo') }}
+                            <el-tooltip :content="$t('sysUpload.privateRepoTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-switch v-model="newChannel.isPrivate"/>
-                        <span class="form-tip">{{ $t('sysUpload.privateRepoTip') }}</span>
                     </el-form-item>
                 </template>
                 <template v-else-if="newChannel.type === 'webdav'">
@@ -254,16 +279,26 @@
                     <el-form-item :label="$t('sysUpload.webdavPassword')">
                         <el-input v-model="newChannel.password" type="password" show-password :placeholder="$t('sysUpload.webdavPasswordPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.publicUrl')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.publicUrl') }}
+                            <el-tooltip :content="$t('sysUpload.webdavPublicUrlTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-input v-model="newChannel.publicUrl" :placeholder="$t('sysUpload.webdavPublicUrlPlaceholder')"/>
-                        <span class="form-tip">{{ $t('sysUpload.webdavPublicUrlTip') }}</span>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.webdavHeaders')">
                         <el-input v-model="newChannel.headersText" type="textarea" :autosize="{ minRows: 2 }" :placeholder="$t('sysUpload.webdavHeadersPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.webdavCreateDirectory')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.webdavCreateDirectory') }}
+                            <el-tooltip :content="$t('sysUpload.webdavCreateDirectoryTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-switch v-model="newChannel.createDirectory"/>
-                        <span class="form-tip">{{ $t('sysUpload.webdavCreateDirectoryTip') }}</span>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.quotaLimit')">
                         <el-switch v-model="newChannel.quota.enabled"/>
@@ -379,9 +414,14 @@
         <!-- 编辑弹窗 -->
         <el-dialog v-model="showEditDialog" :title="$t('sysUpload.editDialogTitle', { name: editChannel?.name || '' })" class="channel-dialog" destroy-on-close @closed="resetEditData">
             <el-form :model="editChannel" label-position="top" ref="editForm" :rules="editRules">
-                <el-form-item :label="$t('sysUpload.channelNameLabel')" prop="name">
+                <el-form-item prop="name">
+                    <template #label>
+                        {{ $t('sysUpload.channelNameLabel') }}
+                        <el-tooltip :content="$t('sysUpload.channelNameEditDisabledTip')" placement="top">
+                            <font-awesome-icon icon="exclamation-triangle" class="inline-warning-icon"/>
+                        </el-tooltip>
+                    </template>
                     <el-input v-model="editChannel.name" disabled/>
-                    <span class="form-tip">{{ $t('sysUpload.channelNameEditDisabledTip') }}</span>
                 </el-form-item>
                 <el-form-item :label="$t('sysUpload.enableChannel')">
                     <el-switch v-model="editChannel.enabled"/>
@@ -418,9 +458,14 @@
                     <el-form-item :label="$t('sysUpload.endpointLabel')" prop="endpoint">
                         <el-input v-model="editChannel.endpoint" :disabled="editChannel.fixed"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.cdnDomain')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.cdnDomain') }}
+                            <el-tooltip :content="$t('sysUpload.cdnDomainTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-input v-model="editChannel.cdnDomain" :placeholder="$t('sysUpload.cdnDomainPlaceholder')"/>
-                        <span class="form-tip">{{ $t('sysUpload.cdnDomainTip') }}</span>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.bucketName')" prop="bucketName">
                         <el-input v-model="editChannel.bucketName" :disabled="editChannel.fixed"/>
@@ -434,7 +479,13 @@
                     <el-form-item :label="$t('sysUpload.secretAccessKey')" prop="secretAccessKey">
                         <el-input v-model="editChannel.secretAccessKey" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.pathStyle')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.pathStyle') }}
+                            <el-tooltip :content="$t('sysUpload.pathStyleTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-switch v-model="editChannel.pathStyle" :disabled="editChannel.fixed"/>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.quotaLimit')">
@@ -459,7 +510,13 @@
                     <el-form-item :label="$t('sysUpload.proxyDomain')">
                         <el-input v-model="editChannel.proxyUrl" :placeholder="$t('sysUpload.proxyDomainPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.nitroMember')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.nitroMember') }}
+                            <el-tooltip :content="$t('sysUpload.nitroTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-switch v-model="editChannel.isNitro"/>
                     </el-form-item>
                 </template>
@@ -470,7 +527,13 @@
                     <el-form-item :label="$t('sysUpload.accessToken')" prop="token">
                         <el-input v-model="editChannel.token" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.privateRepo')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.privateRepo') }}
+                            <el-tooltip :content="$t('sysUpload.privateRepoTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-switch v-model="editChannel.isPrivate"/>
                     </el-form-item>
                 </template>
@@ -484,16 +547,26 @@
                     <el-form-item :label="$t('sysUpload.webdavPassword')">
                         <el-input v-model="editChannel.password" :disabled="editChannel.fixed" type="password" show-password/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.publicUrl')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.publicUrl') }}
+                            <el-tooltip :content="$t('sysUpload.webdavPublicUrlTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-input v-model="editChannel.publicUrl" :placeholder="$t('sysUpload.webdavPublicUrlPlaceholder')"/>
-                        <span class="form-tip">{{ $t('sysUpload.webdavPublicUrlTip') }}</span>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.webdavHeaders')">
                         <el-input v-model="editChannel.headersText" type="textarea" :autosize="{ minRows: 2 }" :placeholder="$t('sysUpload.webdavHeadersPlaceholder')"/>
                     </el-form-item>
-                    <el-form-item :label="$t('sysUpload.webdavCreateDirectory')">
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.webdavCreateDirectory') }}
+                            <el-tooltip :content="$t('sysUpload.webdavCreateDirectoryTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
                         <el-switch v-model="editChannel.createDirectory"/>
-                        <span class="form-tip">{{ $t('sysUpload.webdavCreateDirectoryTip') }}</span>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.quotaLimit')">
                         <el-switch v-model="editChannel.quota.enabled" @change="(val) => onQuotaEnabledChange(val, editChannel)"/>
@@ -1225,6 +1298,18 @@ mounted() {
     font-size: 14px;
 }
 
+.inline-warning-icon {
+    color: var(--el-color-warning);
+    cursor: pointer;
+    font-size: 13px;
+    margin-left: 6px;
+    transition: color 0.2s;
+}
+
+.inline-warning-icon:hover {
+    color: var(--el-color-warning-dark-2);
+}
+
 .add-btn {
     border-radius: 8px;
 }
@@ -1515,13 +1600,6 @@ mounted() {
     width: 18px;
     margin-right: 8px;
     text-align: center;
-}
-
-/* 表单提示 */
-.form-tip {
-    margin-left: 12px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
 }
 
 /* 表单内警告 */
