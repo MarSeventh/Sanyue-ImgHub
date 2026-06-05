@@ -1285,7 +1285,7 @@ mounted() {
 }
 
 .inline-warning-icon {
-    color: var(--el-color-warning);
+    color: var(--el-text-color-secondary);
     cursor: pointer;
     font-size: 13px;
     margin-left: 6px;
@@ -1293,7 +1293,7 @@ mounted() {
 }
 
 .inline-warning-icon:hover {
-    color: var(--el-color-warning-dark-2);
+    color: var(--el-color-primary);
 }
 
 .add-btn {
