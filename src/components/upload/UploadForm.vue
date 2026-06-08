@@ -518,6 +518,7 @@ methods: {
             : 16 * 1024 * 1024 // 16MB for Telegram and others (TG getFile limit: 20MB)
         
         const fileSize = file.file.size
+        const fileType = file.file.type || 'application/octet-stream'
         const totalChunks = Math.ceil(fileSize / CHUNK_SIZE)
         
         const needServerCompress = fileItem.serverCompress
@@ -540,7 +541,7 @@ methods: {
             // 第一步：初始化分块上传，获取uploadId
             const initFormData = new FormData()
             initFormData.append('originalFileName', file.file.name)
-            initFormData.append('originalFileType', file.file.type)
+            initFormData.append('originalFileType', fileType)
             initFormData.append('totalChunks', totalChunks.toString())
 
             const initResponse = await axios({
@@ -592,7 +593,7 @@ methods: {
                 formData.append('totalChunks', totalChunks.toString())
                 formData.append('uploadId', uploadId)
                 formData.append('originalFileName', file.file.name)
-                formData.append('originalFileType', file.file.type)
+                formData.append('originalFileType', fileType)
 
                 let retryCount = 0
                 const maxRetries = 3
@@ -684,7 +685,7 @@ methods: {
             mergeFormData.append('uploadId', uploadId)
             mergeFormData.append('totalChunks', totalChunks.toString())
             mergeFormData.append('originalFileName', file.file.name)
-            mergeFormData.append('originalFileType', file.file.type)
+            mergeFormData.append('originalFileType', fileType)
             // HuggingFace 渠道：传递预计算的 SHA256
             if (precomputedSha256) {
                 mergeFormData.append('sha256', precomputedSha256)
