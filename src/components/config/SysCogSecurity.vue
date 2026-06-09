@@ -165,7 +165,7 @@
                 </el-form-item>
             </el-form>
             <h4 class="second-title">{{ $t('sysSecurity.whiteListMode') }}</h4>
-            <el-form :model="accessSettings" label-width="120px">
+            <el-form :model="accessSettings" :rules="accessRules" ref="accessForm" label-width="120px">
                 <el-form-item>
                     <template #label>
                         {{ $t('sysSecurity.enableWhiteList') }}
@@ -187,20 +187,22 @@
                     </template>
                     <el-switch v-model="accessSettings.sessionSecure"/>
                 </el-form-item>
-                <el-form-item :label="$t('sysSecurity.userSessionMaxAge')">
+                <el-form-item :label="$t('sysSecurity.userSessionMaxAge')" prop="userSessionMaxAge">
                     <el-input-number
                         v-model="accessSettings.userSessionMaxAge"
                         :min="1"
+                        :max="3650"
                         :step="1"
                         :precision="0"
                         controls-position="right"
                     />
                     <span class="form-item-hint">{{ $t('sysSecurity.sessionMaxAgeUnit') }}</span>
                 </el-form-item>
-                <el-form-item :label="$t('sysSecurity.adminSessionMaxAge')">
+                <el-form-item :label="$t('sysSecurity.adminSessionMaxAge')" prop="adminSessionMaxAge">
                     <el-input-number
                         v-model="accessSettings.adminSessionMaxAge"
                         :min="1"
+                        :max="3650"
                         :step="1"
                         :precision="0"
                         controls-position="right"
@@ -429,6 +431,24 @@ computed: {
                         callback();
                     }
                 }, trigger: 'blur' }
+            ]
+        };
+    },
+    accessRules() {
+        const validateSessionMaxAge = (rule, value, callback) => {
+            if (!Number.isInteger(value) || value < 1 || value > 3650) {
+                callback(new Error(this.$t('sysSecurity.sessionMaxAgeInvalid')));
+            } else {
+                callback();
+            }
+        };
+
+        return {
+            userSessionMaxAge: [
+                { validator: validateSessionMaxAge, trigger: 'change' }
+            ],
+            adminSessionMaxAge: [
+                { validator: validateSessionMaxAge, trigger: 'change' }
             ]
         };
     },
@@ -699,6 +719,13 @@ methods: {
             });
         }));
 
+        // 验证会话安全策略表单
+        validationPromises.push(new Promise((resolve) => {
+            this.$refs.accessForm.validate((valid) => {
+                resolve(valid);
+            });
+        }));
+
         // 等待所有验证完成
         Promise.all(validationPromises).then((results) => {
             const isValid = results.every(valid => valid);
@@ -707,11 +734,13 @@ methods: {
                 return;
             }
 
-            // 验证会话有效期为大于 0 的正整数
+            // 验证会话有效期为 1-3650 的正整数
             if (this.accessSettings.userSessionMaxAge < 1 ||
                 !Number.isInteger(this.accessSettings.userSessionMaxAge) ||
+                this.accessSettings.userSessionMaxAge > 3650 ||
                 this.accessSettings.adminSessionMaxAge < 1 ||
-                !Number.isInteger(this.accessSettings.adminSessionMaxAge)) {
+                !Number.isInteger(this.accessSettings.adminSessionMaxAge) ||
+                this.accessSettings.adminSessionMaxAge > 3650) {
                 this.$message.error(this.$t('sysSecurity.sessionMaxAgeInvalid'));
                 return;
             }

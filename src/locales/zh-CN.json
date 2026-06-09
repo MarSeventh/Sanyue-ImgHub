@@ -662,7 +662,7 @@
     "userSessionMaxAge": "用户端会话有效期",
     "adminSessionMaxAge": "管理端会话有效期",
     "sessionMaxAgeUnit": "天",
-    "sessionMaxAgeInvalid": "会话有效期必须为大于 0 的正整数"
+    "sessionMaxAgeInvalid": "会话有效期必须为 1-3650 的正整数"
   }
 ,
   "sysPage": {

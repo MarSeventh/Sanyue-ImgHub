@@ -656,7 +656,7 @@
     "userSessionMaxAge": "User Session Max Age",
     "adminSessionMaxAge": "Admin Session Max Age",
     "sessionMaxAgeUnit": "days",
-    "sessionMaxAgeInvalid": "Session max age must be a positive integer greater than 0"
+    "sessionMaxAgeInvalid": "Session max age must be an integer from 1 to 3650"
   },
   "sysPage": {
     "settingsSaved": "Settings saved",
