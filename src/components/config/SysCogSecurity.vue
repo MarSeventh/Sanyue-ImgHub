@@ -147,6 +147,109 @@
                     <el-input v-model="uploadSettings.moderate.nsfwApiPath" placeholder="https://nsfwjs.your.domain"/>
                 </el-form-item>
             </el-form>
+
+            <h4 class="second-title">{{ $t('sysSecurity.ipQuery') }}
+                <el-tooltip :content="$t('sysSecurity.ipQueryTooltip')" placement="top">
+                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                </el-tooltip>
+            </h4>
+            <el-form :model="uploadSettings.ipQuery" label-width="120px">
+                <el-form-item :label="$t('sysSecurity.enableIpQuery')">
+                    <el-switch v-model="uploadSettings.ipQuery.enabled"/>
+                </el-form-item>
+                <el-form-item :label="$t('sysSecurity.ipQueryChannel')">
+                    <el-select v-model="uploadSettings.ipQuery.channel" :placeholder="$t('sysSecurity.ipQueryChannelPlaceholder')">
+                        <el-option :label="$t('sysSecurity.customApi')" value="customApi"></el-option>
+                    </el-select>
+                </el-form-item>
+                <template v-if="uploadSettings.ipQuery.channel === 'customApi'">
+                    <el-form-item :label="$t('sysSecurity.apiPath')">
+                        <el-input
+                            v-model="uploadSettings.ipQuery.customApi.url"
+                            placeholder="https://api.example.com/ip"
+                        />
+                    </el-form-item>
+                    <el-form-item :label="$t('sysSecurity.queryParams')">
+                        <div class="query-param-list">
+                            <div
+                                v-for="(param, index) in uploadSettings.ipQuery.customApi.params"
+                                :key="index"
+                                class="query-param-row"
+                            >
+                                <el-input
+                                    v-model="param.key"
+                                    :placeholder="$t('sysSecurity.paramNamePlaceholder')"
+                                />
+                                <el-input
+                                    v-model="param.value"
+                                    :placeholder="$t('sysSecurity.paramValuePlaceholder')"
+                                />
+                                <el-button
+                                    type="danger"
+                                    plain
+                                    circle
+                                    @click="removeIpQueryParam(index)"
+                                    :disabled="uploadSettings.ipQuery.customApi.params.length <= 1"
+                                >
+                                    <font-awesome-icon icon="trash-alt"/>
+                                </el-button>
+                            </div>
+                            <el-button type="primary" plain @click="addIpQueryParam">
+                                <font-awesome-icon icon="plus"/>
+                                <span>{{ $t('sysSecurity.addQueryParam') }}</span>
+                            </el-button>
+                        </div>
+                    </el-form-item>
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysSecurity.responseFields') }}
+                            <el-tooltip :content="$t('sysSecurity.responseFieldsTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                            </el-tooltip>
+                        </template>
+                        <div class="query-param-list">
+                            <div
+                                v-for="(field, index) in uploadSettings.ipQuery.customApi.responseFields"
+                                :key="index"
+                                class="response-field-row"
+                            >
+                                <el-input
+                                    v-model="uploadSettings.ipQuery.customApi.responseFields[index]"
+                                    :placeholder="$t('sysSecurity.responseFieldPathPlaceholder')"
+                                />
+                                <el-button
+                                    plain
+                                    circle
+                                    @click="moveIpQueryResponseField(index, -1)"
+                                    :disabled="index === 0"
+                                >
+                                    <font-awesome-icon icon="arrow-up"/>
+                                </el-button>
+                                <el-button
+                                    plain
+                                    circle
+                                    @click="moveIpQueryResponseField(index, 1)"
+                                    :disabled="index === uploadSettings.ipQuery.customApi.responseFields.length - 1"
+                                >
+                                    <font-awesome-icon icon="arrow-down"/>
+                                </el-button>
+                                <el-button
+                                    type="danger"
+                                    plain
+                                    circle
+                                    @click="removeIpQueryResponseField(index)"
+                                >
+                                    <font-awesome-icon icon="trash-alt"/>
+                                </el-button>
+                            </div>
+                            <el-button type="primary" plain @click="addIpQueryResponseField">
+                                <font-awesome-icon icon="plus"/>
+                                <span>{{ $t('sysSecurity.addResponseField') }}</span>
+                            </el-button>
+                        </div>
+                    </el-form-item>
+                </template>
+            </el-form>
         </div>
 
         <!-- 一级设置：访问管理 -->
@@ -334,7 +437,16 @@ data() {
             admin: {}
         },
         uploadSettings: {
-            moderate: {}
+            moderate: {},
+            ipQuery: {
+                enabled: false,
+                channel: 'customApi',
+                customApi: {
+                    url: '',
+                    params: [{ key: 'ip', value: '{ip}' }],
+                    responseFields: []
+                }
+            }
         },
         accessSettings: {},
         apiTokens: [], // API Token列表
@@ -489,6 +601,56 @@ computed: {
     },
 },
 methods: {
+    normalizeIpQuerySettings(settings = {}) {
+        const ipQuery = settings.ipQuery || {};
+        const customApi = ipQuery.customApi || {};
+        const params = Array.isArray(customApi.params) && customApi.params.length > 0
+            ? customApi.params.map(param => ({
+                key: param?.key || '',
+                value: param?.value || ''
+            }))
+            : [{ key: 'ip', value: '{ip}' }];
+        const responseFields = Array.isArray(customApi.responseFields)
+            ? customApi.responseFields.map(field => {
+                if (typeof field === 'string') return field;
+                return field?.path || '';
+            })
+            : [];
+
+        return {
+            ...settings,
+            moderate: settings.moderate || {},
+            ipQuery: {
+                enabled: ipQuery.enabled ?? false,
+                channel: ipQuery.channel || 'customApi',
+                customApi: {
+                    url: customApi.url || '',
+                    params,
+                    responseFields
+                }
+            }
+        };
+    },
+    addIpQueryParam() {
+        this.uploadSettings.ipQuery.customApi.params.push({ key: '', value: '' });
+    },
+    removeIpQueryParam(index) {
+        if (this.uploadSettings.ipQuery.customApi.params.length <= 1) return;
+        this.uploadSettings.ipQuery.customApi.params.splice(index, 1);
+    },
+    addIpQueryResponseField() {
+        this.uploadSettings.ipQuery.customApi.responseFields.push('');
+    },
+    removeIpQueryResponseField(index) {
+        this.uploadSettings.ipQuery.customApi.responseFields.splice(index, 1);
+    },
+    moveIpQueryResponseField(index, direction) {
+        const fields = this.uploadSettings.ipQuery.customApi.responseFields;
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= fields.length) return;
+        const [field] = fields.splice(index, 1);
+        fields.splice(targetIndex, 0, field);
+    },
     handleUserPassInput() {
         if (this.authSettings.user.authCode !== this.oriUserPassword) {
             this.showUserPassConfirm = true;
@@ -816,7 +978,7 @@ mounted() {
     .then((response) => response.json())
     .then((data) => {
         this.authSettings = data.auth;
-        this.uploadSettings = data.upload;
+        this.uploadSettings = this.normalizeIpQuerySettings(data.upload);
         this.accessSettings = data.access;
 
         // 密码从后端返回为空（安全考虑），记录原始空值
@@ -932,6 +1094,33 @@ mounted() {
     vertical-align: middle;
 }
 
+.query-param-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.query-param-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) minmax(160px, 1.4fr) auto;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+}
+
+.response-field-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto auto auto;
+    gap: 4px;
+    align-items: center;
+    width: 100%;
+}
+
+.response-field-row :deep(.el-button + .el-button) {
+    margin-left: 0;
+}
+
 .token-title {
     display: flex;
     align-items: center;
@@ -1040,6 +1229,14 @@ mounted() {
     
     .first-settings :deep(.el-form-item__content) {
         max-width: 100%;
+    }
+
+    .query-param-row {
+        grid-template-columns: 1fr;
+    }
+
+    .response-field-row {
+        grid-template-columns: 1fr auto auto auto;
     }
     
     .token-table-container {
