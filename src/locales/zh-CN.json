@@ -590,7 +590,7 @@
     "reviewChannelPlaceholder": "请选择审查渠道",
     "apiKey": "API Key",
     "apiPath": "API 路径",
-    "ipQuery": "IP 查询",
+    "ipQuery": "IP 归属地查询",
     "ipQueryTooltip": "上传时按配置调用自定义 API 查询上传 IP 归属地，参数值支持 {'{ip}'} 占位符",
     "enableIpQuery": "开启查询",
     "ipQueryChannel": "查询渠道",

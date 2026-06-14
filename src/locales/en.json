@@ -584,7 +584,7 @@
     "reviewChannelPlaceholder": "Select review channel",
     "apiKey": "API Key",
     "apiPath": "API Path",
-    "ipQuery": "IP Query",
+    "ipQuery": "IP Geolocation Query",
     "ipQueryTooltip": "Calls a custom API during upload to query the upload IP location. Parameter values support the {'{ip}'} placeholder",
     "enableIpQuery": "Enable Query",
     "ipQueryChannel": "Query Channel",
