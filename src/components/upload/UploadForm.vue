@@ -70,13 +70,13 @@
                         <div class="upload-list-dashboard-action">
                             <div class="modern-action-group">
                                 <el-tooltip :disabled="disableTooltip" :content="$t('upload.copyAll')" placement="top">
-                                    <button class="modern-action-btn" @click="copyAll">
+                                    <button class="modern-action-btn modern-action-btn-copy" @click="copyAll">
                                         <font-awesome-icon icon="copy" />
                                     </button>
                                 </el-tooltip>
                                 <el-tooltip :disabled="disableTooltip" :content="$t('upload.retryFailed')" placement="top">
                                     <el-dropdown>
-                                        <button class="modern-action-btn" @click="retryError">
+                                        <button class="modern-action-btn modern-action-btn-retry" @click="retryError">
                                             <font-awesome-icon icon="redo" />
                                         </button>
                                         <template #dropdown>
@@ -2120,35 +2120,37 @@ beforeDestroy() {
 .modern-action-group {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px;
-    background: var(--modern-action-group-bg, rgba(64, 158, 255, 0.08));
-    border-radius: 14px;
-    border: 1px solid var(--modern-action-group-border, rgba(64, 158, 255, 0.15));
-    box-shadow: 0 2px 8px var(--modern-action-group-shadow, rgba(0, 0, 0, 0.06));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 5px;
+    padding: 5px;
+    background: var(--upload-action-toolbar-bg);
+    border-radius: 18px;
+    border: 1px solid var(--upload-action-toolbar-border);
+    box-shadow: var(--upload-action-toolbar-shadow);
+    backdrop-filter: blur(14px) saturate(1.08);
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .modern-action-group:hover {
-    background: var(--modern-action-group-hover-bg, rgba(64, 158, 255, 0.12));
-    box-shadow: 0 4px 16px var(--modern-action-group-hover-shadow, rgba(64, 158, 255, 0.15));
-    transform: translateY(-1px);
+    background: var(--upload-action-toolbar-hover-bg);
+    border-color: var(--upload-action-toolbar-hover-border);
+    box-shadow: var(--upload-action-toolbar-hover-shadow);
 }
 
 .modern-action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border: none;
-    border-radius: 10px;
-    background: var(--modern-action-btn-bg, linear-gradient(135deg, #409eff 0%, #66b1ff 100%));
-    color: white;
+    border-radius: 13px;
+    background: var(--upload-action-btn-bg);
+    color: var(--upload-action-btn-color);
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
     font-size: 14px;
-    box-shadow: 0 2px 6px rgba(64, 158, 255, 0.25);
+    box-shadow: var(--upload-action-btn-shadow);
     position: relative;
     overflow: hidden;
     outline: none !important;
@@ -2162,35 +2164,44 @@ beforeDestroy() {
 .modern-action-btn::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
+    inset: 2px;
+    border-radius: 11px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.22s ease;
 }
 
 .modern-action-btn:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
+    transform: translateY(-1px);
+    background: var(--upload-action-btn-hover-bg);
+    box-shadow: var(--upload-action-btn-hover-shadow);
 }
 
 .modern-action-btn:hover::before {
-    left: 100%;
+    opacity: 0.08;
 }
 
 .modern-action-btn:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: 0 1px 4px rgba(64, 158, 255, 0.3);
+    transform: translateY(0) scale(0.97);
+    box-shadow: var(--upload-action-btn-active-shadow);
+}
+
+.modern-action-btn-copy {
+    color: var(--upload-action-copy-color);
+}
+
+.modern-action-btn-retry {
+    color: var(--upload-action-retry-color);
 }
 
 .modern-action-btn-danger {
-    background: var(--modern-action-btn-danger-bg, linear-gradient(135deg, #f56c6c 0%, #f78989 100%));
-    box-shadow: 0 2px 6px rgba(245, 108, 108, 0.25);
+    color: var(--upload-action-danger-color);
+    background: var(--upload-action-danger-bg);
 }
 
 .modern-action-btn-danger:hover {
-    box-shadow: 0 4px 12px rgba(245, 108, 108, 0.4);
+    background: var(--upload-action-danger-hover-bg);
+    box-shadow: var(--upload-action-danger-hover-shadow);
 }
 
 /* Dropdown Menu Styles */

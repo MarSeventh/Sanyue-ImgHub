@@ -1070,9 +1070,9 @@ export default {
     transition: all 0.3s ease;
 }
 .title {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     font-weight: 400;
-    font-family: 'Righteous', 'Noto Sans SC', sans-serif;
+    font-family: 'Pacifico', 'Noto Sans SC', sans-serif;
     position: relative;
     padding-bottom: 8px;
     cursor: pointer;
@@ -1082,7 +1082,7 @@ export default {
 }
 .title:hover {
     transform: scale(1.08) translateY(-3px);
-    filter: drop-shadow(0 0 20px var(--el-upload-dragger-uniform-color));
+    filter: drop-shadow(0 0 20px var(--upload-title-hover-glow));
 }
 .title::after {
     content: '';
@@ -1092,13 +1092,10 @@ export default {
     transform: translateX(-50%);
     width: 0;
     height: 3px;
-    background: linear-gradient(90deg, 
-        transparent, 
-        var(--el-upload-dragger-uniform-color), 
-        transparent);
+    background: var(--upload-title-underline-bg);
     border-radius: 3px;
     transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 10px var(--el-upload-dragger-uniform-color);
+    box-shadow: var(--upload-title-underline-shadow);
 }
 .title:hover::after {
     width: 80%;
@@ -1107,23 +1104,16 @@ export default {
 /* 动态流光标题 */
 .main-title {
     background: var(--upload-main-title-color);
-    background-size: 200% auto;
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
     text-decoration: none;
     display: inline-block;
-    animation: titleShimmer 3s ease-in-out infinite;
     position: relative;
     filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
 
 
-
-.title:hover .main-title {
-    animation: titleShimmer 1s ease-in-out infinite;
-    filter: brightness(1.2);
-}
 
 /* 漂浮动画 */
 @keyframes float {
@@ -1135,19 +1125,9 @@ export default {
     }
 }
 
-/* 标题流光动画 */
-@keyframes titleShimmer {
-    0% {
-        background-position: 200% center;
-    }
-    100% {
-        background-position: -200% center;
-    }
-}
-
 @media (max-width: 768px) {
     .title {
-        font-size: 1.8rem;
+        font-size: 1.55rem;
         letter-spacing: 1px;
     }
     .title:hover {
