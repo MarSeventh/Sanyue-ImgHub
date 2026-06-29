@@ -1073,6 +1073,8 @@ export default {
     font-size: 2.25rem;
     font-weight: 400;
     font-family: 'Pacifico', 'Noto Sans SC', sans-serif;
+    color: var(--upload-title-text-color);
+    text-shadow: var(--upload-title-text-shadow);
     position: relative;
     padding-bottom: 8px;
     cursor: pointer;

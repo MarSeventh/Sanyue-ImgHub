@@ -104,13 +104,17 @@ body {
     /* 上传页提示文字颜色 */
     --upload-header-color: rgba(58, 58, 58, 0.8);
     /* 上传页标题颜色 */
-    --upload-main-title-color: linear-gradient(to right, #a1e3cc, rgb(120, 174, 236));
+    --upload-main-title-color: linear-gradient(90deg, #7fc7f3 0%, #cdefff 52%, #8ebfe8 100%);
     /* 上传页主标题颜色 */
-    --upload-title-hover-glow: rgba(64, 158, 255, 0.32);
+    --upload-title-text-color: #4f9ed2;
+    /* 上传页标题后缀颜色 */
+    --upload-title-text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72), 0 4px 14px rgba(88, 165, 214, 0.16);
+    /* 上传页标题后缀阴影 */
+    --upload-title-hover-glow: rgba(116, 186, 232, 0.26);
     /* 上传页标题悬浮光晕 */
-    --upload-title-underline-bg: linear-gradient(90deg, transparent, rgba(161, 227, 204, 0.7), rgba(120, 174, 236, 0.85), transparent);
+    --upload-title-underline-bg: linear-gradient(90deg, transparent, rgba(126, 199, 243, 0.36), rgba(216, 242, 255, 0.92), rgba(117, 184, 228, 0.62), transparent);
     /* 上传页标题悬浮下划线 */
-    --upload-title-underline-shadow: 0 0 10px rgba(120, 174, 236, 0.36);
+    --upload-title-underline-shadow: 0 0 10px rgba(126, 199, 243, 0.26), 0 0 6px rgba(255, 255, 255, 0.18);
     /* 上传页标题悬浮下划线阴影 */
 
     /* 上传页现代化组件 */
@@ -393,13 +397,17 @@ body {
     /* 上传页提示文字颜色 */
     --upload-header-color: blanchedalmond;
     /* 上传页标题颜色 */
-    --upload-main-title-color: linear-gradient(to right, rgb(239, 250, 195), #f3a060);
+    --upload-main-title-color: linear-gradient(90deg, #8fd3ff 0%, #d7f4ff 55%, #a8d4f2 100%);
     /* 上传页主标题颜色 */
-    --upload-title-hover-glow: rgba(125, 211, 252, 0.38);
+    --upload-title-text-color: #eefaff;
+    /* 上传页标题后缀颜色 */
+    --upload-title-text-shadow: 0 0 12px rgba(143, 211, 255, 0.22), 0 1px 0 rgba(255, 255, 255, 0.08);
+    /* 上传页标题后缀阴影 */
+    --upload-title-hover-glow: rgba(143, 211, 255, 0.3);
     /* 上传页标题悬浮光晕 */
-    --upload-title-underline-bg: linear-gradient(90deg, transparent, rgba(239, 250, 195, 0.28), rgba(250, 244, 184, 0.76), rgba(255, 252, 225, 0.94), rgba(255, 255, 255, 0.82), transparent);
+    --upload-title-underline-bg: linear-gradient(90deg, transparent, rgba(143, 211, 255, 0.34), rgba(218, 244, 255, 0.86), rgba(255, 255, 255, 0.72), transparent);
     /* 上传页标题悬浮下划线 */
-    --upload-title-underline-shadow: 0 0 12px rgba(250, 244, 184, 0.24), 0 0 8px rgba(255, 255, 255, 0.14);
+    --upload-title-underline-shadow: 0 0 12px rgba(143, 211, 255, 0.28), 0 0 8px rgba(255, 255, 255, 0.12);
     /* 上传页标题悬浮下划线阴影 */
 
     /* 上传页工具栏按钮 */
