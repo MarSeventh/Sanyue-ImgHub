@@ -1,11 +1,21 @@
 <template>
   <transition name="batch-toolbar">
     <div v-if="selectedCount > 0" class="batch-floating-bar">
+      <el-tooltip :content="$t('dashboard.clearSelection')" placement="top">
+        <el-button
+          class="batch-floating-btn ghost"
+          :aria-label="$t('dashboard.clearSelection')"
+          @click="handleClear"
+        >
+          <font-awesome-icon icon="times" class="batch-floating-icon"></font-awesome-icon>
+        </el-button>
+      </el-tooltip>
       <el-tooltip :content="`${selectedCount} ${$t('dashboard.selectedItems')}`" placement="top">
         <div class="batch-selection-summary">
           <span class="batch-selection-count">{{ selectedCount }}</span>
         </div>
       </el-tooltip>
+      <span class="batch-toolbar-divider"></span>
       <div class="batch-floating-actions">
         <el-tooltip
           v-for="action in actions"
@@ -20,15 +30,6 @@
             @click="handleAction(action.command)"
           >
             <font-awesome-icon :icon="action.icon" class="batch-floating-icon"></font-awesome-icon>
-          </el-button>
-        </el-tooltip>
-        <el-tooltip :content="$t('dashboard.clearSelection')" placement="top">
-          <el-button
-            class="batch-floating-btn ghost"
-            :aria-label="$t('dashboard.clearSelection')"
-            @click="handleClear"
-          >
-            <font-awesome-icon icon="times" class="batch-floating-icon"></font-awesome-icon>
           </el-button>
         </el-tooltip>
       </div>
@@ -79,7 +80,7 @@ export default {
   z-index: 1200;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   max-width: min(720px, calc(100vw - 48px));
   padding: 8px;
   border: 1px solid var(--admin-batch-toolbar-border);
@@ -94,20 +95,29 @@ export default {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  padding: 0;
+  padding: 0 2px;
 }
 
 .batch-selection-count {
-  width: 38px;
-  height: 38px;
+  min-width: 20px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  color: var(--admin-batch-count-color);
-  font-weight: 700;
-  background: var(--admin-batch-count-bg);
-  box-shadow: var(--admin-batch-count-shadow);
+  padding: 0 4px;
+  color: var(--admin-container-color);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.batch-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--admin-batch-toolbar-border);
+  opacity: 0.78;
 }
 
 .batch-floating-actions {
@@ -198,20 +208,24 @@ export default {
     transform: translateX(-50%);
     width: max-content;
     max-width: calc(100vw - 24px);
-    gap: 6px;
+    gap: 5px;
     padding: 7px;
     border-radius: 999px;
   }
 
   .batch-selection-summary {
-    padding: 0;
+    padding: 0 1px;
   }
 
   .batch-selection-count {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+    min-width: 18px;
+    height: 24px;
+    padding: 0 3px;
     font-size: 13px;
+  }
+
+  .batch-toolbar-divider {
+    height: 18px;
   }
 
   .batch-floating-actions {
