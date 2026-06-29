@@ -320,9 +320,6 @@ body {
     --admin-batch-toolbar-bg: rgba(255, 255, 255, 0.56);
     --admin-batch-toolbar-border: rgba(255, 255, 255, 0.72);
     --admin-batch-toolbar-shadow: 0 14px 34px rgba(91, 128, 148, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.72);
-    --admin-batch-count-bg: linear-gradient(135deg, #7dd3fc, #a7f3d0);
-    --admin-batch-count-color: #0f3a4f;
-    --admin-batch-count-shadow: 0 6px 14px rgba(56, 189, 248, 0.24);
     --admin-batch-action-bg: rgba(255, 255, 255, 0.62);
     --admin-batch-action-shadow: 0 5px 14px rgba(91, 128, 148, 0.12);
     --admin-batch-action-hover-bg: rgba(255, 255, 255, 0.86);
@@ -651,9 +648,6 @@ body {
     --admin-batch-toolbar-bg: rgba(27, 35, 43, 0.64);
     --admin-batch-toolbar-border: rgba(190, 222, 253, 0.16);
     --admin-batch-toolbar-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    --admin-batch-count-bg: linear-gradient(135deg, #38bdf8, #fef08a);
-    --admin-batch-count-color: #10202b;
-    --admin-batch-count-shadow: 0 6px 16px rgba(56, 189, 248, 0.18);
     --admin-batch-action-bg: rgba(255, 255, 255, 0.08);
     --admin-batch-action-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
     --admin-batch-action-hover-bg: rgba(255, 255, 255, 0.14);

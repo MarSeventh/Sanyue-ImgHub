@@ -78,7 +78,7 @@
             </div>
             
             <!-- 卡片视图 -->
-            <div v-if="viewMode === 'card'" class="content" ref="cardContainerRef">
+            <div v-if="viewMode === 'card'" class="content" :class="{ 'is-drag-selecting': isDragging }" ref="cardContainerRef">
                 <!-- 加载骨架屏 -->
                 <SkeletonLoader v-if="loading" type="card" :count="15" />
                 <!-- 空状态 -->
@@ -124,7 +124,7 @@
                 </template>
             </div>
             <!-- 列表视图 -->
-            <div v-else class="list-view" ref="listContainerRef">
+            <div v-else class="list-view" :class="{ 'is-drag-selecting': isDragging }" ref="listContainerRef">
                 <div class="list-header">
                     <div class="list-col list-col-checkbox">
                         <span class="custom-checkbox" :class="{ 'checked': isSelectAll, 'indeterminate': isIndeterminate }" @click="handleSelectAllPage(!isSelectAll)">
@@ -2358,6 +2358,44 @@ html.dark .header-content:hover {
     padding-bottom: 0px;
     flex-grow: 1;
     min-height: 80vh;
+}
+
+.content.is-drag-selecting,
+.list-view.is-drag-selecting {
+    cursor: crosshair;
+}
+
+.content.is-drag-selecting :deep(.img-card:hover) {
+    transform: none;
+}
+
+.content.is-drag-selecting :deep(.img-card:hover .image-preview),
+.content.is-drag-selecting :deep(.img-card:hover .video-preview),
+.content.is-drag-selecting :deep(.img-card:hover .file-icon),
+.content.is-drag-selecting :deep(.img-card:hover .folder-icon-svg) {
+    transform: none;
+}
+
+.content.is-drag-selecting :deep(.image-preview:hover) {
+    opacity: 1;
+}
+
+.content.is-drag-selecting :deep(.action-btn:hover) {
+    transform: none;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.list-view.is-drag-selecting :deep(.list-item:hover) {
+    background: transparent;
+}
+
+.list-view.is-drag-selecting :deep(.list-action-btn:hover) {
+    color: var(--el-text-color-regular);
+    background: var(--el-fill-color);
+}
+
+.list-view.is-drag-selecting :deep(.list-action-danger:hover) {
+    background: var(--el-fill-color);
 }
 
 /* 空状态样式 */
