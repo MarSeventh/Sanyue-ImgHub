@@ -2110,6 +2110,7 @@ html.dark .header-content:hover {
 .breadcrumb-select-button {
     width: 32px;
     height: 32px;
+    box-sizing: border-box;
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
@@ -2146,6 +2147,7 @@ html.dark .header-content:hover {
     .breadcrumb-select-button {
         width: 28px;
         height: 28px;
+        box-sizing: border-box;
         border-radius: 8px;
     }
     .breadcrumb-select-icon {
@@ -2751,8 +2753,12 @@ html.dark .header-content:hover {
 }
 
 .breadcrumb {
-    padding: 8px 12px;
-    background-color: var(--el-bg-color);
+    height: 32px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background-color: var(--el-fill-color-light);
     border-radius: 6px;
     font-size: 0.95em;
     box-shadow: var(--admin-dashboard-stats-shadow);
@@ -2776,6 +2782,18 @@ html.dark .header-content:hover {
 
 :deep(.el-breadcrumb__item) {
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    line-height: 32px;
+}
+:deep(.el-breadcrumb),
+:deep(.el-breadcrumb__inner),
+:deep(.el-breadcrumb__separator) {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    line-height: 32px;
 }
 :deep(.el-breadcrumb__inner:hover) {
     color: var(--el-color-primary);
@@ -2785,8 +2803,10 @@ html.dark .header-content:hover {
 .mobile-directory-trigger {
     display: none;
     align-items: center;
+    height: 28px;
+    box-sizing: border-box;
     gap: 6px;
-    padding: 6px 10px;
+    padding: 0 10px;
     background: var(--el-fill-color-light);
     border-radius: 8px;
     border: 1px solid var(--el-border-color-lighter);
@@ -2804,8 +2824,12 @@ html.dark .header-content:hover {
 }
 
 .mobile-directory-path {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
     font-size: 12px;
     font-weight: 500;
+    line-height: 1;
     color: var(--el-text-color-primary);
     max-width: 100px;
     overflow: hidden;
