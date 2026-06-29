@@ -1078,7 +1078,7 @@ export default {
     position: relative;
     padding-bottom: 8px;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease;
     animation: float 4s ease-in-out infinite;
     letter-spacing: 3px;
 }
