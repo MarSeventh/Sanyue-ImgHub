@@ -102,33 +102,44 @@
                 </el-dropdown-menu>
             </template>
         </el-dropdown>
-        <div class="quick-toolbar">
-            <el-tooltip :disabled="disableTooltip" :content="$t('upload.settings')" placement="top">
-                <el-button class="quick-toolbar-button quick-toolbar-primary" @click="openCompressDialog">
+        <div
+            class="quick-toolbar"
+            :class="{ 'is-expanded': isQuickToolbarOpen }"
+            @mouseleave="handleQuickToolbarLeave"
+        >
+            <div class="quick-toolbar-actions">
+                <div class="quick-toolbar-actions-inner">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('upload.logout')" placement="left">
+                        <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('logout')">
+                            <font-awesome-icon icon="sign-out-alt" class="quick-toolbar-icon"/>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :disabled="disableTooltip" :content="$t('upload.manage')" placement="left">
+                        <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('manage')">
+                            <font-awesome-icon icon="cog" class="quick-toolbar-icon"/>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :disabled="disableTooltip" :content="$t('upload.linkFormat')" placement="left">
+                        <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('linkFormat')">
+                            <font-awesome-icon icon="link" class="quick-toolbar-icon"/>
+                        </el-button>
+                    </el-tooltip>
+                </div>
+            </div>
+            <el-tooltip :disabled="disableTooltip" :content="$t('upload.settings')" placement="left">
+                <el-button class="quick-toolbar-button" @click="openCompressDialog">
                     <font-awesome-icon icon="cloud-upload" class="quick-toolbar-icon"/>
                 </el-button>
             </el-tooltip>
-            <el-dropdown trigger="click" placement="top-end" @command="handleQuickToolbarCommand">
-                <el-button class="quick-toolbar-button">
-                    <font-awesome-icon icon="ellipsis-h" class="quick-toolbar-icon"/>
-                </el-button>
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <el-dropdown-item command="linkFormat">
-                            <font-awesome-icon icon="link" style="width: 16px; margin-right: 8px; text-align: center;"/>
-                            {{ $t('upload.linkFormat') }}
-                        </el-dropdown-item>
-                        <el-dropdown-item command="manage">
-                            <font-awesome-icon icon="cog" style="width: 16px; margin-right: 8px; text-align: center;"/>
-                            {{ $t('upload.manage') }}
-                        </el-dropdown-item>
-                        <el-dropdown-item command="logout">
-                            <font-awesome-icon icon="sign-out-alt" style="width: 16px; margin-right: 8px; text-align: center;"/>
-                            {{ $t('upload.logout') }}
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
+            <el-button
+                class="quick-toolbar-button quick-toolbar-more"
+                :class="{ 'is-active': isQuickToolbarOpen }"
+                :aria-expanded="isQuickToolbarOpen"
+                @mouseenter="handleQuickToolbarMoreEnter"
+                @click="toggleQuickToolbar"
+            >
+                <font-awesome-icon icon="chevron-down" class="quick-toolbar-icon quick-toolbar-toggle-icon"/>
+            </el-button>
         </div>
         <Logo :useConfigLink="true" />
         <div class="header">
@@ -273,6 +284,8 @@ export default {
             uploadMethod: 'default', //上传方式
             uploadFolder: '', // 上传文件夹
             isFolderInputActive: false,
+            isQuickToolbarOpen: false,
+            isQuickToolbarPinned: false,
             showAnnouncementDialog: false, // 控制公告弹窗的显示
             announcementContent: '', // 公告内容
             showHistory: false,
@@ -534,7 +547,24 @@ export default {
         updateStoreUploadNameType(value) {
             this.$store.commit('setStoreUploadNameType', value)
         },
+        handleQuickToolbarMoreEnter() {
+            this.isQuickToolbarOpen = true
+        },
+        handleQuickToolbarLeave() {
+            if (!this.isQuickToolbarPinned) {
+                this.isQuickToolbarOpen = false
+            }
+        },
+        toggleQuickToolbar() {
+            this.isQuickToolbarPinned = !this.isQuickToolbarPinned
+            this.isQuickToolbarOpen = this.isQuickToolbarPinned
+        },
+        closeQuickToolbar() {
+            this.isQuickToolbarPinned = false
+            this.isQuickToolbarOpen = false
+        },
         handleQuickToolbarCommand(command) {
+            this.closeQuickToolbar()
             if (command === 'linkFormat') {
                 this.openUrlDialog()
             } else if (command === 'manage') {
@@ -912,8 +942,9 @@ export default {
     bottom: 50px;
     right: 30px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 0;
     z-index: 200;
     padding: 6px;
     border-radius: 16px;
@@ -921,13 +952,14 @@ export default {
     box-shadow: var(--toolbar-button-shadow);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+    transition: background-color 0.24s ease, box-shadow 0.24s ease, padding 0.24s ease;
 }
 
 .quick-toolbar-button {
     width: 40px;
     height: 40px;
     border: none;
-    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease;
     margin-left: 0;
     padding: 0;
     border-radius: 12px;
@@ -936,12 +968,52 @@ export default {
     color: var(--toolbar-button-color);
     outline: none;
 }
-.quick-toolbar-primary {
-    background: var(--upload-action-btn-hover-bg);
+.quick-toolbar-actions {
+    display: grid;
+    grid-template-rows: 0fr;
+    width: 100%;
+    margin-bottom: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transform-origin: bottom center;
+    transition:
+        grid-template-rows 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+        margin-bottom 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.32s ease,
+        transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.quick-toolbar.is-expanded .quick-toolbar-actions {
+    grid-template-rows: 1fr;
+    margin-bottom: 6px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+.quick-toolbar-actions-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: 0;
+    overflow: hidden;
+}
+.quick-toolbar-more.is-active {
+    background-color: var(--upload-action-btn-hover-bg);
     box-shadow: var(--upload-action-btn-shadow);
+}
+.quick-toolbar-more {
+    margin-top: 6px;
 }
 .quick-toolbar-icon {
     font-size: 16px;
+}
+.quick-toolbar-toggle-icon {
+    transform: rotate(180deg);
+    transition: transform 0.32s ease;
+}
+.quick-toolbar-more.is-active .quick-toolbar-toggle-icon {
+    transform: rotate(0deg);
 }
 
 /* 按钮悬停效果 */
@@ -950,6 +1022,7 @@ export default {
 .upload-method-button:hover,
 .quick-toolbar-button:hover {
     transform: scale(1.05);
+    background-color: var(--upload-action-btn-hover-bg);
     box-shadow: var(--upload-action-btn-hover-shadow);
 }
 .quick-toolbar:hover {
@@ -962,10 +1035,21 @@ export default {
 @media (max-width: 768px) {
     .quick-toolbar {
         right: 18px;
-        bottom: 24px;
-        gap: 4px;
+        bottom: max(72px, calc(6vh + 20px + env(safe-area-inset-bottom)));
         padding: 5px;
         border-radius: 14px;
+    }
+    .quick-toolbar-actions {
+        margin-bottom: 0;
+    }
+    .quick-toolbar.is-expanded .quick-toolbar-actions {
+        margin-bottom: 4px;
+    }
+    .quick-toolbar-actions-inner {
+        gap: 4px;
+    }
+    .quick-toolbar-more {
+        margin-top: 4px;
     }
     .quick-toolbar-button {
         width: 34px;
