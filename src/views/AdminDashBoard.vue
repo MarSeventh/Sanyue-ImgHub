@@ -2103,6 +2103,7 @@ html.dark .header-content:hover {
     justify-content: space-between;
     gap: 12px;
     padding: 0 10px; /* 与 .content 的 padding 对齐 */
+    margin-top: 12px;
     margin-bottom: 4px; /* 与下方内容的间距 */
 }
 
@@ -2112,6 +2113,7 @@ html.dark .header-content:hover {
         align-items: center;
         gap: 8px;
         padding: 0 5px;
+        margin-top: 8px;
         margin-bottom: 2px;
     }
 }
