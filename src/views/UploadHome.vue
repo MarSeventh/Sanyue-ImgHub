@@ -826,7 +826,7 @@ export default {
 .mobile-more-dropdown {
     position: fixed;
     top: 30px;
-    right: 30px;
+    right: 18px;
     z-index: 100;
 }
 .mobile-more-button {
@@ -864,10 +864,10 @@ export default {
 }
 @media (max-width: 768px) {
     .upload-folder-container {
-        right: 70px;
+        right: 58px;
     }
     .upload-folder-container.no-announcement {
-        right: 70px;
+        right: 58px;
     }
 }
 
@@ -938,31 +938,36 @@ export default {
 }
 
 .quick-toolbar {
+    --quick-toolbar-size: 2.5rem;
+    --quick-toolbar-button-size: calc(var(--quick-toolbar-size) - 6px);
+
     position: fixed;
     bottom: 50px;
     right: 30px;
+    width: var(--quick-toolbar-size);
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0;
     z-index: 200;
-    padding: 6px;
-    border-radius: 16px;
+    padding: 3px;
+    border-radius: 999px;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    transition: background-color 0.24s ease, box-shadow 0.24s ease, padding 0.24s ease;
+    transition: background-color 0.24s ease, box-shadow 0.24s ease;
 }
 
 .quick-toolbar-button {
-    width: 40px;
-    height: 40px;
+    width: var(--quick-toolbar-button-size);
+    height: var(--quick-toolbar-button-size);
     border: none;
     transition: transform 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease;
     margin-left: 0;
     padding: 0;
-    border-radius: 12px;
+    border-radius: 999px;
     background-color: transparent;
     box-shadow: none;
     color: var(--toolbar-button-color);
@@ -985,7 +990,7 @@ export default {
 }
 .quick-toolbar.is-expanded .quick-toolbar-actions {
     grid-template-rows: 1fr;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);
@@ -994,7 +999,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
     min-height: 0;
     overflow: hidden;
 }
@@ -1003,7 +1008,7 @@ export default {
     box-shadow: var(--upload-action-btn-shadow);
 }
 .quick-toolbar-more {
-    margin-top: 6px;
+    margin-top: 4px;
 }
 .quick-toolbar-icon {
     font-size: 16px;
@@ -1028,33 +1033,33 @@ export default {
 .quick-toolbar:hover {
     box-shadow: var(--toolbar-button-shadow-hover);
 }
+.quick-toolbar-button:hover {
+    transform: none;
+}
 .upload-folder:hover {
     box-shadow: var(--toolbar-button-shadow-hover);
 }
 
 @media (max-width: 768px) {
     .quick-toolbar {
+        --quick-toolbar-size: 2rem;
+        --quick-toolbar-button-size: calc(var(--quick-toolbar-size) - 4px);
+
         right: 18px;
         bottom: max(72px, calc(6vh + 20px + env(safe-area-inset-bottom)));
-        padding: 5px;
-        border-radius: 14px;
+        padding: 2px;
     }
     .quick-toolbar-actions {
         margin-bottom: 0;
     }
     .quick-toolbar.is-expanded .quick-toolbar-actions {
-        margin-bottom: 4px;
+        margin-bottom: 3px;
     }
     .quick-toolbar-actions-inner {
-        gap: 4px;
+        gap: 2px;
     }
     .quick-toolbar-more {
-        margin-top: 4px;
-    }
-    .quick-toolbar-button {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
+        margin-top: 3px;
     }
     .quick-toolbar-icon {
         font-size: 14px;
