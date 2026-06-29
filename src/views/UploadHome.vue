@@ -1022,9 +1022,7 @@ export default {
 }
 
 /* 按钮悬停效果 */
-.toggle-dark-button:hover,
 .info-container:hover,
-.upload-method-button:hover,
 .quick-toolbar-button:hover {
     transform: scale(1.05);
     background-color: var(--upload-action-btn-hover-bg);
@@ -1035,6 +1033,15 @@ export default {
 }
 .quick-toolbar-button:hover {
     transform: none;
+}
+.more-dropdown .more-button:hover,
+.mobile-more-button:hover,
+.toggle-dark-button:hover,
+.upload-method-button:hover,
+.directory-tree-trigger:hover {
+    transform: scale(1.05);
+    background-color: var(--toolbar-button-bg-color);
+    box-shadow: var(--toolbar-button-shadow-hover);
 }
 .upload-folder:hover {
     box-shadow: var(--toolbar-button-shadow-hover);
