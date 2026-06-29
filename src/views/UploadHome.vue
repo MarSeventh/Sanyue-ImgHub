@@ -132,7 +132,10 @@
         </div>
         <Logo :useConfigLink="true" />
         <div class="header">
-            <h1 class="title"><a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a> ImgHub</h1>
+            <h1 class="title">
+                <span class="title-crayon-text" aria-hidden="true">{{ ownerName }} ImgHub</span>
+                <a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a> ImgHub
+            </h1>
         </div>
         <UploadForm 
             :selectedUrlForm="selectedUrlForm" 
@@ -1103,7 +1106,6 @@ export default {
     width: 80%;
 }
 
-/* 动态流光标题 */
 .main-title {
     background: var(--upload-main-title-color);
     background-clip: text;
@@ -1113,6 +1115,58 @@ export default {
     display: inline-block;
     position: relative;
     filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+    transition: opacity 0.16s ease;
+}
+
+.title:hover .main-title {
+    opacity: 0;
+}
+
+.title:hover {
+    color: transparent;
+    text-shadow: none;
+}
+
+.title-crayon-text {
+    position: absolute;
+    left: 50%;
+    top: -1px;
+    z-index: 2;
+    width: max-content;
+    pointer-events: none;
+    white-space: nowrap;
+    color: transparent;
+    opacity: 0;
+    background:
+        repeating-linear-gradient(108deg,
+            var(--upload-title-crayon-base) 0 5px,
+            var(--upload-title-crayon-light) 5px 8px,
+            transparent 8px 10px),
+        repeating-linear-gradient(72deg,
+            transparent 0 7px,
+            var(--upload-title-crayon-fleck) 7px 8px,
+            transparent 8px 12px),
+        linear-gradient(90deg,
+            var(--upload-title-crayon-deep),
+            var(--upload-title-crayon-light));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-stroke: 0.35px var(--upload-title-crayon-edge);
+    text-shadow:
+        -1.2px 0.4px 0 var(--upload-title-crayon-burr),
+        0.9px -0.7px 0 rgba(255, 255, 255, 0.24),
+        1.5px 0.5px 0 var(--upload-title-crayon-dust),
+        -1.7px -0.6px 0 var(--upload-title-crayon-dust);
+    transform: translateX(-50%) rotate(-0.8deg);
+    transform-origin: left 68%;
+    clip-path: inset(-10px 100% -10px -10px);
+    filter: saturate(1.08) contrast(1.06);
+}
+
+.title:hover .title-crayon-text {
+    animation:
+        crayonWrite 0.82s steps(18, end) forwards,
+        crayonScratch 0.16s steps(2, end) 0.82s 3;
 }
 
 
@@ -1124,6 +1178,41 @@ export default {
     }
     50% {
         transform: translateY(-5px);
+    }
+}
+
+@keyframes crayonWrite {
+    0% {
+        opacity: 0;
+        clip-path: inset(-10px 100% -10px -10px);
+    }
+    12% {
+        opacity: 0.92;
+    }
+    32% {
+        clip-path: inset(-10px 68% -10px -10px);
+    }
+    47% {
+        clip-path: inset(-10px 52% -10px -10px);
+    }
+    63% {
+        clip-path: inset(-10px 34% -10px -10px);
+    }
+    78% {
+        clip-path: inset(-10px 18% -10px -10px);
+    }
+    100% {
+        opacity: 0.92;
+        clip-path: inset(-10px -10px -10px -10px);
+    }
+}
+
+@keyframes crayonScratch {
+    0%, 100% {
+        transform: translateX(-50%) rotate(-0.8deg);
+    }
+    50% {
+        transform: translateX(calc(-50% + 1px)) rotate(-0.45deg);
     }
 }
 
