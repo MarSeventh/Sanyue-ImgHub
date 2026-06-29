@@ -212,6 +212,9 @@ export default {
 .list-item {
     display: grid;
     grid-template-columns: 50px 60px minmax(180px, 1fr) 130px 100px 110px 130px 80px 100px 120px;
+    content-visibility: auto;
+    contain: layout paint style;
+    contain-intrinsic-size: 65px;
     padding: 12px 20px;
     align-items: center;
     transition: background 0.2s ease;

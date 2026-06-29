@@ -70,6 +70,9 @@ export default {
 .img-card {
     width: 100%;
     height: 22vh;
+    content-visibility: auto;
+    contain: layout paint style;
+    contain-intrinsic-size: 260px;
     background: var(--admin-dashboard-imgcard-bg-color);
     border-radius: 8px;
     box-shadow: var(--admin-dashboard-imgcard-shadow);
