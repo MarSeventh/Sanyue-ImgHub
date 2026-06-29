@@ -266,7 +266,7 @@ export default {
 .img-card:hover .image-preview,
 .img-card:hover .video-preview,
 .img-card:hover .file-icon {
-    transform: scale(1.08);
+    transform: scale(1.03);
 }
 .image-preview:hover {
     opacity: 0.8;

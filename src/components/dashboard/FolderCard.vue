@@ -108,7 +108,7 @@ export default {
     transition: transform 0.4s ease;
 }
 .img-card:hover .folder-icon-svg {
-    transform: scale(1.08);
+    transform: scale(1.03);
 }
 .card-bottom-overlay {
     position: absolute;
