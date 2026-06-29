@@ -102,33 +102,33 @@
                 </el-dropdown-menu>
             </template>
         </el-dropdown>
-        <div class="toolbar-manage">
-            <el-button class="toolbar-manage-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleOpenToolbar" circle>
-                <font-awesome-icon v-if="!isToolBarOpen"  icon="bars" class="manage-icon" size="lg"/>
-                <font-awesome-icon v-else icon="times" class="manage-icon" size="lg"/>
-            </el-button>
-        </div>
-        <div class="toolbar">
+        <div class="quick-toolbar">
             <el-tooltip :disabled="disableTooltip" :content="$t('upload.settings')" placement="top">
-                <el-button class="toolbar-button compress-button" :class="{ 'active': isToolBarOpen}" size="large" @click="openCompressDialog" circle>
-                    <font-awesome-icon icon="cloud-upload" class="compress-icon" size="lg"/>
+                <el-button class="quick-toolbar-button quick-toolbar-primary" @click="openCompressDialog">
+                    <font-awesome-icon icon="cloud-upload" class="quick-toolbar-icon"/>
                 </el-button>
             </el-tooltip>
-            <el-tooltip :disabled="disableTooltip" :content="$t('upload.linkFormat')" placement="left">
-                <el-button class="toolbar-button link-button" :class="{ 'active': isToolBarOpen}" size="large" @click="openUrlDialog" circle>
-                    <font-awesome-icon icon="link" class="link-icon" size="lg"/>
+            <el-dropdown trigger="click" placement="top-end" @command="handleQuickToolbarCommand">
+                <el-button class="quick-toolbar-button">
+                    <font-awesome-icon icon="ellipsis-h" class="quick-toolbar-icon"/>
                 </el-button>
-            </el-tooltip>
-            <el-tooltip :disabled="disableTooltip" :content="$t('upload.manage')" placement="left">
-                <el-button class="toolbar-button config-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleManage" circle>
-                    <font-awesome-icon icon="cog" class="config-icon" size="lg"/>
-                </el-button>
-            </el-tooltip>
-            <el-tooltip :disabled="disableTooltip" :content="$t('upload.logout')" placement="left">
-                <el-button class="toolbar-button sign-out-button" :class="{ 'active': isToolBarOpen}" size="large" @click="handleLogout" circle>
-                    <font-awesome-icon icon="sign-out-alt" class="sign-out-icon" size="lg"/>
-                </el-button>
-            </el-tooltip>
+                <template #dropdown>
+                    <el-dropdown-menu>
+                        <el-dropdown-item command="linkFormat">
+                            <font-awesome-icon icon="link" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                            {{ $t('upload.linkFormat') }}
+                        </el-dropdown-item>
+                        <el-dropdown-item command="manage">
+                            <font-awesome-icon icon="cog" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                            {{ $t('upload.manage') }}
+                        </el-dropdown-item>
+                        <el-dropdown-item command="logout">
+                            <font-awesome-icon icon="sign-out-alt" style="width: 16px; margin-right: 8px; text-align: center;"/>
+                            {{ $t('upload.logout') }}
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
         </div>
         <Logo :useConfigLink="true" />
         <div class="header">
@@ -270,7 +270,6 @@ export default {
             useCustomUrl: 'false', //是否启用自定义链接格式
             autoRetry: true, //失败自动切换
             useDefaultWallPaper: false,
-            isToolBarOpen: false, //是否打开工具栏
             uploadMethod: 'default', //上传方式
             uploadFolder: '', // 上传文件夹
             isFolderInputActive: false,
@@ -535,15 +534,14 @@ export default {
         updateStoreUploadNameType(value) {
             this.$store.commit('setStoreUploadNameType', value)
         },
-        handleOpenToolbar () {
-            this.isToolBarOpen = !this.isToolBarOpen
-            // 等过渡动画结束，向active类添加pointer-events属性，使其可以点击
-            setTimeout(() => {
-                const buttons = document.querySelectorAll('.toolbar-button')
-                buttons.forEach(button => {
-                    button.style.pointerEvents = this.isToolBarOpen? 'auto' : 'none'
-                })
-            }, 300)
+        handleQuickToolbarCommand(command) {
+            if (command === 'linkFormat') {
+                this.openUrlDialog()
+            } else if (command === 'manage') {
+                this.handleManage()
+            } else if (command === 'logout') {
+                this.handleLogout()
+            }
         },
         handleChangeUploadMethod() {
             this.uploadMethod = this.uploadMethod === 'default'? 'paste' : 'default'
@@ -909,139 +907,73 @@ export default {
     height: 100%;
 }
 
-.toolbar-manage {
-    position: fixed;
-    bottom: 50px;
-    right: 30px;
-    z-index: 200;
-}
-.toolbar-manage-button {
-    border: none;
-    transition: all 0.3s ease, border-radius 0.4s ease;
-    margin-left: 0;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
-    color: var(--toolbar-button-color);
-    outline: none;
-    border-radius: 12px;
-}
-.toolbar-manage-button.active {
-    border-radius: 50%;
-}
-
-.toolbar {
+.quick-toolbar {
     position: fixed;
     bottom: 50px;
     right: 30px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    z-index: 100;
-}
-
-.toolbar-button {
-    border: none;
-    transition: all 0.3s ease;
-    margin-left: 0;
+    gap: 6px;
+    z-index: 200;
+    padding: 6px;
+    border-radius: 16px;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.quick-toolbar-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    margin-left: 0;
+    padding: 0;
+    border-radius: 12px;
+    background-color: transparent;
+    box-shadow: none;
     color: var(--toolbar-button-color);
+    outline: none;
+}
+.quick-toolbar-primary {
+    background: var(--upload-action-btn-hover-bg);
+    box-shadow: var(--upload-action-btn-shadow);
+}
+.quick-toolbar-icon {
+    font-size: 16px;
 }
 
 /* 按钮悬停效果 */
 .toggle-dark-button:hover,
 .info-container:hover,
 .upload-method-button:hover,
-.toolbar-manage-button:hover,
-.toolbar-button:hover {
+.quick-toolbar-button:hover {
     transform: scale(1.05);
+    box-shadow: var(--upload-action-btn-hover-shadow);
+}
+.quick-toolbar:hover {
     box-shadow: var(--toolbar-button-shadow-hover);
 }
 .upload-folder:hover {
     box-shadow: var(--toolbar-button-shadow-hover);
 }
 
-/* 按钮形成扇形 */
-.compress-button {
-    position: fixed;
-    bottom: 50px;
-    right: 30px;
-    opacity: 0;
-    transition: all 0.3s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    pointer-events: none;
-}
-.compress-button.active {
-    transform: translateY(-75px);
-    opacity: 1;
-}
-
-.link-button {
-    position: fixed;
-    bottom: 50px;
-    right: 30px;
-    opacity: 0;
-    transition: all 0.3s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    pointer-events: none;
-}
-.link-button.active {
-    transform: translateY(-58px) translateX(-50px);
-    opacity: 1;
-}
-
-.config-button {
-    position: fixed;
-    bottom: 50px;
-    right: 30px;
-    opacity: 0;
-    transition: all 0.3s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    pointer-events: none;
-}
-.config-button.active {
-    transform: translateY(-11px) translateX(-75px);
-    opacity: 1;
-}
-
-.sign-out-button {
-    position: fixed;
-    bottom: 50px;
-    right: 30px;
-    opacity: 0;
-    transition: all 0.3s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    pointer-events: none;
-}
-.sign-out-button.active {
-    transform: translateY(42px) translateX(-68px);
-    opacity: 1;
-}
-
-/* 非移动端时的图标动画样式 */
-@media (min-width: 768px) {
-    .compress-button:hover {
-        transform: translateY(-77px);
+@media (max-width: 768px) {
+    .quick-toolbar {
+        right: 18px;
+        bottom: 24px;
+        gap: 4px;
+        padding: 5px;
+        border-radius: 14px;
     }
-    .link-button:hover {
-        transform: translateY(-60px) translateX(-52px);
+    .quick-toolbar-button {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
     }
-    .config-button:hover {
-        transform: translateY(-12px) translateX(-77px);
-    }
-    .sign-out-button:hover {
-        transform: translateY(44px) translateX(-70px);
-    }
-
-    .compress-icon:hover {
-        animation: scale 0.5s ease-in-out;
-    }
-    .config-icon:hover {
-        animation: spin 0.5s ease-in-out;
-    }
-    .link-icon:hover {
-        animation: rotate-shake 0.5s ease-in-out;
-    }
-    .sign-out-icon:hover {
-        animation: shake 0.5s ease-in-out;
+    .quick-toolbar-icon {
+        font-size: 14px;
     }
 }
 
