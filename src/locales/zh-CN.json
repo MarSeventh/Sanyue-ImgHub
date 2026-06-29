@@ -138,6 +138,8 @@
     "sortByDateDesc": "按时间倒序",
     "sortByNameAsc": "按名称升序",
     "selectPage": "全选此页",
+    "selectedItems": "项已选",
+    "clearSelection": "清除选择",
     "copy": "复制",
     "delete": "删除",
     "download": "下载",

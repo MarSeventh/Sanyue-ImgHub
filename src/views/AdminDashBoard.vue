@@ -34,43 +34,6 @@
                 <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.selectPage')" placement="bottom">
                     <font-awesome-icon :icon="selectPageIcon" class="header-icon" @click="handleSelectPage"></font-awesome-icon>
                 </el-tooltip>
-                <el-dropdown @command="handleBatchAction" :hide-on-click="false" :disabled="selectedFiles.length === 0">
-                    <span class="el-dropdown-link">
-                        <font-awesome-icon icon="ellipsis-h" class="header-icon" :class="{ disabled: selectedFiles.length === 0 }"></font-awesome-icon>
-                    </span>
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item command="copy">
-                                <font-awesome-icon icon="copy" class="batch-action-item-icon"></font-awesome-icon>
-                                {{ $t('dashboard.copy') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="delete">
-                                <font-awesome-icon icon="trash-alt" class="batch-action-item-icon"></font-awesome-icon>
-                                {{ $t('dashboard.delete') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="download">
-                                <font-awesome-icon icon="download" class="batch-action-item-icon"></font-awesome-icon>
-                                {{ $t('dashboard.download') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="move">
-                                <font-awesome-icon icon="file-export" class="batch-action-item-icon"></font-awesome-icon>
-                                {{ $t('dashboard.move') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="tagManagement">
-                                <font-awesome-icon icon="tags" class="batch-action-item-icon"></font-awesome-icon>
-                                {{ $t('dashboard.tagManagement') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="ban">
-                                <font-awesome-icon icon="ban" class="batch-action-item-icon"></font-awesome-icon>
-                                {{ $t('dashboard.addToBlacklist') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="white">
-                                <font-awesome-icon icon="user-plus" class="batch-action-item-icon"></font-awesome-icon>
-                                {{ $t('dashboard.addToWhitelist') }}
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
                 <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.linkFormat')" placement="bottom">
                     <span class="el-dropdown-link">
                         <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
@@ -85,7 +48,7 @@
                 </div>
             </div>
             </el-header>
-            <el-main class="main-container">
+            <el-main class="main-container" :class="{ 'has-batch-toolbar': selectedFiles.length > 0 }">
             <!-- 目录导航 -->
             <div class="breadcrumb-container">
                 <!-- 移动端目录按钮 -->
@@ -264,6 +227,57 @@
             </div>
             </el-main>
         </el-container>
+        <transition name="batch-toolbar">
+            <div v-if="selectedFiles.length > 0" class="batch-floating-bar">
+                <el-tooltip :content="`${selectedFiles.length} ${$t('dashboard.selectedItems')}`" placement="top">
+                    <div class="batch-selection-summary">
+                        <span class="batch-selection-count">{{ selectedFiles.length }}</span>
+                    </div>
+                </el-tooltip>
+                <div class="batch-floating-actions">
+                    <el-tooltip :content="$t('dashboard.copy')" placement="top">
+                        <el-button class="batch-floating-btn copy" :aria-label="$t('dashboard.copy')" @click="handleBatchAction('copy')">
+                            <font-awesome-icon icon="copy" class="batch-floating-icon"></font-awesome-icon>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="$t('dashboard.download')" placement="top">
+                        <el-button class="batch-floating-btn download" :aria-label="$t('dashboard.download')" @click="handleBatchAction('download')">
+                            <font-awesome-icon icon="download" class="batch-floating-icon"></font-awesome-icon>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="$t('dashboard.move')" placement="top">
+                        <el-button class="batch-floating-btn move" :aria-label="$t('dashboard.move')" @click="handleBatchAction('move')">
+                            <font-awesome-icon icon="file-export" class="batch-floating-icon"></font-awesome-icon>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="$t('dashboard.tagManagement')" placement="top">
+                        <el-button class="batch-floating-btn tag" :aria-label="$t('dashboard.tagManagement')" @click="handleBatchAction('tagManagement')">
+                            <font-awesome-icon icon="tags" class="batch-floating-icon"></font-awesome-icon>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="$t('dashboard.addToBlacklist')" placement="top">
+                        <el-button class="batch-floating-btn ban" :aria-label="$t('dashboard.addToBlacklist')" @click="handleBatchAction('ban')">
+                            <font-awesome-icon icon="ban" class="batch-floating-icon"></font-awesome-icon>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="$t('dashboard.addToWhitelist')" placement="top">
+                        <el-button class="batch-floating-btn white" :aria-label="$t('dashboard.addToWhitelist')" @click="handleBatchAction('white')">
+                            <font-awesome-icon icon="shield-alt" class="batch-floating-icon"></font-awesome-icon>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="$t('dashboard.delete')" placement="top">
+                        <el-button class="batch-floating-btn danger" :aria-label="$t('dashboard.delete')" @click="handleBatchAction('delete')">
+                            <font-awesome-icon icon="trash-alt" class="batch-floating-icon"></font-awesome-icon>
+                        </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="$t('dashboard.clearSelection')" placement="top">
+                        <el-button class="batch-floating-btn ghost" :aria-label="$t('dashboard.clearSelection')" @click="clearSelection">
+                            <font-awesome-icon icon="times" class="batch-floating-icon"></font-awesome-icon>
+                        </el-button>
+                    </el-tooltip>
+                </div>
+            </div>
+        </transition>
         <!-- 文件详情弹窗 -->
         <FileDetailDialog
             v-model="showdetailDialog"
@@ -1282,6 +1296,10 @@ methods: {
             this.paginatedTableData.forEach(file => file.selected = true);
         }
     },
+    clearSelection() {
+        this.tableData.forEach(file => file.selected = false);
+        this.selectedFiles = [];
+    },
     handleBatchAction(command) {
         if (command === 'copy') {
             this.handleBatchCopy();
@@ -2224,9 +2242,186 @@ html.dark .header-content:hover {
     color: var(--admin-purple); /* 使用柔和的淡紫色 */
 }
 
-.batch-action-item-icon {
-    width: 20px;
-    margin-right: 5px;
+.batch-floating-bar {
+    position: fixed;
+    left: 50%;
+    bottom: max(84px, calc(72px + env(safe-area-inset-bottom)));
+    transform: translateX(-50%);
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: min(720px, calc(100vw - 48px));
+    padding: 8px;
+    border: 1px solid var(--admin-batch-toolbar-border);
+    border-radius: 999px;
+    background: var(--admin-batch-toolbar-bg);
+    box-shadow: var(--admin-batch-toolbar-shadow);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.batch-selection-summary {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 0;
+}
+
+.batch-selection-count {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--admin-batch-count-color);
+    font-weight: 700;
+    background: var(--admin-batch-count-bg);
+    box-shadow: var(--admin-batch-count-shadow);
+}
+
+.batch-floating-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.batch-floating-btn {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    margin-left: 0 !important;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    color: var(--admin-batch-clear-color);
+    background: var(--admin-batch-action-bg);
+    box-shadow: var(--admin-batch-action-shadow);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease, color 0.22s ease;
+}
+
+.batch-floating-btn:hover {
+    transform: translateY(-2px);
+    background: var(--admin-batch-action-hover-bg);
+    box-shadow: var(--admin-batch-action-hover-shadow);
+}
+
+.batch-floating-btn.copy {
+    color: var(--admin-batch-copy-color);
+}
+
+.batch-floating-btn.danger {
+    color: var(--admin-batch-delete-color);
+}
+
+.batch-floating-btn.download {
+    color: var(--admin-batch-download-color);
+}
+
+.batch-floating-btn.move {
+    color: var(--admin-batch-move-color);
+}
+
+.batch-floating-btn.tag {
+    color: var(--admin-batch-tag-color);
+}
+
+.batch-floating-btn.ban {
+    color: var(--admin-batch-ban-color);
+}
+
+.batch-floating-btn.white {
+    color: var(--admin-batch-white-color);
+}
+
+.batch-floating-btn.ghost {
+    color: var(--admin-batch-clear-color);
+}
+
+.batch-floating-icon {
+    width: 16px;
+    margin-right: 0;
+}
+
+.batch-toolbar-enter-active,
+.batch-toolbar-leave-active {
+    transition: opacity 0.24s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.batch-toolbar-enter-from,
+.batch-toolbar-leave-to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px) scale(0.98);
+}
+
+.batch-toolbar-enter-to,
+.batch-toolbar-leave-from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+@media (max-width: 768px) {
+    .batch-floating-bar {
+        left: 50%;
+        right: auto;
+        bottom: max(76px, calc(64px + env(safe-area-inset-bottom)));
+        transform: translateX(-50%);
+        max-width: none;
+        width: max-content;
+        max-width: calc(100vw - 24px);
+        gap: 6px;
+        padding: 7px;
+        border-radius: 999px;
+    }
+
+    .batch-selection-summary {
+        padding: 0;
+    }
+
+    .batch-selection-count {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        font-size: 13px;
+    }
+
+    .batch-floating-actions {
+        flex: 1;
+        min-width: 0;
+        gap: 5px;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        padding: 1px;
+    }
+
+    .batch-floating-actions::-webkit-scrollbar {
+        display: none;
+    }
+
+    .batch-floating-btn {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        padding: 0;
+        border-radius: 50%;
+    }
+
+    .batch-floating-icon {
+        margin-right: 0;
+        width: 14px;
+    }
+
+    .batch-toolbar-enter-from,
+    .batch-toolbar-leave-to {
+        transform: translateX(-50%) translateY(16px) scale(0.98);
+    }
+
+    .batch-toolbar-enter-to,
+    .batch-toolbar-leave-from {
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
 }
 
 /* 搜索区域样式（包含搜索框和筛选按钮） */
@@ -2326,11 +2521,19 @@ html.dark .header-content:hover {
     flex-direction: column;
     padding: 20px 60px;
     min-height: calc(100vh - 80px);
+    transition: padding-bottom 0.24s ease;
+}
+
+.main-container.has-batch-toolbar {
+    padding-bottom: 72px;
 }
 
 @media (max-width: 768px) {
     .main-container {
         margin-top: 12vh;
+    }
+    .main-container.has-batch-toolbar {
+        padding-bottom: 86px;
     }
 }
 

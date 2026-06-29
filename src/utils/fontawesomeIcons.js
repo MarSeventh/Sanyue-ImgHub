@@ -94,7 +94,6 @@ import { faTools } from '@fortawesome/free-solid-svg-icons/faTools';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons/faTrashAlt';
 import { faUpload } from '@fortawesome/free-solid-svg-icons/faUpload';
 import { faUserCog } from '@fortawesome/free-solid-svg-icons/faUserCog';
-import { faUserPlus } from '@fortawesome/free-solid-svg-icons/faUserPlus';
 
 export default [
     faAngleDoubleLeft,
@@ -192,6 +191,5 @@ export default [
     faTools,
     faTrashAlt,
     faUpload,
-    faUserCog,
-    faUserPlus
+    faUserCog
 ];

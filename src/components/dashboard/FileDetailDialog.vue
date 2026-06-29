@@ -11,7 +11,7 @@
                 <font-awesome-icon icon="ban" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.blacklist') }}
             </el-button>
             <el-button type="primary" @click="$emit('white')" round size="small" class="detail-action" v-if="!isEditing">
-                <font-awesome-icon icon="user-plus" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.whitelist') }}
+                <font-awesome-icon icon="shield-alt" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.whitelist') }}
             </el-button>
             <el-button type="danger" @click="$emit('delete')" round size="small" class="detail-action" v-if="!isEditing">
                 <font-awesome-icon icon="trash-alt" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.deleteBtn') }}

@@ -136,6 +136,8 @@
     "sortByDateDesc": "Sort by date (newest)",
     "sortByNameAsc": "Sort by name (A-Z)",
     "selectPage": "Select all on page",
+    "selectedItems": "selected",
+    "clearSelection": "Clear selection",
     "copy": "Copy",
     "delete": "Delete",
     "download": "Download",
