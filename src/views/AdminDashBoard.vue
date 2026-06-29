@@ -31,9 +31,6 @@
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
-                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.selectPage')" placement="bottom">
-                    <font-awesome-icon :icon="selectPageIcon" class="header-icon" @click="handleSelectPage"></font-awesome-icon>
-                </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.linkFormat')" placement="bottom">
                     <span class="el-dropdown-link">
                         <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
@@ -51,6 +48,9 @@
             <el-main class="main-container" :class="{ 'has-batch-toolbar': selectedFiles.length > 0 }">
             <!-- 目录导航 -->
             <div class="breadcrumb-container">
+                <button class="breadcrumb-select-button" type="button" @click="handleSelectPage">
+                    <font-awesome-icon :icon="selectPageIcon" class="breadcrumb-select-icon"></font-awesome-icon>
+                </button>
                 <!-- 移动端目录按钮 -->
                 <div class="mobile-directory-trigger" @click="showMobileDirectoryDrawer = true">
                     <font-awesome-icon icon="folder-open" class="mobile-directory-icon"/>
@@ -2100,11 +2100,38 @@ html.dark .header-content:hover {
 .breadcrumb-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 12px;
     padding: 0 10px; /* 与 .content 的 padding 对齐 */
     margin-top: 12px;
     margin-bottom: 4px; /* 与下方内容的间距 */
+}
+
+.breadcrumb-select-button {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 6px;
+    color: #38bdf8;
+    background: var(--el-fill-color-light);
+    box-shadow: var(--admin-dashboard-stats-shadow);
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.breadcrumb-select-button:hover {
+    color: var(--admin-purple);
+    transform: translateY(-1px);
+    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+}
+
+.breadcrumb-select-icon {
+    font-size: 14px;
 }
 
 @media (max-width: 768px) {
@@ -2115,6 +2142,14 @@ html.dark .header-content:hover {
         padding: 0 5px;
         margin-top: 8px;
         margin-bottom: 2px;
+    }
+    .breadcrumb-select-button {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+    }
+    .breadcrumb-select-icon {
+        font-size: 12px;
     }
 }
 
@@ -2133,6 +2168,7 @@ html.dark .header-content:hover {
     transition: all 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
+    margin-left: auto;
 }
 
 .stats-badge:hover {
