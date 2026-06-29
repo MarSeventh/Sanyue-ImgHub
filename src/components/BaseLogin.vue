@@ -255,7 +255,7 @@ export default {
     font-size: 2.3rem;
     margin-bottom: 15px;
     color: var(--login-title-color);
-    font-family: 'Righteous', 'Noto Sans SC', sans-serif;
+    font-family: 'Pacifico', 'Noto Sans SC', sans-serif;
     cursor: pointer;
     transition: all 0.3s ease;
     letter-spacing: 2px;

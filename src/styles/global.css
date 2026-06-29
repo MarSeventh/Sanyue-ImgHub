@@ -2,12 +2,6 @@
 
 /* 自定义字体 */
 @font-face {
-    font-family: 'Righteous';
-    src: url('@/assets/fonts/Righteous.woff2') format('woff2');
-    font-display: swap;
-}
-
-@font-face {
     font-family: 'Pacifico';
     src: url('@/assets/fonts/Pacifico-Regular.woff2') format('woff2');
     font-display: swap;
