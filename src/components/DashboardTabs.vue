@@ -203,8 +203,8 @@ export default {
     gap: 8px;
     padding: 0 14px;
     color: var(--tabs-switcher-current-color);
-    background-color: var(--tabs-switcher-current-bg);
-    box-shadow: inset 0 0 0 1px var(--tabs-switcher-current-border-color);
+    background: var(--tabs-switcher-current-bg);
+    box-shadow: inset 0 0 0 1px var(--tabs-switcher-current-border-color), var(--tabs-switcher-current-shadow);
     font-size: 1.1em;
     font-weight: bold;
     line-height: 1.15;
@@ -224,6 +224,11 @@ export default {
 .page-option:hover {
     color: var(--tabs-switcher-accent-color);
     background-color: var(--tabs-switcher-hover-bg);
+}
+
+.page-option.is-current:hover {
+    color: var(--tabs-switcher-current-color);
+    background: var(--tabs-switcher-current-bg);
 }
 
 .page-option-icon {

@@ -248,10 +248,11 @@ body {
     --tabs-switcher-hover-bg: rgba(91, 128, 148, 0.1);
     --tabs-switcher-border-color: rgba(91, 128, 148, 0.16);
     --tabs-switcher-hover-border-color: rgba(91, 128, 148, 0.24);
-    --tabs-switcher-accent-color: #4f9ac2;
-    --tabs-switcher-current-color: #34799f;
-    --tabs-switcher-current-bg: rgba(79, 154, 194, 0.11);
-    --tabs-switcher-current-border-color: rgba(79, 154, 194, 0.22);
+    --tabs-switcher-accent-color: #4aa3d8;
+    --tabs-switcher-current-color: #2f7da6;
+    --tabs-switcher-current-bg: linear-gradient(135deg, rgba(124, 211, 255, 0.2), rgba(166, 235, 199, 0.16) 52%, rgba(255, 190, 213, 0.18));
+    --tabs-switcher-current-border-color: rgba(78, 170, 213, 0.24);
+    --tabs-switcher-current-shadow: 0 6px 16px rgba(78, 170, 213, 0.1);
 
     /* 管理端 */
     --admin-header-content-bg-color: rgba(255, 255, 255, 0.75);
@@ -573,10 +574,11 @@ body {
     --tabs-switcher-hover-bg: rgba(255, 255, 255, 0.08);
     --tabs-switcher-border-color: rgba(255, 255, 255, 0.08);
     --tabs-switcher-hover-border-color: rgba(255, 255, 255, 0.14);
-    --tabs-switcher-accent-color: #9fc7dc;
-    --tabs-switcher-current-color: #d8edf7;
-    --tabs-switcher-current-bg: rgba(120, 178, 210, 0.13);
-    --tabs-switcher-current-border-color: rgba(146, 201, 230, 0.24);
+    --tabs-switcher-accent-color: #a7d8ef;
+    --tabs-switcher-current-color: #d8f0fb;
+    --tabs-switcher-current-bg: linear-gradient(135deg, rgba(128, 205, 240, 0.1), rgba(255, 188, 216, 0.08));
+    --tabs-switcher-current-border-color: rgba(174, 220, 240, 0.16);
+    --tabs-switcher-current-shadow: 0 6px 14px rgba(128, 205, 240, 0.05);
 
     /* 管理端 */
     --admin-header-content-bg-color: rgba(0, 0, 0, 0.75);
