@@ -43,7 +43,10 @@ export default {
           z-index: -1;
           pointer-events: none;
           opacity: 0;
-          transition: opacity 1.2s ease-in-out, filter 0.3s ease;
+          transition: opacity 1.2s ease-in-out, filter 0.3s ease, transform 4.2s ease-out;
+          transform: scale(1);
+          transform-origin: center center;
+          will-change: opacity, transform;
           filter: var(--background-image-filter, brightness(1));
         }
         .background-image2 {
@@ -56,7 +59,10 @@ export default {
           z-index: -1;
           pointer-events: none;
           opacity: 0;
-          transition: opacity 1.2s ease-in-out, filter 0.3s ease;
+          transition: opacity 1.2s ease-in-out, filter 0.3s ease, transform 4.2s ease-out;
+          transform: scale(1);
+          transform-origin: center center;
+          will-change: opacity, transform;
           filter: var(--background-image-filter, brightness(1));
         }
       `
@@ -206,7 +212,7 @@ export default {
       this.$store.dispatch('fetchBingWallPapers').then(() => {
         if (this.bingWallPapers.length === 0) return
 
-        this.loadBackgroundImage(bg1, this.bingWallPapers[this.bingWallPaperIndex]?.url, containerSelector)
+        this.loadBackgroundImage(bg1, this.bingWallPapers[this.bingWallPaperIndex]?.url, containerSelector, true)
         
         this.backgroundInterval = setInterval(() => {
           this.switchBingWallpaper(bg1, bg2)
@@ -218,7 +224,7 @@ export default {
      * 设置自定义壁纸轮播
      */
     setupCustomWallpaperCarousel(bg1, bg2, wallpapers, containerSelector) {
-      this.loadBackgroundImage(bg1, wallpapers[this.customWallPaperIndex], containerSelector)
+      this.loadBackgroundImage(bg1, wallpapers[this.customWallPaperIndex], containerSelector, true)
       
       this.backgroundInterval = setInterval(() => {
         this.switchCustomWallpaper(bg1, bg2, wallpapers)
@@ -248,10 +254,11 @@ export default {
     /**
      * 加载背景图片
      */
-    loadBackgroundImage(imgElement, imageSrc, containerSelector) {
+    loadBackgroundImage(imgElement, imageSrc, containerSelector, enableZoom = false) {
       // 确保初始化时层级正确
       imgElement.style.zIndex = -1
       imgElement.style.opacity = 0
+      this.prepareBackgroundMotion(imgElement, enableZoom)
       const container = document.querySelector(containerSelector)
       this.prepareBackgroundContainer(container)
 
@@ -259,6 +266,9 @@ export default {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             imgElement.style.opacity = this.bkOpacity
+            if (enableZoom) {
+              imgElement.style.transform = 'scale(1.045)'
+            }
           })
         })
       }
@@ -273,6 +283,17 @@ export default {
         showImage()
       }
       preload.src = imageSrc
+    },
+
+    prepareBackgroundMotion(imgElement, enableZoom = false) {
+      if (!imgElement) return
+
+      const zoomDuration = Math.max(this.bkInterval + 1200, 4200)
+      imgElement.style.transition = enableZoom
+        ? `opacity 1.2s ease-in-out, filter 0.3s ease, transform ${zoomDuration}ms ease-out`
+        : 'opacity 1.2s ease-in-out, filter 0.3s ease, transform 0.3s ease'
+      imgElement.style.transformOrigin = 'center center'
+      imgElement.style.transform = 'scale(1)'
     },
     
     prepareBackgroundContainer(container) {
@@ -306,6 +327,7 @@ export default {
       // 【层级魔法】：让旧图垫底，新图置顶
       curBg.style.zIndex = -2
       nextBg.style.zIndex = -1
+      this.prepareBackgroundMotion(nextBg, true)
 
       const preload = new Image()
       preload.onload = () => {
@@ -314,10 +336,12 @@ export default {
         // 稍微延迟 50ms，确保浏览器把新图渲染到 DOM 上且层级已更新
         setTimeout(() => {
           nextBg.style.opacity = this.bkOpacity // 新图直接在顶层优雅淡入
+          nextBg.style.transform = 'scale(1.045)'
           
           // 等新图 1.2s 完全覆盖后，在底下默默把旧图透明度归零，毫无视觉断层
           setTimeout(() => { 
             curBg.style.opacity = 0 
+            this.prepareBackgroundMotion(curBg, true)
           }, 1200)
         }, 50)
       }
@@ -338,6 +362,7 @@ export default {
       // 旧图垫底，新图置顶
       curBg.style.zIndex = -2
       nextBg.style.zIndex = -1
+      this.prepareBackgroundMotion(nextBg, true)
 
       const preload = new Image()
       preload.onload = () => {
@@ -345,9 +370,11 @@ export default {
         
         setTimeout(() => {
           nextBg.style.opacity = this.bkOpacity
+          nextBg.style.transform = 'scale(1.045)'
           
           setTimeout(() => { 
             curBg.style.opacity = 0 
+            this.prepareBackgroundMotion(curBg, true)
           }, 1200)
         }, 50)
       }
@@ -380,7 +407,7 @@ export default {
           bg1.src = ''
           // 恢复过渡效果
           setTimeout(() => {
-            if (bg1) bg1.style.transition = 'opacity 1.2s ease-in-out'
+            if (bg1) bg1.style.transition = 'opacity 1.2s ease-in-out, filter 0.3s ease, transform 0.3s ease'
           }, 50)
         }
         if (bg2) {
@@ -389,7 +416,7 @@ export default {
           bg2.src = ''
           // 恢复过渡效果
           setTimeout(() => {
-            if (bg2) bg2.style.transition = 'opacity 1.2s ease-in-out'
+            if (bg2) bg2.style.transition = 'opacity 1.2s ease-in-out, filter 0.3s ease, transform 0.3s ease'
           }, 50)
         }
       } else {
