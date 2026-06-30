@@ -5,6 +5,8 @@
             :class="{ 'is-open': isPageMenuOpen }"
             role="navigation"
             @click.stop
+            @mouseenter="handleSwitcherEnter"
+            @mouseleave="handleSwitcherLeave"
         >
             <button
                 class="title page-switcher-trigger"
@@ -54,7 +56,8 @@ export default {
     },
     data() {
         return {
-            isPageMenuOpen: false
+            isPageMenuOpen: false,
+            pageMenuHoverTimer: null
         }
     },
     computed: {
@@ -93,11 +96,32 @@ export default {
         handleDocumentClick() {
             this.closePageMenu();
         },
+        isFinePointer() {
+            return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        },
+        handleSwitcherEnter() {
+            if (!this.isFinePointer()) return;
+            if (this.pageMenuHoverTimer) {
+                clearTimeout(this.pageMenuHoverTimer);
+                this.pageMenuHoverTimer = null;
+            }
+            this.isPageMenuOpen = true;
+        },
+        handleSwitcherLeave() {
+            if (!this.isFinePointer()) return;
+            if (this.pageMenuHoverTimer) {
+                clearTimeout(this.pageMenuHoverTimer);
+            }
+            this.pageMenuHoverTimer = setTimeout(() => {
+                this.closePageMenu();
+                this.pageMenuHoverTimer = null;
+            }, 120);
+        },
         refreshDashboard() {
             location.reload();
         },
         handleTabClick(tab) {
-            this.isPageMenuOpen = false;
+            this.closePageMenu();
             if (tab === this.activeTab) {
                 this.refreshDashboard();
                 return;
@@ -116,6 +140,9 @@ export default {
     },
     beforeUnmount() {
         document.removeEventListener('click', this.handleDocumentClick);
+        if (this.pageMenuHoverTimer) {
+            clearTimeout(this.pageMenuHoverTimer);
+        }
     }
 }
 </script>
@@ -197,8 +224,8 @@ export default {
     border-radius: 14px;
     background: var(--tabs-dropdown-popper-bg-color);
     box-shadow: var(--tabs-dropdown-popper-shadow);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-4px) scale(0.98);
@@ -221,19 +248,6 @@ export default {
     visibility: visible;
     transform: translateY(0) scale(1);
     pointer-events: auto;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .page-switcher:hover .page-switcher-arrow {
-        transform: rotate(180deg);
-    }
-
-    .page-switcher:hover .page-options {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0) scale(1);
-        pointer-events: auto;
-    }
 }
 
 .page-option {
