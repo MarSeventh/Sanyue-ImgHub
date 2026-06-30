@@ -86,15 +86,15 @@ export default {
   z-index: 1200;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   max-width: min(720px, calc(100vw - 48px));
-  padding: 8px;
+  padding: 6px;
   border: 1px solid var(--admin-batch-toolbar-border);
   border-radius: 999px;
   background: var(--admin-batch-toolbar-bg);
   box-shadow: var(--admin-batch-toolbar-shadow);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .batch-selection-summary {
@@ -105,37 +105,37 @@ export default {
 }
 
 .batch-selection-count {
-  min-width: 20px;
-  height: 28px;
+  min-width: 18px;
+  height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  color: var(--admin-container-color);
-  font-size: 15px;
-  font-weight: 650;
+  color: var(--admin-batch-clear-color);
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1;
 }
 
 .batch-toolbar-divider {
   width: 1px;
-  height: 20px;
+  height: 16px;
   flex: 0 0 auto;
   border-radius: 999px;
   background: var(--admin-batch-toolbar-border);
-  opacity: 0.78;
+  opacity: 0.58;
 }
 
 .batch-floating-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .batch-floating-btn {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
   margin-left: 0 !important;
   padding: 0;
   border: none;
@@ -147,37 +147,22 @@ export default {
 }
 
 .batch-floating-btn:hover {
-  transform: translateY(-2px);
+  transform: none;
   background: var(--admin-batch-action-hover-bg);
   box-shadow: var(--admin-batch-action-hover-shadow);
-}
-
-.batch-floating-btn.copy {
-  color: var(--admin-batch-copy-color);
 }
 
 .batch-floating-btn.danger {
   color: var(--admin-batch-delete-color);
 }
 
-.batch-floating-btn.download {
-  color: var(--admin-batch-download-color);
-}
-
-.batch-floating-btn.move {
-  color: var(--admin-batch-move-color);
-}
-
 .batch-floating-btn.tag {
   color: var(--admin-batch-tag-color);
 }
 
-.batch-floating-btn.ban {
-  color: var(--admin-batch-ban-color);
-}
-
+.batch-floating-btn.ban,
 .batch-floating-btn.white {
-  color: var(--admin-batch-white-color);
+  color: var(--admin-batch-tag-color);
 }
 
 .batch-floating-btn.ghost {
@@ -185,7 +170,7 @@ export default {
 }
 
 .batch-floating-icon {
-  width: 16px;
+  width: 15px;
   margin-right: 0;
 }
 
@@ -197,7 +182,7 @@ export default {
 .batch-toolbar-enter-from,
 .batch-toolbar-leave-to {
   opacity: 0;
-  transform: translateX(-50%) translateY(16px) scale(0.98);
+  transform: translateX(-50%) translateY(12px) scale(0.99);
 }
 
 .batch-toolbar-enter-to,
@@ -214,8 +199,8 @@ export default {
     transform: translateX(-50%);
     width: max-content;
     max-width: calc(100vw - 24px);
-    gap: 5px;
-    padding: 7px;
+    gap: 4px;
+    padding: 5px;
     border-radius: 999px;
   }
 
@@ -224,20 +209,20 @@ export default {
   }
 
   .batch-selection-count {
-    min-width: 18px;
-    height: 24px;
+    min-width: 16px;
+    height: 22px;
     padding: 0 3px;
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .batch-toolbar-divider {
-    height: 18px;
+    height: 14px;
   }
 
   .batch-floating-actions {
     flex: 1;
     min-width: 0;
-    gap: 5px;
+    gap: 3px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
@@ -249,21 +234,21 @@ export default {
   }
 
   .batch-floating-btn {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
     padding: 0;
     border-radius: 50%;
   }
 
   .batch-floating-icon {
     margin-right: 0;
-    width: 14px;
+    width: 13px;
   }
 
   .batch-toolbar-enter-from,
   .batch-toolbar-leave-to {
-    transform: translateX(-50%) translateY(16px) scale(0.98);
+    transform: translateX(-50%) translateY(12px) scale(0.99);
   }
 
   .batch-toolbar-enter-to,

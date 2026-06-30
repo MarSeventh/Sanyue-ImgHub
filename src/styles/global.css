@@ -317,21 +317,16 @@ body {
     --admin-purple: #B39DDB;
     ;
     /* 管理端全局紫色 */
-    --admin-batch-toolbar-bg: rgba(255, 255, 255, 0.56);
-    --admin-batch-toolbar-border: rgba(255, 255, 255, 0.72);
-    --admin-batch-toolbar-shadow: 0 14px 34px rgba(91, 128, 148, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.72);
-    --admin-batch-action-bg: rgba(255, 255, 255, 0.62);
-    --admin-batch-action-shadow: 0 5px 14px rgba(91, 128, 148, 0.12);
-    --admin-batch-action-hover-bg: rgba(255, 255, 255, 0.86);
-    --admin-batch-action-hover-shadow: 0 8px 18px rgba(91, 128, 148, 0.18);
-    --admin-batch-copy-color: #38bdf8;
-    --admin-batch-delete-color: #e11d48;
-    --admin-batch-download-color: #38bdf8;
-    --admin-batch-move-color: #38bdf8;
-    --admin-batch-tag-color: #f59e0b;
-    --admin-batch-ban-color: #fb7185;
-    --admin-batch-white-color: #2dd4bf;
-    --admin-batch-clear-color: #94a3b8;
+    --admin-batch-toolbar-bg: rgba(247, 251, 252, 0.74);
+    --admin-batch-toolbar-border: rgba(135, 172, 188, 0.24);
+    --admin-batch-toolbar-shadow: 0 10px 28px rgba(91, 128, 148, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    --admin-batch-action-bg: transparent;
+    --admin-batch-action-shadow: none;
+    --admin-batch-action-hover-bg: rgba(64, 158, 255, 0.08);
+    --admin-batch-action-hover-shadow: none;
+    --admin-batch-delete-color: #bd5864;
+    --admin-batch-tag-color: #b98732;
+    --admin-batch-clear-color: #728998;
 
     /* 主题切换按钮 */
     --theme-toggle-color: #327ECC;
@@ -645,21 +640,16 @@ body {
     /* 管理端主题切换按钮颜色 */
     --admin-theme-toggle-bg-color: #fcfcfc;
     /* 管理端主题切换按钮背景 */
-    --admin-batch-toolbar-bg: rgba(27, 35, 43, 0.64);
-    --admin-batch-toolbar-border: rgba(190, 222, 253, 0.16);
-    --admin-batch-toolbar-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    --admin-batch-action-bg: rgba(255, 255, 255, 0.08);
-    --admin-batch-action-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
-    --admin-batch-action-hover-bg: rgba(255, 255, 255, 0.14);
-    --admin-batch-action-hover-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
-    --admin-batch-copy-color: #7dd3fc;
-    --admin-batch-delete-color: #fb7185;
-    --admin-batch-download-color: #7dd3fc;
-    --admin-batch-move-color: #7dd3fc;
-    --admin-batch-tag-color: #fde68a;
-    --admin-batch-ban-color: #fda4af;
-    --admin-batch-white-color: #99f6e4;
-    --admin-batch-clear-color: #cbd5e1;
+    --admin-batch-toolbar-bg: rgba(30, 37, 43, 0.58);
+    --admin-batch-toolbar-border: rgba(190, 222, 253, 0.1);
+    --admin-batch-toolbar-shadow: 0 10px 28px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --admin-batch-action-bg: transparent;
+    --admin-batch-action-shadow: none;
+    --admin-batch-action-hover-bg: rgba(190, 222, 253, 0.09);
+    --admin-batch-action-hover-shadow: none;
+    --admin-batch-delete-color: #ee9aa4;
+    --admin-batch-tag-color: #d8bd78;
+    --admin-batch-clear-color: #bdcbd5;
 
     /* 404 页面 */
     --not-found-title-text-color: linear-gradient(to right, rgb(239, 250, 195), #f3a060);
