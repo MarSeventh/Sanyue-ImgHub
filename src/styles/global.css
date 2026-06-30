@@ -138,17 +138,17 @@ body {
     /* 操作按钮组悬浮背景 */
     --modern-action-group-hover-shadow: rgba(64, 158, 255, 0.15);
     /* 操作按钮组悬浮阴影 */
-    --upload-action-toolbar-bg: rgba(255, 255, 255, 0.42);
+    --upload-action-toolbar-bg: rgba(230, 241, 247, 0.58);
     /* 上传列表顶部工具栏背景 */
-    --upload-action-toolbar-border: rgba(255, 255, 255, 0.56);
+    --upload-action-toolbar-border: rgba(180, 212, 226, 0.42);
     /* 上传列表顶部工具栏边框 */
-    --upload-action-toolbar-shadow: 0 8px 22px rgba(64, 120, 150, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    --upload-action-toolbar-shadow: 0 8px 22px rgba(64, 120, 150, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.38);
     /* 上传列表顶部工具栏阴影 */
-    --upload-action-toolbar-hover-bg: rgba(255, 255, 255, 0.56);
+    --upload-action-toolbar-hover-bg: rgba(220, 236, 244, 0.68);
     /* 上传列表顶部工具栏悬浮背景 */
-    --upload-action-toolbar-hover-border: rgba(255, 255, 255, 0.72);
+    --upload-action-toolbar-hover-border: rgba(156, 199, 219, 0.46);
     /* 上传列表顶部工具栏悬浮边框 */
-    --upload-action-toolbar-hover-shadow: 0 10px 26px rgba(64, 120, 150, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    --upload-action-toolbar-hover-shadow: 0 10px 26px rgba(64, 120, 150, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.44);
     /* 上传列表顶部工具栏悬浮阴影 */
     --upload-action-btn-bg: rgba(255, 255, 255, 0.5);
     /* 上传列表顶部工具按钮背景 */
