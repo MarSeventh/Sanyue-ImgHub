@@ -574,11 +574,11 @@ body {
     --tabs-switcher-hover-bg: rgba(255, 255, 255, 0.08);
     --tabs-switcher-border-color: rgba(255, 255, 255, 0.08);
     --tabs-switcher-hover-border-color: rgba(255, 255, 255, 0.14);
-    --tabs-switcher-accent-color: #a7d8ef;
-    --tabs-switcher-current-color: #d8f0fb;
-    --tabs-switcher-current-bg: linear-gradient(135deg, rgba(128, 205, 240, 0.1), rgba(255, 188, 216, 0.08));
-    --tabs-switcher-current-border-color: rgba(174, 220, 240, 0.16);
-    --tabs-switcher-current-shadow: 0 6px 14px rgba(128, 205, 240, 0.05);
+    --tabs-switcher-accent-color: #e2f5ff;
+    --tabs-switcher-current-color: #e2f5ff;
+    --tabs-switcher-current-bg: linear-gradient(135deg, rgba(143, 211, 255, 0.12) 0%, rgba(215, 244, 255, 0.1) 55%, rgba(168, 212, 242, 0.11) 100%);
+    --tabs-switcher-current-border-color: rgba(168, 212, 242, 0.18);
+    --tabs-switcher-current-shadow: 0 6px 14px rgba(143, 211, 255, 0.06);
 
     /* 管理端 */
     --admin-header-content-bg-color: rgba(0, 0, 0, 0.75);
