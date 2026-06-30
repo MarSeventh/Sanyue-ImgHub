@@ -1,7 +1,7 @@
 <template>
   <transition name="batch-toolbar">
     <div v-if="selectedCount > 0" class="batch-floating-bar">
-      <el-tooltip :content="$t('dashboard.clearSelection')" placement="top">
+      <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.clearSelection')" placement="top">
         <el-button
           class="batch-floating-btn ghost"
           :aria-label="$t('dashboard.clearSelection')"
@@ -10,7 +10,7 @@
           <font-awesome-icon icon="times" class="batch-floating-icon"></font-awesome-icon>
         </el-button>
       </el-tooltip>
-      <el-tooltip :content="`${selectedCount} ${$t('dashboard.selectedItems')}`" placement="top">
+      <el-tooltip :disabled="disableTooltip" :content="`${selectedCount} ${$t('dashboard.selectedItems')}`" placement="top">
         <div class="batch-selection-summary">
           <span class="batch-selection-count">{{ selectedCount }}</span>
         </div>
@@ -20,6 +20,7 @@
         <el-tooltip
           v-for="action in actions"
           :key="action.command"
+          :disabled="disableTooltip"
           :content="$t(action.label)"
           placement="top"
         >
@@ -58,6 +59,11 @@ export default {
         { command: 'white', label: 'dashboard.addToWhitelist', icon: 'shield-alt', className: 'white' },
         { command: 'delete', label: 'dashboard.delete', icon: 'trash-alt', className: 'danger' }
       ]
+    }
+  },
+  computed: {
+    disableTooltip() {
+      return window.innerWidth < 768
     }
   },
   methods: {
