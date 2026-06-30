@@ -6,28 +6,25 @@
             role="navigation"
             @click.stop
         >
-            <button
-                class="title page-switcher-trigger"
-                type="button"
-                :aria-expanded="isPageMenuOpen"
-                @click="togglePageMenu"
-            >
-                <font-awesome-icon :icon="iconName" class="fa-images"></font-awesome-icon>
-                <span class="page-switcher-title">{{ titleName }}</span>
-                <font-awesome-icon icon="chevron-down" class="page-switcher-arrow"></font-awesome-icon>
-            </button>
-            <div class="page-options" role="menu">
+            <div class="page-switcher-sheet" role="menu">
                 <button
-                    v-for="option in pageOptions"
+                    v-for="option in orderedPageOptions"
                     :key="option.name"
                     class="page-option"
-                    :class="{ 'is-active': activeTab === option.name }"
+                    :class="{ 'is-current': option.name === activeTab }"
                     type="button"
                     role="menuitem"
-                    @click="handleTabClick(option.name)"
+                    :aria-current="option.name === activeTab ? 'page' : null"
+                    :aria-expanded="option.name === activeTab ? isPageMenuOpen : null"
+                    @click="handlePageOptionClick(option.name)"
                 >
                     <font-awesome-icon :icon="option.icon" class="page-option-icon"></font-awesome-icon>
-                    <span>{{ $t(option.label) }}</span>
+                    <span class="page-switcher-title">{{ $t(option.label) }}</span>
+                    <font-awesome-icon
+                        v-if="option.name === activeTab"
+                        icon="chevron-down"
+                        class="page-switcher-arrow"
+                    ></font-awesome-icon>
                 </button>
             </div>
         </div>
@@ -66,27 +63,12 @@ export default {
                 { name: '', icon: 'upload', label: 'dashboardTabs.fileUpload' }
             ];
         },
-        titleName() {
-            if (this.activeTab === 'dashboard') {
-                return this.$t('dashboardTabs.fileManagement');
-            } else if (this.activeTab === 'customerConfig') {
-                return this.$t('dashboardTabs.userManagement');
-            } else if (this.activeTab === 'systemConfig') {
-                return this.$t('dashboardTabs.systemSettings');
-            } else {
-                return this.$t('dashboardTabs.fileUpload');
-            }
-        },
-        iconName() {
-            if (this.activeTab === 'dashboard') {
-                return 'images';
-            } else if (this.activeTab === 'customerConfig') {
-                return 'user-cog';
-            } else if (this.activeTab === 'systemConfig') {
-                return 'cogs';
-            } else {
-                return 'upload';
-            }
+        orderedPageOptions() {
+            const activeOption = this.pageOptions.find(option => option.name === this.activeTab) || this.pageOptions[0];
+            return [
+                activeOption,
+                ...this.pageOptions.filter(option => option.name !== activeOption.name)
+            ];
         }
     },
     methods: {
@@ -103,6 +85,13 @@ export default {
                 return;
             }
             this.$router.push(`/${tab}`);
+        },
+        handlePageOptionClick(tab) {
+            if (tab === this.activeTab) {
+                this.togglePageMenu();
+                return;
+            }
+            this.handleTabClick(tab);
         },
         togglePageMenu() {
             this.isPageMenuOpen = !this.isPageMenuOpen;
@@ -130,42 +119,41 @@ export default {
 
 .page-switcher {
     position: relative;
-    display: flex;
-    align-items: center;
+    display: grid;
+    align-items: start;
+    height: 44px;
+    overflow: visible;
 }
 
-.title {
+.page-switcher:hover,
+.page-switcher.is-open {
+    z-index: 1200;
+}
+
+.page-switcher-sheet {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.24s ease, border-color 0.24s ease, transform 0.24s ease;
-    color: var(--admin-container-color);
-    padding: 9px 14px;
-    border-radius: 10px;
-    background-color: transparent;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+    padding: 4px;
     border: 1px solid transparent;
-    font-family: inherit;
+    border-radius: 14px;
+    box-sizing: border-box;
+    background-color: transparent;
+    max-height: 44px;
+    overflow: hidden;
+    transition: max-height 0.34s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
 }
 
-.title:hover,
-.page-switcher.is-open .title {
-    background-color: var(--tabs-switcher-hover-bg);
-    border-color: var(--tabs-switcher-hover-border-color);
-    transform: translateY(-1px);
-}
-
-.title .fa-images {
-    font-size: 1em;
-    color: var(--el-color-primary);
-}
-
-.page-switcher-trigger {
-    appearance: none;
-    outline: none;
-    white-space: nowrap;
+.page-switcher:hover .page-switcher-sheet,
+.page-switcher.is-open .page-switcher-sheet {
+    background: var(--tabs-dropdown-popper-bg-color);
+    border-color: var(--tabs-switcher-border-color);
+    box-shadow: var(--tabs-dropdown-popper-shadow);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    max-height: 150px;
 }
 
 .page-switcher-title {
@@ -173,8 +161,9 @@ export default {
 }
 
 .page-switcher-arrow {
+    margin-left: auto;
     font-size: 0.75em;
-    color: var(--el-color-primary);
+    color: var(--tabs-switcher-accent-color);
     transition: transform 0.22s ease;
 }
 
@@ -182,66 +171,20 @@ export default {
     transform: rotate(180deg);
 }
 
-.page-options {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    z-index: 1200;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 3px;
-    min-width: 168px;
-    padding: 6px;
-    border: 1px solid var(--tabs-switcher-border-color);
-    border-radius: 14px;
-    background: var(--tabs-dropdown-popper-bg-color);
-    box-shadow: var(--tabs-dropdown-popper-shadow);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-4px) scale(0.98);
-    transform-origin: top left;
-    pointer-events: none;
-    transition: opacity 0.18s ease, transform 0.22s ease, visibility 0.18s ease;
-}
-
-.page-options::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -8px;
-    height: 8px;
-}
-
-.page-switcher.is-open .page-options {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-}
-
 @media (hover: hover) and (pointer: fine) {
     .page-switcher:hover .page-switcher-arrow {
         transform: rotate(180deg);
-    }
-
-    .page-switcher:hover .page-options {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0) scale(1);
-        pointer-events: auto;
     }
 }
 
 .page-option {
     display: inline-flex;
+    flex: 0 0 auto;
     align-items: center;
     gap: 7px;
     width: 100%;
-    height: 34px;
+    min-width: 148px;
+    height: 32px;
     padding: 0 12px;
     border: none;
     border-radius: 10px;
@@ -252,30 +195,46 @@ export default {
     font-family: inherit;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.18s ease, color 0.18s ease;
+    transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
 }
 
-.page-option:hover,
-.page-option.is-active {
-    color: var(--el-color-primary);
+.page-option.is-current {
+    height: 34px;
+    gap: 8px;
+    padding: 0 14px;
+    color: var(--tabs-switcher-current-color);
+    background-color: var(--tabs-switcher-current-bg);
+    box-shadow: inset 0 0 0 1px var(--tabs-switcher-current-border-color);
+    font-size: 1.1em;
+    font-weight: bold;
+    line-height: 1.15;
+}
+
+.page-option.is-current > .page-option-icon {
+    width: 17px;
+    font-size: 1.05em;
+}
+
+.page-option.is-current > .page-option-icon,
+.page-option.is-current > .page-switcher-title,
+.page-option.is-current > .page-switcher-arrow {
+    translate: 0 1px;
+}
+
+.page-option:hover {
+    color: var(--tabs-switcher-accent-color);
     background-color: var(--tabs-switcher-hover-bg);
 }
 
 .page-option-icon {
     width: 15px;
-    color: var(--el-color-primary);
+    color: var(--tabs-switcher-accent-color);
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
     .tabs {
         gap: 6px;
-    }
-
-    .title {
-        font-size: 1em;
-        padding: 7px 10px;
-        gap: 5px;
     }
 
     .page-switcher-title {
@@ -285,33 +244,38 @@ export default {
         white-space: nowrap;
     }
 
-    .page-options {
-        top: calc(100% + 6px);
-        left: 50%;
-        width: min(220px, calc(100vw - 24px));
-        min-width: 0;
-        max-width: calc(100vw - 24px);
-        gap: 3px;
-        padding: 6px;
-        transform: translate(-50%, -4px) scale(0.98);
-        transform-origin: top center;
+    .page-switcher:hover .page-switcher-sheet,
+    .page-switcher.is-open .page-switcher-sheet {
+        max-height: 143px;
     }
 
-    .page-options::before {
-        top: -6px;
-        height: 6px;
-    }
-
-    .page-switcher.is-open .page-options {
-        transform: translate(-50%, 0) scale(1);
+    .page-switcher-sheet {
+        width: max-content;
+        max-width: calc(100vw - 96px);
     }
 
     .page-option {
         justify-content: flex-start;
+        min-width: 0;
         height: 32px;
         padding: 0 10px;
         font-size: 12px;
         gap: 6px;
+    }
+
+    .page-option.is-current {
+        height: 32px;
+        gap: 5px;
+        padding: 0 10px;
+        font-size: 1em;
+    }
+
+    .page-option.is-current > .page-option-icon {
+        width: 16px;
+    }
+
+    .page-option.is-current > .page-switcher-arrow {
+        margin-left: 4px;
     }
 
     .tabs-language-switcher {

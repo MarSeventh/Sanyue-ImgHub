@@ -248,6 +248,10 @@ body {
     --tabs-switcher-hover-bg: rgba(91, 128, 148, 0.1);
     --tabs-switcher-border-color: rgba(91, 128, 148, 0.16);
     --tabs-switcher-hover-border-color: rgba(91, 128, 148, 0.24);
+    --tabs-switcher-accent-color: #4f9ac2;
+    --tabs-switcher-current-color: #34799f;
+    --tabs-switcher-current-bg: rgba(79, 154, 194, 0.11);
+    --tabs-switcher-current-border-color: rgba(79, 154, 194, 0.22);
 
     /* 管理端 */
     --admin-header-content-bg-color: rgba(255, 255, 255, 0.75);
@@ -569,6 +573,10 @@ body {
     --tabs-switcher-hover-bg: rgba(255, 255, 255, 0.08);
     --tabs-switcher-border-color: rgba(255, 255, 255, 0.08);
     --tabs-switcher-hover-border-color: rgba(255, 255, 255, 0.14);
+    --tabs-switcher-accent-color: #9fc7dc;
+    --tabs-switcher-current-color: #d8edf7;
+    --tabs-switcher-current-bg: rgba(120, 178, 210, 0.13);
+    --tabs-switcher-current-border-color: rgba(146, 201, 230, 0.24);
 
     /* 管理端 */
     --admin-header-content-bg-color: rgba(0, 0, 0, 0.75);
