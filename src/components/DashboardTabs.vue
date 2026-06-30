@@ -132,6 +132,7 @@ export default {
 
 .page-switcher-sheet {
     position: relative;
+    isolation: isolate;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -141,19 +142,37 @@ export default {
     border-radius: 14px;
     box-sizing: border-box;
     background-color: transparent;
-    max-height: 44px;
-    overflow: hidden;
-    transition: max-height 0.34s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+    overflow: visible;
+    transition: none;
 }
 
-.page-switcher:hover .page-switcher-sheet,
-.page-switcher.is-open .page-switcher-sheet {
+.page-switcher-sheet::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    height: 150px;
+    border: 1px solid var(--tabs-switcher-border-color);
+    border-radius: 14px;
     background: var(--tabs-dropdown-popper-bg-color);
-    border-color: var(--tabs-switcher-border-color);
     box-shadow: var(--tabs-dropdown-popper-shadow);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    max-height: 150px;
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.72);
+    transform-origin: top center;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+
+.page-switcher:hover .page-switcher-sheet::before,
+.page-switcher.is-open .page-switcher-sheet::before {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+    pointer-events: auto;
 }
 
 .page-switcher-title {
@@ -178,9 +197,12 @@ export default {
 }
 
 .page-option {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     flex: 0 0 auto;
     align-items: center;
+    box-sizing: border-box;
     gap: 7px;
     width: 100%;
     min-width: 148px;
@@ -196,6 +218,38 @@ export default {
     white-space: nowrap;
     cursor: pointer;
     transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+
+.page-option:not(.is-current) {
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    width: auto;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-9px) scaleY(0.86);
+    transform-origin: top center;
+    transition: opacity 0.16s ease, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.18s ease, color 0.18s ease;
+    will-change: opacity, transform;
+}
+
+.page-option:nth-child(2) {
+    top: 41px;
+}
+
+.page-option:nth-child(3) {
+    top: 76px;
+}
+
+.page-option:nth-child(4) {
+    top: 111px;
+}
+
+.page-switcher:hover .page-option:not(.is-current),
+.page-switcher.is-open .page-option:not(.is-current) {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scaleY(1);
 }
 
 .page-option.is-current {
@@ -249,14 +303,14 @@ export default {
         white-space: nowrap;
     }
 
-    .page-switcher:hover .page-switcher-sheet,
-    .page-switcher.is-open .page-switcher-sheet {
-        max-height: 143px;
-    }
-
     .page-switcher-sheet {
         width: max-content;
         max-width: calc(100vw - 96px);
+    }
+
+    .page-switcher-sheet::before {
+        height: 143px;
+        transform: translateY(-3px) scaleY(0.72);
     }
 
     .page-option {
@@ -266,6 +320,32 @@ export default {
         padding: 0 10px;
         font-size: 12px;
         gap: 6px;
+    }
+
+    .page-option:not(.is-current) {
+        left: 5px;
+        right: 5px;
+        width: auto;
+        transform: translateY(-8px) scaleY(0.86);
+    }
+
+    .page-option:nth-child(2) {
+        top: 39px;
+    }
+
+    .page-option:nth-child(3) {
+        top: 74px;
+    }
+
+    .page-option:nth-child(4) {
+        top: 109px;
+    }
+
+    .page-switcher:hover .page-option:not(.is-current),
+    .page-switcher.is-open .page-option:not(.is-current) {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0) scaleY(1);
     }
 
     .page-option.is-current {
