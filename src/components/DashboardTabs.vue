@@ -5,8 +5,6 @@
             :class="{ 'is-open': isPageMenuOpen }"
             role="navigation"
             @click.stop
-            @mouseenter="handleSwitcherEnter"
-            @mouseleave="handleSwitcherLeave"
         >
             <button
                 class="title page-switcher-trigger"
@@ -56,8 +54,7 @@ export default {
     },
     data() {
         return {
-            isPageMenuOpen: false,
-            pageMenuHoverTimer: null
+            isPageMenuOpen: false
         }
     },
     computed: {
@@ -96,27 +93,6 @@ export default {
         handleDocumentClick() {
             this.closePageMenu();
         },
-        isFinePointer() {
-            return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-        },
-        handleSwitcherEnter() {
-            if (!this.isFinePointer()) return;
-            if (this.pageMenuHoverTimer) {
-                clearTimeout(this.pageMenuHoverTimer);
-                this.pageMenuHoverTimer = null;
-            }
-            this.isPageMenuOpen = true;
-        },
-        handleSwitcherLeave() {
-            if (!this.isFinePointer()) return;
-            if (this.pageMenuHoverTimer) {
-                clearTimeout(this.pageMenuHoverTimer);
-            }
-            this.pageMenuHoverTimer = setTimeout(() => {
-                this.closePageMenu();
-                this.pageMenuHoverTimer = null;
-            }, 120);
-        },
         refreshDashboard() {
             location.reload();
         },
@@ -140,9 +116,6 @@ export default {
     },
     beforeUnmount() {
         document.removeEventListener('click', this.handleDocumentClick);
-        if (this.pageMenuHoverTimer) {
-            clearTimeout(this.pageMenuHoverTimer);
-        }
     }
 }
 </script>
@@ -248,6 +221,19 @@ export default {
     visibility: visible;
     transform: translateY(0) scale(1);
     pointer-events: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .page-switcher:hover .page-switcher-arrow {
+        transform: rotate(180deg);
+    }
+
+    .page-switcher:hover .page-options {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
 }
 
 .page-option {
