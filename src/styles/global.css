@@ -241,10 +241,13 @@ body {
     /* el-dialog阴影 */
 
     /* el-tabs */
-    --tabs-dropdown-popper-bg-color: rgba(255, 255, 255, 0.2);
+    --tabs-dropdown-popper-bg-color: rgba(255, 255, 255, 0.94);
     /* el-tabs下拉菜单背景 */
-    --tabs-dropdown-popper-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
+    --tabs-dropdown-popper-shadow: 0 12px 30px rgba(36, 54, 72, 0.16), 0 2px 8px rgba(36, 54, 72, 0.08);
     /* el-tabs下拉菜单阴影 */
+    --tabs-switcher-hover-bg: rgba(91, 128, 148, 0.1);
+    --tabs-switcher-border-color: rgba(91, 128, 148, 0.16);
+    --tabs-switcher-hover-border-color: rgba(91, 128, 148, 0.24);
 
     /* 管理端 */
     --admin-header-content-bg-color: rgba(255, 255, 255, 0.75);
@@ -559,10 +562,13 @@ body {
     /* el-dialog阴影 */
 
     /* el-tabs */
-    --tabs-dropdown-popper-bg-color: rgba(0, 0, 0, 0.2);
+    --tabs-dropdown-popper-bg-color: rgba(24, 30, 38, 0.94);
     /* el-tabs下拉菜单背景 */
-    --tabs-dropdown-popper-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.1);
+    --tabs-dropdown-popper-shadow: 0 12px 30px rgba(0, 0, 0, 0.34), 0 2px 8px rgba(0, 0, 0, 0.24);
     /* el-tabs下拉菜单阴影 */
+    --tabs-switcher-hover-bg: rgba(190, 222, 253, 0.08);
+    --tabs-switcher-border-color: rgba(190, 222, 253, 0.1);
+    --tabs-switcher-hover-border-color: rgba(190, 222, 253, 0.16);
 
     /* 管理端 */
     --admin-header-content-bg-color: rgba(0, 0, 0, 0.75);
