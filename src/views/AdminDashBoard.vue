@@ -46,7 +46,10 @@
             <!-- 目录导航 -->
             <div class="breadcrumb-container">
                 <button class="breadcrumb-select-button" type="button" @click="handleSelectPage">
-                    <font-awesome-icon :icon="selectPageIcon" class="breadcrumb-select-icon"></font-awesome-icon>
+                    <span class="breadcrumb-select-box" :class="{ 'checked': selectPage, 'indeterminate': selectedPageFiles && !selectPage }">
+                        <font-awesome-icon v-if="selectPage" icon="check" class="breadcrumb-select-mark"></font-awesome-icon>
+                        <font-awesome-icon v-else-if="selectedPageFiles" icon="minus" class="breadcrumb-select-mark"></font-awesome-icon>
+                    </span>
                 </button>
                 <div class="breadcrumb-view-toggle" role="group">
                     <button
@@ -600,10 +603,6 @@ computed: {
     selectedPageFiles() {
         // 如果当前页有文件被选中，则返回 true，否则返回 false
         return this.paginatedTableData.some(file => file.selected);
-    },
-    selectPageIcon() {
-        // 全选为 true 时，返回 check-square；部分选中为 minus-square；全不选为 square
-        return this.selectPage ? 'check-square' : this.selectedPageFiles ? 'minus-square' : 'square';
     },
     rootUrl() {
         // 链接前缀，优先级：用户自定义 > urlPrefix > 默认
@@ -2152,15 +2151,36 @@ html.dark .header-content:hover {
     box-shadow: var(--admin-dashboard-stats-hover-shadow);
 }
 
-.breadcrumb-select-icon {
+.breadcrumb-select-box {
     width: 18px;
     height: 18px;
-    color: #38bdf8;
-    transition: color 0.2s ease;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(56, 189, 248, 0.46);
+    border-radius: 5px;
+    color: #ffffff;
+    background: rgba(56, 189, 248, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.breadcrumb-select-button:hover .breadcrumb-select-icon {
-    color: #38bdf8;
+.breadcrumb-select-button:hover .breadcrumb-select-box {
+    border-color: rgba(56, 189, 248, 0.72);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 8px rgba(56, 189, 248, 0.14);
+}
+
+.breadcrumb-select-box.checked,
+.breadcrumb-select-box.indeterminate {
+    border-color: #38bdf8;
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 4px 10px rgba(56, 189, 248, 0.18);
+}
+
+.breadcrumb-select-mark {
+    width: 10px;
+    height: 10px;
 }
 
 .breadcrumb-view-toggle {
@@ -2228,10 +2248,14 @@ html.dark .header-content:hover {
         box-sizing: border-box;
         border-radius: 8px;
     }
-    .breadcrumb-select-icon {
+    .breadcrumb-select-box {
         width: 16px;
         height: 16px;
         border-radius: 4px;
+    }
+    .breadcrumb-select-mark {
+        width: 9px;
+        height: 9px;
     }
     .breadcrumb-view-toggle {
         height: 28px;
