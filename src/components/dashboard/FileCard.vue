@@ -415,6 +415,51 @@ export default {
     background: rgba(239, 68, 68, 0.6);
 }
 @media (max-width: 768px) {
+    .img-card {
+        height: 148px;
+        border-radius: 7px;
+        contain-intrinsic-size: 148px;
+    }
+
+    .img-card :deep(.el-checkbox) {
+        top: 6px;
+        right: 6px;
+        transform: scale(1.1);
+    }
+
+    .img-card:hover {
+        transform: none;
+    }
+
+    .file-short-info {
+        gap: 3px;
+        max-width: calc(100% - 38px);
+    }
+
+    .success-tag,
+    .fail-tag,
+    .primary-tag {
+        max-width: 72px;
+        padding: 2px 5px;
+        border-radius: 5px;
+        font-size: 9px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .card-bottom-overlay {
+        padding: 22px 6px 6px;
+    }
+
+    .file-name {
+        font-size: 11px;
+    }
+
+    .file-icon {
+        font-size: 34px;
+    }
+
     .action-bar {
         display: none !important;
     }

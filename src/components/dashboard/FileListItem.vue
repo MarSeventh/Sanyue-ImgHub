@@ -357,15 +357,36 @@ export default {
 }
 @media (max-width: 768px) {
     .list-item {
-        grid-template-columns: 22px 40px 1fr auto;
-        padding: 10px 8px;
-        gap: 8px;
+        grid-template-columns: 20px 34px 1fr auto;
+        padding: 8px 6px;
+        gap: 6px;
+        font-size: 12px;
     }
     .list-col-size, .list-col-date, .list-col-tags, .list-col-channel, .list-col-channel-name, .list-col-address {
         display: none;
     }
-    .list-col-actions { gap: 4px; }
-    .list-action-btn { width: 28px; height: 28px; }
-    .list-col-checkbox { width: 20px; min-width: 20px; }
+    .list-col-name {
+        padding-right: 8px;
+        line-height: 1.25;
+    }
+    .list-preview-img {
+        width: 34px;
+        height: 34px;
+        border-radius: 5px;
+    }
+    .list-folder-icon {
+        font-size: 24px;
+    }
+    .list-file-icon {
+        font-size: 21px;
+    }
+    .list-col-actions { gap: 3px; }
+    .list-action-btn {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        font-size: 12px;
+    }
+    .list-col-checkbox { width: 18px; min-width: 18px; }
 }
 </style>

@@ -184,6 +184,34 @@ export default {
     background: rgba(239, 68, 68, 0.6);
 }
 @media (max-width: 768px) {
+    .img-card {
+        height: 148px;
+        border-radius: 7px;
+        contain-intrinsic-size: 148px;
+    }
+
+    .img-card :deep(.el-checkbox) {
+        top: 6px;
+        right: 6px;
+        transform: scale(1.1);
+    }
+
+    .img-card:hover {
+        transform: none;
+    }
+
+    .folder-icon-svg {
+        font-size: 36px;
+    }
+
+    .card-bottom-overlay {
+        padding: 22px 6px 6px;
+    }
+
+    .file-name {
+        font-size: 11px;
+    }
+
     .action-bar {
         display: none !important;
     }

@@ -100,9 +100,17 @@
             </div>
             
             <!-- 卡片视图 -->
-            <div v-if="viewMode === 'card'" class="content" :class="{ 'is-drag-selecting': isDragging }" ref="cardContainerRef">
+            <div
+                v-if="viewMode === 'card'"
+                class="content"
+                :class="{ 'is-drag-selecting': isDragging }"
+                ref="cardContainerRef"
+                @touchstart.passive="handlePageSwipeStart"
+                @touchend.passive="handlePageSwipeEnd"
+                @touchcancel.passive="resetPageSwipe"
+            >
                 <!-- 加载骨架屏 -->
-                <SkeletonLoader v-if="loading" type="card" :count="15" />
+                <SkeletonLoader v-if="loading" type="card" :count="pageSize" />
                 <!-- 空状态 -->
                 <div v-else-if="paginatedTableData.length === 0" class="empty-state">
                     <font-awesome-icon icon="folder-open" class="empty-icon" />
@@ -146,7 +154,15 @@
                 </template>
             </div>
             <!-- 列表视图 -->
-            <div v-else class="list-view" :class="{ 'is-drag-selecting': isDragging }" ref="listContainerRef">
+            <div
+                v-else
+                class="list-view"
+                :class="{ 'is-drag-selecting': isDragging }"
+                ref="listContainerRef"
+                @touchstart.passive="handlePageSwipeStart"
+                @touchend.passive="handlePageSwipeEnd"
+                @touchcancel.passive="resetPageSwipe"
+            >
                 <div class="list-header">
                     <div class="list-col list-col-checkbox">
                         <DashboardCheckbox
@@ -166,7 +182,7 @@
                     <div class="list-col list-col-actions">{{ $t('dashboard.actions') }}</div>
                 </div>
                 <!-- 列表骨架屏 -->
-                <SkeletonLoader v-if="loading" type="list" :count="15" />
+                <SkeletonLoader v-if="loading" type="list" :count="pageSize" />
                 <!-- 空状态 -->
                 <div v-else-if="paginatedTableData.length === 0" class="empty-state list-empty">
                     <font-awesome-icon icon="folder-open" class="empty-icon" />
@@ -448,7 +464,10 @@ data() {
         moveTargetPath: '/', // 移动目标路径
         moveFileKey: '', // 当前移动的文件key
         moveFileIndex: -1, // 当前移动的文件索引
-        isBatchMove: false // 是否为批量移动
+        isBatchMove: false, // 是否为批量移动
+        pageSwipeStartX: null,
+        pageSwipeStartY: null,
+        pageSwipeStartTime: 0
     }
 },
 components: {
@@ -1555,6 +1574,65 @@ methods: {
             this.loadMoreData();
         }
     },
+    isMobileViewport() {
+        return window.innerWidth < 768;
+    },
+    updateResponsivePageSize() {
+        const nextPageSize = this.isMobileViewport() ? 16 : 15;
+        if (this.pageSize === nextPageSize) return;
+        const firstVisibleIndex = (this.currentPage - 1) * this.pageSize;
+        this.pageSize = nextPageSize;
+        this.currentPage = Math.min(
+            Math.floor(firstVisibleIndex / nextPageSize) + 1,
+            this.realTotalPages
+        );
+    },
+    isSwipeIgnoredTarget(target) {
+        return Boolean(target?.closest?.('button, a, input, textarea, select, .el-checkbox, .action-btn, .list-action-btn'));
+    },
+    handlePageSwipeStart(event) {
+        if (!this.isMobileViewport() || this.isDragging || this.loading || this.showMobileActionModal || this.showMobileDirectoryDrawer || this.isSwipeIgnoredTarget(event.target)) {
+            this.resetPageSwipe();
+            return;
+        }
+        const touch = event.touches?.[0];
+        if (!touch) return;
+        this.pageSwipeStartX = touch.clientX;
+        this.pageSwipeStartY = touch.clientY;
+        this.pageSwipeStartTime = Date.now();
+    },
+    async handlePageSwipeEnd(event) {
+        if (this.pageSwipeStartX === null || this.pageSwipeStartY === null) return;
+        const touch = event.changedTouches?.[0];
+        if (!touch) {
+            this.resetPageSwipe();
+            return;
+        }
+        const deltaX = touch.clientX - this.pageSwipeStartX;
+        const deltaY = touch.clientY - this.pageSwipeStartY;
+        const elapsed = Date.now() - this.pageSwipeStartTime;
+        this.resetPageSwipe();
+
+        if (elapsed > 700 || Math.abs(deltaX) < 64 || Math.abs(deltaX) < Math.abs(deltaY) * 1.35) {
+            return;
+        }
+
+        const targetPage = deltaX < 0 ? this.currentPage + 1 : this.currentPage - 1;
+        await this.goToSwipePage(targetPage);
+    },
+    resetPageSwipe() {
+        this.pageSwipeStartX = null;
+        this.pageSwipeStartY = null;
+        this.pageSwipeStartTime = 0;
+    },
+    async goToSwipePage(page) {
+        if (page < 1 || page > this.realTotalPages || page === this.currentPage) return;
+        if (page > this.totalPages) {
+            await this.loadMoreDataUntilPage(page);
+            return;
+        }
+        this.handlePageChange(page);
+    },
     // 跳转到指定页码
     handleJumpPage() {
         const page = parseInt(this.jumpPage);
@@ -1957,6 +2035,8 @@ methods: {
 mounted() {
     // 初始化背景图
     this.initializeBackground('adminBkImg', '.container', false, true);
+    this.updateResponsivePageSize();
+    window.addEventListener('resize', this.updateResponsivePageSize);
 
     this.loading = true;
     // 路由守卫已通过 /api/auth/sessionCheck 验证认证状态
@@ -1985,6 +2065,9 @@ mounted() {
     if (savedViewMode === 'card' || savedViewMode === 'list') {
         this.viewMode = savedViewMode;
     }
+},
+beforeUnmount() {
+    window.removeEventListener('resize', this.updateResponsivePageSize);
 }
 
 };
@@ -2396,6 +2479,7 @@ html.dark .header-content:hover {
 @media (max-width: 768px) {
     .main-container {
         margin-top: 12vh;
+        padding: 16px 10px;
     }
     .main-container.has-batch-toolbar {
         padding-bottom: 86px;
@@ -2486,11 +2570,17 @@ html.dark .header-content:hover {
     padding: 80px 20px;
 }
 
-/* 在小屏幕上，将所有内容放入一列 */
+/* 移动端卡片视图 */
 @media (max-width: 768px) {
     .content {
-        grid-template-columns: 1fr; /* 将所有内容放入一列 */
-        grid-template-rows: none;   /* 行根据内容高度自动调整 */
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: none;
+        gap: 8px;
+        padding: 0;
+        flex-grow: 0;
+        min-height: auto;
+        align-content: start;
+        align-items: start;
     }
 }
 
@@ -2678,23 +2768,95 @@ html.dark .header-content:hover {
 @media (max-width: 768px) {
     .pagination-container {
         flex-direction: column;
-        gap: 12px;
-        padding-bottom: 15px;
+        gap: 8px;
+        margin-top: 14px;
+        padding-bottom: 10px;
     }
     
     .pagination-center {
         order: 0;
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .pagination-container :deep(.el-pager li) {
+        min-width: 30px;
+        height: 30px;
+        line-height: 30px;
+        margin: 0 2px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .pagination-container :deep(.btn-prev),
+    .pagination-container :deep(.btn-next) {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        display: none !important;
+        min-width: 30px !important;
+        width: 30px !important;
+        height: 30px !important;
+        border-radius: 8px !important;
+        font-size: 12px;
+        scale: 1 !important;
     }
     
     .pagination-right {
         position: static;
         width: 100%;
         justify-content: center;
+        gap: 6px;
         order: 1;
+    }
+
+    .page-total,
+    .page-jump {
+        font-size: 12px;
     }
     
     .page-jump .jump-input {
-        width: 45px;
+        width: 40px;
+    }
+
+    .page-jump .jump-input :deep(.el-input__wrapper) {
+        height: 26px;
+        padding: 0 6px;
+        border-radius: 7px;
+    }
+
+    .page-jump .jump-input :deep(.el-input__inner) {
+        height: 26px;
+        line-height: 26px;
+        font-size: 12px;
+    }
+
+    .page-jump .jump-btn {
+        height: 26px;
+        padding: 0 10px;
+        border-radius: 7px;
+        font-size: 11px;
+    }
+
+    .refresh-btn {
+        --el-button-size: 30px;
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        padding: 0 !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
+    }
+
+    .load-more {
+        --el-button-size: 30px;
+        height: 30px !important;
+        min-height: 30px !important;
+        padding: 0 10px !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
     }
 }
 

@@ -244,10 +244,43 @@ export default {
 
 /* 移动端适配 */
 @media (max-width: 768px) {
+    .skeleton-card {
+        height: 148px;
+        border-radius: 7px;
+    }
+
+    .skeleton-info {
+        padding: 22px 6px 6px;
+    }
+
+    .skeleton-text {
+        height: 11px;
+        width: 68%;
+        border-radius: 3px;
+    }
+
     .list-item {
-        grid-template-columns: 28px 40px 1fr auto;
-        padding: 10px 8px;
-        gap: 8px;
+        grid-template-columns: 20px 34px 1fr auto;
+        padding: 8px 6px;
+        gap: 6px;
+        min-height: 50px;
+    }
+
+    .skeleton-checkbox {
+        width: 16px;
+        height: 16px;
+    }
+
+    .skeleton-preview {
+        width: 34px;
+        height: 34px;
+        border-radius: 5px;
+    }
+
+    .skeleton-text-long,
+    .skeleton-text-short,
+    .skeleton-text-tiny {
+        height: 12px;
     }
     
     .list-col-tags,
