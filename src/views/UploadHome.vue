@@ -109,24 +109,24 @@
         >
             <div class="quick-toolbar-actions">
                 <div class="quick-toolbar-actions-inner">
-                    <el-tooltip :disabled="disableTooltip" :content="$t('upload.logout')" placement="left">
+                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.logout')" placement="left" :hide-after="0">
                         <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('logout')">
                             <font-awesome-icon icon="sign-out-alt" class="quick-toolbar-icon"/>
                         </el-button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip" :content="$t('upload.manage')" placement="left">
+                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.manage')" placement="left" :hide-after="0">
                         <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('manage')">
                             <font-awesome-icon icon="cog" class="quick-toolbar-icon"/>
                         </el-button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip" :content="$t('upload.linkFormat')" placement="left">
+                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.linkFormat')" placement="left" :hide-after="0">
                         <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('linkFormat')">
                             <font-awesome-icon icon="link" class="quick-toolbar-icon"/>
                         </el-button>
                     </el-tooltip>
                 </div>
             </div>
-            <el-tooltip :disabled="disableTooltip" :content="$t('upload.settings')" placement="left">
+            <el-tooltip :disabled="disableTooltip" :content="$t('upload.settings')" placement="left" :hide-after="0">
                 <el-button class="quick-toolbar-button" @click="openCompressDialog">
                     <font-awesome-icon icon="cloud-upload" class="quick-toolbar-icon"/>
                 </el-button>
@@ -1266,6 +1266,19 @@ export default {
     margin-bottom: 5px;
     position: relative;
     top: -3vh;
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 8px 15px 4px;
+        top: -2.5vh;
+    }
+    .title {
+        padding-bottom: 5px;
+    }
+    .upload {
+        top: -3.8vh;
+    }
 }
 
 .footer {
