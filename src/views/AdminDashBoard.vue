@@ -45,12 +45,12 @@
             <el-main class="main-container" :class="{ 'has-batch-toolbar': selectedFiles.length > 0 }">
             <!-- 目录导航 -->
             <div class="breadcrumb-container">
-                <button class="breadcrumb-select-button" type="button" @click="handleSelectPage">
-                    <span class="breadcrumb-select-box" :class="{ 'checked': selectPage, 'indeterminate': selectedPageFiles && !selectPage }">
-                        <font-awesome-icon v-if="selectPage" icon="check" class="breadcrumb-select-mark"></font-awesome-icon>
-                        <font-awesome-icon v-else-if="selectedPageFiles" icon="minus" class="breadcrumb-select-mark"></font-awesome-icon>
-                    </span>
-                </button>
+                <DashboardCheckbox
+                    :checked="selectPage"
+                    :indeterminate="selectedPageFiles && !selectPage"
+                    variant="breadcrumb"
+                    @click="handleSelectPage"
+                />
                 <div class="breadcrumb-view-toggle" role="group">
                     <button
                         class="breadcrumb-view-button"
@@ -149,10 +149,11 @@
             <div v-else class="list-view" :class="{ 'is-drag-selecting': isDragging }" ref="listContainerRef">
                 <div class="list-header">
                     <div class="list-col list-col-checkbox">
-                        <span class="custom-checkbox" :class="{ 'checked': isSelectAll, 'indeterminate': isIndeterminate }" @click="handleSelectAllPage(!isSelectAll)">
-                            <font-awesome-icon v-if="isSelectAll" icon="check" class="check-icon"/>
-                            <font-awesome-icon v-else-if="isIndeterminate" icon="minus" class="check-icon"/>
-                        </span>
+                        <DashboardCheckbox
+                            :checked="isSelectAll"
+                            :indeterminate="isIndeterminate"
+                            @click="handleSelectAllPage(!isSelectAll)"
+                        />
                     </div>
                     <div class="list-col list-col-preview">{{ $t('dashboard.preview') }}</div>
                     <div class="list-col list-col-name">{{ $t('dashboard.fileName') }}</div>
@@ -380,6 +381,7 @@ import FileDetailDialog from '@/components/dashboard/FileDetailDialog.vue';
 import BatchActionBar from '@/components/dashboard/BatchActionBar.vue';
 import MobileActionSheet from '@/components/dashboard/MobileActionSheet.vue';
 import MobileDirectoryDrawer from '@/components/dashboard/MobileDirectoryDrawer.vue';
+import DashboardCheckbox from '@/components/dashboard/DashboardCheckbox.vue';
 import FilterDropdown from '@/components/dashboard/FilterDropdown.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { fileManager } from '@/utils/fileManager';
@@ -461,6 +463,7 @@ components: {
     BatchActionBar,
     MobileActionSheet,
     MobileDirectoryDrawer,
+    DashboardCheckbox,
     FilterDropdown,
     MoveFileDialog,
     LanguageSwitcher
@@ -2128,85 +2131,6 @@ html.dark .header-content:hover {
     margin-bottom: 4px; /* 与下方内容的间距 */
 }
 
-.breadcrumb-select-button {
-    width: 32px;
-    height: 32px;
-    box-sizing: border-box;
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    color: var(--el-text-color-secondary);
-    background: transparent;
-    box-shadow: none;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.breadcrumb-select-button:hover {
-    color: #38bdf8;
-}
-
-.breadcrumb-select-box {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 6px;
-    color: #ffffff;
-    background: var(--el-fill-color-light);
-    box-shadow: var(--admin-dashboard-stats-shadow);
-    backdrop-filter: blur(12px) saturate(140%);
-    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.breadcrumb-select-box::before {
-    content: "";
-    position: absolute;
-    inset: 5px;
-    box-sizing: border-box;
-    border: 1px solid rgba(148, 163, 184, 0.24);
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.08);
-    opacity: 1;
-    transform: scale(1);
-    transition: border-color 0.18s ease, background 0.18s ease;
-}
-
-.breadcrumb-select-button:hover .breadcrumb-select-box {
-    border-color: rgba(56, 189, 248, 0.24);
-    background: var(--el-fill-color-lighter);
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
-}
-
-.breadcrumb-select-box.checked,
-.breadcrumb-select-box.indeterminate {
-    border-color: rgba(56, 189, 248, 0.34);
-    background: var(--el-fill-color-light);
-    box-shadow: var(--admin-dashboard-stats-shadow);
-}
-
-.breadcrumb-select-box.checked::before,
-.breadcrumb-select-box.indeterminate::before {
-    border-color: rgba(255, 255, 255, 0.4);
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-}
-
-.breadcrumb-select-mark {
-    position: relative;
-    z-index: 1;
-    width: 11px;
-    height: 11px;
-}
-
 .breadcrumb-view-toggle {
     height: 32px;
     box-sizing: border-box;
@@ -2265,24 +2189,6 @@ html.dark .header-content:hover {
         padding: 0 5px;
         margin-top: 8px;
         margin-bottom: 2px;
-    }
-    .breadcrumb-select-button {
-        width: 28px;
-        height: 28px;
-        box-sizing: border-box;
-    }
-    .breadcrumb-select-box {
-        width: 28px;
-        height: 28px;
-        border-radius: 8px;
-    }
-    .breadcrumb-select-box::before {
-        inset: 4px;
-        border-radius: 5px;
-    }
-    .breadcrumb-select-mark {
-        width: 10px;
-        height: 10px;
     }
     .breadcrumb-view-toggle {
         height: 28px;
@@ -2621,35 +2527,6 @@ html.dark .header-content:hover {
 .list-col-checkbox {
     justify-content: center;
     min-width: 40px;
-}
-
-/* 表头自定义复选框 */
-.custom-checkbox {
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--el-border-color);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: transparent;
-}
-
-.custom-checkbox:hover {
-    border-color: #38bdf8;
-}
-
-.custom-checkbox.checked,
-.custom-checkbox.indeterminate {
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-    border-color: #38bdf8;
-}
-
-.custom-checkbox .check-icon {
-    font-size: 10px;
-    color: white;
 }
 
 /* 移动端列表视图 */

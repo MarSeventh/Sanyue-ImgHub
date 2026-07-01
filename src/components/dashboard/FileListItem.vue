@@ -7,9 +7,7 @@
     >
         <!-- 复选框 -->
         <div class="list-col list-col-checkbox">
-            <span class="custom-checkbox" :class="{ 'checked': localSelected }" @click.stop="toggleSelect">
-                <font-awesome-icon v-if="localSelected" icon="check" class="check-icon"/>
-            </span>
+            <DashboardCheckbox :checked="localSelected" @click.stop="toggleSelect" />
         </div>
         <!-- 预览 -->
         <div class="list-col list-col-preview" @click="handlePreviewClick">
@@ -109,8 +107,13 @@
 </template>
 
 <script>
+import DashboardCheckbox from '@/components/dashboard/DashboardCheckbox.vue';
+
 export default {
     name: 'FileListItem',
+    components: {
+        DashboardCheckbox
+    },
     props: {
         item: { type: Object, required: true },
         selected: { type: Boolean, default: false },
@@ -295,29 +298,6 @@ export default {
     flex-wrap: nowrap;
     overflow: hidden;
 }
-.custom-checkbox {
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--el-border-color);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: transparent;
-}
-.custom-checkbox:hover {
-    border-color: #38bdf8;
-}
-.custom-checkbox.checked {
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-    border-color: #38bdf8;
-}
-.custom-checkbox .check-icon {
-    font-size: 10px;
-    color: white;
-}
 .color-tag {
     padding: 2px 8px;
     border-radius: 10px;
@@ -377,7 +357,7 @@ export default {
 }
 @media (max-width: 768px) {
     .list-item {
-        grid-template-columns: 28px 40px 1fr auto;
+        grid-template-columns: 22px 40px 1fr auto;
         padding: 10px 8px;
         gap: 8px;
     }
@@ -386,6 +366,6 @@ export default {
     }
     .list-col-actions { gap: 4px; }
     .list-action-btn { width: 28px; height: 28px; }
-    .list-col-checkbox { width: 24px; min-width: 24px; }
+    .list-col-checkbox { width: 20px; min-width: 20px; }
 }
 </style>
