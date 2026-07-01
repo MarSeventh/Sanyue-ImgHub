@@ -2151,35 +2151,58 @@ html.dark .header-content:hover {
 }
 
 .breadcrumb-select-box {
+    position: relative;
     width: 32px;
     height: 32px;
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 2.5px solid var(--el-border-color);
+    overflow: hidden;
+    border: 1px solid var(--el-border-color-lighter);
     border-radius: 6px;
     color: #ffffff;
     background: var(--el-fill-color-light);
-    box-shadow: var(--admin-dashboard-stats-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    box-shadow: var(--admin-dashboard-stats-shadow);
     backdrop-filter: blur(12px) saturate(140%);
-    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.breadcrumb-select-box::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    box-sizing: border-box;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    opacity: 1;
+    transform: scale(1);
+    transition: border-color 0.18s ease, background 0.18s ease;
 }
 
 .breadcrumb-select-button:hover .breadcrumb-select-box {
-    border-color: rgba(56, 189, 248, 0.72);
+    border-color: rgba(56, 189, 248, 0.24);
     background: var(--el-fill-color-lighter);
-    box-shadow: var(--admin-dashboard-stats-hover-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: var(--admin-dashboard-stats-hover-shadow);
 }
 
 .breadcrumb-select-box.checked,
 .breadcrumb-select-box.indeterminate {
-    border-color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.34);
+    background: var(--el-fill-color-light);
+    box-shadow: var(--admin-dashboard-stats-shadow);
+}
+
+.breadcrumb-select-box.checked::before,
+.breadcrumb-select-box.indeterminate::before {
+    border-color: rgba(255, 255, 255, 0.4);
     background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 4px 10px rgba(56, 189, 248, 0.18);
 }
 
 .breadcrumb-select-mark {
+    position: relative;
+    z-index: 1;
     width: 11px;
     height: 11px;
 }
@@ -2252,6 +2275,10 @@ html.dark .header-content:hover {
         width: 28px;
         height: 28px;
         border-radius: 8px;
+    }
+    .breadcrumb-select-box::before {
+        inset: 4px;
+        border-radius: 5px;
     }
     .breadcrumb-select-mark {
         width: 10px;
@@ -2880,6 +2907,7 @@ html.dark .header-content:hover {
     border-radius: 6px;
     font-size: 0.95em;
     box-shadow: var(--admin-dashboard-stats-shadow);
+    cursor: pointer;
     transition: all 0.3s ease;
 }
 
@@ -2889,12 +2917,13 @@ html.dark .header-content:hover {
 
 .breadcrumb-home-icon {
     font-size: 14px;
-    color: #38bdf8;
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
     transition: color 0.2s ease;
 }
 
 .breadcrumb-home-icon:hover {
-    color: var(--admin-purple);
+    color: #38bdf8;
 }
 
 :deep(.el-breadcrumb__item) {
@@ -2911,6 +2940,9 @@ html.dark .header-content:hover {
     align-items: center;
     height: 100%;
     line-height: 32px;
+}
+:deep(.el-breadcrumb__inner) {
+    cursor: pointer;
 }
 :deep(.el-breadcrumb__inner:hover) {
     color: var(--el-color-primary);
