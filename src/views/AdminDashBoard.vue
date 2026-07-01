@@ -2122,17 +2122,23 @@ html.dark .header-content:hover {
     background: var(--el-fill-color-light);
     box-shadow: var(--admin-dashboard-stats-shadow);
     cursor: pointer;
-    transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .breadcrumb-select-button:hover {
-    color: var(--admin-purple);
-    transform: translateY(-1px);
+    border-color: rgba(56, 189, 248, 0.24);
     box-shadow: var(--admin-dashboard-stats-hover-shadow);
 }
 
 .breadcrumb-select-icon {
-    font-size: 14px;
+    width: 18px;
+    height: 18px;
+    color: #38bdf8;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-select-button:hover .breadcrumb-select-icon {
+    color: #38bdf8;
 }
 
 @media (max-width: 768px) {
@@ -2151,7 +2157,9 @@ html.dark .header-content:hover {
         border-radius: 8px;
     }
     .breadcrumb-select-icon {
-        font-size: 12px;
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
     }
 }
 
