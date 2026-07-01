@@ -86,12 +86,22 @@ export default {
             }
             this.$router.push(`/${tab}`);
         },
+        isTouchViewport() {
+            return window.matchMedia('(hover: none), (pointer: coarse)').matches;
+        },
         handlePageOptionClick(tab) {
+            if (this.isTouchViewport() && !this.isPageMenuOpen && tab !== this.activeTab) {
+                this.openPageMenu();
+                return;
+            }
             if (tab === this.activeTab) {
                 this.togglePageMenu();
                 return;
             }
             this.handleTabClick(tab);
+        },
+        openPageMenu() {
+            this.isPageMenuOpen = true;
         },
         togglePageMenu() {
             this.isPageMenuOpen = !this.isPageMenuOpen;
@@ -193,6 +203,20 @@ export default {
 @media (hover: hover) and (pointer: fine) {
     .page-switcher:hover .page-switcher-arrow {
         transform: rotate(180deg);
+    }
+}
+
+@media (hover: none), (pointer: coarse) {
+    .page-switcher:hover:not(.is-open) .page-switcher-sheet::before {
+        opacity: 0;
+        transform: translateY(-4px) scaleY(0.72);
+        pointer-events: none;
+    }
+
+    .page-switcher:hover:not(.is-open) .page-option:not(.is-current) {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-9px) scaleY(0.86);
     }
 }
 
