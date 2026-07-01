@@ -36,9 +36,6 @@
                         <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
                     </span>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" :content="viewMode === 'card' ? $t('dashboard.listView') : $t('dashboard.cardView')" placement="bottom">
-                    <font-awesome-icon :icon="viewMode === 'card' ? 'list' : 'th-large'" class="header-icon" @click="toggleViewMode"></font-awesome-icon>
-                </el-tooltip>
                 <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.logout')" placement="bottom">
                     <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                 </el-tooltip>
@@ -51,6 +48,28 @@
                 <button class="breadcrumb-select-button" type="button" @click="handleSelectPage">
                     <font-awesome-icon :icon="selectPageIcon" class="breadcrumb-select-icon"></font-awesome-icon>
                 </button>
+                <div class="breadcrumb-view-toggle" role="group">
+                    <button
+                        class="breadcrumb-view-button"
+                        :class="{ 'is-active': viewMode === 'card' }"
+                        type="button"
+                        :title="$t('dashboard.cardView')"
+                        :aria-pressed="viewMode === 'card'"
+                        @click="setViewMode('card')"
+                    >
+                        <font-awesome-icon icon="th-large" class="breadcrumb-view-icon"></font-awesome-icon>
+                    </button>
+                    <button
+                        class="breadcrumb-view-button"
+                        :class="{ 'is-active': viewMode === 'list' }"
+                        type="button"
+                        :title="$t('dashboard.listView')"
+                        :aria-pressed="viewMode === 'list'"
+                        @click="setViewMode('list')"
+                    >
+                        <font-awesome-icon icon="list" class="breadcrumb-view-icon"></font-awesome-icon>
+                    </button>
+                </div>
                 <!-- 移动端目录按钮 -->
                 <div class="mobile-directory-trigger" @click="showMobileDirectoryDrawer = true">
                     <font-awesome-icon icon="folder-open" class="mobile-directory-icon"/>
@@ -656,8 +675,11 @@ watch: {
 },
 methods: {
     // 切换视图模式
-    toggleViewMode() {
-        this.viewMode = this.viewMode === 'card' ? 'list' : 'card';
+    setViewMode(mode) {
+        if (this.viewMode === mode) {
+            return;
+        }
+        this.viewMode = mode;
         localStorage.setItem('viewMode', this.viewMode);
     },
     // 列表视图全选当前页
@@ -2141,6 +2163,56 @@ html.dark .header-content:hover {
     color: #38bdf8;
 }
 
+.breadcrumb-view-toggle {
+    height: 32px;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 6px;
+    background: var(--el-fill-color-light);
+    box-shadow: var(--admin-dashboard-stats-shadow);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.breadcrumb-view-toggle:hover {
+    border-color: rgba(56, 189, 248, 0.24);
+    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+}
+
+.breadcrumb-view-button {
+    width: 28px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    color: var(--el-text-color-secondary);
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.16s ease;
+}
+
+.breadcrumb-view-button:hover {
+    color: #38bdf8;
+}
+
+.breadcrumb-view-button.is-active {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.18);
+}
+
+.breadcrumb-view-icon {
+    width: 14px;
+    height: 14px;
+}
+
 @media (max-width: 768px) {
     .breadcrumb-container {
         flex-direction: row;
@@ -2160,6 +2232,20 @@ html.dark .header-content:hover {
         width: 16px;
         height: 16px;
         border-radius: 4px;
+    }
+    .breadcrumb-view-toggle {
+        height: 28px;
+        padding: 2px;
+        border-radius: 8px;
+    }
+    .breadcrumb-view-button {
+        width: 24px;
+        height: 22px;
+        border-radius: 6px;
+    }
+    .breadcrumb-view-icon {
+        width: 12px;
+        height: 12px;
     }
 }
 
@@ -2774,7 +2860,6 @@ html.dark .header-content:hover {
 }
 
 .breadcrumb:hover {
-    transform: translateY(-1px);
     box-shadow: var(--admin-dashboard-stats-hover-shadow);
 }
 
