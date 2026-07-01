@@ -2137,38 +2137,39 @@ html.dark .header-content:hover {
     align-items: center;
     justify-content: center;
     padding: 0;
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 6px;
-    color: #38bdf8;
-    background: var(--el-fill-color-light);
-    box-shadow: var(--admin-dashboard-stats-shadow);
+    border: 0;
+    border-radius: 0;
+    color: var(--el-text-color-secondary);
+    background: transparent;
+    box-shadow: none;
     cursor: pointer;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: color 0.2s ease;
 }
 
 .breadcrumb-select-button:hover {
-    border-color: rgba(56, 189, 248, 0.24);
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+    color: #38bdf8;
 }
 
 .breadcrumb-select-box {
-    width: 18px;
-    height: 18px;
+    width: 32px;
+    height: 32px;
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(56, 189, 248, 0.46);
-    border-radius: 5px;
+    border: 2.5px solid var(--el-border-color);
+    border-radius: 6px;
     color: #ffffff;
-    background: rgba(56, 189, 248, 0.06);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
-    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    background: var(--el-fill-color-light);
+    box-shadow: var(--admin-dashboard-stats-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    backdrop-filter: blur(12px) saturate(140%);
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .breadcrumb-select-button:hover .breadcrumb-select-box {
     border-color: rgba(56, 189, 248, 0.72);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 8px rgba(56, 189, 248, 0.14);
+    background: var(--el-fill-color-lighter);
+    box-shadow: var(--admin-dashboard-stats-hover-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .breadcrumb-select-box.checked,
@@ -2179,8 +2180,8 @@ html.dark .header-content:hover {
 }
 
 .breadcrumb-select-mark {
-    width: 10px;
-    height: 10px;
+    width: 11px;
+    height: 11px;
 }
 
 .breadcrumb-view-toggle {
@@ -2246,16 +2247,15 @@ html.dark .header-content:hover {
         width: 28px;
         height: 28px;
         box-sizing: border-box;
-        border-radius: 8px;
     }
     .breadcrumb-select-box {
-        width: 16px;
-        height: 16px;
-        border-radius: 4px;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
     }
     .breadcrumb-select-mark {
-        width: 9px;
-        height: 9px;
+        width: 10px;
+        height: 10px;
     }
     .breadcrumb-view-toggle {
         height: 28px;
@@ -2920,6 +2920,8 @@ html.dark .header-content:hover {
 .mobile-directory-trigger {
     display: none;
     align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
     height: 28px;
     box-sizing: border-box;
     gap: 6px;
@@ -2936,25 +2938,27 @@ html.dark .header-content:hover {
 }
 
 .mobile-directory-icon {
+    flex: 0 0 auto;
     font-size: 12px;
     color: #38bdf8;
 }
 
 .mobile-directory-path {
-    display: inline-flex;
-    align-items: center;
-    height: 100%;
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: 12px;
     font-weight: 500;
     line-height: 1;
     color: var(--el-text-color-primary);
-    max-width: 100px;
+    max-width: none;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .mobile-directory-arrow {
+    flex: 0 0 auto;
     font-size: 8px;
     color: var(--el-text-color-secondary);
 }
@@ -2976,6 +2980,8 @@ html.dark .header-content:hover {
     .breadcrumb-container {
         padding: 0;
         margin-left: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
 }
 

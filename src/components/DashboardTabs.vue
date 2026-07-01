@@ -153,7 +153,7 @@ export default {
     left: 0;
     right: 0;
     z-index: 0;
-    height: 154px;
+    height: 156px;
     border: 1px solid var(--tabs-switcher-border-color);
     border-radius: 14px;
     background: var(--tabs-dropdown-popper-bg-color);
@@ -234,15 +234,15 @@ export default {
 }
 
 .page-option:nth-child(2) {
-    top: 38px;
+    top: 41px;
 }
 
 .page-option:nth-child(3) {
-    top: 75px;
+    top: 78px;
 }
 
 .page-option:nth-child(4) {
-    top: 112px;
+    top: 115px;
 }
 
 .page-switcher:hover .page-option:not(.is-current),
@@ -253,7 +253,7 @@ export default {
 }
 
 .page-option.is-current {
-    height: 34px;
+    height: 37px;
     gap: 8px;
     padding: 0 14px;
     color: var(--tabs-switcher-current-color);
