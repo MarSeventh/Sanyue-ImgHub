@@ -5,8 +5,9 @@
             :class="{ 'is-open': isPageMenuOpen }"
             role="navigation"
             @click.stop
+            @pointerdown.stop
         >
-            <div class="page-switcher-sheet" role="menu">
+            <div class="page-switcher-sheet" role="menu" @click.stop>
                 <button
                     v-for="option in orderedPageOptions"
                     :key="option.name"
@@ -16,7 +17,7 @@
                     role="menuitem"
                     :aria-current="option.name === activeTab ? 'page' : null"
                     :aria-expanded="option.name === activeTab ? isPageMenuOpen : null"
-                    @click="handlePageOptionClick(option.name)"
+                    @click.stop="handlePageOptionClick(option.name)"
                 >
                     <font-awesome-icon :icon="option.icon" class="page-option-icon"></font-awesome-icon>
                     <span class="page-switcher-title">{{ $t(option.label) }}</span>
@@ -72,7 +73,10 @@ export default {
         }
     },
     methods: {
-        handleDocumentClick() {
+        handleDocumentClick(event) {
+            if (this.$el?.contains(event.target)) {
+                return;
+            }
             this.closePageMenu();
         },
         refreshDashboard() {
