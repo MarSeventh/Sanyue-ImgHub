@@ -260,10 +260,11 @@ export default {
     }
 
     .list-item {
+        box-sizing: border-box;
         grid-template-columns: 20px 34px 1fr auto;
         padding: 8px 6px;
         gap: 6px;
-        min-height: 50px;
+        height: 50px;
     }
 
     .skeleton-checkbox {
@@ -280,7 +281,14 @@ export default {
     .skeleton-text-long,
     .skeleton-text-short,
     .skeleton-text-tiny {
-        height: 12px;
+        height: 10px;
+        border-radius: 3px;
+    }
+
+    .skeleton-actions {
+        width: 58px;
+        height: 24px;
+        border-radius: 6px;
     }
     
     .list-col-tags,
