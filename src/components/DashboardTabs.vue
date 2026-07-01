@@ -136,7 +136,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 3px;
+    gap: 0;
     padding: 4px;
     border: 1px solid transparent;
     border-radius: 14px;
@@ -153,7 +153,7 @@ export default {
     left: 0;
     right: 0;
     z-index: 0;
-    height: 150px;
+    height: 154px;
     border: 1px solid var(--tabs-switcher-border-color);
     border-radius: 14px;
     background: var(--tabs-dropdown-popper-bg-color);
@@ -206,13 +206,13 @@ export default {
     gap: 7px;
     width: 100%;
     min-width: 148px;
-    height: 32px;
+    height: 37px;
     padding: 0 12px;
     border: none;
     border-radius: 10px;
     color: var(--admin-container-color);
     background: transparent;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     font-family: inherit;
     white-space: nowrap;
@@ -234,15 +234,15 @@ export default {
 }
 
 .page-option:nth-child(2) {
-    top: 41px;
+    top: 38px;
 }
 
 .page-option:nth-child(3) {
-    top: 76px;
+    top: 75px;
 }
 
 .page-option:nth-child(4) {
-    top: 111px;
+    top: 112px;
 }
 
 .page-switcher:hover .page-option:not(.is-current),
@@ -286,7 +286,7 @@ export default {
 }
 
 .page-option-icon {
-    width: 15px;
+    width: 16px;
     color: var(--tabs-switcher-accent-color);
 }
 
@@ -309,7 +309,7 @@ export default {
     }
 
     .page-switcher-sheet::before {
-        height: 143px;
+        height: 136px;
         transform: translateY(-3px) scaleY(0.72);
     }
 
@@ -322,6 +322,10 @@ export default {
         gap: 6px;
     }
 
+    .page-option-icon {
+        width: 15px;
+    }
+
     .page-option:not(.is-current) {
         left: 5px;
         right: 5px;
@@ -330,15 +334,15 @@ export default {
     }
 
     .page-option:nth-child(2) {
-        top: 39px;
+        top: 36px;
     }
 
     .page-option:nth-child(3) {
-        top: 74px;
+        top: 68px;
     }
 
     .page-option:nth-child(4) {
-        top: 109px;
+        top: 100px;
     }
 
     .page-switcher:hover .page-option:not(.is-current),
