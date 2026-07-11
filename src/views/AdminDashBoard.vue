@@ -2116,7 +2116,7 @@ beforeUnmount() {
         0 4px 30px rgba(0, 0, 0, 0.1),
         0 1px 3px rgba(0, 0, 0, 0.05),
         inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     border-radius: 16px;
     position: fixed;
     top: 8px;
@@ -2178,7 +2178,7 @@ html.dark .header-content {
         0 8px 40px rgba(0, 0, 0, 0.12),
         0 2px 6px rgba(0, 0, 0, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    transform: translateX(-50%) translateY(-1px);
+    transform: translateX(-50%);
 }
 
 html.dark .header-content:hover {

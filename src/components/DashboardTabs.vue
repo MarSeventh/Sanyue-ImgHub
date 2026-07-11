@@ -6,27 +6,45 @@
             role="navigation"
             @click.stop
             @pointerdown.stop
+            @mouseenter="handlePageSwitcherEnter"
+            @mouseleave="handlePageSwitcherLeave"
         >
             <div class="page-switcher-sheet" role="menu" @click.stop>
                 <button
-                    v-for="option in orderedPageOptions"
-                    :key="option.name"
-                    class="page-option"
-                    :class="{ 'is-current': option.name === activeTab }"
+                    class="page-option is-current"
                     type="button"
                     role="menuitem"
-                    :aria-current="option.name === activeTab ? 'page' : null"
-                    :aria-expanded="option.name === activeTab ? isPageMenuOpen : null"
-                    @click.stop="handlePageOptionClick(option.name)"
+                    aria-current="page"
+                    :aria-expanded="isPageMenuOpen"
+                    @click.stop="handlePageOptionClick(activePageOption.name)"
                 >
-                    <font-awesome-icon :icon="option.icon" class="page-option-icon"></font-awesome-icon>
-                    <span class="page-switcher-title">{{ $t(option.label) }}</span>
+                    <font-awesome-icon :icon="activePageOption.icon" class="page-option-icon"></font-awesome-icon>
+                    <span class="page-switcher-title">{{ $t(activePageOption.label) }}</span>
                     <font-awesome-icon
-                        v-if="option.name === activeTab"
                         icon="chevron-down"
                         class="page-switcher-arrow"
                     ></font-awesome-icon>
                 </button>
+                <div class="page-option-list" @mouseleave="clearHoveredPageOption">
+                    <span
+                        class="page-option-highlight"
+                        :class="{ 'is-visible': hoveredPageOptionIndex !== null }"
+                        :style="{ '--hovered-option-index': hoveredPageOptionIndex === null ? 0 : hoveredPageOptionIndex }"
+                        aria-hidden="true"
+                    ></span>
+                    <button
+                        v-for="(option, index) in inactivePageOptions"
+                        :key="option.name"
+                        class="page-option"
+                        type="button"
+                        role="menuitem"
+                        @mouseenter="setHoveredPageOption(index)"
+                        @click.stop="handlePageOptionClick(option.name)"
+                    >
+                        <font-awesome-icon :icon="option.icon" class="page-option-icon"></font-awesome-icon>
+                        <span class="page-switcher-title">{{ $t(option.label) }}</span>
+                    </button>
+                </div>
             </div>
         </div>
         <AdminToggleDark/>
@@ -52,7 +70,8 @@ export default {
     },
     data() {
         return {
-            isPageMenuOpen: false
+            isPageMenuOpen: false,
+            hoveredPageOptionIndex: null
         }
     },
     computed: {
@@ -64,12 +83,11 @@ export default {
                 { name: '', icon: 'upload', label: 'dashboardTabs.fileUpload' }
             ];
         },
-        orderedPageOptions() {
-            const activeOption = this.pageOptions.find(option => option.name === this.activeTab) || this.pageOptions[0];
-            return [
-                activeOption,
-                ...this.pageOptions.filter(option => option.name !== activeOption.name)
-            ];
+        activePageOption() {
+            return this.pageOptions.find(option => option.name === this.activeTab) || this.pageOptions[0];
+        },
+        inactivePageOptions() {
+            return this.pageOptions.filter(option => option.name !== this.activePageOption.name);
         }
     },
     methods: {
@@ -99,10 +117,30 @@ export default {
                 return;
             }
             if (tab === this.activeTab) {
-                this.togglePageMenu();
+                if (this.isTouchViewport()) {
+                    this.togglePageMenu();
+                } else {
+                    this.openPageMenu();
+                }
                 return;
             }
             this.handleTabClick(tab);
+        },
+        handlePageSwitcherEnter() {
+            if (!this.isTouchViewport()) {
+                this.openPageMenu();
+            }
+        },
+        handlePageSwitcherLeave() {
+            if (!this.isTouchViewport()) {
+                this.closePageMenu();
+            }
+        },
+        setHoveredPageOption(index) {
+            this.hoveredPageOptionIndex = index;
+        },
+        clearHoveredPageOption() {
+            this.hoveredPageOptionIndex = null;
         },
         openPageMenu() {
             this.isPageMenuOpen = true;
@@ -112,6 +150,7 @@ export default {
         },
         closePageMenu() {
             this.isPageMenuOpen = false;
+            this.clearHoveredPageOption();
         }
     },
     mounted() {
@@ -139,7 +178,6 @@ export default {
     overflow: visible;
 }
 
-.page-switcher:hover,
 .page-switcher.is-open {
     z-index: 1200;
 }
@@ -178,11 +216,10 @@ export default {
     transform: translateY(-4px) scaleY(0.72);
     transform-origin: top center;
     pointer-events: none;
-    transition: opacity 0.18s ease, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: opacity, transform;
 }
 
-.page-switcher:hover .page-switcher-sheet::before,
 .page-switcher.is-open .page-switcher-sheet::before {
     opacity: 1;
     transform: translateY(0) scaleY(1);
@@ -197,31 +234,11 @@ export default {
     margin-left: auto;
     font-size: 0.75em;
     color: var(--tabs-switcher-accent-color);
-    transition: transform 0.22s ease;
+    transition: transform 0.3s ease;
 }
 
 .page-switcher.is-open .page-switcher-arrow {
     transform: rotate(180deg);
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .page-switcher:hover .page-switcher-arrow {
-        transform: rotate(180deg);
-    }
-}
-
-@media (hover: none), (pointer: coarse) {
-    .page-switcher:hover:not(.is-open) .page-switcher-sheet::before {
-        opacity: 0;
-        transform: translateY(-4px) scaleY(0.72);
-        pointer-events: none;
-    }
-
-    .page-switcher:hover:not(.is-open) .page-option:not(.is-current) {
-        opacity: 0;
-        pointer-events: none;
-        transform: translateY(-9px) scaleY(0.86);
-    }
 }
 
 .page-option {
@@ -245,36 +262,50 @@ export default {
     font-family: inherit;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+    transition: none;
 }
 
-.page-option:not(.is-current) {
+.page-option-list {
     position: absolute;
+    top: 41px;
     left: 5px;
     right: 5px;
-    width: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     opacity: 0;
     pointer-events: none;
     transform: translateY(-9px) scaleY(0.86);
     transform-origin: top center;
-    transition: opacity 0.16s ease, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.18s ease, color 0.18s ease;
-    will-change: opacity, transform;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.page-option:nth-child(2) {
-    top: 41px;
+.page-option-list .page-option {
+    position: relative;
+    z-index: 1;
+    width: 100%;
 }
 
-.page-option:nth-child(3) {
-    top: 78px;
+.page-option-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    height: 37px;
+    border-radius: 10px;
+    background: var(--tabs-switcher-hover-bg);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(calc(var(--hovered-option-index) * 37px));
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.page-option:nth-child(4) {
-    top: 115px;
+.page-option-highlight.is-visible {
+    opacity: 1;
 }
 
-.page-switcher:hover .page-option:not(.is-current),
-.page-switcher.is-open .page-option:not(.is-current) {
+.page-switcher.is-open .page-option-list {
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0) scaleY(1);
@@ -305,7 +336,7 @@ export default {
 
 .page-option:hover {
     color: var(--tabs-switcher-accent-color);
-    background-color: var(--tabs-switcher-hover-bg);
+    background-color: transparent;
 }
 
 .page-option.is-current:hover {
@@ -354,30 +385,14 @@ export default {
         width: 15px;
     }
 
-    .page-option:not(.is-current) {
-        left: 5px;
-        right: 5px;
-        width: auto;
+    .page-option-list {
+        top: 36px;
         transform: translateY(-8px) scaleY(0.86);
     }
 
-    .page-option:nth-child(2) {
-        top: 36px;
-    }
-
-    .page-option:nth-child(3) {
-        top: 68px;
-    }
-
-    .page-option:nth-child(4) {
-        top: 100px;
-    }
-
-    .page-switcher:hover .page-option:not(.is-current),
-    .page-switcher.is-open .page-option:not(.is-current) {
-        opacity: 1;
-        pointer-events: auto;
-        transform: translateY(0) scaleY(1);
+    .page-option-highlight {
+        height: 32px;
+        transform: translateY(calc(var(--hovered-option-index) * 32px));
     }
 
     .page-option.is-current {
