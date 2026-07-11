@@ -2538,6 +2538,7 @@ html.dark .header-content:hover {
 /* 空状态样式 */
 .empty-state {
     grid-column: 1 / -1;
+    grid-row: 1 / -1;
     display: flex;
     flex-direction: column;
     align-items: center;

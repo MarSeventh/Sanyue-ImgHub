@@ -395,12 +395,12 @@ html.dark .header-content:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 32px;
 }
 
 @media (max-width: 768px) {
     .main-container {
-        margin-top: 35px;
+        margin-top: 60px;
     }
 }
 
