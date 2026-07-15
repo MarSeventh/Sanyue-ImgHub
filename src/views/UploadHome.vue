@@ -236,7 +236,7 @@
         <div v-html="announcementContent"></div>
         <template #footer>
             <span class="dialog-footer">
-                <el-button type="primary" @click="showAnnouncementDialog = false">{{ $t('upload.announcementAck') }}</el-button>
+                <el-button type="primary" @click="acknowledgeAnnouncement">{{ $t('upload.announcementAck') }}</el-button>
             </span>
         </template>
     </el-dialog>
@@ -288,6 +288,7 @@ export default {
             isQuickToolbarPinned: false,
             showAnnouncementDialog: false, // 控制公告弹窗的显示
             announcementContent: '', // 公告内容
+            displayedAnnouncementRefreshAt: null, // 当前弹窗所展示的公告版本
             showHistory: false,
             themeMode: 'auto', // 主题模式：light, dark, auto
         }
@@ -429,14 +430,7 @@ export default {
             this.themeMode = 'light'
         }
 
-        // 首次访问公告
-        const visited = localStorage.getItem('visitedUploadHome')
-        const announcement = this.userConfig?.announcement
-        if (!visited && announcement) {
-            this.announcementContent = announcement
-            this.showAnnouncementDialog = true
-            localStorage.setItem('visitedUploadHome', 'true')
-        }
+        this.showAnnouncementIfNeeded()
     },
     components: {
         UploadForm,
@@ -635,11 +629,50 @@ export default {
         handleShowAnnouncement() {
             const announcement = this.userConfig?.announcement
             if (announcement) {
-                this.announcementContent = announcement
-                this.showAnnouncementDialog = true
+                this.openAnnouncement(announcement)
             } else {
                 this.$message.info(this.$t('upload.noAnnouncement'))
             }
+        },
+        getAnnouncementRefreshAt() {
+            const refreshAt = Number(this.userConfig?.announcementRefreshAt)
+            return Number.isFinite(refreshAt) && refreshAt > 0 ? refreshAt : null
+        },
+        openAnnouncement(announcement) {
+            this.announcementContent = announcement
+            this.displayedAnnouncementRefreshAt = this.getAnnouncementRefreshAt()
+            this.showAnnouncementDialog = true
+        },
+        showAnnouncementIfNeeded() {
+            const announcement = this.userConfig?.announcement
+            if (!announcement) return
+
+            const refreshAt = this.getAnnouncementRefreshAt()
+            if (refreshAt) {
+                const acknowledgedRefreshAt = Number(localStorage.getItem('announcementAcknowledgedRefreshAt'))
+                if (!Number.isFinite(acknowledgedRefreshAt) || refreshAt > acknowledgedRefreshAt) {
+                    this.openAnnouncement(announcement)
+                }
+                return
+            }
+
+            // 尚未产生刷新时间的旧配置继续兼容原有首次访问标记。
+            if (!localStorage.getItem('visitedUploadHome')) {
+                this.openAnnouncement(announcement)
+            }
+        },
+        acknowledgeAnnouncement() {
+            localStorage.setItem('announcementAcknowledgedAt', String(Date.now()))
+            localStorage.setItem('visitedUploadHome', 'true')
+
+            if (this.displayedAnnouncementRefreshAt) {
+                localStorage.setItem(
+                    'announcementAcknowledgedRefreshAt',
+                    String(this.displayedAnnouncementRefreshAt)
+                )
+            }
+
+            this.showAnnouncementDialog = false
         },
         // 处理目录选择
         handleDirectorySelect(path) {

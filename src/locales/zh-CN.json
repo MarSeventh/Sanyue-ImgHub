@@ -682,6 +682,8 @@
 ,
   "sysPage": {
     "settingsSaved": "设置已保存",
+    "refreshAnnouncement": "刷新公告已读状态",
+    "refreshAnnouncementTip": "开启后，即使公告内容没有变化，用户下次访问时也会再次看到公告。",
     "otherSettings": "其他设置",
     "channelSelectPlaceholder": "请先选择上传渠道"
   },

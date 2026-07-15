@@ -35,6 +35,14 @@
                     <el-input v-else-if="setting.type === 'textarea'" v-model="setting.value" type="textarea" :autosize="{ minRows: 2 }" resize="vertical" :disabled="setting.fixed" :placeholder="localized(setting, 'placeholder')"></el-input>
                     <!-- 否则使用输入框 -->
                     <el-input v-else v-model="setting.value" :disabled="setting.fixed" :placeholder="localized(setting, 'placeholder')"></el-input>
+                    <div v-if="setting.id === 'announcement'" class="announcement-refresh-option">
+                        <el-checkbox v-model="refreshAnnouncement">
+                            {{ $t('sysPage.refreshAnnouncement') }}
+                        </el-checkbox>
+                        <div class="announcement-refresh-tip">
+                            {{ $t('sysPage.refreshAnnouncementTip') }}
+                        </div>
+                    </div>
                 </el-form-item>
             </el-form>
         </div>
@@ -61,6 +69,8 @@ data() {
         },
         // 加载状态
         loading: true,
+        // 即使公告内容未变化，也在本次保存时刷新公告已读状态
+        refreshAnnouncement: false,
         // 可用渠道列表
         availableChannels: {}
     };
@@ -124,9 +134,15 @@ methods: {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(this.settings)
+            body: JSON.stringify({
+                ...this.settings,
+                refreshAnnouncement: this.refreshAnnouncement
+            })
         })
-        .then(() => this.$message.success(this.$t('sysPage.settingsSaved')));
+        .then(() => {
+            this.refreshAnnouncement = false;
+            this.$message.success(this.$t('sysPage.settingsSaved'));
+        });
     },
     // 获取可用渠道列表
     async fetchAvailableChannels() {
@@ -260,6 +276,16 @@ mounted() {
 
 .first-settings :deep(.el-switch) {
     --el-switch-on-color: var(--el-color-primary);
+}
+
+.announcement-refresh-option {
+    margin-top: 10px;
+}
+
+.announcement-refresh-tip {
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 /* 移动端适配 */

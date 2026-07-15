@@ -675,6 +675,8 @@
   },
   "sysPage": {
     "settingsSaved": "Settings saved",
+    "refreshAnnouncement": "Reset announcement read status",
+    "refreshAnnouncementTip": "When enabled, users will see the announcement again on their next visit even if its content has not changed.",
     "otherSettings": "Other Settings",
     "channelSelectPlaceholder": "Please select upload channel first"
   },
