@@ -656,14 +656,13 @@ export default {
                 return
             }
 
-            // 尚未产生刷新时间的旧配置继续兼容原有首次访问标记。
-            if (!localStorage.getItem('visitedUploadHome')) {
+            // 尚未产生刷新时间的旧公告在升级后再展示一次，确认后使用新版时间标记。
+            if (!localStorage.getItem('announcementAcknowledgedAt')) {
                 this.openAnnouncement(announcement)
             }
         },
         acknowledgeAnnouncement() {
             localStorage.setItem('announcementAcknowledgedAt', String(Date.now()))
-            localStorage.setItem('visitedUploadHome', 'true')
 
             if (this.displayedAnnouncementRefreshAt) {
                 localStorage.setItem(
