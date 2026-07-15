@@ -39,9 +39,6 @@
                         <el-checkbox v-model="refreshAnnouncement">
                             {{ $t('sysPage.refreshAnnouncement') }}
                         </el-checkbox>
-                        <div class="announcement-refresh-tip">
-                            {{ $t('sysPage.refreshAnnouncementTip') }}
-                        </div>
                     </div>
                 </el-form-item>
             </el-form>
@@ -279,13 +276,15 @@ mounted() {
 }
 
 .announcement-refresh-option {
+    width: 100%;
     margin-top: 10px;
+    display: flex;
+    justify-content: flex-start;
 }
 
-.announcement-refresh-tip {
-    color: var(--el-text-color-secondary);
-    font-size: 12px;
-    line-height: 1.5;
+.first-settings :deep(.el-form-item:has(.announcement-refresh-option) .el-form-item__content) {
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 /* 移动端适配 */
