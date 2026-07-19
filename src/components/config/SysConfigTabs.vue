@@ -119,14 +119,9 @@ beforeDestroy() {
     max-width: 200px;
     /* macOS 风格毛玻璃效果 */
     background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid #D9DCE2;
     border-radius: 16px;
-    box-shadow: 
-        0 4px 30px rgba(0, 0, 0, 0.1),
-        0 1px 3px rgba(0, 0, 0, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    box-shadow: none;
     transition: width 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
 }
@@ -137,26 +132,17 @@ beforeDestroy() {
 
 /* 深色模式 */
 html.dark .sidebar-container {
-    background: rgba(30, 30, 30, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 
-        0 4px 30px rgba(0, 0, 0, 0.3),
-        0 1px 3px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
+    box-shadow: none;
 }
 
 .sidebar-container:hover {
-    box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.12),
-        0 2px 6px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: none;
 }
 
 html.dark .sidebar-container:hover {
-    box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.4),
-        0 2px 6px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: none;
 }
 
 .menu-list {
@@ -187,12 +173,12 @@ html.dark .menu-item:hover {
 }
 
 .menu-item.is-active {
-    background: linear-gradient(135deg, rgba(64, 158, 255, 0.15), rgba(56, 189, 248, 0.25));
-    color: #409EFF;
+    background: rgba(37, 99, 235, 0.2);
+    color: #2563EB;
 }
 
 html.dark .menu-item.is-active {
-    background: linear-gradient(135deg, rgba(64, 158, 255, 0.2), rgba(56, 189, 248, 0.35));
+    background: rgba(37, 99, 235, 0.3);
 }
 
 .menu-icon {

@@ -92,13 +92,15 @@ export default {
 
 <style scoped>
 #themeToggle {
-  border: none;
+  border: 1px solid var(--glass-border);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
+  border-radius: 12px;
+  background-color: var(--toolbar-button-bg-color);
 }
 @media (max-width: 768px) {
   #themeToggle {

@@ -158,7 +158,7 @@ export default {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: var(--bg-color, linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%));
+  background: var(--bg-color, #DC2626);
   color: var(--text-color, #333);
 }
 
@@ -178,10 +178,9 @@ export default {
   padding: 2rem;
   position: relative;
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 /* 返回按钮 */
@@ -196,14 +195,14 @@ export default {
   background: var(--toolbar-button-bg-color, rgba(255, 255, 255, 0.9));
   border: none;
   color: var(--toolbar-button-text-color, #333);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .back-button:hover {
-  transform: translateY(-2px) scale(1.1);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
-  background: var(--primary-color, #409eff);
+  transform: scale(1.1);
+  box-shadow: none;
+  background: var(--primary-color, #2563EB);
   color: white;
 }
 
@@ -238,7 +237,7 @@ export default {
   align-items: center;
   justify-content: center;
   border: 3px solid white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
 }
 
 .exclamation-icon {
@@ -257,10 +256,7 @@ export default {
   font-weight: 700;
   margin-bottom: 1rem;
   color: var(--text-color, #333);
-  background: var(--not-found-title-text-color, linear-gradient(45deg, #409eff, #67c23a));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--not-found-title-text-color, #2563EB);
 }
 
 .status-description {
@@ -294,13 +290,13 @@ export default {
   padding: 12px 24px;
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   border: none;
   min-width: 140px;
 }
 
 .primary-btn {
-  background: var(--primary-color, #409eff);
+  background: var(--primary-color, #2563EB);
   color: white;
 }
 
@@ -310,8 +306,7 @@ export default {
 }
 
 .action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
 }
 
 .btn-icon {
@@ -339,15 +334,14 @@ export default {
 }
 
 .quick-link {
-  color: var(--primary-color, #409eff);
+  color: var(--primary-color, #2563EB);
   text-decoration: none;
   font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: 15px;
   background: var(--toolbar-button-bg-color, rgba(255, 255, 255, 0.8));
-  backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(64, 158, 255, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.2);
   font-size: 0.85rem;
   display: flex;
   align-items: center;
@@ -355,10 +349,9 @@ export default {
 }
 
 .quick-link:hover {
-  background: var(--primary-color, #409eff);
+  background: var(--primary-color, #2563EB);
   color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(64, 158, 255, 0.3);
+  box-shadow: none;
 }
 
 /* 项目信息 */
@@ -376,7 +369,7 @@ export default {
 }
 
 .project-link {
-  color: var(--primary-color, #409eff);
+  color: var(--primary-color, #2563EB);
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -582,7 +575,7 @@ export default {
 /* 深色模式适配 */
 @media (prefers-color-scheme: dark) {
   .blocked-container {
-    background: var(--bg-color, linear-gradient(135deg, #c0392b 0%, #8e44ad 100%));
+    background: var(--bg-color, #1F1F22);
     color: var(--text-color, #e4e7ed);
   }
   
@@ -600,15 +593,15 @@ export default {
   }
   
   .status-description-en {
-    color: var(--text-color-secondary, #909399);
+    color: var(--text-color-secondary, #A1A1AA);
   }
   
   .help-text {
-    color: var(--text-color-secondary, #909399);
+    color: var(--text-color-secondary, #A1A1AA);
   }
   
   .powered-by p {
-    color: var(--text-color-secondary, #909399);
+    color: var(--text-color-secondary, #A1A1AA);
   }
 }
 </style>

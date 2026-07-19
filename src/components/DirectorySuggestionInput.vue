@@ -185,9 +185,8 @@ export default {
     width: 100%;
     z-index: 9999;
     border-radius: 12px;
-    border: none;
+    border: 1px solid var(--glass-border);
     background-color: var(--popper-bg-color);
-    backdrop-filter: blur(10px);
     box-shadow: var(--popper-shadow);
     padding: 6px 0;
     overflow: hidden;

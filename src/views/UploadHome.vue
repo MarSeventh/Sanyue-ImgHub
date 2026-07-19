@@ -788,15 +788,21 @@ export default {
 }
 
 .toggle-dark-button {
-    border: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--glass-border);
     transition: all 0.3s ease;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
     border-radius: 12px;
     position: fixed;
     top: 30px;
     right: 80px;
+    padding: 0;
 }
 
 .more-dropdown {
@@ -808,14 +814,14 @@ export default {
 .more-dropdown .more-button {
     width: 2.5rem;
     height: 2.5rem;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;
+    border: 1px solid var(--glass-border);
     transition: all 0.3s ease;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
     color: var(--theme-toggle-color);
     border-radius: 12px;
     outline: none;
@@ -829,20 +835,21 @@ export default {
 .upload-method-button {
     width: 2.5rem;
     height: 2.5rem;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;
+    border: 1px solid var(--glass-border);
     transition: all 0.3s ease;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
     color: var(--theme-toggle-color);
     border-radius: 12px;
     position: fixed;
     top: 30px;
     right: 130px;
     outline: none;
+    padding: 0;
 }
 @media (max-width: 768px) {
     .upload-method-button {
@@ -852,6 +859,11 @@ export default {
 }
 .upload-method-icon {
     outline: none;
+}
+/* 右上角工具按钮内的图标统一尺寸(与 ToggleDark 的 1.5em 对齐) */
+.more-button .svg-inline--fa,
+.upload-method-button .svg-inline--fa {
+    font-size: 1.5em;
 }
 
 /* 移动端更多按钮 */
@@ -871,7 +883,6 @@ export default {
     transition: all 0.3s ease;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
     color: var(--theme-toggle-color);
     border-radius: 12px;
     outline: none;
@@ -930,12 +941,11 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;
+    border: 1px solid var(--glass-border);
     margin-left: 10px;
     transition: all 0.3s ease;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
     color: var(--theme-toggle-color);
     border-radius: 12px;
     outline: none;
@@ -964,7 +974,6 @@ export default {
     border-radius: 12px;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
     border: none;
     height: 100%;
 }
@@ -985,10 +994,9 @@ export default {
     z-index: 200;
     padding: 3px;
     border-radius: 999px;
+    border: 1px solid var(--glass-border);
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
     transition: background-color 0.24s ease, box-shadow 0.24s ease;
 }
 
@@ -1108,8 +1116,8 @@ export default {
 
 :deep(.el-dialog) {
     border-radius: 12px;
+    border: 1px solid var(--glass-border);
     background-color: var(--dialog-bg-color);
-    backdrop-filter: blur(10px);
     box-shadow: var(--dialog-box-shadow);
 }
 .dialog-action {
@@ -1146,7 +1154,7 @@ export default {
     letter-spacing: 3px;
 }
 .title:hover {
-    transform: scale(1.08) translateY(-3px);
+    transform: scale(1.08);
     filter: drop-shadow(0 0 20px var(--upload-title-hover-glow));
 }
 .title::after {
@@ -1167,10 +1175,7 @@ export default {
 }
 
 .main-title {
-    background: var(--upload-main-title-color);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    color: var(--upload-main-title-color);
     text-decoration: none;
     display: inline-block;
     position: relative;
@@ -1195,22 +1200,8 @@ export default {
     width: max-content;
     pointer-events: none;
     white-space: nowrap;
-    color: transparent;
+    color: var(--upload-title-crayon-deep, #1D2129);
     opacity: 0;
-    background:
-        repeating-linear-gradient(108deg,
-            var(--upload-title-crayon-base) 0 5px,
-            var(--upload-title-crayon-light) 5px 8px,
-            transparent 8px 10px),
-        repeating-linear-gradient(72deg,
-            transparent 0 7px,
-            var(--upload-title-crayon-fleck) 7px 8px,
-            transparent 8px 12px),
-        linear-gradient(90deg,
-            var(--upload-title-crayon-deep),
-            var(--upload-title-crayon-light));
-    background-clip: text;
-    -webkit-background-clip: text;
     -webkit-text-stroke: 0.35px var(--upload-title-crayon-edge);
     text-shadow:
         -1.2px 0.4px 0 var(--upload-title-crayon-burr),
@@ -1282,7 +1273,7 @@ export default {
         letter-spacing: 1px;
     }
     .title:hover {
-        transform: scale(1.05) translateY(-2px);
+        transform: scale(1.05);
     }
 }
 

@@ -236,11 +236,24 @@ export default {
     contain: layout paint style;
     contain-intrinsic-size: 260px;
     background: var(--admin-dashboard-imgcard-bg-color);
+    border: 1px solid var(--glass-border);
     border-radius: 8px;
     box-shadow: var(--admin-dashboard-imgcard-shadow);
     overflow: hidden;
     position: relative;
     transition: transform 0.3s ease;
+}
+/* 顶部标签区柔和遮罩(从顶部往下淡出) */
+.img-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.12) 50%, transparent 100%);
+    pointer-events: none;
+    z-index: 5;
 }
 .img-card :deep(.el-card__body) {
     padding: 0;
@@ -295,7 +308,6 @@ export default {
     height: auto;
     line-height: 1.2;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(4px);
 }
 .fail-tag {
     background-color: rgba(220, 53, 69, 0.6);
@@ -308,7 +320,6 @@ export default {
     height: auto;
     line-height: 1.2;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(4px);
 }
 .primary-tag {
     background-color: rgba(250, 82, 194, 0.6);
@@ -323,7 +334,6 @@ export default {
     height: auto;
     line-height: 1.2;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(4px);
 }
 .file-preview {
     display: flex;
@@ -349,7 +359,7 @@ export default {
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 50%, transparent 100%);
     padding: clamp(15px, 2.5vh, 30px) clamp(6px, 1vw, 12px) clamp(5px, 0.8vh, 10px);
     display: flex;
     flex-direction: column;

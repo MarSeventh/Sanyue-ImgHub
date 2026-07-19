@@ -81,7 +81,7 @@ export default {
 .dashboard-checkbox--list.checked,
 .dashboard-checkbox--list.indeterminate {
     border-color: #38bdf8;
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    background: #0ea5e9;
 }
 
 .dashboard-checkbox--breadcrumb {
@@ -93,7 +93,6 @@ export default {
     border-radius: 6px;
     background: var(--el-fill-color-light);
     box-shadow: var(--admin-dashboard-stats-shadow);
-    backdrop-filter: blur(12px) saturate(140%);
 }
 
 .dashboard-checkbox--breadcrumb::before {
@@ -129,7 +128,7 @@ export default {
 .dashboard-checkbox--breadcrumb.checked::before,
 .dashboard-checkbox--breadcrumb.indeterminate::before {
     border-color: rgba(255, 255, 255, 0.4);
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    background: #0ea5e9;
 }
 
 .dashboard-checkbox-mark {

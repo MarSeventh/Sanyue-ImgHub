@@ -1031,8 +1031,6 @@ mounted() {
 .first-settings :deep(.el-form) {
     padding: 16px 20px;
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border-radius: 12px;
     border: 1px solid var(--glass-border);
     margin-bottom: 20px;
@@ -1145,8 +1143,6 @@ mounted() {
     overflow: hidden;
     box-shadow: var(--glass-shadow);
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
 }
 
@@ -1315,7 +1311,7 @@ mounted() {
 :deep(.el-dialog) {
     border-radius: 12px;
     background-color: var(--dialog-bg-color);
-    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
     box-shadow: var(--dialog-box-shadow);
 }
 </style>

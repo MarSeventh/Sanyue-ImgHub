@@ -257,8 +257,6 @@ export default {
     overflow: hidden;
     border: 1px solid var(--glass-border);
     background: var(--glass-bg) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
 }
 
 .main-table :deep(.el-table__inner-wrapper) {
@@ -309,16 +307,10 @@ export default {
     padding: 10px 24px;
     /* macOS 风格毛玻璃效果 */
     background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    /* 顶部边框形成玻璃边缘光泽 */
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    /* 细实色边框,保证可见 */
+    border: 1px solid #D9DCE2;
     /* 悬浮阴影效果 */
-    box-shadow: 
-        0 4px 30px rgba(0, 0, 0, 0.1),
-        0 1px 3px rgba(0, 0, 0, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    box-shadow: none;
     transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     border-radius: 16px;
     position: fixed;
@@ -332,13 +324,9 @@ export default {
 
 /* 深色模式毛玻璃效果 */
 html.dark .header-content {
-    background: rgba(30, 30, 30, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 
-        0 4px 30px rgba(0, 0, 0, 0.3),
-        0 1px 3px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
+    box-shadow: none;
 }
 
 @media (max-width: 768px) {
@@ -358,19 +346,13 @@ html.dark .header-content {
 
 .header-content:hover {
     background: rgba(255, 255, 255, 0.82);
-    box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.12),
-        0 2px 6px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: none;
     transform: translateX(-50%);
 }
 
 html.dark .header-content:hover {
     background: rgba(35, 35, 35, 0.85);
-    box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.4),
-        0 2px 6px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: none;
 }
 
 .header-icon {
@@ -434,27 +416,19 @@ html.dark .header-content:hover {
 
 .pagination-container :deep(.el-pager li:hover) {
     color: #38bdf8;
-    transform: translateY(-2px);
     box-shadow: var(--admin-dashboard-btn-hover-shadow);
 }
 
 .pagination-container :deep(.el-pager li.is-active) {
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8) !important;
+    background: #2563EB !important;
     color: white !important;
     border-radius: 10px;
-    box-shadow: 
-        var(--admin-dashboard-btn-shadow),
-        0 4px 12px rgba(56, 189, 248, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pagination-container :deep(.el-pager li.is-active:hover) {
-    transform: translateY(-2px) !important;
-    box-shadow: 
-        var(--admin-dashboard-btn-hover-shadow),
-        0 6px 16px rgba(56, 189, 248, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    box-shadow: none !important;
 }
 
 .pagination-container :deep(.btn-prev),
@@ -471,7 +445,6 @@ html.dark .header-content:hover {
 .pagination-container :deep(.btn-prev:hover),
 .pagination-container :deep(.btn-next:hover) {
     color: #38bdf8;
-    transform: translateY(-2px);
     box-shadow: var(--admin-dashboard-btn-hover-shadow);
 }
 
@@ -489,7 +462,6 @@ html.dark .header-content:hover {
 }
 
 .load-more:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: none;
 }
 </style>

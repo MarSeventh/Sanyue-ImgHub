@@ -1178,7 +1178,6 @@ export default {
   justify-content: space-between;
   padding: 16px 24px;
   background: rgba(15, 15, 15, 0.95);
-  backdrop-filter: blur(10px);
   border-bottom: 1px solid #1a1a1a;
   position: relative;
 }
@@ -1232,7 +1231,7 @@ export default {
   border-radius: 14px;
   padding: 4px 10px;
   background: rgba(30, 30, 30, 0.98);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  box-shadow: none;
 }
 
 .search-box.expanded .search-icon svg {
@@ -1259,7 +1258,7 @@ export default {
 }
 
 .search-input::placeholder {
-  color: rgba(255,255,255,0.5);
+  color: #C8C9CC;
   font-size: 11px;
 }
 
@@ -1370,7 +1369,7 @@ export default {
 .error-credit {
   margin-top: 40px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.4);
+  color: #A1A1AA;
   font-size: 14px;
 }
 
@@ -1388,7 +1387,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgba(255, 255, 255, 0.5);
+  color: #C8C9CC;
   text-decoration: none;
   transition: color 0.2s;
 }
@@ -1473,7 +1472,6 @@ export default {
 .folder-card:hover {
   background: #1a1a1a;
   border-color: #333;
-  transform: translateY(-2px);
 }
 
 .folder-icon {
@@ -1524,7 +1522,7 @@ export default {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #141414 25%, #1a1a1a 50%, #141414 75%);
+  background: #1a1a1a;
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   z-index: 1;
@@ -1558,7 +1556,7 @@ export default {
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(transparent 50%, rgba(0,0,0,0.85));
+  background: rgba(0,0,0,0.5);
   opacity: 0;
   transition: opacity 0.2s;
   display: flex;
@@ -1593,7 +1591,7 @@ export default {
 
 .file-name {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #FAFAFA;
   text-align: center;
   word-break: break-all;
   max-width: 100%;
@@ -1611,7 +1609,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: #16213e;
   gap: 12px;
   padding: 16px;
   box-sizing: border-box;
@@ -1620,12 +1618,12 @@ export default {
 .audio-icon {
   width: 48px;
   height: 48px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #C8C9CC;
 }
 
 .audio-name {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #FAFAFA;
   text-align: center;
   word-break: break-all;
   max-width: 100%;
@@ -1647,13 +1645,12 @@ export default {
   border: none;
   border-radius: 50%;
   background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(8px);
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255,255,255,0.6);
+  color: #C8C9CC;
 }
 
 .action-btn svg {
@@ -1682,7 +1679,7 @@ export default {
   bottom: 24px;
   right: 24px;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
   color: rgba(255, 255, 255, 0.85);
   padding: 6px 12px;
   border-radius: 16px;
@@ -1793,7 +1790,7 @@ export default {
 
 .swipe-hint {
   font-size: 12px;
-  color: rgba(255,255,255,0.4);
+  color: #A1A1AA;
 }
 
 /* 手机端其他文件预览 */
@@ -1804,7 +1801,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.6);
+  color: #C8C9CC;
   gap: 16px;
 }
 
@@ -1815,7 +1812,7 @@ export default {
 
 .other-file-preview .file-name {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #FAFAFA;
   text-align: center;
   padding: 0 20px;
   word-break: break-all;
@@ -1885,6 +1882,7 @@ export default {
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0,0,0,0.6);
+  border: 1px solid var(--glass-border);
   color: rgba(255,255,255,0.8);
   padding: 8px 16px;
   border-radius: 20px;
@@ -2096,7 +2094,7 @@ export default {
 }
 
 :root:not(.dark) .file-count {
-  color: #999;
+  color: #59636E;
 }
 
 :root:not(.dark) .search-box {
@@ -2105,7 +2103,7 @@ export default {
 
 :root:not(.dark) .search-box.expanded {
   background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: none;
 }
 
 :root:not(.dark) .search-box.expanded .search-input {
@@ -2113,11 +2111,11 @@ export default {
 }
 
 :root:not(.dark) .search-box.expanded .search-input::placeholder {
-  color: rgba(0,0,0,0.4);
+  color: #4E5969;
 }
 
 :root:not(.dark) .search-box .search-icon {
-  color: rgba(0,0,0,0.6);
+  color: #1D2129;
 }
 
 :root:not(.dark) .search-box .search-icon:hover {
@@ -2126,15 +2124,15 @@ export default {
 
 :root:not(.dark) .loading-container,
 :root:not(.dark) .error-container {
-  color: #999;
+  color: #59636E;
 }
 
 :root:not(.dark) .error-credit {
-  color: rgba(0, 0, 0, 0.4);
+  color: #4E5969;
 }
 
 :root:not(.dark) .error-credit-links a {
-  color: rgba(0, 0, 0, 0.5);
+  color: #1D2129;
 }
 
 :root:not(.dark) .loading-spinner {
@@ -2158,7 +2156,7 @@ export default {
 }
 
 :root:not(.dark) .folder-icon {
-  color: #999;
+  color: #59636E;
 }
 
 :root:not(.dark) .folder-name {
@@ -2171,7 +2169,7 @@ export default {
 }
 
 :root:not(.dark) .image-wrapper::before {
-  background: linear-gradient(90deg, #f5f5f5 25%, #fff 50%, #f5f5f5 75%);
+  background: #E5E6EB;
 }
 
 :root:not(.dark) .image-wrapper:hover {
@@ -2180,23 +2178,23 @@ export default {
 
 :root:not(.dark) .file-placeholder {
   background: #f5f5f5;
-  color: #999;
+  color: #59636E;
 }
 
 :root:not(.dark) .file-name {
-  color: rgba(0, 0, 0, 0.6);
+  color: #1D2129;
 }
 
 :root:not(.dark) .audio-placeholder {
-  background: linear-gradient(135deg, #e8f4f8 0%, #d4e5f7 100%);
+  background: #EFF6FF;
 }
 
 :root:not(.dark) .audio-icon {
-  color: rgba(0, 0, 0, 0.4);
+  color: #4E5969;
 }
 
 :root:not(.dark) .audio-name {
-  color: rgba(0, 0, 0, 0.6);
+  color: #1D2129;
 }
 
 :root:not(.dark) .no-more {
@@ -2212,7 +2210,7 @@ export default {
 }
 
 :root:not(.dark) .loading-more {
-  color: #999;
+  color: #59636E;
 }
 
 :root:not(.dark) .theme-toggle-btn:hover {
@@ -2221,7 +2219,7 @@ export default {
 
 :root:not(.dark) .floating-page-indicator {
   background: rgba(255, 255, 255, 0.85);
-  color: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: #1D2129;
+  box-shadow: none;
 }
 </style>

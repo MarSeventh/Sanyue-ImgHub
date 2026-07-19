@@ -127,18 +127,16 @@ export default {
     align-items: center;
     justify-content: space-between;
     margin: 8px 10px;
-    border: 1px solid var(--upload-list-item-border-color, rgba(64, 158, 255, 0.1));
+    border: 1px solid var(--upload-list-item-border-color, rgba(37, 99, 235, 0.1));
     padding: 10px 12px;
     border-radius: 16px;
-    background: var(--upload-list-item-bg, linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%));
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px var(--upload-list-item-shadow, rgba(0, 0, 0, 0.04));
+    background: var(--upload-list-item-bg, rgba(255, 255, 255, 0.8));
+    box-shadow: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .upload-list-item:hover {
-    border-color: var(--upload-list-item-hover-border, rgba(64, 158, 255, 0.25));
-    box-shadow: 0 4px 16px var(--upload-list-item-hover-shadow, rgba(64, 158, 255, 0.12));
-    transform: translateY(-2px);
+    border-color: var(--upload-list-item-hover-border, rgba(37, 99, 235, 0.25));
+    box-shadow: none;
 }
 .upload-list-item-content {
     display: flex;
@@ -177,16 +175,15 @@ export default {
     align-items: center;
     justify-content: center;
     padding: 8px 16px;
-    background: var(--file-name-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.08) 0%, rgba(64, 158, 255, 0.03) 100%));
+    background: var(--file-name-bg, rgba(37, 99, 235, 0.05));
     border-radius: 10px;
     margin-bottom: 8px;
-    border: 1px solid var(--file-name-border, rgba(64, 158, 255, 0.12));
-    backdrop-filter: blur(4px);
+    border: 1px solid var(--file-name-border, rgba(37, 99, 235, 0.12));
     transition: all 0.3s ease;
 }
 .upload-list-item-name-wrapper:hover {
-    background: var(--file-name-hover-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.12) 0%, rgba(64, 158, 255, 0.06) 100%));
-    border-color: var(--file-name-hover-border, rgba(64, 158, 255, 0.2));
+    background: var(--file-name-hover-bg, rgba(37, 99, 235, 0.09));
+    border-color: var(--file-name-hover-border, rgba(37, 99, 235, 0.2));
 }
 .upload-list-item-name {
     font-size: 14px;
@@ -202,12 +199,12 @@ export default {
     margin-top: 8px;
     width: 28vw;
     padding: 4px 8px;
-    background: var(--progress-wrapper-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.05) 0%, rgba(64, 158, 255, 0.02) 100%));
+    background: var(--progress-wrapper-bg, rgba(37, 99, 235, 0.04));
     border-radius: 12px;
-    border: 1px solid var(--progress-wrapper-border, rgba(64, 158, 255, 0.1));
+    border: 1px solid var(--progress-wrapper-border, rgba(37, 99, 235, 0.1));
 }
 .upload-list-item-progress :deep(.el-progress) {
-    --el-color-primary: #409eff;
+    --el-color-primary: #2563EB;
 }
 .upload-list-item-progress :deep(.el-progress-bar) {
     padding-right: 0;
@@ -216,14 +213,14 @@ export default {
 .upload-list-item-progress :deep(.el-progress-bar__outer) {
     height: 10px !important;
     border-radius: 8px;
-    background: var(--progress-outer-bg, linear-gradient(135deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.03) 100%));
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: var(--progress-outer-bg, rgba(0, 0, 0, 0.045));
+    box-shadow: none;
     overflow: hidden;
 }
 .upload-list-item-progress :deep(.el-progress-bar__inner) {
     border-radius: 8px;
-    background: linear-gradient(90deg, #409eff 0%, #66b1ff 50%, #409eff 100%) !important;
-    box-shadow: 0 0 12px rgba(64, 158, 255, 0.5), 0 0 4px rgba(64, 158, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: #2563EB !important;
+    box-shadow: none;
     position: relative;
     overflow: hidden;
     transition: width 0.3s ease;
@@ -232,7 +229,7 @@ export default {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+    background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 .upload-list-item-progress :deep(.el-progress-bar__inner::before) {
@@ -243,9 +240,9 @@ export default {
     animation: progressStripes 1s linear infinite;
 }
 .upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner) {
-    background: linear-gradient(90deg, #67c23a 0%, #85ce61 25%, #95d475 50%, #85ce61 75%, #67c23a 100%) !important;
+    background: #16A34A !important;
     background-size: 200% 100%;
-    box-shadow: 0 0 12px rgba(103, 194, 58, 0.5), 0 0 4px rgba(103, 194, 58, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: none;
     animation: none;
 }
 .upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner::before),
@@ -254,9 +251,9 @@ export default {
     background: none;
 }
 .upload-list-item-progress :deep(.el-progress--exception .el-progress-bar__inner) {
-    background: linear-gradient(90deg, #f56c6c 0%, #f78989 25%, #f9a7a7 50%, #f78989 75%, #f56c6c 100%) !important;
+    background: #DC2626 !important;
     background-size: 200% 100%;
-    box-shadow: 0 0 12px rgba(245, 108, 108, 0.5), 0 0 4px rgba(245, 108, 108, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: none;
     animation: progressPulse 1s ease-in-out infinite;
 }
 .upload-list-item-progress :deep(.el-progress--exception .el-progress-bar__inner::before) {
@@ -276,12 +273,9 @@ export default {
 .upload-list-item-url :deep(.el-input) {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.upload-list-item-url :deep(.el-input:hover) {
-    transform: translateY(-1px);
-}
 .upload-list-item-url :deep(.el-input__wrapper) {
     border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--el-fill-color-blank);
     border: 1px solid var(--el-border-color-lighter);
@@ -293,18 +287,18 @@ export default {
     border-radius: 0 9px 9px 0 !important;
 }
 .upload-list-item-url :deep(.el-input__wrapper:hover) {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    box-shadow: none;
     border-color: var(--el-color-primary-light-5);
 }
 .upload-list-item-url :deep(.el-input__wrapper.is-focus) {
-    box-shadow: 0 0 0 2px var(--el-color-primary-light-8), 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: none;
     border-color: var(--el-color-primary);
 }
 .upload-list-item-url :deep(.el-input__wrapper.is-focus::before) {
     content: '';
     position: absolute;
     top: 0; left: -100%; width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(64, 158, 255, 0.08), transparent);
+    background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.08), transparent);
     animation: shimmer 2s infinite;
     z-index: 0;
 }
@@ -401,25 +395,25 @@ export default {
     height: 100%;
 }
 .modern-file-action-btn-primary {
-    background: var(--file-action-primary-bg, linear-gradient(145deg, #409eff 0%, #53a8ff 50%, #66b1ff 100%));
+    background: var(--file-action-primary-bg, #2563EB);
     color: white;
-    box-shadow: 0 3px 10px rgba(64, 158, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: none;
 }
 .modern-file-action-btn-primary:hover {
-    transform: translateY(-3px) scale(1.08);
-    box-shadow: 0 6px 20px rgba(64, 158, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transform: scale(1.08);
+    box-shadow: none;
 }
 .modern-file-action-btn-primary:active {
     transform: translateY(-1px) scale(1.02);
 }
 .modern-file-action-btn-danger {
-    background: var(--file-action-danger-bg, linear-gradient(145deg, #f56c6c 0%, #f78989 50%, #f9a7a7 100%));
+    background: var(--file-action-danger-bg, #DC2626);
     color: white;
-    box-shadow: 0 3px 10px rgba(245, 108, 108, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: none;
 }
 .modern-file-action-btn-danger:hover {
-    transform: translateY(-3px) scale(1.08);
-    box-shadow: 0 6px 20px rgba(245, 108, 108, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transform: scale(1.08);
+    box-shadow: none;
 }
 .modern-file-action-btn-danger:active {
     transform: translateY(-1px) scale(1.02);

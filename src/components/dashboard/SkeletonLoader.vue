@@ -88,6 +88,7 @@ export default {
     width: 100%;
     height: 22vh;
     background: var(--admin-dashboard-imgcard-bg-color);
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
     box-shadow: var(--admin-dashboard-imgcard-shadow);
     overflow: hidden;
@@ -97,12 +98,7 @@ export default {
 .skeleton-image {
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        var(--skeleton-bg-color) 25%,
-        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
-        var(--skeleton-bg-color) 75%
-    );
+    background: var(--skeleton-bg-color);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -113,7 +109,7 @@ export default {
     left: 0;
     right: 0;
     padding: 15px;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+    background: rgba(0, 0, 0, 0.5);
 }
 
 .skeleton-text {
@@ -121,12 +117,7 @@ export default {
     width: 60%;
     margin: 0 auto;
     border-radius: 4px;
-    background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.1) 25%,
-        rgba(255, 255, 255, 0.25) 50%,
-        rgba(255, 255, 255, 0.1) 75%
-    );
+    background: var(--skeleton-bg-color);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -147,12 +138,7 @@ export default {
     width: 40px;
     height: 40px;
     border-radius: 6px;
-    background: linear-gradient(
-        90deg,
-        var(--skeleton-bg-color) 25%,
-        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
-        var(--skeleton-bg-color) 75%
-    );
+    background: var(--skeleton-bg-color);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -161,12 +147,7 @@ export default {
     height: 14px;
     width: 80%;
     border-radius: 4px;
-    background: linear-gradient(
-        90deg,
-        var(--skeleton-bg-color) 25%,
-        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
-        var(--skeleton-bg-color) 75%
-    );
+    background: var(--skeleton-bg-color);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -175,12 +156,7 @@ export default {
     height: 14px;
     width: 60px;
     border-radius: 4px;
-    background: linear-gradient(
-        90deg,
-        var(--skeleton-bg-color) 25%,
-        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
-        var(--skeleton-bg-color) 75%
-    );
+    background: var(--skeleton-bg-color);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -189,12 +165,7 @@ export default {
     height: 14px;
     width: 40px;
     border-radius: 4px;
-    background: linear-gradient(
-        90deg,
-        var(--skeleton-bg-color) 25%,
-        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
-        var(--skeleton-bg-color) 75%
-    );
+    background: var(--skeleton-bg-color);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -203,12 +174,7 @@ export default {
     height: 20px;
     width: 50px;
     border-radius: 10px;
-    background: linear-gradient(
-        90deg,
-        var(--skeleton-bg-color) 25%,
-        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
-        var(--skeleton-bg-color) 75%
-    );
+    background: var(--skeleton-bg-color);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }

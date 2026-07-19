@@ -268,7 +268,6 @@ export default {
 
 .login-title:hover,
 .login-title:focus {
-    transform: translateY(-2px);
     text-shadow: 0 0 10px var(--login-title-glow-color, rgba(52, 152, 219, 0.5));
 }
 
@@ -283,7 +282,7 @@ export default {
     border-radius: 12px;
     box-shadow: var(--login-container-box-shadow);
     background-color: var(--login-container-bg-color);
-    backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
     transition: all 0.3s ease;
     padding: 40px 0;
     gap: 20px;
@@ -299,7 +298,6 @@ export default {
 }
 .login-container:hover {
     box-shadow: var(--login-container-hover-box-shadow);
-    transform: translateY(-5px);
 }
 
 .input-container {
@@ -353,7 +351,7 @@ export default {
     bottom: -2px;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--login-input-underline-color, #5b9bd3), var(--login-input-underline-secondary-color, #7ba9d8));
+    background: var(--login-input-underline-color, #5b9bd3);
     transition: width 0.3s linear;
     border-radius: 1px;
 }
@@ -425,8 +423,8 @@ export default {
 
 .submit:not(.is-loading):hover,
 .submit:not(.is-loading):focus {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+    box-shadow: none;
 }
 
 .submit:disabled {
@@ -441,7 +439,7 @@ export default {
 }
 
 .password-input:deep(.el-input__prefix) {
-    color: var(--login-input-icon-color, #909399);
+    color: var(--login-input-icon-color, #59636E);
     font-size: 1rem;
     transition: color 0.3s ease;
 }
@@ -453,11 +451,10 @@ export default {
 .password-input:deep(.el-input__wrapper) {
     border-radius: 12px;
     background-color: var(--password-input-bg-color);
-    border: 2px solid transparent;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--glass-border);
+    box-shadow: none;
     padding: 12px 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
     position: relative;
     overflow: hidden;
 }
@@ -478,15 +475,13 @@ export default {
 }
 
 .password-input:deep(.el-input__wrapper):hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: none;
     border-color: var(--login-input-underline-color, #5b9bd3);
 }
 
 .password-input:deep(.el-input__wrapper):focus-within {
     border-color: var(--login-input-underline-color, #5b9bd3);
-    box-shadow: 0 0 0 3px rgba(91, 155, 211, 0.1);
-    transform: translateY(-1px);
+    box-shadow: none;
 }
 
 .password-input:deep(.el-input__inner) {
@@ -546,11 +541,10 @@ export default {
     position: fixed;
     top: 30px;
     right: 30px;
-    border: none;
+    border: 1px solid var(--glass-border);
     transition: all 0.3s ease;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
     border-radius: 12px;
 }
 .toggle-dark:hover {
@@ -564,7 +558,7 @@ export default {
     transition: all 0.3s ease;
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
     width: 2.5rem;
     height: 2.5rem;

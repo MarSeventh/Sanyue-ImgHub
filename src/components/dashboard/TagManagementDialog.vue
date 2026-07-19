@@ -369,12 +369,8 @@ export default {
     transition: transform 0.2s;
 }
 
-.tag-item.clickable:hover {
-    transform: translateY(-2px);
-}
-
 .empty-message {
-    color: #909399;
+    color: #59636E;
     font-size: 13px;
     padding: 10px 0;
 }

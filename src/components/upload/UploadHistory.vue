@@ -316,7 +316,6 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    backdrop-filter: blur(20px);
     background: var(--admin-container-bg-color);
     z-index: -1;
     /* 强制创建独立的合成层，提升渲染稳定性 */
@@ -368,7 +367,6 @@ export default {
 .header-right .el-button {
     background-color: var(--toolbar-button-bg-color);
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
     border: none;
     color: var(--theme-toggle-color);
     transition: all 0.3s ease;
@@ -380,7 +378,7 @@ export default {
 }
 
 .header-right .el-button.el-button--danger {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+    background: #DC2626;
     color: #fff;
 }
 
@@ -403,12 +401,10 @@ export default {
     overflow: hidden;
     box-shadow: var(--toolbar-button-shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
 }
 
 .grid-item:hover {
-    transform: translateY(-5px);
     box-shadow: var(--toolbar-button-shadow-hover);
 }
 
@@ -457,10 +453,6 @@ export default {
     gap: 15px;
 }
 
-.grid-actions .el-button {
-    backdrop-filter: blur(10px);
-}
-
 .grid-info {
     padding: 12px;
 }
@@ -495,8 +487,7 @@ export default {
     background: var(--toolbar-button-bg-color);
     border-radius: 12px;
     box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
-    border: none;
+    border: 1px solid var(--glass-border);
     transition: all 0.3s ease;
 }
 
@@ -554,10 +545,6 @@ export default {
 .list-actions {
     display: flex;
     gap: 8px;
-}
-
-.list-actions .el-button {
-    backdrop-filter: blur(10px);
 }
 
 .empty-state {
@@ -629,7 +616,7 @@ export default {
     height: 14px;
     border-radius: 50%;
     background: var(--el-upload-dragger-uniform-color);
-    box-shadow: 0 0 10px var(--el-upload-dragger-uniform-color);
+    box-shadow: none;
     z-index: 2;
     box-sizing: border-box;
 }

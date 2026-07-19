@@ -210,8 +210,6 @@ export default {
     border-radius: 14px;
     background: var(--tabs-dropdown-popper-bg-color);
     box-shadow: var(--tabs-dropdown-popper-shadow);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
     opacity: 0;
     transform: translateY(-4px) scaleY(0.72);
     transform-origin: top center;
