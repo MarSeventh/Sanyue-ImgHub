@@ -47,16 +47,6 @@
                     <el-input v-model="settings.randomImageAPI.allowedDir" :disabled="settings.randomImageAPI.fixed"></el-input>
                 </el-form-item>
             </el-form>
-            <h3 class="first-title">{{ $t('sysOthers.wallpaperSettings') }}
-                <el-tooltip :content="$t('sysOthers.wallpaperSettingsTooltip')" placement="right">
-                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
-                </el-tooltip>
-            </h3>
-            <el-form :model="settings.wallpaper" label-width="120px">
-                <el-form-item :label="$t('sysOthers.enableWallpaper')">
-                    <el-switch v-model="settings.wallpaper.enabled" :disabled="settings.wallpaper.fixed"></el-switch>
-                </el-form-item>
-            </el-form>
             <h3 class="first-title">{{ $t('sysOthers.publicBrowse') }}
                 <el-tooltip :content="$t('sysOthers.publicBrowseTooltip')" placement="right" raw-content>
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
@@ -139,8 +129,7 @@ data() {
             randomImageAPI: {},
             cloudflareApiToken: {},
             webDAV: {},
-            publicBrowse: {},
-            wallpaper: { enabled: true }
+            publicBrowse: {}
         },
         availableChannels: {}, // 可用渠道列表
         // 加载状态
@@ -164,10 +153,6 @@ watch: {
 },
 methods: {
     saveSettings() {
-        // 如果 wallpaper 开关有变化,同步到 Vuex
-        if (this.settings.wallpaper && this.settings.wallpaper.enabled !== undefined) {
-            this.$store.commit('setWallpaperEnabled', this.settings.wallpaper.enabled);
-        }
         fetchWithAuth('/api/manage/sysConfig/others', {
             method: 'POST',
             headers: {
@@ -194,10 +179,6 @@ mounted() {
     fetchWithAuth('/api/manage/sysConfig/others')
     .then((response) => response.json())
     .then((data) => {
-        // 后端不会返回 wallpaper 字段,补充默认值避免报错
-        if (!data.wallpaper) {
-            data.wallpaper = { enabled: true };
-        }
         this.settings = data;
     })
     .finally(() => {

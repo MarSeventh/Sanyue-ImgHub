@@ -186,11 +186,19 @@ html.dark .custom-select-dropdown {
 }
 html.dark .custom-select-option:hover {
     background: rgba(255, 255, 255, 0.08);
+    color: var(--el-text-color-primary);
 }
 
 .custom-select-option.is-selected {
     color: var(--el-color-primary);
     font-weight: 500;
+}
+html.dark .custom-select-option.is-selected {
+    color: var(--el-color-primary-light-8);
+}
+html.dark .custom-select-option.is-selected:hover {
+    background: rgba(74, 93, 155, 0.38);
+    color: #fff;
 }
 
 .option-icon {

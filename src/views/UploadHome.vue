@@ -882,6 +882,9 @@ html.dark .upload-method-button {
 .upload-method-button .svg-inline--fa {
     font-size: 1.5em;
 }
+.directory-tree-trigger .svg-inline--fa {
+    font-size: 1.3em;
+}
 
 /* 移动端更多按钮 */
 .mobile-more-dropdown {
@@ -984,7 +987,7 @@ html.dark .mobile-more-button:hover {
 .directory-tree-trigger:hover {
     background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 html.dark .directory-tree-trigger:hover {
     background-color: rgba(22, 22, 24, 0.88);

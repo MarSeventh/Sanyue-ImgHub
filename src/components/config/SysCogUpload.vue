@@ -1407,31 +1407,31 @@ html.dark .add-btn:hover {
     transform: translate(-50%, -50%);
     transition: opacity 0.3s ease;
     z-index: 0;
-    background: rgba(56, 189, 248, 0.15);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
 }
 
 .channel-card.telegram .card-glow {
-    background: rgba(84, 169, 235, 0.2);
+    background: radial-gradient(circle, rgba(84, 169, 235, 0.2) 0%, transparent 70%);
 }
 
 .channel-card.cfr2 .card-glow {
-    background: rgba(246, 130, 31, 0.2);
+    background: radial-gradient(circle, rgba(246, 130, 31, 0.2) 0%, transparent 70%);
 }
 
 .channel-card.s3 .card-glow {
-    background: rgba(86, 154, 49, 0.2);
+    background: radial-gradient(circle, rgba(86, 154, 49, 0.2) 0%, transparent 70%);
 }
 
 .channel-card.discord .card-glow {
-    background: rgba(88, 101, 242, 0.2);
+    background: radial-gradient(circle, rgba(88, 101, 242, 0.2) 0%, transparent 70%);
 }
 
 .channel-card.huggingface .card-glow {
-    background: rgba(255, 210, 30, 0.2);
+    background: radial-gradient(circle, rgba(255, 210, 30, 0.2) 0%, transparent 70%);
 }
 
 .channel-card.webdav .card-glow {
-    background: rgba(20, 184, 166, 0.2);
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.2) 0%, transparent 70%);
 }
 
 .channel-card:hover {

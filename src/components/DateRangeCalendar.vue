@@ -354,13 +354,20 @@ export default {
 
 .calendar-day {
   position: relative;
+  width: 38px;
   height: 38px;
+  box-sizing: border-box;
+  justify-self: center;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: 50%;
   background: transparent;
   color: var(--admin-container-color);
   font-size: 14px;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }

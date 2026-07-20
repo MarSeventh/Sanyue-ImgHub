@@ -702,10 +702,7 @@
     "webdavUploadChannel": "Upload Channel",
     "webdavDefaultChannel": "Default Channel",
     "webdavChannelName": "Specified Channel",
-    "settingsSaved": "Settings saved",
-    "wallpaperSettings": "Wallpaper Settings",
-    "wallpaperSettingsTooltip": "Toggle background wallpaper across all pages. When off, solid color background will be used",
-    "enableWallpaper": "Enable Wallpaper"
+    "settingsSaved": "Settings saved"
   },
   "customerConfig": {
     "uploadFileList": "Upload File List",

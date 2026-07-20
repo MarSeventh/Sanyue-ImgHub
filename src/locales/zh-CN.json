@@ -709,10 +709,7 @@
     "webdavUploadChannel": "上传渠道",
     "webdavDefaultChannel": "默认渠道",
     "webdavChannelName": "指定渠道名",
-    "settingsSaved": "设置已保存",
-    "wallpaperSettings": "壁纸设置",
-    "wallpaperSettingsTooltip": "控制所有页面的背景壁纸开关，关闭后将使用纯色背景",
-    "enableWallpaper": "启用壁纸"
+    "settingsSaved": "设置已保存"
   },
   "customerConfig": {
     "uploadFileList": "上传文件列表",

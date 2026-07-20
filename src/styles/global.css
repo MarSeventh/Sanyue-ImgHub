@@ -878,10 +878,15 @@ body {
     background: #EFF6FF;
     border-color: var(--el-color-primary);
 }
-/* 暗色模式:单选卡片选中压暗,和灰蓝主色调一致 */
-.dark .radio-card-group .radio-card.is-checked {
-    background: rgba(74, 93, 155, 0.18);
+/* 暗色模式:提高单选卡片选中态的文字与背景对比度 */
+html.dark .radio-card-group .radio-card.is-checked {
+    background: rgba(74, 93, 155, 0.38);
     border-color: var(--el-color-primary-light-5);
+    color: var(--el-text-color-primary);
+}
+html.dark .radio-card-group .radio-card.is-checked .el-radio__label,
+html.dark .radio-card-group .radio-card.is-checked .radio-icon {
+    color: var(--el-text-color-primary) !important;
 }
 
 /* 隐藏原生单选按钮 */
@@ -1300,6 +1305,28 @@ body {
     --el-button-active-border-color: var(--el-color-primary-dark-2);
 }
 
+/* 暗色模式:朴素主按钮使用深色底和高对比度文字 */
+html.dark .el-button--primary.is-plain {
+    --el-button-text-color: var(--el-text-color-primary);
+    --el-button-bg-color: rgba(255, 255, 255, 0.04);
+    --el-button-border-color: rgba(118, 140, 198, 0.65);
+    --el-button-hover-text-color: #fff;
+    --el-button-hover-bg-color: var(--el-color-primary);
+    --el-button-hover-border-color: var(--el-color-primary-light-3);
+    --el-button-active-bg-color: var(--el-color-primary-dark-2);
+    --el-button-active-border-color: var(--el-color-primary-dark-2);
+    color: var(--el-text-color-primary) !important;
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(118, 140, 198, 0.65) !important;
+}
+
+html.dark .el-button--primary.is-plain:hover,
+html.dark .el-button--primary.is-plain:focus {
+    color: #fff !important;
+    background-color: var(--el-color-primary) !important;
+    border-color: var(--el-color-primary-light-3) !important;
+}
+
 .dark .el-pager li.is-active {
     background-color: var(--el-color-primary);
     color: #fff;
@@ -1322,12 +1349,15 @@ body {
 .dark .el-select__wrapper.is-focused {
     box-shadow: 0 0 0 1px var(--el-color-primary-light-5) inset !important;
 }
-.dark .el-select-dropdown__item.is-hovering,
-.dark .el-select-dropdown__item.is-selected,
-.dark .el-cascader__dropdown__item.hover,
-.dark .el-cascader__dropdown__item.is-active {
-    background-color: rgba(74, 93, 155, 0.18) !important;
-    color: var(--el-color-primary-light-7) !important;
+html.dark .el-select-dropdown__item.is-hovering,
+html.dark .el-cascader__dropdown__item.hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: var(--el-text-color-primary) !important;
+}
+html.dark .el-select-dropdown__item.is-selected,
+html.dark .el-cascader__dropdown__item.is-active {
+    background-color: rgba(74, 93, 155, 0.38) !important;
+    color: #fff !important;
 }
 .dark .el-switch.is-checked .el-switch__core {
     background-color: var(--el-color-primary) !important;
@@ -1347,7 +1377,7 @@ body {
 }
 .dark .el-checkbox__input.is-checked + .el-checkbox__label,
 .dark .el-radio__input.is-checked + .el-radio__label {
-    color: var(--el-color-primary-light-7) !important;
+    color: var(--el-text-color-primary) !important;
 }
 
 /* 加载动画样式 */
