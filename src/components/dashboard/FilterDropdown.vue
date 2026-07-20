@@ -265,7 +265,7 @@ export default {
 }
 
 .filter-badge :deep(.el-badge__content) {
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    background: #0ea5e9;
     border: none;
     font-size: 10px;
     height: 16px;
@@ -368,7 +368,7 @@ export default {
 }
 
 .filter-actions .el-button:hover:not(:disabled) {
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    background: #0ea5e9;
     border-color: #38bdf8;
     color: white;
 }

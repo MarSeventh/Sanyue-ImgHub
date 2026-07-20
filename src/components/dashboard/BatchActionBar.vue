@@ -93,8 +93,6 @@ export default {
   border-radius: 999px;
   background: var(--admin-batch-toolbar-bg);
   box-shadow: var(--admin-batch-toolbar-shadow);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .batch-selection-summary {

@@ -74,6 +74,7 @@ export default {
     contain: layout paint style;
     contain-intrinsic-size: 260px;
     background: var(--admin-dashboard-imgcard-bg-color);
+    border: 1px solid var(--glass-border);
     border-radius: 8px;
     box-shadow: var(--admin-dashboard-imgcard-shadow);
     overflow: hidden;
@@ -118,7 +119,7 @@ export default {
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    background: rgba(0, 0, 0, 0.5);
     padding: clamp(15px, 2.5vh, 30px) clamp(6px, 1vw, 12px) clamp(5px, 0.8vh, 10px);
     display: flex;
     flex-direction: column;

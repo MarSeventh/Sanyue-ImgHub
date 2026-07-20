@@ -1300,6 +1300,23 @@ mounted() {
 
 .add-btn {
     border-radius: 8px;
+    /* 主操作 CTA:微透明蓝,保持可读性同时贴合半透明风格 */
+    background-color: rgba(37, 99, 235, 0.9) !important;
+    border-color: rgba(37, 99, 235, 0.9) !important;
+    color: #fff !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .add-btn {
+    background-color: rgba(59, 130, 246, 0.9) !important;
+    border-color: rgba(59, 130, 246, 0.9) !important;
+}
+.add-btn:hover {
+    background-color: rgba(37, 99, 235, 0.78) !important;
+    border-color: rgba(37, 99, 235, 0.78) !important;
+}
+html.dark .add-btn:hover {
+    background-color: rgba(59, 130, 246, 0.78) !important;
+    border-color: rgba(59, 130, 246, 0.78) !important;
 }
 
 .header-actions {
@@ -1315,17 +1332,10 @@ mounted() {
 .channel-group {
     margin-bottom: 32px;
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid var(--glass-border);
     overflow: hidden;
     box-shadow: var(--glass-shadow);
-    transition: all 0.3s ease;
-}
-
-.channel-group:hover {
-    box-shadow: var(--glass-shadow-hover);
 }
 
 .group-header {
@@ -1377,17 +1387,13 @@ mounted() {
 /* 单个渠道卡片 */
 .channel-card {
     background: var(--glass-bg);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     border-radius: 10px;
     border: 1px solid var(--glass-border);
-    border-left: 3px solid var(--el-border-color-light);
-    transition: all 0.25s ease;
     overflow: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--glass-shadow);
 }
 
 /* 光斑效果 */
@@ -1401,37 +1407,37 @@ mounted() {
     transform: translate(-50%, -50%);
     transition: opacity 0.3s ease;
     z-index: 0;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+    background: rgba(56, 189, 248, 0.15);
 }
 
 .channel-card.telegram .card-glow {
-    background: radial-gradient(circle, rgba(84, 169, 235, 0.2) 0%, transparent 70%);
+    background: rgba(84, 169, 235, 0.2);
 }
 
 .channel-card.cfr2 .card-glow {
-    background: radial-gradient(circle, rgba(246, 130, 31, 0.2) 0%, transparent 70%);
+    background: rgba(246, 130, 31, 0.2);
 }
 
 .channel-card.s3 .card-glow {
-    background: radial-gradient(circle, rgba(86, 154, 49, 0.2) 0%, transparent 70%);
+    background: rgba(86, 154, 49, 0.2);
 }
 
 .channel-card.discord .card-glow {
-    background: radial-gradient(circle, rgba(88, 101, 242, 0.2) 0%, transparent 70%);
+    background: rgba(88, 101, 242, 0.2);
 }
 
 .channel-card.huggingface .card-glow {
-    background: radial-gradient(circle, rgba(255, 210, 30, 0.2) 0%, transparent 70%);
+    background: rgba(255, 210, 30, 0.2);
 }
 
 .channel-card.webdav .card-glow {
-    background: radial-gradient(circle, rgba(20, 184, 166, 0.2) 0%, transparent 70%);
+    background: rgba(20, 184, 166, 0.2);
 }
 
 .channel-card:hover {
-    border-color: var(--glass-border-hover);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    background: var(--glass-bg-hover);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    background: var(--glass-bg);
 }
 
 .channel-card.disabled {
@@ -1439,34 +1445,9 @@ mounted() {
     background: var(--el-fill-color-lighter);
 }
 
-/* 渠道类型边缘颜色 */
-.channel-card.telegram {
-    border-left-color: #54a9eb;
-}
-
-.channel-card.cfr2 {
-    border-left-color: #f6821f;
-}
-
-.channel-card.s3 {
-    border-left-color: #569a31;
-}
-
-.channel-card.discord {
-    border-left-color: #5865f2;
-}
-
-.channel-card.huggingface {
-    border-left-color: #ffd21e;
-}
-
-.channel-card.webdav {
-    border-left-color: #14b8a6;
-}
-
+/* 渠道卡片：扁平化,移除左侧品牌色装饰条 */
 .channel-card.fixed {
-    border-left-width: 3px;
-    border-left-style: dashed;
+    /* 固定渠道不再用虚线区分,保持统一样式 */
 }
 
 .card-header {
@@ -1623,6 +1604,7 @@ mounted() {
     color: var(--el-text-color-secondary);
     padding: 8px 12px;
     background: var(--el-fill-color);
+    border: 1px solid var(--glass-border);
     border-radius: 6px;
 }
 

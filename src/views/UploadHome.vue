@@ -392,7 +392,7 @@ export default {
     },
     mounted() {
         // 初始化背景图，启用自动创建元素
-        this.initializeBackground('uploadBkImg', '.container', false, true)
+        this.initializeBackground('uploadBkImg', '.container', true, true)
 
         // 读取用户选择的链接格式
         this.selectedUrlForm = this.uploadCopyUrlForm || 'url'
@@ -788,15 +788,25 @@ export default {
 }
 
 .toggle-dark-button {
-    border: none;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
+    width: 2.5rem;
+    height: 2.5rem;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #D9DCE2;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    background-color: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
     border-radius: 12px;
     position: fixed;
     top: 30px;
     right: 80px;
+    padding: 0;
+}
+html.dark .toggle-dark-button {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .more-dropdown {
@@ -808,41 +818,55 @@ export default {
 .more-dropdown .more-button {
     width: 2.5rem;
     height: 2.5rem;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
+    border: 1px solid #D9DCE2;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    background-color: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
     color: var(--theme-toggle-color);
     border-radius: 12px;
     outline: none;
     padding: 0;
 }
+html.dark .more-dropdown .more-button {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
+}
 .more-dropdown .more-button:hover {
     transform: scale(1.05);
-    box-shadow: var(--toolbar-button-shadow-hover);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .more-dropdown .more-button:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .upload-method-button {
     width: 2.5rem;
     height: 2.5rem;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
+    border: 1px solid #D9DCE2;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    background-color: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
     color: var(--theme-toggle-color);
     border-radius: 12px;
     position: fixed;
     top: 30px;
     right: 130px;
     outline: none;
+    padding: 0;
+}
+html.dark .upload-method-button {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 @media (max-width: 768px) {
     .upload-method-button {
@@ -852,6 +876,11 @@ export default {
 }
 .upload-method-icon {
     outline: none;
+}
+/* 右上角工具按钮内的图标统一尺寸(与 ToggleDark 的 1.5em 对齐) */
+.more-button .svg-inline--fa,
+.upload-method-button .svg-inline--fa {
+    font-size: 1.5em;
 }
 
 /* 移动端更多按钮 */
@@ -867,19 +896,27 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
+    border: 1px solid #D9DCE2;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    background-color: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
     color: var(--theme-toggle-color);
     border-radius: 12px;
     outline: none;
     padding: 0;
 }
+html.dark .mobile-more-button {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
+}
 .mobile-more-button:hover {
     transform: scale(1.05);
-    box-shadow: var(--toolbar-button-shadow-hover);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .mobile-more-button:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 /* 上传文件输入框容器样式 */
@@ -908,6 +945,9 @@ export default {
     width: 100px;
     height: 2.5rem;
     border-radius: 12px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
     transition: all 0.3s ease, width 0.4s ease;
 }
 .upload-folder.active {
@@ -930,19 +970,25 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: none;
+    box-sizing: border-box;
+    border: 1px solid var(--glass-border);
     margin-left: 10px;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
+    background-color: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
     color: var(--theme-toggle-color);
     border-radius: 12px;
     outline: none;
+    cursor: pointer;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
 }
 .directory-tree-trigger:hover {
-    transform: scale(1.05);
-    box-shadow: var(--toolbar-button-shadow-hover);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+    transform: scale(1.1);
+}
+html.dark .directory-tree-trigger:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 @media (max-width: 768px) {
     .directory-tree-trigger {
@@ -958,15 +1004,28 @@ export default {
 
 .upload-folder :deep(.el-input) {
     height: 100%;
+    box-sizing: border-box;
 }
 
 .upload-folder :deep(.el-input__wrapper) {
     border-radius: 12px;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(10px);
-    border: none;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    box-shadow: var(--glass-shadow);
+    border: 1px solid var(--glass-border);
     height: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
+}
+.upload-folder :deep(.el-input__wrapper:hover) {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .upload-folder :deep(.el-input__wrapper:hover) {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .quick-toolbar {
@@ -985,11 +1044,14 @@ export default {
     z-index: 200;
     padding: 3px;
     border-radius: 999px;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    transition: background-color 0.24s ease, box-shadow 0.24s ease;
+    border: 1px solid #D9DCE2;
+    background-color: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
+    transition: background-color 0.24s ease, border-color 0.24s ease;
+}
+html.dark .quick-toolbar {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .quick-toolbar-button {
@@ -1061,22 +1123,34 @@ export default {
     box-shadow: var(--upload-action-btn-hover-shadow);
 }
 .quick-toolbar:hover {
-    box-shadow: var(--toolbar-button-shadow-hover);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .quick-toolbar:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 .quick-toolbar-button:hover {
     transform: none;
 }
-.more-dropdown .more-button:hover,
-.mobile-more-button:hover,
 .toggle-dark-button:hover,
-.upload-method-button:hover,
-.directory-tree-trigger:hover {
+.upload-method-button:hover {
     transform: scale(1.05);
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow-hover);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
 }
-.upload-folder:hover {
-    box-shadow: var(--toolbar-button-shadow-hover);
+html.dark .toggle-dark-button:hover,
+html.dark .upload-method-button:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
+}
+.upload-folder:hover :deep(.el-input__wrapper) {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .upload-folder:hover :deep(.el-input__wrapper) {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 @media (max-width: 768px) {
@@ -1108,8 +1182,8 @@ export default {
 
 :deep(.el-dialog) {
     border-radius: 12px;
+    border: 1px solid var(--glass-border);
     background-color: var(--dialog-bg-color);
-    backdrop-filter: blur(10px);
     box-shadow: var(--dialog-box-shadow);
 }
 .dialog-action {
@@ -1146,7 +1220,7 @@ export default {
     letter-spacing: 3px;
 }
 .title:hover {
-    transform: scale(1.08) translateY(-3px);
+    transform: scale(1.08);
     filter: drop-shadow(0 0 20px var(--upload-title-hover-glow));
 }
 .title::after {
@@ -1167,10 +1241,7 @@ export default {
 }
 
 .main-title {
-    background: var(--upload-main-title-color);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    color: var(--upload-main-title-color);
     text-decoration: none;
     display: inline-block;
     position: relative;
@@ -1195,22 +1266,8 @@ export default {
     width: max-content;
     pointer-events: none;
     white-space: nowrap;
-    color: transparent;
+    color: var(--upload-title-crayon-deep, #1D2129);
     opacity: 0;
-    background:
-        repeating-linear-gradient(108deg,
-            var(--upload-title-crayon-base) 0 5px,
-            var(--upload-title-crayon-light) 5px 8px,
-            transparent 8px 10px),
-        repeating-linear-gradient(72deg,
-            transparent 0 7px,
-            var(--upload-title-crayon-fleck) 7px 8px,
-            transparent 8px 12px),
-        linear-gradient(90deg,
-            var(--upload-title-crayon-deep),
-            var(--upload-title-crayon-light));
-    background-clip: text;
-    -webkit-background-clip: text;
     -webkit-text-stroke: 0.35px var(--upload-title-crayon-edge);
     text-shadow:
         -1.2px 0.4px 0 var(--upload-title-crayon-burr),
@@ -1282,7 +1339,7 @@ export default {
         letter-spacing: 1px;
     }
     .title:hover {
-        transform: scale(1.05) translateY(-2px);
+        transform: scale(1.05);
     }
 }
 

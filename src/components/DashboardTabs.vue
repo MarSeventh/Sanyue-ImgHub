@@ -210,8 +210,6 @@ export default {
     border-radius: 14px;
     background: var(--tabs-dropdown-popper-bg-color);
     box-shadow: var(--tabs-dropdown-popper-shadow);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
     opacity: 0;
     transform: translateY(-4px) scaleY(0.72);
     transform-origin: top center;
@@ -317,7 +315,8 @@ export default {
     padding: 0 14px;
     color: var(--tabs-switcher-current-color);
     background: var(--tabs-switcher-current-bg);
-    box-shadow: inset 0 0 0 1px var(--tabs-switcher-current-border-color), var(--tabs-switcher-current-shadow);
+    border: 1px solid var(--tabs-switcher-current-border-color);
+    box-shadow: none;
     font-size: 1.1em;
     font-weight: bold;
     line-height: 1.15;
@@ -421,5 +420,15 @@ export default {
     --lang-icon-color: var(--admin-theme-toggle-color);
     transition: color 0.3s ease;
     padding: 5px;
+}
+
+/* 导航栏内主题/语言切换按钮:移除有色背景与毛玻璃,仅保留图标 */
+.tabs :deep(#themeToggle),
+.tabs :deep(#themeToggle:hover),
+.tabs :deep(.language-switcher),
+.tabs :deep(.language-switcher:hover) {
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 </style>

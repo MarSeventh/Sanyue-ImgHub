@@ -1237,22 +1237,18 @@ export default {
 
 .overview-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 24px;
   display: flex;
   align-items: center;
   box-shadow: var(--glass-shadow);
-  transition: all 0.3s ease;
   border: 1px solid var(--glass-border);
   cursor: pointer;
 }
 
 .overview-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--glass-shadow-hover);
-  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow);
+  background: var(--glass-bg);
 }
 
 .card-icon {
@@ -1264,7 +1260,7 @@ export default {
   justify-content: center;
   font-size: 24px;
   margin-right: 20px;
-  background: linear-gradient(135deg, #60A5FA, #93C5FD);
+  background: #2563EB;
   color: white;
 }
 
@@ -1288,7 +1284,7 @@ export default {
 
 .card-subtitle {
   font-size: 11px;
-  color: #999;
+  color: #59636E;
   margin-top: 4px;
   opacity: 0.8;
 }
@@ -1310,18 +1306,15 @@ export default {
 
 .chart-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 24px;
   box-shadow: var(--glass-shadow);
-  transition: all 0.3s ease;
   border: 1px solid var(--glass-border);
 }
 
 .chart-card:hover {
-  box-shadow: var(--glass-shadow-hover);
-  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow);
+  background: var(--glass-bg);
 }
 
 .chart-card,
@@ -1381,14 +1374,13 @@ export default {
   color: var(--admin-container-color);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .trend-calendar-btn:hover {
   color: var(--el-color-primary);
-  border-color: var(--el-color-primary);
-  background: rgba(64, 158, 255, 0.08);
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.18);
+  border-color: var(--glass-border);
+  background: var(--glass-bg);
+  box-shadow: none;
 }
 
 .trend-date-dialog {
@@ -1467,7 +1459,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 160px;
-  color: #999;
+  color: #59636E;
   font-size: 14px;
 }
 
@@ -1505,13 +1497,13 @@ export default {
 
 .stats-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--admin-purple), #E1BEE7);
+  background: #6366F1;
   border-radius: 4px;
   transition: width 0.6s ease;
 }
 
 .type-fill {
-  background: linear-gradient(90deg, #4CAF50, #81C784);
+  background: #16A34A;
 }
 
 .stats-value {
@@ -1579,13 +1571,12 @@ export default {
   gap: 10px;
   padding: 8px 12px;
   background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
-  transition: all 0.2s ease;
 }
 
 .legend-item:hover {
-  background: rgba(0, 0, 0, 0.06);
-  transform: translateX(4px);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 html.dark .legend-item {
@@ -1593,7 +1584,7 @@ html.dark .legend-item {
 }
 
 html.dark .legend-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .legend-color {
@@ -1632,18 +1623,15 @@ html.dark .legend-item:hover {
 
 .action-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 24px;
   box-shadow: var(--glass-shadow);
   border: 1px solid var(--glass-border);
-  transition: all 0.3s ease;
 }
 
 .action-card:hover {
-  box-shadow: var(--glass-shadow-hover);
-  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow);
+  background: var(--glass-bg);
 }
 
 .action-header {
@@ -1677,19 +1665,16 @@ html.dark .legend-item:hover {
 }
 
 .action-btn {
-  border: none;
-  border-radius: 14px;
-  padding: 14px 28px;
+  border-radius: 10px;
+  padding: 12px 24px;
   margin-left: 0;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   min-width: 150px;
   width: 150px;
-  height: 52px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  height: 48px;
+  box-shadow: none;
 }
 
 @media (max-width: 768px) {
@@ -1701,62 +1686,86 @@ html.dark .legend-item:hover {
   }
 }
 
-.action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.action-btn:hover::before {
-  left: 100%;
-}
-
-.action-btn:hover {
-  transform: translateY(-3px);
-}
-
-.action-btn:active {
-  transform: translateY(-1px);
-}
-
 .action-btn .fa-icon {
-  margin-right: 10px;
-  font-size: 15px;
+  margin-right: 8px;
+  font-size: 14px;
 }
 
+/* 重建索引：描边按钮(与备份统一) */
+/* 重建索引：蓝色语义(主操作) */
 .rebuild-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
+  background: #FFFFFF;
+  border-color: #E5E6EB;
+  color: #2563EB;
 }
 
 .rebuild-btn:hover {
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.45);
-  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+  background: #EFF6FF;
+  border-color: #93C5FD;
+  color: #1D4ED8;
 }
 
+/* 备份数据：绿色语义(安全保存) */
 .backup-btn {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  color: #fff;
+  background: #FFFFFF;
+  border-color: #E5E6EB;
+  color: #16A34A;
 }
 
 .backup-btn:hover {
-  box-shadow: 0 8px 24px rgba(17, 153, 142, 0.45);
-  background: linear-gradient(135deg, #0f8a80 0%, #32d970 100%);
+  background: #F0FDF4;
+  border-color: #86EFAC;
+  color: #15803D;
 }
 
+/* 恢复数据：橙色语义(有风险) */
 .restore-btn {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: #fff;
+  background: #FFFFFF;
+  border-color: #E5E6EB;
+  color: #D97706;
 }
 
 .restore-btn:hover {
-  box-shadow: 0 8px 24px rgba(245, 87, 108, 0.45);
-  background: linear-gradient(135deg, #e085eb 0%, #e04d61 100%);
+  background: #FFFBEB;
+  border-color: #FCD34D;
+  color: #B45309;
+}
+
+/* 深色模式 */
+.dark .rebuild-btn {
+  background: #1F1F22;
+  border-color: #2A2A2E;
+  color: #60A5FA;
+}
+
+.dark .rebuild-btn:hover {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #93C5FD;
+}
+
+.dark .backup-btn {
+  background: #1F1F22;
+  border-color: #2A2A2E;
+  color: #4ADE80;
+}
+
+.dark .backup-btn:hover {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(74, 222, 128, 0.4);
+  color: #86EFAC;
+}
+
+.dark .restore-btn {
+  background: #1F1F22;
+  border-color: #2A2A2E;
+  color: #FBBF24;
+}
+
+.dark .restore-btn:hover {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.4);
+  color: #FCD34D;
 }
 
 .restore-section {
@@ -1789,8 +1798,6 @@ html.dark .legend-item:hover {
 .file-info-card {
   position: relative;
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   box-shadow: var(--glass-shadow);
   border: 1px solid var(--glass-border);
@@ -1855,7 +1862,7 @@ html.dark .legend-item:hover {
   font-size: 14px;
   font-weight: 600;
   color: white;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 55%, transparent 100%);
   z-index: 2;
 }
 
@@ -1874,7 +1881,7 @@ html.dark .legend-item:hover {
   left: 0;
   right: 0;
   padding: 12px 16px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 50%, transparent 100%);
   text-align: center;
   z-index: 2;
 }
@@ -1892,7 +1899,7 @@ html.dark .legend-item:hover {
 
 .info-card-footer .file-meta {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #FAFAFA;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
@@ -1910,12 +1917,11 @@ html.dark .legend-item:hover {
 }
 
 .file-info-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: var(--glass-shadow);
 }
 
 .file-info-card:hover .card-bg-media {
-  transform: scale(1.05);
+  transform: scale(1);
 }
 
 /* 响应式设计 */
@@ -2043,7 +2049,7 @@ html.dark .legend-item:hover {
 }
 
 .progress-bar :deep(.el-progress-bar__inner) {
-  background: linear-gradient(90deg, var(--admin-purple), #E1BEE7);
+  background: #6366F1;
   border-radius: 6px;
   transition: width 0.3s ease;
 }
@@ -2092,8 +2098,7 @@ html.dark .legend-item:hover {
 .cancel-btn:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+  box-shadow: none;
 }
 
 .cancel-btn .fa-icon {
@@ -2155,15 +2160,14 @@ html.dark .legend-item:hover {
 }
 
 .error-actions .el-button--primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #6366F1;
   border: none;
   color: #fff;
 }
 
 .error-actions .el-button--primary:hover {
-  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  background: #4F46E5;
+  box-shadow: none;
 }
 
 .error-actions .el-button--default {
@@ -2174,9 +2178,8 @@ html.dark .legend-item:hover {
 
 .error-actions .el-button--default:hover {
   background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #4A4A52;
+  box-shadow: none;
 }
 
 .error-actions .fa-icon {

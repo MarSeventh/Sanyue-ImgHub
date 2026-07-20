@@ -79,7 +79,6 @@ export default {
 }
 
 .floating-save-btn:hover {
-    transform: translateY(-2px);
     box-shadow: var(--floating-btn-shadow-hover);
 }
 

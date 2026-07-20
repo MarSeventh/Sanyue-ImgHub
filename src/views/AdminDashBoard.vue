@@ -2095,7 +2095,6 @@ beforeUnmount() {
 :deep(.el-dialog) {
     border-radius: 12px;
     background-color: var(--dialog-bg-color);
-    backdrop-filter: blur(10px);
     box-shadow: var(--dialog-box-shadow);
 }
 
@@ -2106,16 +2105,10 @@ beforeUnmount() {
     padding: 10px 24px;
     /* macOS 风格毛玻璃效果 */
     background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    /* 顶部边框形成玻璃边缘光泽 */
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    /* 细实色边框,保证可见 */
+    border: 1px solid #D9DCE2;
     /* 悬浮阴影效果 */
-    box-shadow: 
-        0 4px 30px rgba(0, 0, 0, 0.1),
-        0 1px 3px rgba(0, 0, 0, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    box-shadow: none;
     transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     border-radius: 16px;
     position: fixed;
@@ -2129,13 +2122,9 @@ beforeUnmount() {
 
 /* 深色模式毛玻璃效果 */
 html.dark .header-content {
-    background: rgba(30, 30, 30, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 
-        0 4px 30px rgba(0, 0, 0, 0.3),
-        0 1px 3px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
+    box-shadow: none;
 }
 
 
@@ -2174,19 +2163,13 @@ html.dark .header-content {
 
 .header-content:hover {
     background: rgba(255, 255, 255, 0.82);
-    box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.12),
-        0 2px 6px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: none;
     transform: translateX(-50%);
 }
 
 html.dark .header-content:hover {
     background: rgba(35, 35, 35, 0.85);
-    box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.4),
-        0 2px 6px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: none;
 }
 
 .header-icon {
@@ -2222,16 +2205,24 @@ html.dark .header-content:hover {
     align-items: center;
     gap: 2px;
     padding: 2px;
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 6px;
-    background: var(--el-fill-color-light);
-    box-shadow: var(--admin-dashboard-stats-shadow);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #D9DCE2;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .breadcrumb-view-toggle {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .breadcrumb-view-toggle:hover {
-    border-color: rgba(56, 189, 248, 0.24);
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+    border-color: #BFC4CC;
+    background: rgba(255, 255, 255, 0.85);
+}
+html.dark .breadcrumb-view-toggle:hover {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .breadcrumb-view-button {
@@ -2256,7 +2247,7 @@ html.dark .header-content:hover {
 .breadcrumb-view-button.is-active {
     color: #38bdf8;
     background: rgba(56, 189, 248, 0.12);
-    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.18);
+    box-shadow: none;
 }
 
 .breadcrumb-view-icon {
@@ -2297,20 +2288,28 @@ html.dark .header-content:hover {
     font-size: 12px;
     font-weight: 500;
     color: var(--el-text-color-secondary);
-    background: var(--el-fill-color-light);
-    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 4px 12px;
     border-radius: 12px;
-    border: 1px solid var(--el-border-color-lighter);
-    transition: all 0.2s ease;
+    border: 1px solid #D9DCE2;
+    box-shadow: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
     margin-left: auto;
 }
+html.dark .stats-badge {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
+}
 
 .stats-badge:hover {
-    background: var(--el-fill-color);
-    color: var(--admin-purple);
-    border-color: var(--admin-purple);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .stats-badge:hover {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .stats-badge-icon {
@@ -2364,7 +2363,7 @@ html.dark .header-content:hover {
 }
 
 .header-content .actions .disabled {
-    color: #bbb;
+    color: #C0C4CC;
     pointer-events: none;
 }
 
@@ -2394,11 +2393,18 @@ html.dark .header-content:hover {
     display: flex;
     align-items: center;
 }
+.search-card :deep(.el-input) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
 .search-card :deep(.el-input__wrapper) {
     border-radius: 20px;
-    background: var(--admin-dashboard-search-card-bg-color);
-    box-shadow: var(--admin-dashboard-search-card-box-shadow);
-    transition: background-color 0.3s;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
 }
 
 .search-card :deep(.el-input__inner) {
@@ -2592,6 +2598,7 @@ html.dark .header-content:hover {
     flex-direction: column;
     gap: 0;
     background: var(--admin-dashboard-imgcard-bg-color);
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
     overflow-x: auto;
     overflow-y: visible;
@@ -2651,59 +2658,70 @@ html.dark .header-content:hover {
 }
 
 .pagination-container :deep(.el-pager li) {
-    background: var(--admin-dashboard-btn-bg-color);
+    background: rgba(255, 255, 255, 0.72);
     border-radius: 10px;
     margin: 0 4px;
     min-width: 36px;
     height: 36px;
     line-height: 36px;
     font-weight: 500;
-    border: none;
-    box-shadow: var(--admin-dashboard-btn-shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #D9DCE2;
+    box-shadow: none;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+html.dark .pagination-container :deep(.el-pager li) {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .pagination-container :deep(.el-pager li:hover) {
     color: #38bdf8;
-    transform: translateY(-2px);
-    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .pagination-container :deep(.el-pager li:hover) {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .pagination-container :deep(.el-pager li.is-active) {
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8) !important;
+    background: #0ea5e9 !important;
     color: white !important;
     border-radius: 10px;
-    box-shadow: 
-        var(--admin-dashboard-btn-shadow),
-        0 4px 12px rgba(56, 189, 248, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pagination-container :deep(.el-pager li.is-active:hover) {
-    transform: translateY(-2px) !important;
-    box-shadow: 
-        var(--admin-dashboard-btn-hover-shadow),
-        0 6px 16px rgba(56, 189, 248, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    box-shadow: none !important;
 }
 
 .pagination-container :deep(.btn-prev),
 .pagination-container :deep(.btn-next) {
-    background: var(--admin-dashboard-btn-bg-color) !important;
+    background: rgba(255, 255, 255, 0.72) !important;
     border-radius: 10px !important;
     min-width: 36px;
     height: 36px;
-    border: none;
-    box-shadow: var(--admin-dashboard-btn-shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #D9DCE2 !important;
+    box-shadow: none;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+html.dark .pagination-container :deep(.btn-prev),
+html.dark .pagination-container :deep(.btn-next) {
+    background: rgba(22, 22, 24, 0.75) !important;
+    border: 1px solid #34343A !important;
 }
 
 .pagination-container :deep(.btn-prev:hover),
 .pagination-container :deep(.btn-next:hover) {
     color: #38bdf8;
-    transform: translateY(-2px);
-    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-color: #BFC4CC !important;
+}
+html.dark .pagination-container :deep(.btn-prev:hover),
+html.dark .pagination-container :deep(.btn-next:hover) {
+    background: rgba(22, 22, 24, 0.88) !important;
+    border-color: #4A4A52 !important;
 }
 
 .pagination-right {
@@ -2734,11 +2752,16 @@ html.dark .header-content:hover {
 }
 
 .page-jump .jump-input :deep(.el-input__wrapper) {
-    background: var(--admin-dashboard-btn-bg-color);
-    box-shadow: var(--admin-dashboard-btn-shadow);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
+    border: 1px solid #D9DCE2;
     border-radius: 8px;
     padding: 0 8px;
     height: 28px;
+}
+html.dark .page-jump .jump-input :deep(.el-input__wrapper) {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .page-jump .jump-input :deep(.el-input__inner) {
@@ -2749,7 +2772,7 @@ html.dark .header-content:hover {
 }
 
 .page-jump .jump-btn {
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    background: #0ea5e9;
     border: none;
     border-radius: 8px;
     padding: 0 12px;
@@ -2757,13 +2780,12 @@ html.dark .header-content:hover {
     font-size: 12px;
     font-weight: 600;
     color: white;
-    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
+    box-shadow: none;
     transition: all 0.3s ease;
 }
 
 .page-jump .jump-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+    box-shadow: none;
 }
 
 /* 移动端分页适配 */
@@ -2864,10 +2886,10 @@ html.dark .header-content:hover {
 
 .refresh-btn {
     cursor: pointer;
-    background: var(--admin-dashboard-btn-bg-color);
-    box-shadow: var(--admin-dashboard-btn-shadow);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
     color: #38bdf8;
-    border: none;
+    border: 1px solid #D9DCE2;
     border-radius: 10px;
     width: 36px;
     height: 36px;
@@ -2877,20 +2899,27 @@ html.dark .header-content:hover {
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+html.dark .refresh-btn {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .refresh-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--admin-dashboard-btn-hover-shadow);
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-    color: white;
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+    color: #0ea5e9;
+}
+html.dark .refresh-btn:hover {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .load-more {
     cursor: pointer;
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    background: #0ea5e9;
+    box-shadow: none;
     color: white;
     border: none;
     border-radius: 10px;
@@ -2901,8 +2930,7 @@ html.dark .header-content:hover {
 }
 
 .load-more:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+    box-shadow: none;
 }
 
 :deep(.btn-prev){
@@ -2923,14 +2951,24 @@ html.dark .header-content:hover {
 }
 @media (min-width: 768px) {
     :deep(.el-pagination.is-background .btn-prev), :deep(.el-pagination.is-background .btn-next) {
-        background-color: var(--admin-dashboard-btn-bg-color);
-        backdrop-filter: blur(10px);
-        box-shadow: var(--admin-dashboard-btn-shadow);
-        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.72);
+        border: 1px solid #D9DCE2;
+        box-shadow: none;
+        transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+    html.dark :deep(.el-pagination.is-background .btn-prev),
+    html.dark :deep(.el-pagination.is-background .btn-next) {
+        background-color: rgba(22, 22, 24, 0.75);
+        border: 1px solid #34343A;
     }
     :deep(.el-pagination.is-background .btn-prev:hover), :deep(.el-pagination.is-background .btn-next:hover) {
-        transform: translateY(-10%);
-        box-shadow: var(--admin-dashboard-btn-hover-shadow);
+        background-color: rgba(255, 255, 255, 0.85);
+        border-color: #BFC4CC;
+    }
+    html.dark :deep(.el-pagination.is-background .btn-prev:hover),
+    html.dark :deep(.el-pagination.is-background .btn-next:hover) {
+        background-color: rgba(22, 22, 24, 0.88);
+        border-color: #4A4A52;
     }
 }
 
@@ -2944,16 +2982,26 @@ html.dark .header-content:hover {
     display: flex;
     align-items: center;
     padding: 0 12px;
-    background-color: var(--el-fill-color-light);
-    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.72);
+    border: 1px solid #D9DCE2;
+    border-radius: 10px;
     font-size: 0.95em;
-    box-shadow: var(--admin-dashboard-stats-shadow);
+    box-shadow: none;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .breadcrumb {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .breadcrumb:hover {
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .breadcrumb:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .breadcrumb-home-icon {
@@ -2999,15 +3047,20 @@ html.dark .header-content:hover {
     box-sizing: border-box;
     gap: 6px;
     padding: 0 10px;
-    background: var(--el-fill-color-light);
+    background: rgba(255, 255, 255, 0.72);
     border-radius: 8px;
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid #D9DCE2;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .mobile-directory-trigger {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .mobile-directory-trigger:active {
-    background: var(--el-fill-color);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
 }
 
 .mobile-directory-icon {

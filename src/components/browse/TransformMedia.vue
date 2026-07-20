@@ -758,7 +758,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
 }
 
 .cover-img {
@@ -770,7 +770,7 @@ export default {
 .audio-icon-large {
   width: 80px;
   height: 80px;
-  color: rgba(255, 255, 255, 0.4);
+  color: #A1A1AA;
 }
 
 .audio-info {
@@ -790,7 +790,7 @@ export default {
 
 .audio-artist {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #C8C9CC;
 }
 
 .video-placeholder,
@@ -800,7 +800,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: rgba(255, 255, 255, 0.4);
+  color: #A1A1AA;
 }
 
 .video-placeholder svg {
@@ -810,7 +810,7 @@ export default {
 
 .audio-placeholder .audio-name {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #C8C9CC;
   text-align: center;
   max-width: 280px;
   overflow: hidden;
@@ -856,8 +856,9 @@ export default {
   bottom: 100%;
   right: 0;
   background: #fff;
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
   min-width: 160px;
   display: none;
   z-index: 100;

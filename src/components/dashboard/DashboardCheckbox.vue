@@ -63,13 +63,21 @@ export default {
 .dashboard-checkbox--list {
     width: 18px;
     height: 18px;
-    border: 2px solid var(--el-border-color);
-    border-radius: 4px;
-    background: transparent;
+    border: 2px solid #D9DCE2;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.72);
+}
+html.dark .dashboard-checkbox--list {
+    border-color: #34343A;
+    background: rgba(22, 22, 24, 0.75);
 }
 
 .dashboard-checkbox--list:hover {
     border-color: #38bdf8;
+    background: rgba(255, 255, 255, 0.85);
+}
+html.dark .dashboard-checkbox--list:hover {
+    background: rgba(22, 22, 24, 0.88);
 }
 
 .dashboard-checkbox--list:focus-visible {
@@ -81,7 +89,7 @@ export default {
 .dashboard-checkbox--list.checked,
 .dashboard-checkbox--list.indeterminate {
     border-color: #38bdf8;
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    background: #0ea5e9;
 }
 
 .dashboard-checkbox--breadcrumb {
@@ -89,11 +97,15 @@ export default {
     width: 32px;
     height: 32px;
     overflow: hidden;
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 6px;
-    background: var(--el-fill-color-light);
-    box-shadow: var(--admin-dashboard-stats-shadow);
-    backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid #D9DCE2;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .dashboard-checkbox--breadcrumb {
+    border: 1px solid #34343A;
+    background: rgba(22, 22, 24, 0.75);
 }
 
 .dashboard-checkbox--breadcrumb::before {
@@ -101,35 +113,44 @@ export default {
     position: absolute;
     inset: 7px;
     box-sizing: border-box;
-    border: 1px solid rgba(148, 163, 184, 0.24);
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid #D9DCE2;
+    border-radius: 5px;
+    background: transparent;
     transition: border-color 0.18s ease, background 0.18s ease;
+}
+html.dark .dashboard-checkbox--breadcrumb::before {
+    border-color: #34343A;
 }
 
 .dashboard-checkbox--breadcrumb:hover {
-    border-color: rgba(56, 189, 248, 0.24);
-    background: var(--el-fill-color-lighter);
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+    border-color: #BFC4CC;
+    background: rgba(255, 255, 255, 0.85);
+}
+html.dark .dashboard-checkbox--breadcrumb:hover {
+    border-color: #4A4A52;
+    background: rgba(22, 22, 24, 0.88);
 }
 
 .dashboard-checkbox--breadcrumb:focus-visible {
     outline: none;
     border-color: rgba(56, 189, 248, 0.34);
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
 }
 
 .dashboard-checkbox--breadcrumb.checked,
 .dashboard-checkbox--breadcrumb.indeterminate {
-    border-color: rgba(56, 189, 248, 0.34);
-    background: var(--el-fill-color-light);
-    box-shadow: var(--admin-dashboard-stats-shadow);
+    border-color: #D9DCE2;
+    background: rgba(255, 255, 255, 0.72);
+}
+html.dark .dashboard-checkbox--breadcrumb.checked,
+html.dark .dashboard-checkbox--breadcrumb.indeterminate {
+    border-color: #34343A;
+    background: rgba(22, 22, 24, 0.75);
 }
 
 .dashboard-checkbox--breadcrumb.checked::before,
 .dashboard-checkbox--breadcrumb.indeterminate::before {
     border-color: rgba(255, 255, 255, 0.4);
-    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    background: #0ea5e9;
 }
 
 .dashboard-checkbox-mark {

@@ -1541,10 +1541,9 @@ beforeDestroy() {
     align-items: center;
     justify-content: center;
     border-radius: 15px;
-    background-color: var(--upload-list-card-bg-color);
-    backdrop-filter: blur(10px);
-    border: var(--upload-list-card-border);
-    box-shadow: var(--upload-list-card-box-shadow) !important;
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow) !important;
     transition: height 0.3s ease;
     overflow: hidden;
 }
@@ -1576,10 +1575,8 @@ beforeDestroy() {
 
 /* 上传时列表卡片边框效果 - 与流光颜色一致 */
 .upload-list-card.is-uploading {
-    border: 1px solid var(--el-upload-dragger-uniform-color, #409eff) !important;
-    box-shadow: 0 0 20px color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 30%, transparent),
-                0 0 40px color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 15%, transparent),
-                inset 0 0 20px color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 8%, transparent) !important;
+    border: 1px solid var(--el-upload-dragger-uniform-color, #2563EB) !important;
+    box-shadow: none !important;
 }
 
 /* 拖拽上传卡片包装器 - 用于悬浮光斑效果 */
@@ -1622,22 +1619,23 @@ beforeDestroy() {
     align-items: center;
     height: 45vh;
     border-radius: 15px;
-    border: var(--el-upload-dragger-border);
+    border: 1px solid var(--glass-border);
     opacity: 0.7;
-    background-color: var(--el-upload-dragger-bg-color);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    box-shadow: var(--glass-shadow);
 }
 :deep(.el-upload:focus .el-upload-dragger) {
-    border-color: var(--el-upload-dragger-border-color);
+    border-color: var(--glass-border-hover);
 }
 :deep(.el-upload-dragger:hover) {
-    opacity: 0.8;
-    box-shadow: var(--el-upload-dragger-hover-box-shadow);
+    opacity: 0.7;
+    box-shadow: var(--glass-shadow);
 }
 :deep(.el-upload-dragger.is-dragover) {
-    opacity: 0.8;
-    box-shadow: var(--el-upload-dragger-hover-box-shadow);
+    opacity: 0.7;
+    box-shadow: var(--glass-shadow);
 }
 .is-uploading :deep(.el-upload-dragger) {
     border-color: transparent !important;
@@ -1662,12 +1660,12 @@ beforeDestroy() {
         from var(--border-angle),
         transparent 0deg,
         transparent 30deg,
-        var(--el-upload-dragger-uniform-color, #409eff) 60deg,
-        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 70%, white) 90deg,
+        var(--el-upload-dragger-uniform-color, #2563EB) 60deg,
+        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #2563EB) 70%, white) 90deg,
         transparent 120deg,
         transparent 180deg,
-        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 70%, white) 210deg,
-        var(--el-upload-dragger-uniform-color, #409eff) 240deg,
+        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #2563EB) 70%, white) 210deg,
+        var(--el-upload-dragger-uniform-color, #2563EB) 240deg,
         transparent 270deg,
         transparent 360deg
     );
@@ -1721,7 +1719,6 @@ beforeDestroy() {
     box-shadow: none;
     opacity: 0.7;
     background-color: var(--el-upload-dragger-bg-color);
-    backdrop-filter: blur(10px);
     transition: all 0.3s ease;
     box-sizing: border-box;
 }
@@ -1747,12 +1744,12 @@ beforeDestroy() {
         from var(--border-angle),
         transparent 0deg,
         transparent 30deg,
-        var(--el-upload-dragger-uniform-color, #409eff) 60deg,
-        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 70%, white) 90deg,
+        var(--el-upload-dragger-uniform-color, #2563EB) 60deg,
+        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #2563EB) 70%, white) 90deg,
         transparent 120deg,
         transparent 180deg,
-        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #409eff) 70%, white) 210deg,
-        var(--el-upload-dragger-uniform-color, #409eff) 240deg,
+        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #2563EB) 70%, white) 210deg,
+        var(--el-upload-dragger-uniform-color, #2563EB) 240deg,
         transparent 270deg,
         transparent 360deg
     );
@@ -1781,8 +1778,7 @@ beforeDestroy() {
     width: 50vw;
     height: 70%;
     border-radius: 16px;
-    background: var(--textarea-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.03) 0%, rgba(64, 158, 255, 0.01) 100%));
-    backdrop-filter: blur(12px);
+    background: var(--textarea-bg, rgba(37, 99, 235, 0.02));
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
     display: flex;
@@ -1798,7 +1794,7 @@ beforeDestroy() {
     inset: -1px;
     border-radius: 17px;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(64, 158, 255, 0.3) 0%, rgba(64, 158, 255, 0.1) 50%, rgba(64, 158, 255, 0.3) 100%);
+    background: rgba(37, 99, 235, 0.2);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -1813,13 +1809,12 @@ beforeDestroy() {
 
 .upload-card-textarea:focus-within::before {
     opacity: 1;
-    background: linear-gradient(135deg, rgba(64, 158, 255, 0.6) 0%, rgba(64, 158, 255, 0.2) 50%, rgba(64, 158, 255, 0.6) 100%);
+    background: rgba(37, 99, 235, 0.4);
 }
 
 :deep(.el-textarea__inner) {
     border-radius: 16px;
     background: var(--textarea-inner-bg, rgba(0, 0, 0, 0.02));
-    backdrop-filter: blur(12px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     resize: none;
     border: 1px solid transparent;
@@ -1836,15 +1831,13 @@ beforeDestroy() {
 }
 
 :deep(.el-textarea__inner:hover) {
-    background: var(--textarea-inner-hover-bg, rgba(64, 158, 255, 0.03));
+    background: var(--textarea-inner-hover-bg, rgba(37, 99, 235, 0.03));
 }
 
 :deep(.el-textarea__inner:focus) {
     border-color: transparent;
-    box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.15),
-                0 4px 20px rgba(64, 158, 255, 0.1),
-                inset 0 1px 3px rgba(0, 0, 0, 0.05);
-    background: var(--textarea-inner-focus-bg, rgba(64, 158, 255, 0.02));
+    box-shadow: none;
+    background: var(--textarea-inner-focus-bg, rgba(37, 99, 235, 0.02));
 }
 
 /* Modern Scrollbar Styles */
@@ -1860,13 +1853,13 @@ beforeDestroy() {
 }
 
 .upload-card-textarea ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(64, 158, 255, 0.4) 0%, rgba(64, 158, 255, 0.6) 100%);
+    background: rgba(37, 99, 235, 0.5);
     border-radius: 6px;
     transition: background 0.3s ease;
 }
 
 .upload-card-textarea ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(64, 158, 255, 0.6) 0%, rgba(64, 158, 255, 0.8) 100%);
+    background: rgba(37, 99, 235, 0.7);
 }
 .paste-card-actions {
     display: flex;
@@ -1884,10 +1877,9 @@ beforeDestroy() {
     font-weight: 600;
     font-size: 15px;
     letter-spacing: 2px;
-    background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%) !important;
+    background: #2563EB !important;
     border: none !important;
-    box-shadow: 0 4px 15px rgba(64, 158, 255, 0.35),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     position: relative;
     overflow: hidden;
@@ -1900,14 +1892,13 @@ beforeDestroy() {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    background: rgba(255, 255, 255, 0.25);
     transition: left 0.6s ease;
 }
 
 .paste-card-upload-button:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(64, 158, 255, 0.45),
-                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transform: scale(1.02);
+    box-shadow: none;
 }
 
 .paste-card-upload-button:hover::before {
@@ -1933,10 +1924,10 @@ beforeDestroy() {
 
 /* Modern Radio Button Group */
 .paste-card-method-group {
-    background: var(--paste-method-group-bg, rgba(64, 158, 255, 0.08));
+    background: var(--paste-method-group-bg, rgba(37, 99, 235, 0.08));
     border-radius: 14px;
     padding: 4px;
-    border: 1px solid var(--paste-method-group-border, rgba(64, 158, 255, 0.15));
+    border: 1px solid var(--paste-method-group-border, rgba(37, 99, 235, 0.15));
 }
 .paste-card-method-group :deep(.el-radio-button__inner) {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1957,14 +1948,14 @@ beforeDestroy() {
 }
 
 .paste-card-method-group :deep(.el-radio-button__inner:hover) {
-    background: var(--paste-method-hover-bg, rgba(64, 158, 255, 0.12));
+    background: var(--paste-method-hover-bg, rgba(37, 99, 235, 0.12));
     color: var(--el-color-primary);
 }
 
 .paste-card-method-group :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-    background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%) !important;
+    background: #2563EB !important;
     color: white !important;
-    box-shadow: 0 3px 10px rgba(64, 158, 255, 0.35);
+    box-shadow: none;
 }
 
 /* Mobile responsive for paste card */
@@ -2036,15 +2027,19 @@ beforeDestroy() {
     align-items: center;
     height: 7vh;
     padding: 0 15px;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
     position: sticky;
     top: 0;
     z-index: 1;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-}
-.upload-list-dashboard.list-scrolled {
-    background-color: var(--upload-list-dashboard-bg-color);
-    box-shadow: var(--upload-list-dashboard-shadow);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--glass-shadow);
+    opacity: 0.7;
 }
 
 /* Enhanced Starry Sky Effect */
@@ -2059,7 +2054,7 @@ beforeDestroy() {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: 
+    background-image:
         radial-gradient(2px 2px at 10% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
         radial-gradient(2px 2px at 20% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
         radial-gradient(2px 2px at 30% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
@@ -2082,7 +2077,7 @@ beforeDestroy() {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: 
+    background-image:
         radial-gradient(3px 3px at 15% 15%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
         radial-gradient(3px 3px at 50% 50%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
         radial-gradient(3px 3px at 85% 85%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
@@ -2121,20 +2116,19 @@ beforeDestroy() {
     display: flex;
     align-items: center;
     gap: 5px;
+    height: 44px;
+    box-sizing: border-box;
     padding: 5px;
-    background: var(--upload-action-toolbar-bg);
-    border-radius: 18px;
-    border: 1px solid var(--upload-action-toolbar-border);
-    box-shadow: var(--upload-action-toolbar-shadow);
-    backdrop-filter: blur(14px) saturate(1.08);
-    -webkit-backdrop-filter: blur(14px) saturate(1.08);
-    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    background: var(--glass-bg);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
 }
 
 .modern-action-group:hover {
-    background: var(--upload-action-toolbar-hover-bg);
-    border-color: var(--upload-action-toolbar-hover-border);
-    box-shadow: var(--upload-action-toolbar-hover-shadow);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow);
 }
 
 .modern-action-btn {
@@ -2172,7 +2166,6 @@ beforeDestroy() {
 }
 
 .modern-action-btn:hover {
-    transform: translateY(-1px);
     background: var(--upload-action-btn-hover-bg);
     box-shadow: var(--upload-action-btn-hover-shadow);
 }
@@ -2228,8 +2221,11 @@ beforeDestroy() {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 14px;
-    background: var(--dashboard-title-bg, linear-gradient(135deg, rgba(64, 158, 255, 0.06) 0%, transparent 100%));
+    height: 44px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    background: var(--dashboard-title-bg, rgba(37, 99, 235, 0.06));
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
     color: var(--el-text-color-primary);
 }
@@ -2260,6 +2256,24 @@ beforeDestroy() {
     .upload-list-dashboard-title {
         font-size: 12px;
         padding: 4px 10px;
+    }
+
+    /* 移动端:上传列表顶栏缩窄 padding,确保完整展示不溢出 */
+    .upload-list-dashboard {
+        padding: 0 8px;
+        gap: 4px;
+    }
+    /* 标题块可收缩,避免挤爆操作按钮 */
+    .upload-list-dashboard-title {
+        gap: 4px;
+        padding: 3px 8px;
+        min-width: 0;
+        flex-shrink: 1;
+        overflow: hidden;
+    }
+    /* 操作组保持完整不被压缩 */
+    .upload-list-dashboard-action {
+        flex-shrink: 0;
     }
 }
 

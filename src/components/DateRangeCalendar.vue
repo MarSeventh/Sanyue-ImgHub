@@ -284,11 +284,11 @@ export default {
 .date-input:hover,
 .date-input:focus {
   border-color: var(--el-color-primary);
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.12);
+  box-shadow: none;
 }
 
 .date-range-separator {
-  color: #8a8f98;
+  color: #59636E;
   font-size: 12px;
   font-weight: 700;
 }
@@ -325,8 +325,8 @@ export default {
 .calendar-nav:focus {
   color: var(--el-color-primary);
   border-color: var(--el-color-primary);
-  background: rgba(64, 158, 255, 0.08);
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.18);
+  background: rgba(37, 99, 235, 0.08);
+  box-shadow: none;
 }
 
 .calendar-weekdays,
@@ -337,7 +337,7 @@ export default {
 
 .calendar-weekdays {
   margin-bottom: 8px;
-  color: #8a8f98;
+  color: #59636E;
   font-size: 12px;
   font-weight: 600;
   text-align: center;
@@ -367,13 +367,13 @@ export default {
 
 .calendar-day:hover,
 .calendar-day:focus {
-  border-color: rgba(64, 158, 255, 0.45);
-  background: rgba(64, 158, 255, 0.1);
+  border-color: rgba(37, 99, 235, 0.45);
+  background: rgba(37, 99, 235, 0.1);
   color: var(--el-color-primary);
 }
 
 .calendar-day.is-muted {
-  color: #a8adb6;
+  color: #86909C;
   opacity: 0.62;
 }
 
@@ -383,7 +383,7 @@ export default {
 
 .calendar-day.is-in-range {
   border-radius: 12px;
-  background: rgba(64, 158, 255, 0.12);
+  background: rgba(37, 99, 235, 0.12);
   color: var(--el-color-primary);
 }
 
@@ -392,11 +392,11 @@ export default {
   background: var(--el-color-primary);
   border-color: var(--el-color-primary);
   color: #fff;
-  box-shadow: 0 4px 10px rgba(64, 158, 255, 0.28);
+  box-shadow: none;
 }
 
 html.dark .calendar-weekdays {
-  color: #9ca3af;
+  color: #A1A1AA;
 }
 
 html.dark .calendar-day.is-muted {
