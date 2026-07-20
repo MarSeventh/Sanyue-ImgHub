@@ -103,16 +103,25 @@ export default {
     justify-content: space-between;
     height: 32px;
     padding: 0 12px;
-    background: var(--el-bg-color);
-    border: 1px solid var(--el-border-color);
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid #D9DCE2;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     box-sizing: border-box;
+}
+html.dark .custom-select-trigger {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .custom-select-trigger:hover {
-    border-color: var(--el-color-primary-light-5);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .custom-select-trigger:hover {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .custom-select.is-open .custom-select-trigger {
@@ -148,12 +157,16 @@ export default {
     top: calc(100% + 4px);
     left: 0;
     width: 100%;
-    background: var(--el-bg-color-overlay);
-    border: 1px solid var(--el-border-color-light);
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid #D9DCE2;
     border-radius: 8px;
-    box-shadow: var(--el-box-shadow-light);
+    box-shadow: none;
     z-index: 2000;
     overflow: hidden;
+}
+html.dark .custom-select-dropdown {
+    background: rgba(22, 22, 24, 0.9);
+    border: 1px solid #34343A;
 }
 
 .custom-select-option {
@@ -169,7 +182,10 @@ export default {
 }
 
 .custom-select-option:hover {
-    background: var(--el-fill-color-light);
+    background: rgba(0, 0, 0, 0.04);
+}
+html.dark .custom-select-option:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .custom-select-option.is-selected {

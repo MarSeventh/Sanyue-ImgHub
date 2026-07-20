@@ -541,24 +541,33 @@ export default {
     position: fixed;
     top: 30px;
     right: 30px;
-    border: 1px solid var(--glass-border);
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
+    border: 1px solid #D9DCE2;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    background-color: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
     border-radius: 12px;
+}
+html.dark .toggle-dark {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 .toggle-dark:hover {
     transform: scale(1.05);
-    box-shadow: var(--toolbar-button-shadow-hover);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .toggle-dark:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 .language-switcher {
     position: fixed;
     top: 30px;
     right: 80px;
-    transition: all 0.3s ease;
-    background-color: var(--toolbar-button-bg-color);
-    box-shadow: var(--toolbar-button-shadow);
-    border: 1px solid var(--glass-border);
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    background-color: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
+    border: 1px solid #D9DCE2;
     border-radius: 12px;
     width: 2.5rem;
     height: 2.5rem;
@@ -566,6 +575,10 @@ export default {
     align-items: center;
     justify-content: center;
     z-index: 100;
+}
+html.dark .language-switcher {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 @media (max-width: 768px) {
     .language-switcher {
@@ -575,6 +588,11 @@ export default {
 }
 .language-switcher:hover {
     transform: scale(1.05);
-    box-shadow: var(--toolbar-button-shadow-hover);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .language-switcher:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 </style>

@@ -2205,16 +2205,24 @@ html.dark .header-content:hover {
     align-items: center;
     gap: 2px;
     padding: 2px;
-    border: none;
-    border-radius: 6px;
-    background: var(--el-fill-color-light);
-    box-shadow: var(--admin-dashboard-stats-shadow);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #D9DCE2;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .breadcrumb-view-toggle {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .breadcrumb-view-toggle:hover {
-    border-color: rgba(56, 189, 248, 0.24);
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+    border-color: #BFC4CC;
+    background: rgba(255, 255, 255, 0.85);
+}
+html.dark .breadcrumb-view-toggle:hover {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .breadcrumb-view-button {
@@ -2280,20 +2288,28 @@ html.dark .header-content:hover {
     font-size: 12px;
     font-weight: 500;
     color: var(--el-text-color-secondary);
-    background: var(--el-fill-color-light);
-    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 4px 12px;
     border-radius: 12px;
-    border: 1px solid var(--el-border-color-lighter);
-    transition: all 0.2s ease;
+    border: 1px solid #D9DCE2;
+    box-shadow: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
     margin-left: auto;
 }
+html.dark .stats-badge {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
+}
 
 .stats-badge:hover {
-    background: var(--el-fill-color);
-    color: var(--admin-purple);
-    border-color: var(--admin-purple);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .stats-badge:hover {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .stats-badge-icon {
@@ -2377,12 +2393,18 @@ html.dark .header-content:hover {
     display: flex;
     align-items: center;
 }
+.search-card :deep(.el-input) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
 .search-card :deep(.el-input__wrapper) {
     border-radius: 20px;
-    background: var(--admin-dashboard-search-card-bg-color);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--admin-dashboard-search-card-box-shadow);
-    transition: background-color 0.3s;
+    box-shadow: var(--glass-shadow);
 }
 
 .search-card :deep(.el-input__inner) {
@@ -2636,21 +2658,30 @@ html.dark .header-content:hover {
 }
 
 .pagination-container :deep(.el-pager li) {
-    background: var(--admin-dashboard-btn-bg-color);
+    background: rgba(255, 255, 255, 0.72);
     border-radius: 10px;
     margin: 0 4px;
     min-width: 36px;
     height: 36px;
     line-height: 36px;
     font-weight: 500;
-    border: none;
-    box-shadow: var(--admin-dashboard-btn-shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #D9DCE2;
+    box-shadow: none;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+html.dark .pagination-container :deep(.el-pager li) {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .pagination-container :deep(.el-pager li:hover) {
     color: #38bdf8;
-    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .pagination-container :deep(.el-pager li:hover) {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .pagination-container :deep(.el-pager li.is-active) {
@@ -2667,19 +2698,30 @@ html.dark .header-content:hover {
 
 .pagination-container :deep(.btn-prev),
 .pagination-container :deep(.btn-next) {
-    background: var(--admin-dashboard-btn-bg-color) !important;
+    background: rgba(255, 255, 255, 0.72) !important;
     border-radius: 10px !important;
     min-width: 36px;
     height: 36px;
-    border: none;
-    box-shadow: var(--admin-dashboard-btn-shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #D9DCE2 !important;
+    box-shadow: none;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+html.dark .pagination-container :deep(.btn-prev),
+html.dark .pagination-container :deep(.btn-next) {
+    background: rgba(22, 22, 24, 0.75) !important;
+    border: 1px solid #34343A !important;
 }
 
 .pagination-container :deep(.btn-prev:hover),
 .pagination-container :deep(.btn-next:hover) {
     color: #38bdf8;
-    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-color: #BFC4CC !important;
+}
+html.dark .pagination-container :deep(.btn-prev:hover),
+html.dark .pagination-container :deep(.btn-next:hover) {
+    background: rgba(22, 22, 24, 0.88) !important;
+    border-color: #4A4A52 !important;
 }
 
 .pagination-right {
@@ -2710,11 +2752,16 @@ html.dark .header-content:hover {
 }
 
 .page-jump .jump-input :deep(.el-input__wrapper) {
-    background: var(--admin-dashboard-btn-bg-color);
-    box-shadow: var(--admin-dashboard-btn-shadow);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
+    border: 1px solid #D9DCE2;
     border-radius: 8px;
     padding: 0 8px;
     height: 28px;
+}
+html.dark .page-jump .jump-input :deep(.el-input__wrapper) {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .page-jump .jump-input :deep(.el-input__inner) {
@@ -2839,10 +2886,10 @@ html.dark .header-content:hover {
 
 .refresh-btn {
     cursor: pointer;
-    background: var(--admin-dashboard-btn-bg-color);
-    box-shadow: var(--admin-dashboard-btn-shadow);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: none;
     color: #38bdf8;
-    border: none;
+    border: 1px solid #D9DCE2;
     border-radius: 10px;
     width: 36px;
     height: 36px;
@@ -2852,13 +2899,21 @@ html.dark .header-content:hover {
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+html.dark .refresh-btn {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .refresh-btn:hover {
-    box-shadow: var(--admin-dashboard-btn-hover-shadow);
-    background: #0ea5e9;
-    color: white;
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+    color: #0ea5e9;
+}
+html.dark .refresh-btn:hover {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .load-more {
@@ -2896,12 +2951,24 @@ html.dark .header-content:hover {
 }
 @media (min-width: 768px) {
     :deep(.el-pagination.is-background .btn-prev), :deep(.el-pagination.is-background .btn-next) {
-        background-color: var(--admin-dashboard-btn-bg-color);
-        box-shadow: var(--admin-dashboard-btn-shadow);
-        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.72);
+        border: 1px solid #D9DCE2;
+        box-shadow: none;
+        transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+    html.dark :deep(.el-pagination.is-background .btn-prev),
+    html.dark :deep(.el-pagination.is-background .btn-next) {
+        background-color: rgba(22, 22, 24, 0.75);
+        border: 1px solid #34343A;
     }
     :deep(.el-pagination.is-background .btn-prev:hover), :deep(.el-pagination.is-background .btn-next:hover) {
-        box-shadow: var(--admin-dashboard-btn-hover-shadow);
+        background-color: rgba(255, 255, 255, 0.85);
+        border-color: #BFC4CC;
+    }
+    html.dark :deep(.el-pagination.is-background .btn-prev:hover),
+    html.dark :deep(.el-pagination.is-background .btn-next:hover) {
+        background-color: rgba(22, 22, 24, 0.88);
+        border-color: #4A4A52;
     }
 }
 
@@ -2915,17 +2982,26 @@ html.dark .header-content:hover {
     display: flex;
     align-items: center;
     padding: 0 12px;
-    background-color: var(--el-fill-color-light);
-    border: none;
-    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.72);
+    border: 1px solid #D9DCE2;
+    border-radius: 10px;
     font-size: 0.95em;
-    box-shadow: var(--admin-dashboard-stats-shadow);
+    box-shadow: none;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .breadcrumb {
+    background-color: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .breadcrumb:hover {
-    box-shadow: var(--admin-dashboard-stats-hover-shadow);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+html.dark .breadcrumb:hover {
+    background-color: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .breadcrumb-home-icon {
@@ -2971,15 +3047,20 @@ html.dark .header-content:hover {
     box-sizing: border-box;
     gap: 6px;
     padding: 0 10px;
-    background: var(--el-fill-color-light);
+    background: rgba(255, 255, 255, 0.72);
     border-radius: 8px;
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid #D9DCE2;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .mobile-directory-trigger {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .mobile-directory-trigger:active {
-    background: var(--el-fill-color);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
 }
 
 .mobile-directory-icon {

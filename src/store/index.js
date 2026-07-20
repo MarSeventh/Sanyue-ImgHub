@@ -35,10 +35,13 @@ export default createStore({
     // 深色模式
     useDarkMode: null,
     cusDarkMode: false,
+    // 壁纸开关
+    wallpaperEnabled: true,
   },
   getters: {
     userConfig: state => state.userConfig,
     bingWallPapers: state => state.bingWallPapers,
+    wallpaperEnabled: state => state.wallpaperEnabled,
     // 保留 credentials getter 以兼容 fetchWithAuth.js 等现有代码
     credentials: state => state.adminLoggedIn ? '__session__' : null,
     adminLoggedIn: state => state.adminLoggedIn,
@@ -65,6 +68,9 @@ export default createStore({
     },
     setBingWallPapers(state, bingWallPapers) {
       state.bingWallPapers = bingWallPapers;
+    },
+    setWallpaperEnabled(state, enabled) {
+      state.wallpaperEnabled = enabled;
     },
     // 兼容旧代码：setCredentials 映射到 adminLoggedIn
     setCredentials(state, credentials) {
@@ -171,6 +177,7 @@ export default createStore({
       'autoReUpload',
       'useDarkMode',
       'cusDarkMode',
+      'wallpaperEnabled',
     ]
   })]
 })

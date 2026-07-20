@@ -257,6 +257,8 @@ export default {
     overflow: hidden;
     border: 1px solid var(--glass-border);
     background: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 .main-table :deep(.el-table__inner-wrapper) {

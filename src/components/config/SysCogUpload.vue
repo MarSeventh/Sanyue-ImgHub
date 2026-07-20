@@ -1300,6 +1300,23 @@ mounted() {
 
 .add-btn {
     border-radius: 8px;
+    /* 主操作 CTA:微透明蓝,保持可读性同时贴合半透明风格 */
+    background-color: rgba(37, 99, 235, 0.9) !important;
+    border-color: rgba(37, 99, 235, 0.9) !important;
+    color: #fff !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+html.dark .add-btn {
+    background-color: rgba(59, 130, 246, 0.9) !important;
+    border-color: rgba(59, 130, 246, 0.9) !important;
+}
+.add-btn:hover {
+    background-color: rgba(37, 99, 235, 0.78) !important;
+    border-color: rgba(37, 99, 235, 0.78) !important;
+}
+html.dark .add-btn:hover {
+    background-color: rgba(59, 130, 246, 0.78) !important;
+    border-color: rgba(59, 130, 246, 0.78) !important;
 }
 
 .header-actions {
@@ -1315,15 +1332,10 @@ mounted() {
 .channel-group {
     margin-bottom: 32px;
     background: var(--glass-bg);
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid var(--glass-border);
     overflow: hidden;
     box-shadow: var(--glass-shadow);
-    transition: all 0.3s ease;
-}
-
-.channel-group:hover {
-    box-shadow: var(--glass-shadow-hover);
 }
 
 .group-header {
@@ -1377,12 +1389,11 @@ mounted() {
     background: var(--glass-bg);
     border-radius: 10px;
     border: 1px solid var(--glass-border);
-    transition: all 0.25s ease;
     overflow: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
-    box-shadow: none;
+    box-shadow: var(--glass-shadow);
 }
 
 /* 光斑效果 */
@@ -1424,9 +1435,9 @@ mounted() {
 }
 
 .channel-card:hover {
-    border-color: var(--glass-border-hover);
-    box-shadow: none;
-    background: var(--glass-bg-hover);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    background: var(--glass-bg);
 }
 
 .channel-card.disabled {

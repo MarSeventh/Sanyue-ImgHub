@@ -356,14 +356,14 @@ body {
     --floating-btn-right: 32px;
     --floating-btn-bottom: 32px;
 
-    /* 玻璃效果卡片(扁平化:改为实色,移除玻璃感) */
-    --glass-bg: #FFFFFF;
-    --glass-bg-hover: #F7F8FA;
+    /* 玻璃效果卡片(半透明:背景能微微透出) */
+    --glass-bg: rgba(255, 255, 255, 0.45);
+    --glass-bg-hover: rgba(255, 255, 255, 0.55);
     --glass-border: #D9DCE2;
     --glass-border-hover: #BFC4CC;
     --glass-shadow: none;
     --glass-shadow-hover: none;
-    --glass-header-bg: #F7F8FA;
+    --glass-header-bg: rgba(247, 248, 250, 0.45);
     --glass-header-border: #D9DCE2;
 
     /* ===== Element Plus 文字/边框对比度增强(浅色) ===== */
@@ -408,12 +408,12 @@ body {
     /* el-dropdown背景 */
     --popper-shadow: none;
     /* el-dropdown阴影 */
-    --image-preview-filter: none;
-    /* 图片预览滤镜 */
+    --image-preview-filter: brightness(0.7);
+    /* 图片预览滤镜(暗色模式压暗) */
     --text-bg-color: #1F1F22;
     /* 文本背景颜色 */
-    --background-image-filter: none;
-    /* 背景图亮度滤镜 */
+    --background-image-filter: brightness(0.7);
+    /* 背景图亮度滤镜(暗色模式压暗) */
 
     /* 上传页 */
     --upload-list-card-bg-color: #161618;
@@ -708,14 +708,14 @@ body {
     --floating-btn-shadow: none;
     --floating-btn-shadow-hover: none;
 
-    /* 玻璃效果卡片(扁平化:深色实色) */
-    --glass-bg: #161618;
-    --glass-bg-hover: #1F1F22;
+    /* 玻璃效果卡片(半透明:深色背景能微微透出) */
+    --glass-bg: rgba(22, 22, 24, 0.5);
+    --glass-bg-hover: rgba(35, 35, 35, 0.6);
     --glass-border: #34343A;
     --glass-border-hover: #4A4A52;
     --glass-shadow: none;
     --glass-shadow-hover: none;
-    --glass-header-bg: #1F1F22;
+    --glass-header-bg: rgba(31, 31, 34, 0.5);
     --glass-header-border: #34343A;
 
     /* ===== Element Plus 文字/边框对比度增强(深色) ===== */
@@ -736,6 +736,15 @@ body {
     --el-bg-color-page: #0A0A0B;
     --el-bg-color-overlay: #1F1F22;
 
+    /* Element Plus 主色调:灰蓝(暗色模式统一适配,避免默认亮蓝刺眼) */
+    --el-color-primary: #4A5D9B;
+    --el-color-primary-light-3: #5E73B5;
+    --el-color-primary-light-5: #768CC6;
+    --el-color-primary-light-7: #98A9D5;
+    --el-color-primary-light-8: #B0BDE0;
+    --el-color-primary-light-9: #CCD4EC;
+    --el-color-primary-dark-2: #3A4B80;
+
     /* ===== 组件自定义文字变量(深色) ===== */
     --text-color: #FAFAFA;
     --text-color-secondary: #A1A1AA;
@@ -749,25 +758,25 @@ body {
    ============================== */
 .el-message {
     border-radius: 10px !important;
-    border: 1px solid #E5E6EB !important;
+    border: 1px solid var(--glass-border) !important;
     padding: 10px 20px !important;
-    box-shadow: none !important;
-    background-color: #1D2129 !important;
+    box-shadow: var(--glass-shadow) !important;
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     min-width: unset !important;
     top: 30px !important;
 }
 
 .el-message .el-message__icon {
     font-size: 18px !important;
-    color: #fff !important;
-    /* 白色图标 */
+    color: var(--el-text-color-primary) !important;
 }
 
 .el-message .el-message__content {
     font-size: 16px !important;
     font-weight: 500 !important;
-    color: #fff !important;
-    /* 白色文字 */
+    color: var(--el-text-color-primary) !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     letter-spacing: 0.5px;
 }
@@ -787,9 +796,9 @@ body {
 
 /* 暗色模式消息提示 */
 .dark .el-message {
-    background-color: #161618 !important;
-    border: 1px solid #2A2A2E !important;
-    box-shadow: none !important;
+    background-color: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
 }
 
 /* ==============================
@@ -868,6 +877,11 @@ body {
 .radio-card-group .radio-card.is-checked {
     background: #EFF6FF;
     border-color: var(--el-color-primary);
+}
+/* 暗色模式:单选卡片选中压暗,和灰蓝主色调一致 */
+.dark .radio-card-group .radio-card.is-checked {
+    background: rgba(74, 93, 155, 0.18);
+    border-color: var(--el-color-primary-light-5);
 }
 
 /* 隐藏原生单选按钮 */
@@ -1182,9 +1196,11 @@ body {
 .el-message-box {
     border-radius: 12px !important;
     overflow: hidden;
-    box-shadow: none !important;
-    border: 1px solid #E5E6EB;
-    background-color: #FFFFFF !important;
+    box-shadow: var(--glass-shadow) !important;
+    border: 1px solid var(--glass-border);
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 /* 弹窗头部样式 */
@@ -1237,9 +1253,11 @@ body {
    ============================== */
 .dark .el-dialog,
 .dark .el-message-box {
-    background-color: #161618 !important;
-    border: 1px solid #2A2A2E !important;
-    box-shadow: none !important;
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
 }
 
 .dark .el-dialog__header,
@@ -1270,6 +1288,66 @@ body {
 
 .dark .el-message-box__content {
     color: #cfd3dc;
+}
+
+/* 暗色模式:主按钮和分页器沿用 CSS 变量的灰蓝色 */
+.dark .el-button--primary {
+    --el-button-bg-color: var(--el-color-primary);
+    --el-button-border-color: var(--el-color-primary);
+    --el-button-hover-bg-color: var(--el-color-primary-light-3);
+    --el-button-hover-border-color: var(--el-color-primary-light-3);
+    --el-button-active-bg-color: var(--el-color-primary-dark-2);
+    --el-button-active-border-color: var(--el-color-primary-dark-2);
+}
+
+.dark .el-pager li.is-active {
+    background-color: var(--el-color-primary);
+    color: #fff;
+}
+
+.dark .el-pager li {
+    color: #A1A1AA;
+}
+
+.dark .el-pagination .btn-next,
+.dark .el-pagination .btn-prev,
+.dark .el-pagination button {
+    background-color: transparent;
+    color: #A1A1AA;
+}
+
+/* 暗色模式:Element Plus 选中态(input focus / select 选中 / switch 开启 / tabs)压暗,统一灰蓝 */
+.dark .el-input__wrapper.is-focus,
+.dark .el-textarea__inner:focus,
+.dark .el-select__wrapper.is-focused {
+    box-shadow: 0 0 0 1px var(--el-color-primary-light-5) inset !important;
+}
+.dark .el-select-dropdown__item.is-hovering,
+.dark .el-select-dropdown__item.is-selected,
+.dark .el-cascader__dropdown__item.hover,
+.dark .el-cascader__dropdown__item.is-active {
+    background-color: rgba(74, 93, 155, 0.18) !important;
+    color: var(--el-color-primary-light-7) !important;
+}
+.dark .el-switch.is-checked .el-switch__core {
+    background-color: var(--el-color-primary) !important;
+    border-color: var(--el-color-primary) !important;
+}
+.dark .el-tabs__active-bar,
+.dark .el-tabs__item.is-active {
+    color: var(--el-color-primary-light-7);
+}
+.dark .el-tabs__item.is-active::after {
+    background-color: var(--el-color-primary);
+}
+.dark .el-checkbox__input.is-checked .el-checkbox__inner,
+.dark .el-radio__input.is-checked .el-radio__inner {
+    background-color: var(--el-color-primary) !important;
+    border-color: var(--el-color-primary) !important;
+}
+.dark .el-checkbox__input.is-checked + .el-checkbox__label,
+.dark .el-radio__input.is-checked + .el-radio__label {
+    color: var(--el-color-primary-light-7) !important;
 }
 
 /* 加载动画样式 */
@@ -1368,7 +1446,83 @@ html.dark .os-theme-dark,
 .background-image2:not([src]) {
     display: none;
 }
-/* 有壁纸时(#bg1 已加载图):主容器透明让壁纸透出,卡片半透明毛玻璃 */
+/* 全站统一半透明毛玻璃(原仅在有壁纸时生效,现无条件生效,与系统状态页卡片一致) */
+.img-card,
+.upload-list-card,
+.upload-list-item,
+.login-container,
+.action-card,
+.chart-card,
+.overview-card,
+.el-card,
+.el-dialog,
+.el-message-box,
+.el-dropdown__popper.el-popper,
+/* 顶栏与工具按钮 */
+.stats-badge,
+.breadcrumb,
+.breadcrumb-view-toggle,
+.mobile-directory-trigger,
+.quick-toolbar,
+.toggle-dark-button,
+.toggle-dark,
+.language-switcher,
+#themeToggle,
+.more-button,
+.mobile-more-button,
+.upload-method-button,
+.directory-tree-trigger,
+/* 上传 / 配置面板 */
+.channel-group,
+.channel-card,
+.custom-select-trigger,
+.custom-select-dropdown,
+.token-table,
+/* 安全/网页/其他设置:表单卡片 */
+.first-settings .el-form,
+/* 分页 */
+.refresh-btn,
+.page-jump .el-input__wrapper {
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+/* 深色模式:卡片半透明毛玻璃 */
+html.dark .img-card,
+html.dark .upload-list-card,
+html.dark .upload-list-item,
+html.dark .login-container,
+html.dark .action-card,
+html.dark .chart-card,
+html.dark .overview-card,
+html.dark .el-card,
+html.dark .el-dialog,
+html.dark .el-message-box,
+html.dark .el-dropdown__popper.el-popper,
+html.dark .stats-badge,
+html.dark .breadcrumb,
+html.dark .breadcrumb-view-toggle,
+html.dark .mobile-directory-trigger,
+html.dark .quick-toolbar,
+html.dark .toggle-dark-button,
+html.dark .toggle-dark,
+html.dark .language-switcher,
+html.dark #themeToggle,
+html.dark .more-button,
+html.dark .mobile-more-button,
+html.dark .upload-method-button,
+html.dark .directory-tree-trigger,
+html.dark .channel-group,
+html.dark .channel-card,
+html.dark .custom-select-trigger,
+html.dark .custom-select-dropdown,
+html.dark .token-table,
+html.dark .first-settings .el-form,
+html.dark .refresh-btn,
+html.dark .page-jump .el-input__wrapper {
+    background-color: var(--glass-bg) !important;
+}
+/* 有壁纸时:主容器透明让壁纸透出 */
 body:has(#bg1[src]) {
     background-color: transparent !important;
 }
@@ -1381,37 +1535,4 @@ body:has(#bg1[src]) .whitelist-container {
     background: transparent !important;
     background-color: transparent !important;
 }
-/* 有壁纸时:卡片/面板半透明 + 毛玻璃模糊(顶栏风格) */
-body:has(#bg1[src]) .img-card,
-body:has(#bg1[src]) .upload-list-card,
-body:has(#bg1[src]) .upload-list-dashboard,
-body:has(#bg1[src]) .upload-list-item,
-body:has(#bg1[src]) .login-container,
-body:has(#bg1[src]) .action-card,
-body:has(#bg1[src]) .chart-card,
-body:has(#bg1[src]) .overview-card,
-body:has(#bg1[src]) .el-card,
-body:has(#bg1[src]) .el-dialog,
-body:has(#bg1[src]) .el-message-box,
-body:has(#bg1[src]) .search-card,
-body:has(#bg1[src]) .el-dropdown__popper.el-popper {
-    background-color: rgba(255, 255, 255, 0.72) !important;
-    backdrop-filter: blur(12px) saturate(1.4);
-    -webkit-backdrop-filter: blur(12px) saturate(1.4);
-}
-/* 有壁纸时深色模式卡片半透明 */
-html.dark:has(#bg1[src]) .img-card,
-html.dark:has(#bg1[src]) .upload-list-card,
-html.dark:has(#bg1[src]) .upload-list-dashboard,
-html.dark:has(#bg1[src]) .upload-list-item,
-html.dark:has(#bg1[src]) .login-container,
-html.dark:has(#bg1[src]) .action-card,
-html.dark:has(#bg1[src]) .chart-card,
-html.dark:has(#bg1[src]) .overview-card,
-html.dark:has(#bg1[src]) .el-card,
-html.dark:has(#bg1[src]) .el-dialog,
-html.dark:has(#bg1[src]) .el-message-box,
-html.dark:has(#bg1[src]) .search-card,
-html.dark:has(#bg1[src]) .el-dropdown__popper.el-popper {
-    background-color: rgba(22, 22, 24, 0.72) !important;
-}
+

@@ -1242,14 +1242,13 @@ export default {
   display: flex;
   align-items: center;
   box-shadow: var(--glass-shadow);
-  transition: all 0.3s ease;
   border: 1px solid var(--glass-border);
   cursor: pointer;
 }
 
 .overview-card:hover {
-  box-shadow: var(--glass-shadow-hover);
-  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow);
+  background: var(--glass-bg);
 }
 
 .card-icon {
@@ -1310,13 +1309,12 @@ export default {
   border-radius: 16px;
   padding: 24px;
   box-shadow: var(--glass-shadow);
-  transition: all 0.3s ease;
   border: 1px solid var(--glass-border);
 }
 
 .chart-card:hover {
-  box-shadow: var(--glass-shadow-hover);
-  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow);
+  background: var(--glass-bg);
 }
 
 .chart-card,
@@ -1376,13 +1374,12 @@ export default {
   color: var(--admin-container-color);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .trend-calendar-btn:hover {
   color: var(--el-color-primary);
-  border-color: var(--el-color-primary);
-  background: rgba(37, 99, 235, 0.08);
+  border-color: var(--glass-border);
+  background: var(--glass-bg);
   box-shadow: none;
 }
 
@@ -1576,12 +1573,10 @@ export default {
   background: rgba(0, 0, 0, 0.03);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  transition: all 0.2s ease;
 }
 
 .legend-item:hover {
-  background: rgba(0, 0, 0, 0.06);
-  transform: translateX(4px);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 html.dark .legend-item {
@@ -1589,7 +1584,7 @@ html.dark .legend-item {
 }
 
 html.dark .legend-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .legend-color {
@@ -1632,12 +1627,11 @@ html.dark .legend-item:hover {
   padding: 24px;
   box-shadow: var(--glass-shadow);
   border: 1px solid var(--glass-border);
-  transition: all 0.3s ease;
 }
 
 .action-card:hover {
-  box-shadow: var(--glass-shadow-hover);
-  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow);
+  background: var(--glass-bg);
 }
 
 .action-header {
@@ -1923,11 +1917,11 @@ html.dark .legend-item:hover {
 }
 
 .file-info-card:hover {
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: var(--glass-shadow);
 }
 
 .file-info-card:hover .card-bg-media {
-  transform: scale(1.05);
+  transform: scale(1);
 }
 
 /* 响应式设计 */

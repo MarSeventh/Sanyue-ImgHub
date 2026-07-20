@@ -171,13 +171,13 @@ html.dark .header-content {
 }
 
 .header-content:hover {
-    background: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.72);
     box-shadow: none;
     transform: translateX(-50%);
 }
 
 html.dark .header-content:hover {
-    background: rgba(35, 35, 35, 0.85);
+    background: rgba(22, 22, 24, 0.75);
     box-shadow: none;
 }
 

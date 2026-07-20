@@ -1541,9 +1541,9 @@ beforeDestroy() {
     align-items: center;
     justify-content: center;
     border-radius: 15px;
-    background-color: var(--upload-list-card-bg-color);
-    border: var(--upload-list-card-border);
-    box-shadow: var(--upload-list-card-box-shadow) !important;
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow) !important;
     transition: height 0.3s ease;
     overflow: hidden;
 }
@@ -1619,21 +1619,23 @@ beforeDestroy() {
     align-items: center;
     height: 45vh;
     border-radius: 15px;
-    border: var(--el-upload-dragger-border);
+    border: 1px solid var(--glass-border);
     opacity: 0.7;
-    background-color: var(--el-upload-dragger-bg-color);
-    transition: all 0.3s ease;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    box-shadow: var(--glass-shadow);
 }
 :deep(.el-upload:focus .el-upload-dragger) {
-    border-color: var(--el-upload-dragger-border-color);
+    border-color: var(--glass-border-hover);
 }
 :deep(.el-upload-dragger:hover) {
-    opacity: 0.8;
-    box-shadow: var(--el-upload-dragger-hover-box-shadow);
+    opacity: 0.7;
+    box-shadow: var(--glass-shadow);
 }
 :deep(.el-upload-dragger.is-dragover) {
-    opacity: 0.8;
-    box-shadow: var(--el-upload-dragger-hover-box-shadow);
+    opacity: 0.7;
+    box-shadow: var(--glass-shadow);
 }
 .is-uploading :deep(.el-upload-dragger) {
     border-color: transparent !important;
@@ -2028,17 +2030,16 @@ beforeDestroy() {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
-    overflow: hidden;
     position: sticky;
     top: 0;
     z-index: 1;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-}
-.upload-list-dashboard.list-scrolled {
-    background-color: var(--upload-list-dashboard-bg-color);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--upload-list-dashboard-shadow);
+    border-radius: 16px;
+    box-shadow: var(--glass-shadow);
+    opacity: 0.7;
 }
 
 /* Enhanced Starry Sky Effect */
@@ -2118,17 +2119,16 @@ beforeDestroy() {
     height: 44px;
     box-sizing: border-box;
     padding: 5px;
-    background: var(--upload-action-toolbar-bg);
+    background: var(--glass-bg);
     border-radius: 12px;
     border: 1px solid var(--glass-border);
-    box-shadow: var(--upload-action-toolbar-shadow);
-    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    box-shadow: var(--glass-shadow);
 }
 
 .modern-action-group:hover {
-    background: var(--upload-action-toolbar-hover-bg);
-    border-color: var(--upload-action-toolbar-hover-border);
-    box-shadow: var(--upload-action-toolbar-hover-shadow);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow);
 }
 
 .modern-action-btn {

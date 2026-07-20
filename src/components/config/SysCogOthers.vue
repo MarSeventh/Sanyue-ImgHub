@@ -47,6 +47,16 @@
                     <el-input v-model="settings.randomImageAPI.allowedDir" :disabled="settings.randomImageAPI.fixed"></el-input>
                 </el-form-item>
             </el-form>
+            <h3 class="first-title">{{ $t('sysOthers.wallpaperSettings') }}
+                <el-tooltip :content="$t('sysOthers.wallpaperSettingsTooltip')" placement="right">
+                    <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                </el-tooltip>
+            </h3>
+            <el-form :model="settings.wallpaper" label-width="120px">
+                <el-form-item :label="$t('sysOthers.enableWallpaper')">
+                    <el-switch v-model="settings.wallpaper.enabled" :disabled="settings.wallpaper.fixed"></el-switch>
+                </el-form-item>
+            </el-form>
             <h3 class="first-title">{{ $t('sysOthers.publicBrowse') }}
                 <el-tooltip :content="$t('sysOthers.publicBrowseTooltip')" placement="right" raw-content>
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
@@ -129,7 +139,8 @@ data() {
             randomImageAPI: {},
             cloudflareApiToken: {},
             webDAV: {},
-            publicBrowse: {}
+            publicBrowse: {},
+            wallpaper: { enabled: true }
         },
         availableChannels: {}, // 可用渠道列表
         // 加载状态
@@ -153,6 +164,10 @@ watch: {
 },
 methods: {
     saveSettings() {
+        // 如果 wallpaper 开关有变化,同步到 Vuex
+        if (this.settings.wallpaper && this.settings.wallpaper.enabled !== undefined) {
+            this.$store.commit('setWallpaperEnabled', this.settings.wallpaper.enabled);
+        }
         fetchWithAuth('/api/manage/sysConfig/others', {
             method: 'POST',
             headers: {
@@ -179,6 +194,10 @@ mounted() {
     fetchWithAuth('/api/manage/sysConfig/others')
     .then((response) => response.json())
     .then((data) => {
+        // 后端不会返回 wallpaper 字段,补充默认值避免报错
+        if (!data.wallpaper) {
+            data.wallpaper = { enabled: true };
+        }
         this.settings = data;
     })
     .finally(() => {
@@ -220,20 +239,14 @@ mounted() {
     border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
-/* 表单样式 - 上下排列左对齐 */
+/* 表单样式 - 上下排列左对齐(对齐系统状态卡片风格,无 hover 动效) */
 .first-settings :deep(.el-form) {
-    padding: 16px 20px;
+    padding: 20px 24px;
     background: var(--glass-bg);
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid var(--glass-border);
     margin-bottom: 20px;
     box-shadow: var(--glass-shadow);
-    transition: all 0.3s ease;
-}
-
-.first-settings :deep(.el-form:hover) {
-    box-shadow: var(--glass-shadow-hover);
-    background: var(--glass-bg-hover);
 }
 
 .first-settings :deep(.el-form-item) {

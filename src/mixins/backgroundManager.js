@@ -16,7 +16,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['userConfig', 'bingWallPapers', 'useDarkMode']),
+    ...mapGetters(['userConfig', 'bingWallPapers', 'useDarkMode', 'wallpaperEnabled']),
     bkInterval() {
       return this.userConfig?.bkInterval || 3000
     },
@@ -83,6 +83,24 @@ export default {
           )
         })
       }
+    },
+    // 监听全局壁纸开关:开/关时重新初始化背景
+    wallpaperEnabled(newVal, oldVal) {
+      if (newVal === oldVal || !this.backgroundInitParams) return
+      this.$nextTick(() => {
+        if (newVal) {
+          // 开启:重新初始化背景
+          this.reinitializeBackground(
+            this.backgroundInitParams.configKey,
+            this.backgroundInitParams.containerSelector,
+            this.backgroundInitParams.useDefaultBackground,
+            this.backgroundInitParams.autoCreateElements
+          )
+        } else {
+          // 关闭:清理背景
+          this.clearBackgroundImages(true)
+        }
+      })
     }
   },
 
@@ -166,6 +184,11 @@ export default {
      * @param {boolean} autoCreateElements - 是否自动创建背景元素
      */
     initializeBackground(configKey, containerSelector = '.login', useDefaultBackground = false, autoCreateElements = false) {
+      // 如果全局壁纸开关关闭，直接清理背景并返回
+      if (!this.wallpaperEnabled) {
+        this.clearBackgroundImages(true);
+        return;
+      }
       // 保存初始化参数，用于主题切换时重新初始化
       this.backgroundInitParams = {
         configKey,

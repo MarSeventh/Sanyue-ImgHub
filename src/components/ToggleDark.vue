@@ -92,7 +92,7 @@ export default {
 
 <style scoped>
 #themeToggle {
-  border: 1px solid var(--glass-border);
+  border: 1px solid #D9DCE2;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -100,7 +100,21 @@ export default {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 12px;
-  background-color: var(--toolbar-button-bg-color);
+  background-color: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
+  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+html.dark #themeToggle {
+  background-color: rgba(22, 22, 24, 0.75);
+  border: 1px solid #34343A;
+}
+#themeToggle:hover {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-color: #BFC4CC;
+}
+html.dark #themeToggle:hover {
+  background-color: rgba(22, 22, 24, 0.88);
+  border-color: #4A4A52;
 }
 @media (max-width: 768px) {
   #themeToggle {

@@ -1027,20 +1027,14 @@ mounted() {
     border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
-/* 表单样式 - 上下排列左对齐 */
+/* 表单样式 - 上下排列左对齐(对齐系统状态卡片风格,无 hover 动效) */
 .first-settings :deep(.el-form) {
-    padding: 16px 20px;
+    padding: 20px 24px;
     background: var(--glass-bg);
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid var(--glass-border);
     margin-bottom: 20px;
     box-shadow: var(--glass-shadow);
-    transition: all 0.3s ease;
-}
-
-.first-settings :deep(.el-form:hover) {
-    box-shadow: var(--glass-shadow-hover);
-    background: var(--glass-bg-hover);
 }
 
 .first-settings :deep(.el-form-item) {
@@ -1152,24 +1146,41 @@ mounted() {
 
 .token-table :deep(.el-table__body-wrapper) {
     border-radius: 0 0 12px 12px;
+    background: transparent;
 }
 
 .token-table :deep(.el-table) {
     border-radius: 12px;
+    background: transparent;
 }
 
 .token-table :deep(.el-table__header) {
-    background-color: #f8f9fa;
+    background-color: rgba(0, 0, 0, 0.04);
 }
 
 .token-table :deep(.el-table th) {
-    background-color: #f8f9fa !important;
-    border-bottom: 1px solid #ebeef5;
+    background-color: rgba(0, 0, 0, 0.04) !important;
+    border-bottom: 1px solid #D9DCE2;
     text-align: center;
 }
 
 .token-table :deep(.el-table td) {
-    border-bottom: 1px solid #ebeef5;
+    background-color: transparent !important;
+    border-bottom: 1px solid #D9DCE2;
+}
+html.dark .token-table :deep(.el-table th) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid #34343A;
+}
+html.dark .token-table :deep(.el-table td) {
+    border-bottom: 1px solid #34343A;
+}
+
+.token-table :deep(.el-table__row:hover td) {
+    background-color: rgba(0, 0, 0, 0.03) !important;
+}
+html.dark .token-table :deep(.el-table__row:hover td) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 .token-table :deep(.el-table__row:last-child td) {
