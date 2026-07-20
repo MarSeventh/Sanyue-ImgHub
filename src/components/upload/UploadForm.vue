@@ -1866,96 +1866,107 @@ beforeDestroy() {
     justify-content: space-between;
     align-items: center;
     width: 50vw;
-    margin-top: 3%;
+    gap: 12px;
+    margin-top: 16px;
 }
 
-/* Modern Paste Card Styles */
+/* 粘贴上传操作区：延续全站克制的扁平化按钮风格 */
 .paste-card-upload-button {
-    min-width: 100px;
-    height: 42px;
-    border-radius: 14px !important;
+    min-width: 92px;
+    height: 38px;
+    border-radius: 10px !important;
     font-weight: 600;
-    font-size: 15px;
-    letter-spacing: 2px;
-    background: #2563EB !important;
-    border: none !important;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: var(--el-upload-dragger-uniform-color) !important;
+    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 10%, var(--toolbar-button-bg-color)) !important;
+    border: 1px solid color-mix(in srgb, var(--el-upload-dragger-uniform-color) 30%, var(--glass-border)) !important;
     box-shadow: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    position: relative;
-    overflow: hidden;
-}
-
-.paste-card-upload-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.25);
-    transition: left 0.6s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease !important;
 }
 
 .paste-card-upload-button:hover {
-    transform: scale(1.02);
+    color: var(--el-upload-dragger-uniform-color) !important;
+    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 15%, var(--toolbar-button-bg-color)) !important;
+    border-color: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 48%, var(--glass-border)) !important;
+    transform: translateY(-1px);
     box-shadow: none;
 }
 
-.paste-card-upload-button:hover::before {
-    left: 100%;
+.paste-card-upload-button:focus-visible {
+    color: var(--el-upload-dragger-uniform-color) !important;
+    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 15%, var(--toolbar-button-bg-color)) !important;
+    border-color: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 48%, var(--glass-border)) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--el-upload-dragger-uniform-color) 14%, transparent) !important;
 }
 
 .paste-card-upload-button:active {
-    transform: translateY(-1px) scale(0.98);
+    transform: translateY(0);
+    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 18%, var(--toolbar-button-bg-color)) !important;
 }
 
 /* 上传状态下缩小按钮 */
 .upload-card-busy .paste-card-upload-button {
-    min-width: 70px;
+    min-width: 72px;
     height: 32px;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     font-size: 13px;
-    letter-spacing: 1px;
+    letter-spacing: 0.02em;
 }
 
 .upload-card-busy .paste-card-actions {
-    margin-top: 2%;
+    margin-top: 10px;
 }
 
-/* Modern Radio Button Group */
+/* 转存 / 外链分段选择 */
 .paste-card-method-group {
-    background: var(--paste-method-group-bg, rgba(37, 99, 235, 0.08));
-    border-radius: 14px;
-    padding: 4px;
-    border: 1px solid var(--paste-method-group-border, rgba(37, 99, 235, 0.15));
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    box-sizing: border-box;
+    gap: 2px;
+    padding: 3px;
+    background: var(--modern-action-group-bg);
+    border: 1px solid var(--modern-action-group-border);
+    border-radius: 10px;
 }
 .paste-card-method-group :deep(.el-radio-button__inner) {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 10px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    height: 30px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    border-radius: 7px !important;
     border: none !important;
     background: transparent;
     font-weight: 500;
-    padding: 10px 20px;
-    color: var(--el-text-color-regular);
+    font-size: 13px;
+    line-height: 1;
+    color: var(--toolbar-button-color);
+    box-shadow: none !important;
+    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .paste-card-method-group :deep(.el-radio-button:first-child .el-radio-button__inner) {
-    border-radius: 10px !important;
+    border-radius: 7px !important;
 }
 
 .paste-card-method-group :deep(.el-radio-button:last-child .el-radio-button__inner) {
-    border-radius: 10px !important;
+    border-radius: 7px !important;
 }
 
 .paste-card-method-group :deep(.el-radio-button__inner:hover) {
-    background: var(--paste-method-hover-bg, rgba(37, 99, 235, 0.12));
-    color: var(--el-color-primary);
+    background: var(--modern-action-group-hover-bg);
+    color: var(--el-text-color-primary);
 }
 
 .paste-card-method-group :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-    background: #2563EB !important;
-    color: white !important;
-    box-shadow: none;
+    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 16%, var(--toolbar-button-bg-color)) !important;
+    color: var(--el-upload-dragger-uniform-color) !important;
+    font-weight: 600;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--el-upload-dragger-uniform-color) 52%, var(--glass-border)) inset !important;
 }
 
 /* Mobile responsive for paste card */
@@ -1990,34 +2001,31 @@ beforeDestroy() {
 
     .paste-card-actions {
         width: 100% !important;
-        margin-top: 6px;
-        gap: 6px;
+        margin-top: 8px;
+        gap: 8px;
     }
 
     .paste-card-upload-button {
-        height: 30px;
-        min-width: 55px;
+        height: 32px;
+        min-width: 64px;
         border-radius: 8px !important;
         font-size: 12px;
-        letter-spacing: 0.5px;
-        padding: 0 10px;
+        letter-spacing: 0.02em;
+        padding: 0 12px;
     }
 
     .paste-card-method-group {
-        border-radius: 8px;
-        padding: 2px;
-        height: 30px;
-        display: flex;
-        align-items: center;
+        height: 32px;
+        padding: 3px;
+        border-radius: 9px;
     }
 
     .paste-card-method-group :deep(.el-radio-button__inner) {
-        padding: 4px 10px;
+        min-width: 52px;
+        height: 26px;
+        padding: 0 10px;
         font-size: 11px;
         border-radius: 6px !important;
-        height: 26px;
-        display: flex;
-        align-items: center;
     }
 }
 

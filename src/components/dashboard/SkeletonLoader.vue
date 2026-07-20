@@ -98,7 +98,12 @@ export default {
 .skeleton-image {
     width: 100%;
     height: 100%;
-    background: var(--skeleton-bg-color);
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -117,7 +122,12 @@ export default {
     width: 60%;
     margin: 0 auto;
     border-radius: 4px;
-    background: var(--skeleton-bg-color);
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 25%,
+        rgba(255, 255, 255, 0.25) 50%,
+        rgba(255, 255, 255, 0.1) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -138,7 +148,12 @@ export default {
     width: 40px;
     height: 40px;
     border-radius: 6px;
-    background: var(--skeleton-bg-color);
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -147,7 +162,12 @@ export default {
     height: 14px;
     width: 80%;
     border-radius: 4px;
-    background: var(--skeleton-bg-color);
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -156,7 +176,12 @@ export default {
     height: 14px;
     width: 60px;
     border-radius: 4px;
-    background: var(--skeleton-bg-color);
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -165,7 +190,12 @@ export default {
     height: 14px;
     width: 40px;
     border-radius: 4px;
-    background: var(--skeleton-bg-color);
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -174,7 +204,12 @@ export default {
     height: 20px;
     width: 50px;
     border-radius: 10px;
-    background: var(--skeleton-bg-color);
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-bg-color) 25%,
+        color-mix(in srgb, var(--skeleton-bg-color) 70%, var(--skeleton-shimmer-color)) 50%,
+        var(--skeleton-bg-color) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
