@@ -21,7 +21,10 @@
                 :show-file-list="false"
                 >
                 <el-icon class="el-icon--upload" :class="{'upload-list-busy': fileList.length}">
-                    <CameraFilled/>
+                    <svg class="upload-plus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true">
+                        <path d="M12 7v10"/>
+                        <path d="M7 12h10"/>
+                    </svg>
                 </el-icon>
                 <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}" v-html="$t('upload.dragUploadText')"></div>
             </el-upload>
@@ -1696,7 +1699,16 @@ beforeDestroy() {
 .el-icon--upload {
     font-size: 100px;
     transition: font-size 0.3s ease;
-    color: var(--el-icon--upload-color);
+    color: #60A5FA;
+}
+html.dark .el-icon--upload {
+    color: #52525B;
+}
+.el-upload__text :deep(em) {
+    color: #1D4ED8;
+}
+html.dark .el-upload__text :deep(em) {
+    color: #93C5FD;
 }
 .el-icon--upload.upload-list-busy {
     font-size: 60px;
