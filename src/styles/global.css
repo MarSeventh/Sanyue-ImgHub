@@ -208,6 +208,10 @@ body {
     /* 弹窗与设置表单 */
     --dialog-bg-color: #FFFFFF;
     /* 弹窗背景 */
+    --dialog-surface-bg-color: rgba(255, 255, 255, 0.88);
+    /* Element Plus 弹窗和确认框表面背景 */
+    --dialog-backdrop-blur: 12px;
+    /* Element Plus 弹窗和确认框背景模糊 */
     --dialog-box-shadow: none;
     /* 弹窗阴影 */
     --dialog-section-bg-color: #F2F3F5;
@@ -480,6 +484,10 @@ body {
     /* 弹窗与设置表单 */
     --dialog-bg-color: #161618;
     /* 弹窗背景 */
+    --dialog-surface-bg-color: rgba(30, 30, 30, 0.5);
+    /* Element Plus 弹窗和确认框表面背景 */
+    --dialog-backdrop-blur: 20px;
+    /* Element Plus 弹窗和确认框背景模糊 */
     --dialog-box-shadow: none;
     /* 弹窗阴影 */
     --dialog-section-bg-color: #1F1F22;
@@ -621,13 +629,6 @@ body {
     color: #f56c6c !important;
 }
 
-/* 深色主题消息提示 */
-.dark .el-message {
-    background-color: var(--glass-bg) !important;
-    border: 1px solid var(--glass-border) !important;
-    box-shadow: var(--glass-shadow) !important;
-}
-
 /* 消息提示移动端适配 */
 @media (max-width: 768px) {
     /* 移动端 el-message 样式 */
@@ -654,9 +655,9 @@ body {
     overflow: hidden;
     box-shadow: var(--glass-shadow) !important;
     border: 1px solid var(--glass-border);
-    background-color: var(--glass-bg) !important;
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    background-color: var(--dialog-surface-bg-color) !important;
+    backdrop-filter: blur(var(--dialog-backdrop-blur)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur)) saturate(1.2);
 }
 
 /* 弹窗头部样式 */
@@ -705,22 +706,8 @@ body {
 }
 
 /* ==============================
-   深色主题弹窗文字与分隔线
+   深色主题弹窗分隔线
    ============================== */
-.dark .el-dialog,
-.dark .el-message-box {
-    background-color: var(--glass-bg) !important;
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
-    border: 1px solid var(--glass-border) !important;
-    box-shadow: var(--glass-shadow) !important;
-}
-
-.dark .el-dialog__header,
-.dark .el-message-box__header {
-    border-bottom: none;
-}
-
 /* 深色主题 Dialog 分隔线 */
 .dark .el-dialog__header::after {
     background: #2A2A2E;
@@ -729,31 +716,6 @@ body {
 /* 深色主题 MessageBox 分隔线 */
 .dark .el-message-box__header::after {
     background: #2A2A2E;
-}
-
-.dark .el-dialog__footer,
-.dark .el-message-box__btns {
-    border-top: none;
-    background-color: transparent;
-}
-
-.dark .el-dialog__title,
-.dark .el-message-box__title {
-    color: #e5eaf3;
-}
-
-.dark .el-message-box__content {
-    color: #cfd3dc;
-}
-
-/* 深色主题主按钮与分页器使用 Element Plus 主色 */
-.dark .el-button--primary {
-    --el-button-bg-color: var(--el-color-primary);
-    --el-button-border-color: var(--el-color-primary);
-    --el-button-hover-bg-color: var(--el-color-primary-light-3);
-    --el-button-hover-border-color: var(--el-color-primary-light-3);
-    --el-button-active-bg-color: var(--el-color-primary-dark-2);
-    --el-button-active-border-color: var(--el-color-primary-dark-2);
 }
 
 /* 深色主题朴素主按钮使用低亮度背景和高对比度文字 */
@@ -814,12 +776,8 @@ html.dark .el-cascader__dropdown__item.is-active {
     background-color: var(--el-color-primary) !important;
     border-color: var(--el-color-primary) !important;
 }
-.dark .el-tabs__active-bar,
 .dark .el-tabs__item.is-active {
     color: var(--el-text-color-primary);
-}
-.dark .el-tabs__item.is-active::after {
-    background-color: var(--el-color-primary);
 }
 
 /* Element Plus 复选框统一使用正圆外形 */
@@ -831,11 +789,6 @@ html.dark .el-cascader__dropdown__item.is-active {
     border-radius: 50% !important;
 }
 
-.dark .el-checkbox__input.is-checked .el-checkbox__inner,
-.dark .el-radio__input.is-checked .el-radio__inner {
-    background-color: var(--el-color-primary) !important;
-    border-color: var(--el-color-primary) !important;
-}
 .dark .el-checkbox__input.is-checked + .el-checkbox__label,
 .dark .el-radio__input.is-checked + .el-radio__label {
     color: var(--el-text-color-primary) !important;
@@ -952,20 +905,11 @@ html.dark .os-theme-dark,
     transition: background-color 0.2s ease, opacity 0.2s ease !important;
 }
 
-/* Element Plus 卡片、弹窗和下拉浮层统一使用玻璃表面 */
+/* Element Plus 卡片和下拉浮层统一使用玻璃表面 */
 .el-card,
-.el-dialog,
-.el-message-box,
 .el-dropdown__popper.el-popper {
     background-color: var(--glass-bg) !important;
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
-}
-/* 深色主题显式继承玻璃背景变量 */
-html.dark .el-card,
-html.dark .el-dialog,
-html.dark .el-message-box,
-html.dark .el-dropdown__popper.el-popper {
-    background-color: var(--glass-bg) !important;
 }
 
