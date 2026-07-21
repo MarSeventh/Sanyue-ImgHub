@@ -1023,7 +1023,6 @@ html.dark .el-dropdown__popper.el-popper {
     border-radius: 7px;
     background: transparent;
     border: none;
-    overflow: hidden;
 }
 
 .el-dropdown__popper.el-popper .el-dropdown-menu__item {

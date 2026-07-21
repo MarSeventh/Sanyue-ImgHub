@@ -162,7 +162,10 @@ html.dark .custom-select-trigger:hover {
     border-radius: 8px;
     box-shadow: none;
     z-index: 2000;
-    overflow: hidden;
+    max-height: 280px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 html.dark .custom-select-dropdown {
     background: rgba(22, 22, 24, 0.9);
