@@ -16,7 +16,7 @@
       </div>
       <div class="header-right">
         <!-- 搜索框：默认只显示放大镜，点击展开 -->
-        <div class="search-box" :class="{ expanded: searchExpanded }">
+        <div ref="searchBoxRef" class="search-box" :class="{ expanded: searchExpanded }">
           <span class="search-icon" @click="toggleSearch" v-if="!searchExpanded">
             <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           </span>
@@ -457,6 +457,7 @@ export default {
     window.addEventListener('resize', this.updateColumnCount);
     window.addEventListener('resize', this.checkMobile);
     window.addEventListener('scroll', this.handleScroll);
+    document.addEventListener('pointerdown', this.handleSearchOutside);
   },
   beforeUnmount() {
     if (this.observer) {
@@ -465,6 +466,7 @@ export default {
     window.removeEventListener('resize', this.updateColumnCount);
     window.removeEventListener('resize', this.checkMobile);
     window.removeEventListener('scroll', this.handleScroll);
+    document.removeEventListener('pointerdown', this.handleSearchOutside);
   },
   methods: {
     // 搜索处理
@@ -534,6 +536,14 @@ export default {
         this.$nextTick(() => {
           this.$refs.searchInputRef?.focus();
         });
+      }
+    },
+
+    handleSearchOutside(event) {
+      if (!this.searchExpanded) return;
+      const searchBox = this.$refs.searchBoxRef;
+      if (searchBox && !searchBox.contains(event.target)) {
+        this.searchExpanded = false;
       }
     },
     
@@ -1200,112 +1210,110 @@ export default {
 
 /* 搜索框：默认只显示放大镜图标 */
 .search-box {
+  --search-control-size: 2.5rem;
+  --search-icon-size: 18px;
+  --search-icon-offset: 10px;
+  position: relative;
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.1);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  transition: all 0.3s ease;
+  gap: 6px;
+  width: var(--search-control-size);
+  height: var(--search-control-size);
+  box-sizing: border-box;
+  padding: 0 10px;
+  background-color: var(--glass-bg);
+  border: 1px solid #D9DCE2;
+  border-radius: 12px;
+  box-shadow: none;
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  overflow: hidden;
+  transition: width 0.22s ease, border-color 0.2s ease, background-color 0.2s ease;
+  will-change: width;
   cursor: pointer;
 }
 
+html.dark .search-box {
+  border-color: #34343A;
+}
+
+.search-box:hover {
+  border-color: #BFC4CC;
+}
+
+html.dark .search-box:hover {
+  border-color: #4A4A52;
+}
+
 .search-box .search-icon {
-  color: rgba(255,255,255,0.8);
+  position: absolute;
+  right: var(--search-icon-offset);
+  flex: 0 0 auto;
+  color: var(--theme-toggle-color);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .search-box .search-icon svg {
-  width: 14px;
-  height: 14px;
+  width: var(--search-icon-size);
+  height: var(--search-icon-size);
 }
 
 /* 搜索框展开状态 */
 .search-box.expanded {
-  width: auto;
-  min-width: 160px;
-  border-radius: 14px;
-  padding: 4px 10px;
-  background: rgba(30, 30, 30, 0.98);
-  box-shadow: none;
-}
-
-.search-box.expanded .search-icon svg {
-  width: 12px;
-  height: 12px;
+  width: 180px;
+  padding-right: calc(var(--search-icon-offset) + var(--search-icon-size) + 6px);
 }
 
 .search-box.expanded .search-input {
-  width: 110px;
-  font-size: 12px;
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
 }
 
 .search-box:focus-within {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  border-color: rgba(59, 130, 246, 0.72);
 }
 
 .search-input {
   background: transparent;
   border: none;
   outline: none;
-  color: #fff;
+  color: var(--el-text-color-primary);
   font-size: 12px;
-  transition: width 0.3s;
 }
 
 .search-input::placeholder {
-  color: #C8C9CC;
+  color: var(--el-text-color-placeholder);
   font-size: 11px;
 }
 
-/* 主题切换按钮对齐 */
-.theme-toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.theme-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* 手机端搜索框更小 */
 @media (max-width: 600px) {
   .header-right {
     gap: 8px;
   }
-  
+}
+
+/* 与主题按钮组件保持相同的移动端尺寸断点 */
+@media (max-width: 768px) {
   .search-box {
-    width: 26px;
-    height: 26px;
-  }
-  
-  .search-box .search-icon svg {
-    width: 12px;
-    height: 12px;
+    --search-control-size: 2rem;
+    --search-icon-size: 15px;
+    --search-icon-offset: 8px;
+    padding: 0 7px;
   }
   
   .search-box.expanded {
-    min-width: 140px;
-    padding: 3px 8px;
+    width: 150px;
   }
   
   .search-box.expanded .search-input {
-    width: 90px;
     font-size: 11px;
   }
   
-  .search-box.expanded .search-icon svg {
-    width: 11px;
-    height: 11px;
-  }
 }
 
 .header-center {
@@ -2097,31 +2105,6 @@ export default {
   color: #59636E;
 }
 
-:root:not(.dark) .search-box {
-  background: rgba(0,0,0,0.08);
-}
-
-:root:not(.dark) .search-box.expanded {
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: none;
-}
-
-:root:not(.dark) .search-box.expanded .search-input {
-  color: #333;
-}
-
-:root:not(.dark) .search-box.expanded .search-input::placeholder {
-  color: #4E5969;
-}
-
-:root:not(.dark) .search-box .search-icon {
-  color: #1D2129;
-}
-
-:root:not(.dark) .search-box .search-icon:hover {
-  color: #333;
-}
-
 :root:not(.dark) .loading-container,
 :root:not(.dark) .error-container {
   color: #59636E;
@@ -2211,10 +2194,6 @@ export default {
 
 :root:not(.dark) .loading-more {
   color: #59636E;
-}
-
-:root:not(.dark) .theme-toggle-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
 }
 
 :root:not(.dark) .floating-page-indicator {
