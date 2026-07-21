@@ -130,7 +130,9 @@ export default {
     border: 1px solid var(--upload-list-item-border-color, rgba(37, 99, 235, 0.1));
     padding: 10px 12px;
     border-radius: 16px;
-    background: var(--upload-list-item-bg, rgba(255, 255, 255, 0.8));
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     box-shadow: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

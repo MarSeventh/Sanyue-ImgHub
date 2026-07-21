@@ -16,19 +16,6 @@
     color: #1D2129;
 }
 
-nav {
-    padding: 30px;
-}
-
-nav a {
-    font-weight: bold;
-    color: #1D2129;
-}
-
-nav a.router-link-exact-active {
-    color: #2563EB;
-}
-
 body {
     margin: 0;
     padding: 0;
@@ -809,149 +796,8 @@ body {
     box-shadow: var(--glass-shadow) !important;
 }
 
-/* ==============================
-   弹窗现代化样式
-   ============================== */
-
-/* 弹窗区块样式 */
-.dialog-section {
-    margin-bottom: 24px;
-    background: var(--dialog-section-bg-color, var(--el-fill-color-lighter));
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid var(--el-border-color-lighter);
-}
-
-/* 区块标题 */
-.section-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
-}
-
-.section-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
-}
-
-/* 区块帮助图标 */
-.section-help-icon {
-    color: var(--el-text-color-secondary);
-    cursor: pointer;
-    font-size: 14px;
-    transition: color 0.2s;
-}
-
-.section-help-icon:hover {
-    color: var(--el-color-primary);
-}
-
-/* 区块内容 */
-.section-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-/* ==============================
-   卡片式单选组样式
-   ============================== */
-.radio-card-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-/* 单选卡片基础样式 */
-.radio-card-group .radio-card {
-    margin-right: 0;
-    padding: 10px 16px;
-    border-radius: 8px;
-    background: var(--dialog-control-bg-color, var(--el-bg-color));
-    border: 1px solid var(--el-border-color-lighter);
-    transition: all 0.2s ease;
-}
-
-/* 单选卡片悬浮效果 */
-.radio-card-group .radio-card:hover {
-    border-color: var(--el-color-primary-light-5);
-}
-
-/* 单选卡片选中状态 */
-.radio-card-group .radio-card.is-checked {
-    background: #EFF6FF;
-    border-color: var(--el-color-primary);
-}
-/* 暗色模式:提高单选卡片选中态的文字与背景对比度 */
-html.dark .radio-card-group .radio-card.is-checked {
-    background: rgba(74, 93, 155, 0.38);
-    border-color: var(--el-color-primary-light-5);
-    color: var(--el-text-color-primary);
-}
-html.dark .radio-card-group .radio-card.is-checked .el-radio__label,
-html.dark .radio-card-group .radio-card.is-checked .radio-icon {
-    color: var(--el-text-color-primary) !important;
-}
-
-/* 隐藏原生单选按钮 */
-.radio-card-group .el-radio__input {
-    display: none;
-}
-
-/* 单选标签样式 */
-.radio-card-group .el-radio__label {
-    padding-left: 0;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* ==============================
-   设置项布局样式
-   ============================== */
-.setting-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: var(--dialog-control-bg-color, var(--el-bg-color));
-    border-radius: 8px;
-    border: 1px solid var(--el-border-color-lighter);
-}
-
-/* 设置项标签 */
-.setting-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--el-text-color-primary);
-}
-
-/* 设置项输入框 */
-.setting-input {
-    width: 60%;
-    max-width: 250px;
-}
-
-/* 弹窗底部按钮 */
-.dialog-action {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 16px;
-}
-
-.confirm-btn {
-    min-width: 100px;
-    border-radius: 8px;
-}
-
 /* 移动端适配 */
 @media (max-width: 768px) {
-
     /* 移动端 el-message 样式 */
     .el-message {
         padding: 8px 18px !important;
@@ -965,245 +811,10 @@ html.dark .radio-card-group .radio-card.is-checked .radio-icon {
     .el-message .el-message__content {
         font-size: 13px !important;
     }
-
-    /* 弹窗区块移动端样式 */
-    .dialog-section {
-        padding: 12px;
-    }
-
-    /* 单选组移动端样式 */
-    .radio-card-group {
-        flex-direction: column;
-    }
-
-    .radio-card-group .radio-card {
-        width: 100%;
-        text-align: center;
-    }
-
-    /* 设置项移动端样式 */
-    .setting-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .setting-item .radio-card-group.compact {
-        width: 100%;
-    }
-
-    .setting-input {
-        width: 100%;
-        max-width: none;
-    }
-
-    /* 紧凑型单选组移动端样式 - 两列网格 */
-    .radio-card-group.compact {
-        flex-direction: row;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        width: 100%;
-    }
-
-    .radio-card-group.compact .radio-card {
-        width: 100%;
-        box-sizing: border-box;
-        justify-content: center;
-        flex: 1;
-    }
-
-    .radio-card-group.compact .radio-card .el-radio__label {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .radio-card-group.compact .channel-icon {
-        width: 18px;
-        font-size: 18px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-}
-
-/* 滑动条样式（压缩阈值等） */
-.slider-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.slider-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-}
-
-.slider-wrapper .el-slider {
-    flex: 1;
-    min-width: 0;
-}
-
-.slider-input {
-    width: 80px !important;
-    flex-shrink: 0;
-}
-
-.slider-input .el-input__wrapper {
-    padding: 0 8px;
-}
-
-.slider-input-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-}
-
-.slider-unit {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--el-text-color-secondary);
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-    .slider-wrapper {
-        gap: 8px;
-        width: 100%;
-    }
-
-    .slider-input {
-        width: 80px !important;
-    }
-
-    .setting-input {
-        width: 100% !important;
-        max-width: none !important;
-    }
-
-    .dialog-section {
-        overflow: hidden;
-    }
-
-    /* 移动端网格布局调整 */
-    .radio-card-group.grid-2x2 {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-
-    .radio-card-group.grid-2x2 .radio-card {
-        padding: 10px 12px;
-        font-size: 13px;
-        justify-content: center;
-    }
-}
-
-/* 行内帮助图标 */
-.inline-help-icon {
-    color: var(--el-text-color-secondary);
-    cursor: pointer;
-    font-size: 13px;
-    margin-left: 6px;
-    transition: color 0.2s;
-}
-
-.inline-help-icon:hover {
-    color: var(--el-color-primary);
-}
-
-/* 紧凑型单选组样式 */
-.radio-card-group.compact {
-    gap: 8px;
-}
-
-.radio-card-group.compact .radio-card {
-    padding: 8px 12px;
-    font-size: 13px;
-}
-
-.radio-card-group.compact .radio-card .el-radio__label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-/* 渠道图标样式 */
-.radio-card-group.compact .channel-icon {
-    width: 18px;
-    font-size: 18px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.channel-brand-telegram {
-    color: #229ed9 !important;
-}
-
-.channel-brand-cfr2 {
-    color: #f38020 !important;
-}
-
-.channel-brand-s3 {
-    color: #ff9900 !important;
-}
-
-.channel-brand-discord {
-    color: #5865f2 !important;
-}
-
-.channel-brand-huggingface {
-    color: #ff9d00 !important;
-}
-
-.channel-brand-webdav {
-    color: #14b8a6 !important;
-}
-
-/* 2x2 网格布局单选组 */
-.radio-card-group.grid-2x2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-}
-
-.radio-card-group.grid-2x2 .radio-card {
-    width: 100%;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-@media (min-width: 769px) {
-    .radio-card-group.grid-2x2 .radio-card {
-        justify-content: flex-start;
-        padding-left: 20px;
-    }
-}
-
-/* 单选按钮图标 */
-.radio-icon {
-    font-size: 14px;
-    opacity: 0.8;
-    width: 20px;
-    text-align: center;
-    display: inline-block;
-}
-
-.radio-card.is-checked .radio-icon {
-    opacity: 1;
 }
 
 /* ==============================
-   全局弹窗和消息框毛玻璃效果
+   Element Plus 弹窗和消息框基础外观
    ============================== */
 .el-dialog,
 .el-message-box {
@@ -1397,20 +1008,44 @@ html.dark .el-cascader__dropdown__item.is-active {
    下拉菜单样式
    ============================== */
 .el-dropdown__popper.el-popper {
-    border-radius: 12px;
-    border: 1px solid #E5E6EB;
+    border-radius: 8px;
+    border: 1px solid #D9DCE2;
     background-color: var(--popper-bg-color);
     box-shadow: var(--popper-shadow);
 }
 
+html.dark .el-dropdown__popper.el-popper {
+    border-color: #34343A;
+}
+
 .el-dropdown__popper.el-popper .el-dropdown-menu {
-    background: none;
+    padding: 4px;
+    border-radius: 7px;
+    background: transparent;
     border: none;
+    overflow: hidden;
 }
 
 .el-dropdown__popper.el-popper .el-dropdown-menu__item {
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 6px;
     border: none;
-    background: none;
+    background: transparent;
+    color: var(--el-text-color-regular);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover,
+.el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: var(--el-text-color-primary);
+}
+
+html.dark .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover,
+html.dark .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--el-text-color-primary);
 }
 
 .el-popper.is-light>.el-popper__arrow::before {
@@ -1476,101 +1111,20 @@ html.dark .os-theme-dark,
     transition: background-color 0.2s ease, opacity 0.2s ease !important;
 }
 
-/* ==============================
-   静态背景图层 + 毛玻璃卡片
-   ============================== */
-/* 没 src 的空 img(用户未配壁纸时)隐藏,避免显示破损图标 */
-.background-image1:not([src]),
-.background-image2:not([src]) {
-    display: none;
-}
-/* 全站统一半透明毛玻璃(原仅在有壁纸时生效,现无条件生效,与系统状态页卡片一致) */
-.img-card,
-.upload-list-card,
-.upload-list-item,
-.login-container,
-.action-card,
-.chart-card,
-.overview-card,
+/* Element Plus 卡片与浮层使用主题毛玻璃背景 */
 .el-card,
 .el-dialog,
 .el-message-box,
-.el-dropdown__popper.el-popper,
-/* 顶栏与工具按钮 */
-.stats-badge,
-.breadcrumb,
-.breadcrumb-view-toggle,
-.mobile-directory-trigger,
-.quick-toolbar,
-.toggle-dark-button,
-.toggle-dark,
-.language-switcher,
-#themeToggle,
-.more-button,
-.mobile-more-button,
-.upload-method-button,
-.directory-tree-trigger,
-/* 上传 / 配置面板 */
-.channel-group,
-.channel-card,
-.custom-select-trigger,
-.custom-select-dropdown,
-.token-table,
-/* 安全/网页/其他设置:表单卡片 */
-.first-settings .el-form,
-/* 分页 */
-.refresh-btn,
-.page-jump .el-input__wrapper {
+.el-dropdown__popper.el-popper {
     background-color: var(--glass-bg) !important;
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
-/* 深色模式:卡片半透明毛玻璃 */
-html.dark .img-card,
-html.dark .upload-list-card,
-html.dark .upload-list-item,
-html.dark .login-container,
-html.dark .action-card,
-html.dark .chart-card,
-html.dark .overview-card,
+/* 深色模式沿用当前主题的毛玻璃背景变量 */
 html.dark .el-card,
 html.dark .el-dialog,
 html.dark .el-message-box,
-html.dark .el-dropdown__popper.el-popper,
-html.dark .stats-badge,
-html.dark .breadcrumb,
-html.dark .breadcrumb-view-toggle,
-html.dark .mobile-directory-trigger,
-html.dark .quick-toolbar,
-html.dark .toggle-dark-button,
-html.dark .toggle-dark,
-html.dark .language-switcher,
-html.dark #themeToggle,
-html.dark .more-button,
-html.dark .mobile-more-button,
-html.dark .upload-method-button,
-html.dark .directory-tree-trigger,
-html.dark .channel-group,
-html.dark .channel-card,
-html.dark .custom-select-trigger,
-html.dark .custom-select-dropdown,
-html.dark .token-table,
-html.dark .first-settings .el-form,
-html.dark .refresh-btn,
-html.dark .page-jump .el-input__wrapper {
+html.dark .el-dropdown__popper.el-popper {
     background-color: var(--glass-bg) !important;
-}
-/* 有壁纸时:主容器透明让壁纸透出 */
-body:has(#bg1[src]) {
-    background-color: transparent !important;
-}
-body:has(#bg1[src]) .login,
-body:has(#bg1[src]) .container,
-body:has(#bg1[src]) .upload-home,
-body:has(#bg1[src]) .blocked-container,
-body:has(#bg1[src]) .not-found-container,
-body:has(#bg1[src]) .whitelist-container {
-    background: transparent !important;
-    background-color: transparent !important;
 }
 

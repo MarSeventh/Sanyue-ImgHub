@@ -285,7 +285,7 @@
             @metadataUpdated="handleMetadataUpdated"
             @fileRenamed="handleFileRenamed"
         />
-        <el-dialog :title="$t('dashboard.linkFormat')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
+        <el-dialog :title="$t('dashboard.linkFormat')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog settings-dialog-scope">
             <div class="dialog-section">
                 <div class="section-header">
                     <span class="section-title">{{ $t('settings.defaultCopyLink') }}</span>
@@ -2073,6 +2073,8 @@ beforeUnmount() {
 };
 </script>
 
+<style src="@/styles/settings-dialog.css"></style>
+
 <style scoped>
 .container {
     background: var(--admin-container-bg-color);
@@ -2207,21 +2209,18 @@ html.dark .header-content:hover {
     padding: 2px;
     border: 1px solid #D9DCE2;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--glass-bg);
     box-shadow: none;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 html.dark .breadcrumb-view-toggle {
-    background: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 
 .breadcrumb-view-toggle:hover {
     border-color: #BFC4CC;
-    background: rgba(255, 255, 255, 0.85);
 }
 html.dark .breadcrumb-view-toggle:hover {
-    background: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 
@@ -2288,7 +2287,7 @@ html.dark .breadcrumb-view-toggle:hover {
     font-size: 12px;
     font-weight: 500;
     color: var(--el-text-color-secondary);
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--glass-bg);
     padding: 4px 12px;
     border-radius: 12px;
     border: 1px solid #D9DCE2;
@@ -2299,16 +2298,13 @@ html.dark .breadcrumb-view-toggle:hover {
     margin-left: auto;
 }
 html.dark .stats-badge {
-    background: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 
 .stats-badge:hover {
-    background: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
 }
 html.dark .stats-badge:hover {
-    background: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 
@@ -2752,7 +2748,9 @@ html.dark .pagination-container :deep(.btn-next:hover) {
 }
 
 .page-jump .jump-input :deep(.el-input__wrapper) {
-    background: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     box-shadow: none;
     border: 1px solid #D9DCE2;
     border-radius: 8px;
@@ -2760,7 +2758,6 @@ html.dark .pagination-container :deep(.btn-next:hover) {
     height: 28px;
 }
 html.dark .page-jump .jump-input :deep(.el-input__wrapper) {
-    background: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 
@@ -2886,7 +2883,7 @@ html.dark .page-jump .jump-input :deep(.el-input__wrapper) {
 
 .refresh-btn {
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--glass-bg);
     box-shadow: none;
     color: #38bdf8;
     border: 1px solid #D9DCE2;
@@ -2902,17 +2899,14 @@ html.dark .page-jump .jump-input :deep(.el-input__wrapper) {
     transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 html.dark .refresh-btn {
-    background: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 
 .refresh-btn:hover {
-    background: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
     color: #0ea5e9;
 }
 html.dark .refresh-btn:hover {
-    background: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 
@@ -2982,7 +2976,7 @@ html.dark .refresh-btn:hover {
     display: flex;
     align-items: center;
     padding: 0 12px;
-    background-color: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg);
     border: 1px solid #D9DCE2;
     border-radius: 10px;
     font-size: 0.95em;
@@ -2991,16 +2985,13 @@ html.dark .refresh-btn:hover {
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 html.dark .breadcrumb {
-    background-color: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 
 .breadcrumb:hover {
-    background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
 }
 html.dark .breadcrumb:hover {
-    background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 
@@ -3047,20 +3038,27 @@ html.dark .breadcrumb:hover {
     box-sizing: border-box;
     gap: 6px;
     padding: 0 10px;
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--glass-bg);
     border-radius: 8px;
     border: 1px solid #D9DCE2;
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 html.dark .mobile-directory-trigger {
-    background: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 
 .mobile-directory-trigger:active {
-    background: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
+}
+
+.breadcrumb-view-toggle,
+.breadcrumb,
+.stats-badge,
+.refresh-btn,
+.mobile-directory-trigger {
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 .mobile-directory-icon {

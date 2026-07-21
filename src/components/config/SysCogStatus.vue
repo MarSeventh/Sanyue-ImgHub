@@ -1248,7 +1248,6 @@ export default {
 
 .overview-card:hover {
   box-shadow: var(--glass-shadow);
-  background: var(--glass-bg);
 }
 
 .card-icon {
@@ -1314,7 +1313,6 @@ export default {
 
 .chart-card:hover {
   box-shadow: var(--glass-shadow);
-  background: var(--glass-bg);
 }
 
 .chart-card,
@@ -1631,7 +1629,13 @@ html.dark .legend-item:hover {
 
 .action-card:hover {
   box-shadow: var(--glass-shadow);
-  background: var(--glass-bg);
+}
+
+.overview-card,
+.chart-card,
+.action-card {
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 .action-header {

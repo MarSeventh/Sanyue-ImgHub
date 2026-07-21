@@ -1,0 +1,203 @@
+.settings-dialog-scope .dialog-section {
+    margin-bottom: 24px;
+    background: var(--dialog-section-bg-color, var(--el-fill-color-lighter));
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--el-border-color-lighter);
+}
+
+.settings-dialog-scope .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.settings-dialog-scope .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+}
+
+.settings-dialog-scope .section-help-icon,
+.settings-dialog-scope .inline-help-icon {
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.settings-dialog-scope .section-help-icon {
+    font-size: 14px;
+}
+
+.settings-dialog-scope .inline-help-icon {
+    font-size: 13px;
+    margin-left: 6px;
+}
+
+.settings-dialog-scope .section-help-icon:hover,
+.settings-dialog-scope .inline-help-icon:hover {
+    color: var(--el-color-primary);
+}
+
+.settings-dialog-scope .section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-dialog-scope .radio-card-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.settings-dialog-scope .radio-card-group .radio-card {
+    margin-right: 0;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: var(--dialog-control-bg-color, var(--el-bg-color));
+    border: 1px solid var(--el-border-color-lighter);
+    transition: all 0.2s ease;
+}
+
+.settings-dialog-scope .radio-card-group .radio-card:hover {
+    border-color: var(--el-color-primary-light-5);
+}
+
+.settings-dialog-scope .radio-card-group .radio-card.is-checked {
+    background: #EFF6FF;
+    border-color: var(--el-color-primary);
+}
+
+html.dark .settings-dialog-scope .radio-card-group .radio-card.is-checked {
+    background: rgba(74, 93, 155, 0.38);
+    border-color: var(--el-color-primary-light-5);
+    color: var(--el-text-color-primary);
+}
+
+html.dark .settings-dialog-scope .radio-card-group .radio-card.is-checked .el-radio__label,
+html.dark .settings-dialog-scope .radio-card-group .radio-card.is-checked .radio-icon {
+    color: var(--el-text-color-primary) !important;
+}
+
+.settings-dialog-scope .radio-card-group .el-radio__input {
+    display: none;
+}
+
+.settings-dialog-scope .radio-card-group .el-radio__label {
+    padding-left: 0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-dialog-scope .setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--dialog-control-bg-color, var(--el-bg-color));
+    border-radius: 8px;
+    border: 1px solid var(--el-border-color-lighter);
+}
+
+.settings-dialog-scope .setting-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+}
+
+.settings-dialog-scope .setting-input {
+    width: 60%;
+    max-width: 250px;
+}
+
+.settings-dialog-scope .dialog-action {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 16px;
+}
+
+.settings-dialog-scope .confirm-btn {
+    min-width: 100px;
+    border-radius: 8px;
+}
+
+.settings-dialog-scope .radio-card-group.grid-2x2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.settings-dialog-scope .radio-card-group.grid-2x2 .radio-card {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.settings-dialog-scope .radio-icon {
+    font-size: 14px;
+    opacity: 0.8;
+    width: 20px;
+    text-align: center;
+    display: inline-block;
+}
+
+.settings-dialog-scope .radio-card.is-checked .radio-icon {
+    opacity: 1;
+}
+
+@media (min-width: 769px) {
+    .settings-dialog-scope .radio-card-group.grid-2x2 .radio-card {
+        justify-content: flex-start;
+        padding-left: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .settings-dialog-scope .dialog-section {
+        padding: 12px;
+        overflow: hidden;
+    }
+
+    .settings-dialog-scope .radio-card-group {
+        flex-direction: column;
+    }
+
+    .settings-dialog-scope .radio-card-group .radio-card {
+        width: 100%;
+        text-align: center;
+    }
+
+    .settings-dialog-scope .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .settings-dialog-scope .setting-input {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    .settings-dialog-scope .radio-card-group.grid-2x2 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .settings-dialog-scope .radio-card-group.grid-2x2 .radio-card {
+        padding: 10px 12px;
+        font-size: 13px;
+        justify-content: center;
+    }
+}

@@ -166,7 +166,7 @@
             :convertToWebp="convertToWebp"
             class="upload"
         />
-        <el-dialog :title="$t('settings.linkFormatTitle')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog">
+        <el-dialog :title="$t('settings.linkFormatTitle')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog settings-dialog-scope">
             <div class="dialog-section">
                 <div class="section-header">
                     <span class="section-title">{{ $t('settings.defaultCopyLink') }}</span>
@@ -796,7 +796,7 @@ export default {
     align-items: center;
     border: 1px solid #D9DCE2;
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    background-color: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg);
     box-shadow: none;
     border-radius: 12px;
     position: fixed;
@@ -805,7 +805,6 @@ export default {
     padding: 0;
 }
 html.dark .toggle-dark-button {
-    background-color: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 
@@ -824,7 +823,7 @@ html.dark .toggle-dark-button {
     align-items: center;
     border: 1px solid #D9DCE2;
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    background-color: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg);
     box-shadow: none;
     color: var(--theme-toggle-color);
     border-radius: 12px;
@@ -832,16 +831,13 @@ html.dark .toggle-dark-button {
     padding: 0;
 }
 html.dark .more-dropdown .more-button {
-    background-color: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 .more-dropdown .more-button:hover {
     transform: scale(1.05);
-    background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
 }
 html.dark .more-dropdown .more-button:hover {
-    background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 
@@ -854,7 +850,7 @@ html.dark .more-dropdown .more-button:hover {
     align-items: center;
     border: 1px solid #D9DCE2;
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    background-color: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg);
     box-shadow: none;
     color: var(--theme-toggle-color);
     border-radius: 12px;
@@ -865,7 +861,6 @@ html.dark .more-dropdown .more-button:hover {
     padding: 0;
 }
 html.dark .upload-method-button {
-    background-color: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 @media (max-width: 768px) {
@@ -901,7 +896,7 @@ html.dark .upload-method-button {
     align-items: center;
     border: 1px solid #D9DCE2;
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    background-color: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg);
     box-shadow: none;
     color: var(--theme-toggle-color);
     border-radius: 12px;
@@ -909,16 +904,13 @@ html.dark .upload-method-button {
     padding: 0;
 }
 html.dark .mobile-more-button {
-    background-color: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 .mobile-more-button:hover {
     transform: scale(1.05);
-    background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
 }
 html.dark .mobile-more-button:hover {
-    background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 
@@ -985,12 +977,10 @@ html.dark .mobile-more-button:hover {
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
 }
 .directory-tree-trigger:hover {
-    background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
     transform: scale(1.05);
 }
 html.dark .directory-tree-trigger:hover {
-    background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 @media (max-width: 768px) {
@@ -1057,13 +1047,22 @@ html.dark .upload-folder :deep(.el-input__wrapper:hover) {
     padding: 3px;
     border-radius: 999px;
     border: 1px solid #D9DCE2;
-    background-color: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg);
     box-shadow: none;
     transition: background-color 0.24s ease, border-color 0.24s ease;
 }
 html.dark .quick-toolbar {
-    background-color: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
+}
+
+.toggle-dark-button,
+.more-dropdown .more-button,
+.upload-method-button,
+.mobile-more-button,
+.directory-tree-trigger,
+.quick-toolbar {
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 .quick-toolbar-button {
@@ -1135,11 +1134,9 @@ html.dark .quick-toolbar {
     box-shadow: var(--upload-action-btn-hover-shadow);
 }
 .quick-toolbar:hover {
-    background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
 }
 html.dark .quick-toolbar:hover {
-    background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 .quick-toolbar-button:hover {
@@ -1148,12 +1145,10 @@ html.dark .quick-toolbar:hover {
 .toggle-dark-button:hover,
 .upload-method-button:hover {
     transform: scale(1.05);
-    background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
 }
 html.dark .toggle-dark-button:hover,
 html.dark .upload-method-button:hover {
-    background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 .upload-folder:hover :deep(.el-input__wrapper) {

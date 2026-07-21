@@ -1298,6 +1298,18 @@ mounted() {
     color: var(--el-color-primary);
 }
 
+.inline-help-icon {
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    margin-left: 6px;
+    transition: color 0.2s;
+}
+
+.inline-help-icon:hover {
+    color: var(--el-color-primary);
+}
+
 .add-btn {
     border-radius: 8px;
     /* 主操作 CTA:微透明蓝,保持可读性同时贴合半透明风格 */
@@ -1396,6 +1408,12 @@ html.dark .add-btn:hover {
     box-shadow: var(--glass-shadow);
 }
 
+.channel-group,
+.channel-card {
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+
 /* 光斑效果 */
 .card-glow {
     position: absolute;
@@ -1437,7 +1455,6 @@ html.dark .add-btn:hover {
 .channel-card:hover {
     border-color: var(--glass-border);
     box-shadow: var(--glass-shadow);
-    background: var(--glass-bg);
 }
 
 .channel-card.disabled {

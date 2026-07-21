@@ -4,6 +4,7 @@
  */
 
 import { mapGetters } from 'vuex'
+import '@/styles/background.css'
 
 export default {
   data() {
@@ -410,7 +411,7 @@ export default {
         if (bg1) {
           bg1.style.transition = 'none'
           bg1.style.opacity = 0
-          bg1.src = ''
+          bg1.removeAttribute('src')
           // 恢复过渡效果
           setTimeout(() => {
             if (bg1) bg1.style.transition = 'opacity 1.2s ease-in-out, filter 0.3s ease, transform 0.3s ease'
@@ -419,7 +420,7 @@ export default {
         if (bg2) {
           bg2.style.transition = 'none'
           bg2.style.opacity = 0
-          bg2.src = ''
+          bg2.removeAttribute('src')
           // 恢复过渡效果
           setTimeout(() => {
             if (bg2) bg2.style.transition = 'opacity 1.2s ease-in-out, filter 0.3s ease, transform 0.3s ease'
@@ -430,13 +431,13 @@ export default {
         if (bg1) {
           bg1.style.opacity = 0
           setTimeout(() => {
-            if (bg1) bg1.src = ''
+            if (bg1) bg1.removeAttribute('src')
           }, 1200)
         }
         if (bg2) {
           bg2.style.opacity = 0
           setTimeout(() => {
-            if (bg2) bg2.src = ''
+            if (bg2) bg2.removeAttribute('src')
           }, 1200)
         }
       }

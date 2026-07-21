@@ -99,13 +99,14 @@ html.dark .dashboard-checkbox--list:hover {
     overflow: hidden;
     border: 1px solid #D9DCE2;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--glass-bg);
     box-shadow: none;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 html.dark .dashboard-checkbox--breadcrumb {
     border: 1px solid #34343A;
-    background: rgba(22, 22, 24, 0.75);
 }
 
 .dashboard-checkbox--breadcrumb::before {
@@ -124,11 +125,9 @@ html.dark .dashboard-checkbox--breadcrumb::before {
 
 .dashboard-checkbox--breadcrumb:hover {
     border-color: #BFC4CC;
-    background: rgba(255, 255, 255, 0.85);
 }
 html.dark .dashboard-checkbox--breadcrumb:hover {
     border-color: #4A4A52;
-    background: rgba(22, 22, 24, 0.88);
 }
 
 .dashboard-checkbox--breadcrumb:focus-visible {
@@ -139,12 +138,11 @@ html.dark .dashboard-checkbox--breadcrumb:hover {
 .dashboard-checkbox--breadcrumb.checked,
 .dashboard-checkbox--breadcrumb.indeterminate {
     border-color: #D9DCE2;
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--glass-bg);
 }
 html.dark .dashboard-checkbox--breadcrumb.checked,
 html.dark .dashboard-checkbox--breadcrumb.indeterminate {
     border-color: #34343A;
-    background: rgba(22, 22, 24, 0.75);
 }
 
 .dashboard-checkbox--breadcrumb.checked::before,

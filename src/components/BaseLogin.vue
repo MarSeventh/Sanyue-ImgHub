@@ -281,7 +281,9 @@ export default {
     width: 600px;
     border-radius: 12px;
     box-shadow: var(--login-container-box-shadow);
-    background-color: var(--login-container-bg-color);
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--glass-border);
     transition: all 0.3s ease;
     padding: 40px 0;
@@ -543,21 +545,18 @@ export default {
     right: 30px;
     border: 1px solid #D9DCE2;
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    background-color: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg);
     box-shadow: none;
     border-radius: 12px;
 }
 html.dark .toggle-dark {
-    background-color: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 .toggle-dark:hover {
     transform: scale(1.05);
-    background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
 }
 html.dark .toggle-dark:hover {
-    background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
 }
 .language-switcher {
@@ -565,7 +564,7 @@ html.dark .toggle-dark:hover {
     top: 30px;
     right: 80px;
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    background-color: rgba(255, 255, 255, 0.72);
+    background-color: var(--glass-bg);
     box-shadow: none;
     border: 1px solid #D9DCE2;
     border-radius: 12px;
@@ -577,7 +576,6 @@ html.dark .toggle-dark:hover {
     z-index: 100;
 }
 html.dark .language-switcher {
-    background-color: rgba(22, 22, 24, 0.75);
     border: 1px solid #34343A;
 }
 @media (max-width: 768px) {
@@ -588,11 +586,15 @@ html.dark .language-switcher {
 }
 .language-switcher:hover {
     transform: scale(1.05);
-    background-color: rgba(255, 255, 255, 0.85);
     border-color: #BFC4CC;
 }
 html.dark .language-switcher:hover {
-    background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
+}
+
+.toggle-dark,
+.language-switcher {
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 </style>

@@ -73,7 +73,9 @@ export default {
     content-visibility: auto;
     contain: layout paint style;
     contain-intrinsic-size: 260px;
-    background: var(--admin-dashboard-imgcard-bg-color);
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
     box-shadow: var(--admin-dashboard-imgcard-shadow);

@@ -1541,7 +1541,9 @@ beforeDestroy() {
     align-items: center;
     justify-content: center;
     border-radius: 15px;
-    background-color: var(--glass-bg);
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow) !important;
     transition: height 0.3s ease;

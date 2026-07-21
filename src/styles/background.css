@@ -1,0 +1,18 @@
+.background-image1:not([src]),
+.background-image2:not([src]) {
+    display: none;
+}
+
+body:has(#bg1[src]) {
+    background-color: transparent !important;
+}
+
+body:has(#bg1[src]) .login,
+body:has(#bg1[src]) .container,
+body:has(#bg1[src]) .upload-home,
+body:has(#bg1[src]) .blocked-container,
+body:has(#bg1[src]) .not-found-container,
+body:has(#bg1[src]) .whitelist-container {
+    background: transparent !important;
+    background-color: transparent !important;
+}

@@ -223,7 +223,9 @@ mounted() {
 /* 表单样式 - 上下排列左对齐(对齐系统状态卡片风格,无 hover 动效) */
 .first-settings :deep(.el-form) {
     padding: 20px 24px;
-    background: var(--glass-bg);
+    background-color: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border-radius: 16px;
     border: 1px solid var(--glass-border);
     margin-bottom: 20px;

@@ -1,5 +1,5 @@
 <template>
-    <el-dialog :title="$t('uploadSettings.title')" v-model="visible" :width="dialogWidth" :show-close="false" class="settings-dialog">
+    <el-dialog :title="$t('uploadSettings.title')" v-model="visible" :width="dialogWidth" :show-close="false" class="settings-dialog settings-dialog-scope upload-settings-dialog">
         <!-- 上传渠道 -->
         <div class="dialog-section">
             <div class="section-header">
@@ -226,3 +226,6 @@ export default {
     }
 }
 </script>
+
+<style src="@/styles/settings-dialog.css"></style>
+<style src="./UploadSettingsDialog.css"></style>

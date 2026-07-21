@@ -1,0 +1,114 @@
+.upload-settings-dialog .radio-card-group.compact {
+    gap: 8px;
+}
+
+.upload-settings-dialog .radio-card-group.compact .radio-card {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.upload-settings-dialog .radio-card-group.compact .radio-card .el-radio__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.upload-settings-dialog .radio-card-group.compact .channel-icon {
+    width: 18px;
+    font-size: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.upload-settings-dialog .slider-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.upload-settings-dialog .slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.upload-settings-dialog .slider-wrapper .el-slider {
+    flex: 1;
+    min-width: 0;
+}
+
+.upload-settings-dialog .slider-input {
+    width: 96px !important;
+    flex-shrink: 0;
+}
+
+.upload-settings-dialog .slider-input .el-input__inner {
+    text-align: center;
+}
+
+.upload-settings-dialog .slider-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.upload-settings-dialog .slider-unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--el-text-color-secondary);
+}
+
+.upload-settings-dialog .channel-brand-telegram {
+    color: #229ed9 !important;
+}
+
+.upload-settings-dialog .channel-brand-cfr2 {
+    color: #f38020 !important;
+}
+
+.upload-settings-dialog .channel-brand-s3 {
+    color: #ff9900 !important;
+}
+
+.upload-settings-dialog .channel-brand-discord {
+    color: #5865f2 !important;
+}
+
+.upload-settings-dialog .channel-brand-huggingface {
+    color: #ff9d00 !important;
+}
+
+.upload-settings-dialog .channel-brand-webdav {
+    color: #14b8a6 !important;
+}
+
+@media (max-width: 768px) {
+    .upload-settings-dialog .setting-item .radio-card-group.compact {
+        width: 100%;
+    }
+
+    .upload-settings-dialog .radio-card-group.compact {
+        flex-direction: row;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+    }
+
+    .upload-settings-dialog .radio-card-group.compact .radio-card {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+        flex: 1;
+    }
+
+    .upload-settings-dialog .radio-card-group.compact .radio-card .el-radio__label {
+        justify-content: center;
+    }
+
+    .upload-settings-dialog .slider-wrapper {
+        gap: 8px;
+    }
+}
