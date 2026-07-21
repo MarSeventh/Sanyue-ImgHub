@@ -3,16 +3,11 @@
     display: none;
 }
 
-body:has(#bg1[src]) {
+body.wallpaper-active {
     background-color: transparent !important;
 }
 
-body:has(#bg1[src]) .login,
-body:has(#bg1[src]) .container,
-body:has(#bg1[src]) .upload-home,
-body:has(#bg1[src]) .blocked-container,
-body:has(#bg1[src]) .not-found-container,
-body:has(#bg1[src]) .whitelist-container {
+body.wallpaper-active .wallpaper-background-active {
     background: transparent !important;
     background-color: transparent !important;
 }

@@ -1356,7 +1356,7 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
     justify-content: center;
     align-items: center;
     min-height: 94vh;
-    background-color: var(--admin-container-bg-color);
+    background-color: transparent;
 }
 .upload {
     margin-bottom: 5px;

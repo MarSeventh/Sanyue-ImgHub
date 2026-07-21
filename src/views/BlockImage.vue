@@ -177,10 +177,12 @@ export default {
   max-width: 600px;
   padding: 2rem;
   position: relative;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: none;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 /* 返回按钮 */
@@ -577,11 +579,6 @@ export default {
   .blocked-container {
     background: var(--bg-color, #1F1F22);
     color: var(--text-color, #e4e7ed);
-  }
-  
-  .blocked-content {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
   }
   
   .status-title {
