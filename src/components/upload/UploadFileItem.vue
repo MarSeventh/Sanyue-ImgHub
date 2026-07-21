@@ -372,51 +372,45 @@ export default {
     width: 30px;
     height: 30px;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
+    background: var(--upload-action-btn-bg);
+    color: var(--upload-action-btn-color);
+    box-shadow: var(--upload-action-btn-shadow);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.22s ease, color 0.22s ease, transform 0.22s ease;
     font-size: 16px;
     position: relative;
     overflow: hidden;
     margin: 4px 0;
+    outline: none;
 }
 .modern-file-action-btn::before {
     content: '';
     position: absolute;
-    top: 50%; left: 50%;
-    width: 0; height: 0;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.4s ease, height 0.4s ease;
+    inset: 2px;
+    border-radius: 8px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.22s ease;
 }
-.modern-file-action-btn:active::before {
-    width: 100%;
-    height: 100%;
+.modern-file-action-btn:hover {
+    background: var(--upload-action-btn-hover-bg);
+}
+.modern-file-action-btn:hover::before {
+    opacity: 0.08;
+}
+.modern-file-action-btn:active {
+    transform: scale(0.96);
 }
 .modern-file-action-btn-primary {
-    background: var(--file-action-primary-bg, #2563EB);
-    color: white;
-    box-shadow: none;
-}
-.modern-file-action-btn-primary:hover {
-    transform: scale(1.08);
-    box-shadow: none;
-}
-.modern-file-action-btn-primary:active {
-    transform: translateY(-1px) scale(1.02);
+    color: var(--upload-action-copy-color);
 }
 .modern-file-action-btn-danger {
-    background: var(--file-action-danger-bg, #DC2626);
-    color: white;
-    box-shadow: none;
+    color: var(--upload-action-danger-color);
+    background: var(--upload-action-danger-bg);
 }
 .modern-file-action-btn-danger:hover {
-    transform: scale(1.08);
-    box-shadow: none;
-}
-.modern-file-action-btn-danger:active {
-    transform: translateY(-1px) scale(1.02);
+    background: var(--upload-action-danger-hover-bg);
 }
 
 /* Mobile */
