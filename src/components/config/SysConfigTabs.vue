@@ -118,7 +118,7 @@ beforeDestroy() {
     z-index: 2001;
     max-width: 200px;
     /* macOS 风格毛玻璃效果 */
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--glass-bg);
     backdrop-filter: blur(12px) saturate(1.4);
     -webkit-backdrop-filter: blur(12px) saturate(1.4);
     border: 1px solid #D9DCE2;
@@ -134,7 +134,7 @@ beforeDestroy() {
 
 /* 深色模式 */
 html.dark .sidebar-container {
-    background: rgba(22, 22, 24, 0.75);
+    background: var(--glass-bg);
     border: 1px solid #34343A;
     box-shadow: none;
 }

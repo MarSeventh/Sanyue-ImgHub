@@ -19,7 +19,44 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #F7F7F8;
+    background-color: var(--bg-color);
+}
+
+/* 管理端主页面共用顶栏 */
+.admin-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 45px;
+    padding: 10px 24px;
+    position: fixed;
+    top: 8px;
+    left: 50%;
+    width: calc(95% - 16px);
+    z-index: 2001;
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    background: var(--glass-bg);
+    box-shadow: none;
+    transform: translateX(-50%);
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.admin-header-content:hover {
+    background: var(--glass-bg);
+    box-shadow: none;
+    transform: translateX(-50%);
+}
+
+@media (max-width: 768px) {
+    .admin-header-content {
+        flex-direction: column;
+        top: 6px;
+        width: calc(100% - 32px);
+        padding: 6px 12px;
+        gap: 4px;
+        border-radius: 14px;
+    }
 }
 
 :focus-visible {
@@ -34,7 +71,7 @@ body {
 
 :root {
     /* 全局 - 中性灰 + 蓝点缀 扁平化设计令牌 */
-    --bg-color: #F7F7F8;
+    --bg-color: #F5F5F7;
     /* 背景颜色 */
     --popper-bg-color: #FFFFFF;
     /* el-dropdown背景 */
@@ -258,7 +295,7 @@ body {
     /* admin-header-content悬浮阴影 */
 
 
-    --admin-container-bg-color: #F7F7F8;
+    --admin-container-bg-color: #F5F5F7;
     /* admin-container背景 */
     --admin-container-color: #1D2129;
     /* admin-container字体颜色 */
@@ -381,6 +418,7 @@ body {
     --el-fill-color-light: #F7F8FA;
     --el-fill-color-lighter: #FAFAFB;
     --el-fill-color-blank: #FFFFFF;
+    --el-bg-color-page: #F5F5F7;
 
     /* ===== 组件自定义文字变量(补齐定义,避免 fallback 到偏淡色) ===== */
     --text-color: #1D2129;
@@ -393,7 +431,7 @@ body {
 /* 暗黑模式 */
 .dark {
     /* 全局 - 深色:中性灰 + 蓝点缀 扁平化 */
-    --bg-color: #0A0A0B;
+    --bg-color: #121212;
     /* 背景颜色 */
     --popper-bg-color: #161618;
     /* el-dropdown背景 */
@@ -619,7 +657,7 @@ body {
     /* admin-header-content悬浮阴影 */
 
 
-    --admin-container-bg-color: #0A0A0B;
+    --admin-container-bg-color: #121212;
     /* admin-container背景 */
     --admin-container-color: #FAFAFA;
     /* admin-container字体颜色 */
@@ -704,7 +742,7 @@ body {
     --floating-btn-shadow-hover: none;
 
     /* 玻璃效果卡片(半透明:深色背景能微微透出) */
-    --glass-bg: rgba(22, 22, 24, 0.5);
+    --glass-bg: rgba(30, 30, 30, 0.5);
     --glass-bg-hover: rgba(35, 35, 35, 0.6);
     --glass-border: #34343A;
     --glass-border-hover: #4A4A52;
@@ -728,7 +766,7 @@ body {
     --el-fill-color-lighter: #161618;
     --el-fill-color-blank: #161618;
     --el-bg-color: #161618;
-    --el-bg-color-page: #0A0A0B;
+    --el-bg-color-page: #121212;
     --el-bg-color-overlay: #1F1F22;
 
     /* Element Plus 主色调:灰蓝(暗色模式统一适配,避免默认亮蓝刺眼) */

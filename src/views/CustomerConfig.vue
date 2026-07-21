@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <el-header>
-            <div class="header-content">
+            <div class="header-content admin-header-content">
                 <DashboardTabs activeTab="customerConfig"></DashboardTabs>
                 <div class="header-action">
                     <el-tooltip :disabled="disableTooltip" :content="$t('sysConfig.logout')" placement="bottom">
@@ -302,59 +302,10 @@ export default {
     padding: 0;
 }
 
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 24px;
-    /* macOS 风格毛玻璃效果 */
-    background: rgba(255, 255, 255, 0.72);
-    /* 细实色边框,保证可见 */
-    border: 1px solid #D9DCE2;
-    /* 悬浮阴影效果 */
-    box-shadow: none;
-    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-    border-radius: 16px;
-    position: fixed;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(95% - 16px);
-    z-index: 2001;
-    min-height: 45px;
-}
-
-/* 深色模式毛玻璃效果 */
-html.dark .header-content {
-    background: rgba(22, 22, 24, 0.75);
-    border: 1px solid #34343A;
-    box-shadow: none;
-}
-
 @media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        top: 6px;
-        width: calc(100% - 32px);
-        border-radius: 14px;
-        padding: 6px 12px;
-        gap: 4px;
-    }
-    
     .header-icon {
         font-size: 0.95em;
     }
-}
-
-.header-content:hover {
-    background: rgba(255, 255, 255, 0.82);
-    box-shadow: none;
-    transform: translateX(-50%);
-}
-
-html.dark .header-content:hover {
-    background: rgba(35, 35, 35, 0.85);
-    box-shadow: none;
 }
 
 .header-icon {
