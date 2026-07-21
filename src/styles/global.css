@@ -239,6 +239,10 @@ body {
     /* el-dialog背景 */
     --dialog-box-shadow: none;
     /* el-dialog阴影 */
+    --dialog-section-bg-color: #F2F3F5;
+    /* 弹窗表单区块背景 */
+    --dialog-control-bg-color: #F7F8FA;
+    /* 弹窗设置项与选项卡背景 */
 
     /* el-tabs */
     --tabs-dropdown-popper-bg-color: #FFFFFF;
@@ -596,6 +600,10 @@ body {
     /* el-dialog背景 */
     --dialog-box-shadow: none;
     /* el-dialog阴影 */
+    --dialog-section-bg-color: #1F1F22;
+    /* 弹窗表单区块背景 */
+    --dialog-control-bg-color: #161618;
+    /* 弹窗设置项与选项卡背景 */
 
     /* el-tabs */
     --tabs-dropdown-popper-bg-color: #161618;
@@ -808,7 +816,7 @@ body {
 /* 弹窗区块样式 */
 .dialog-section {
     margin-bottom: 24px;
-    background: var(--el-fill-color-lighter);
+    background: var(--dialog-section-bg-color, var(--el-fill-color-lighter));
     border-radius: 12px;
     padding: 16px;
     border: 1px solid var(--el-border-color-lighter);
@@ -863,7 +871,7 @@ body {
     margin-right: 0;
     padding: 10px 16px;
     border-radius: 8px;
-    background: var(--el-bg-color);
+    background: var(--dialog-control-bg-color, var(--el-bg-color));
     border: 1px solid var(--el-border-color-lighter);
     transition: all 0.2s ease;
 }
@@ -911,7 +919,7 @@ html.dark .radio-card-group .radio-card.is-checked .radio-icon {
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    background: var(--el-bg-color);
+    background: var(--dialog-control-bg-color, var(--el-bg-color));
     border-radius: 8px;
     border: 1px solid var(--el-border-color-lighter);
 }

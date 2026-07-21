@@ -2233,7 +2233,7 @@ beforeDestroy() {
     box-sizing: border-box;
     padding: 0 14px;
     background: var(--dashboard-title-bg, rgba(37, 99, 235, 0.06));
-    border: 1px solid var(--glass-border);
+    border: none;
     border-radius: 12px;
     color: var(--el-text-color-primary);
 }
@@ -2249,32 +2249,39 @@ beforeDestroy() {
    ============================================ */
 @media (max-width: 768px) {
     .modern-action-group {
-        gap: 4px;
-        padding: 3px;
-        border-radius: 12px;
+        height: 34px;
+        gap: 2px;
+        padding: 2px;
+        border-radius: 9px;
     }
 
     .modern-action-btn {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        font-size: 12px;
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        font-size: 11px;
     }
 
     .upload-list-dashboard-title {
-        font-size: 12px;
-        padding: 4px 10px;
+        height: 34px;
+        font-size: 11px;
+        padding: 0 7px;
+        border-radius: 9px;
+    }
+
+    .upload-list-dashboard-title .el-icon {
+        font-size: 13px;
+        margin-right: 1px;
     }
 
     /* 移动端:上传列表顶栏缩窄 padding,确保完整展示不溢出 */
     .upload-list-dashboard {
-        padding: 0 8px;
+        padding: 0 6px;
         gap: 4px;
     }
     /* 标题块可收缩,避免挤爆操作按钮 */
     .upload-list-dashboard-title {
-        gap: 4px;
-        padding: 3px 8px;
+        gap: 3px;
         min-width: 0;
         flex-shrink: 1;
         overflow: hidden;

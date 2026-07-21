@@ -421,44 +421,58 @@ export default {
 
 /* Mobile */
 @media (max-width: 768px) {
+    .upload-list-item {
+        margin: 5px 6px;
+        padding: 7px 8px;
+        border-radius: 12px;
+    }
     .upload-list-item-content {
         margin-left: 2px;
+    }
+    .upload-list-item-action {
+        gap: 3px;
     }
     .upload-list-item-url-row {
         width: 42vw;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
+        margin-bottom: 4px;
     }
     .upload-list-item-progress {
         width: 32vw;
-        padding: 3px 6px;
+        margin-top: 5px;
+        padding: 2px 5px;
+        border-radius: 9px;
     }
     .upload-list-item-progress :deep(.el-progress-bar__outer) {
-        height: 8px !important;
+        height: 6px !important;
     }
     .upload-list-item-url :deep(.el-input__wrapper) {
-        border-radius: 8px;
+        border-radius: 7px;
     }
     .upload-list-item-url :deep(.el-input__inner) {
-        font-size: 12px;
+        font-size: 10px;
+        padding-left: 8px;
     }
     .upload-list-item-url :deep(.el-input-group__prepend) {
-        font-size: 11px;
-        padding: 0 8px;
-        border-radius: 8px 0 0 8px;
+        font-size: 9px;
+        padding: 0 6px;
+        border-radius: 7px 0 0 7px;
     }
     .modern-file-action-btn {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        font-size: 14px;
+        width: 26px;
+        height: 26px;
+        margin: 2px 0;
+        border-radius: 8px;
+        font-size: 12px;
     }
     .upload-list-item-name-wrapper {
-        padding: 4px 10px;
-        border-radius: 8px;
+        padding: 3px 8px;
+        margin-bottom: 5px;
+        border-radius: 7px;
     }
     .upload-list-item-name {
-        font-size: 12px;
+        font-size: 11px;
         width: 32vw;
     }
 }

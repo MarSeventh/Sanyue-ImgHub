@@ -883,7 +883,7 @@ html.dark .upload-method-button {
     font-size: 1.5em;
 }
 .directory-tree-trigger .svg-inline--fa {
-    font-size: 1.3em;
+    font-size: 1.2em;
 }
 
 /* 移动端更多按钮 */
@@ -998,6 +998,9 @@ html.dark .directory-tree-trigger:hover {
         width: 2rem;
         height: 2rem;
     }
+    .directory-tree-trigger .svg-inline--fa {
+        font-size: 1.1em;
+    }
 }
 
 .upload-folder :deep(.inner-folder-input) {
@@ -1029,6 +1032,12 @@ html.dark .directory-tree-trigger:hover {
 html.dark .upload-folder :deep(.el-input__wrapper:hover) {
     background-color: rgba(22, 22, 24, 0.88);
     border-color: #4A4A52;
+}
+
+.upload-folder :deep(.el-input__wrapper.is-focus),
+.upload-folder :deep(.el-input__wrapper:focus-within) {
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow) !important;
 }
 
 .quick-toolbar {

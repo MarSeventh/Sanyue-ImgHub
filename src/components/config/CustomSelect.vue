@@ -194,10 +194,12 @@ html.dark .custom-select-option:hover {
     font-weight: 500;
 }
 html.dark .custom-select-option.is-selected {
-    color: var(--el-color-primary-light-8);
+    background: rgba(74, 93, 155, 0.38);
+    color: #fff;
+    font-weight: 600;
 }
 html.dark .custom-select-option.is-selected:hover {
-    background: rgba(74, 93, 155, 0.38);
+    background: rgba(94, 115, 181, 0.48);
     color: #fff;
 }
 
