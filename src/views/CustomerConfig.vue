@@ -61,16 +61,18 @@
 
             <!-- 分页组件 -->
             <div class="pagination-container">
-                <el-pagination
-                    background
-                    layout="prev, pager, next"
-                    :total="dealedData.length"
-                    :current-page="currentPage"
-                    :page-size="pageSize"
-                    :pager-count="pagerCount"
-                    @current-change="handlePageChange"
-                ></el-pagination>
-                <el-button v-if="currentPage === Math.ceil(dealedData.length / pageSize)" type="primary" @click="loadMoreData" :loading="loading" class="load-more">{{ $t('customerConfig.loadMore') }}</el-button>
+                <div class="pagination-center">
+                    <el-pagination
+                        background
+                        layout="prev, pager, next"
+                        :total="dealedData.length"
+                        :current-page="currentPage"
+                        :page-size="pageSize"
+                        :pager-count="pagerCount"
+                        @current-change="handlePageChange"
+                    ></el-pagination>
+                    <el-button v-if="currentPage === Math.ceil(dealedData.length / pageSize)" type="primary" @click="loadMoreData" :loading="loading" class="load-more">{{ $t('customerConfig.loadMore') }}</el-button>
+                </div>
             </div>
         </div>
     </div>
@@ -348,6 +350,12 @@ export default {
     gap: 15px;
 }
 
+.pagination-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 /* 页码按钮美化 */
 .pagination-container :deep(.el-pagination) {
     --el-pagination-button-bg-color: var(--admin-dashboard-btn-bg-color);
@@ -355,25 +363,36 @@ export default {
 }
 
 .pagination-container :deep(.el-pager li) {
-    background: var(--admin-dashboard-btn-bg-color);
+    background: rgba(255, 255, 255, 0.72);
     border-radius: 10px;
     margin: 0 4px;
     min-width: 36px;
     height: 36px;
     line-height: 36px;
     font-weight: 500;
-    border: none;
-    box-shadow: var(--admin-dashboard-btn-shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #D9DCE2;
+    box-shadow: none;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+html.dark .pagination-container :deep(.el-pager li) {
+    background: rgba(22, 22, 24, 0.75);
+    border: 1px solid #34343A;
 }
 
 .pagination-container :deep(.el-pager li:hover) {
     color: #38bdf8;
-    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #BFC4CC;
+}
+
+html.dark .pagination-container :deep(.el-pager li:hover) {
+    background: rgba(22, 22, 24, 0.88);
+    border-color: #4A4A52;
 }
 
 .pagination-container :deep(.el-pager li.is-active) {
-    background: #2563EB !important;
+    background: #0ea5e9 !important;
     color: white !important;
     border-radius: 10px;
     box-shadow: none;
@@ -386,35 +405,86 @@ export default {
 
 .pagination-container :deep(.btn-prev),
 .pagination-container :deep(.btn-next) {
-    background: var(--admin-dashboard-btn-bg-color) !important;
+    background: rgba(255, 255, 255, 0.72) !important;
     border-radius: 10px !important;
     min-width: 36px;
     height: 36px;
-    border: none;
-    box-shadow: var(--admin-dashboard-btn-shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #D9DCE2 !important;
+    box-shadow: none;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+html.dark .pagination-container :deep(.btn-prev),
+html.dark .pagination-container :deep(.btn-next) {
+    background: rgba(22, 22, 24, 0.75) !important;
+    border: 1px solid #34343A !important;
 }
 
 .pagination-container :deep(.btn-prev:hover),
 .pagination-container :deep(.btn-next:hover) {
     color: #38bdf8;
-    box-shadow: var(--admin-dashboard-btn-hover-shadow);
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-color: #BFC4CC !important;
+}
+
+html.dark .pagination-container :deep(.btn-prev:hover),
+html.dark .pagination-container :deep(.btn-next:hover) {
+    background: rgba(22, 22, 24, 0.88) !important;
+    border-color: #4A4A52 !important;
 }
 
 .load-more {
     cursor: pointer;
-    background-color: var(--admin-dashboard-btn-bg-color);
-    box-shadow: var(--admin-dashboard-btn-shadow);
-    color: var(--admin-dashboard-btn-color);
+    background: #0ea5e9;
+    box-shadow: none;
+    color: white;
     border: none;
-    transition: all 0.3s ease;
-    margin-left: 0;
-    border-radius: 8px;
-    padding: 8px 20px;
+    border-radius: 10px;
     height: 36px;
+    padding: 0 16px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .load-more:hover {
     box-shadow: none;
+}
+
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 14px;
+        padding-bottom: 10px;
+    }
+
+    .pagination-center {
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .pagination-container :deep(.el-pager li) {
+        min-width: 30px;
+        height: 30px;
+        line-height: 30px;
+        margin: 0 2px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .pagination-container :deep(.btn-prev),
+    .pagination-container :deep(.btn-next) {
+        display: none !important;
+    }
+
+    .load-more {
+        --el-button-size: 30px;
+        height: 30px !important;
+        min-height: 30px !important;
+        padding: 0 10px !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
+    }
 }
 </style>

@@ -340,7 +340,7 @@ body {
 
 /* 深色主题 */
 .dark {
-    /* 深色主题：近黑页面、灰蓝交互强调、无阴影 */
+    /* 深色主题：近黑页面、无阴影 */
     --bg-color: #0F0F0F;
     /* body 与页面外层容器的统一底色 */
     --popper-bg-color: #161618;
@@ -572,33 +572,6 @@ body {
     --glass-header-bg: rgba(31, 31, 34, 0.5);
     --glass-header-border: #34343A;
 
-    /* ===== Element Plus 深色主题覆盖 ===== */
-    --el-text-color-primary: #FAFAFA;
-    --el-text-color-regular: #C8C9CC;
-    --el-text-color-secondary: #A1A1AA;
-    --el-text-color-placeholder: #6B6B73;
-    --el-text-color-disabled: #4A4A52;
-    --el-border-color: #34343A;
-    --el-border-color-light: #2A2A2E;
-    --el-border-color-lighter: #26262A;
-    --el-border-color-extra-light: #1F1F22;
-    --el-fill-color: #1F1F22;
-    --el-fill-color-light: #1A1A1D;
-    --el-fill-color-lighter: #161618;
-    --el-fill-color-blank: #161618;
-    --el-bg-color: #161618;
-    --el-bg-color-page: #0F0F0F;
-    --el-bg-color-overlay: #1F1F22;
-
-    /* Element Plus 主色：低饱和灰蓝 */
-    --el-color-primary: #4A5D9B;
-    --el-color-primary-light-3: #5E73B5;
-    --el-color-primary-light-5: #768CC6;
-    --el-color-primary-light-7: #98A9D5;
-    --el-color-primary-light-8: #B0BDE0;
-    --el-color-primary-light-9: #CCD4EC;
-    --el-color-primary-dark-2: #3A4B80;
-
     /* ===== 项目组件通用文字与图标颜色 ===== */
     --text-color: #FAFAFA;
     --text-color-secondary: #A1A1AA;
@@ -773,7 +746,7 @@ body {
     color: #cfd3dc;
 }
 
-/* 深色主题主按钮与分页器使用统一灰蓝强调色 */
+/* 深色主题主按钮与分页器使用 Element Plus 主色 */
 .dark .el-button--primary {
     --el-button-bg-color: var(--el-color-primary);
     --el-button-border-color: var(--el-color-primary);
@@ -843,7 +816,7 @@ html.dark .el-cascader__dropdown__item.is-active {
 }
 .dark .el-tabs__active-bar,
 .dark .el-tabs__item.is-active {
-    color: var(--el-color-primary-light-7);
+    color: var(--el-text-color-primary);
 }
 .dark .el-tabs__item.is-active::after {
     background-color: var(--el-color-primary);

@@ -1702,7 +1702,7 @@ beforeDestroy() {
     color: #60A5FA;
 }
 html.dark .el-icon--upload {
-    color: #52525B;
+    color: #6B6B73;
 }
 .el-upload__text :deep(em) {
     color: #1D4ED8;
