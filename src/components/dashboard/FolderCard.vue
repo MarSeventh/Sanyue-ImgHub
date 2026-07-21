@@ -95,6 +95,13 @@ export default {
     transform: scale(1.5);
     z-index: 10;
 }
+
+.img-card :deep(.el-checkbox__inner) {
+    width: 14px !important;
+    min-width: 14px;
+    height: 14px !important;
+    min-height: 14px;
+}
 .img-card:hover {
     transform: scale(1.05);
 }
