@@ -10,27 +10,27 @@
                     <span class="setting-label">{{ $t('uploadSettings.channelType') }}</span>
                     <el-radio-group :model-value="uploadChannel" @update:model-value="$emit('update:uploadChannel', $event)" class="radio-card-group compact">
                         <el-radio label="telegram" class="radio-card">
-                            <ChannelIcon type="telegram" class="channel-icon channel-brand-telegram"/>
+                            <ChannelIcon type="telegram" class="channel-icon"/>
                             <span>TG</span>
                         </el-radio>
                         <el-radio label="cfr2" class="radio-card">
-                            <ChannelIcon type="cfr2" class="channel-icon channel-brand-cfr2"/>
+                            <ChannelIcon type="cfr2" class="channel-icon"/>
                             <span>R2</span>
                         </el-radio>
                         <el-radio label="s3" class="radio-card">
-                            <ChannelIcon type="s3" class="channel-icon channel-brand-s3"/>
+                            <ChannelIcon type="s3" class="channel-icon"/>
                             <span>S3</span>
                         </el-radio>
                         <el-radio label="discord" class="radio-card">
-                            <ChannelIcon type="discord" class="channel-icon channel-brand-discord"/>
+                            <ChannelIcon type="discord" class="channel-icon"/>
                             <span>DC</span>
                         </el-radio>
                         <el-radio label="huggingface" class="radio-card">
-                            <ChannelIcon type="huggingface" class="channel-icon channel-brand-huggingface"/>
+                            <ChannelIcon type="huggingface" class="channel-icon"/>
                             <span>HF</span>
                         </el-radio>
                         <el-radio label="webdav" class="radio-card">
-                            <ChannelIcon type="webdav" class="channel-icon channel-brand-webdav"/>
+                            <ChannelIcon type="webdav" class="channel-icon"/>
                             <span>WD</span>
                         </el-radio>
                     </el-radio-group>

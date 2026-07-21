@@ -1,5 +1,5 @@
 <template>
-    <span v-bind="$attrs" class="channel-icon-wrapper">
+    <span v-bind="$attrs" :class="['channel-icon-wrapper', `channel-brand-${type}`]">
         <svg v-if="type === 'telegram'" class="channel-svg-icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
             <path d="M417.28 795.733333 429.226667 615.253333 756.906667 320C771.413333 306.773333 753.92 300.373333 734.72 311.893333L330.24 567.466667 155.306667 512C117.76 501.333333 117.333333 475.306667 163.84 456.533333L845.226667 193.706667C876.373333 179.626667 906.24 201.386667 894.293333 249.173333L778.24 795.733333C770.133333 834.56 746.666667 843.946667 714.24 826.026667L537.6 695.466667 452.693333 777.813333C442.88 787.626667 434.773333 795.733333 417.28 795.733333Z"/>
         </svg>
@@ -57,5 +57,29 @@ export default {
     width: 1em;
     height: 1em;
     fill: currentColor;
+}
+
+.channel-icon-wrapper.channel-brand-telegram {
+    color: #229ed9;
+}
+
+.channel-icon-wrapper.channel-brand-cfr2 {
+    color: #f38020;
+}
+
+.channel-icon-wrapper.channel-brand-s3 {
+    color: #ff9900;
+}
+
+.channel-icon-wrapper.channel-brand-discord {
+    color: #5865f2;
+}
+
+.channel-icon-wrapper.channel-brand-huggingface {
+    color: #ff9d00;
+}
+
+.channel-icon-wrapper.channel-brand-webdav {
+    color: #14b8a6;
 }
 </style>

@@ -431,7 +431,7 @@ body {
 /* 暗黑模式 */
 .dark {
     /* 全局 - 深色:中性灰 + 蓝点缀 扁平化 */
-    --bg-color: #121212;
+    --bg-color: #0F0F0F;
     /* 背景颜色 */
     --popper-bg-color: #161618;
     /* el-dropdown背景 */
@@ -657,7 +657,7 @@ body {
     /* admin-header-content悬浮阴影 */
 
 
-    --admin-container-bg-color: #121212;
+    --admin-container-bg-color: #0F0F0F;
     /* admin-container背景 */
     --admin-container-color: #FAFAFA;
     /* admin-container字体颜色 */
@@ -766,7 +766,7 @@ body {
     --el-fill-color-lighter: #161618;
     --el-fill-color-blank: #161618;
     --el-bg-color: #161618;
-    --el-bg-color-page: #121212;
+    --el-bg-color-page: #0F0F0F;
     --el-bg-color-overlay: #1F1F22;
 
     /* Element Plus 主色调:灰蓝(暗色模式统一适配,避免默认亮蓝刺眼) */

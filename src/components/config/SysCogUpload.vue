@@ -26,7 +26,7 @@
         <div v-for="channelType in filteredChannels" :key="channelType.value" class="channel-group">
             <div class="group-header">
                 <div class="group-title">
-                    <ChannelIcon :type="channelType.value" :class="['group-icon', getChannelIconClass(channelType.value)]"/>
+                    <ChannelIcon :type="channelType.value" class="group-icon"/>
                     <span>{{ channelType.label }}</span>
                     <el-tag size="small" type="info" class="channel-count">
                         {{ getChannelList(channelType.value).length }}
@@ -150,7 +150,7 @@
                     <el-select v-model="newChannel.type" :placeholder="$t('sysUpload.channelTypePlaceholder')" style="width: 100%;" @change="onChannelTypeChange">
                         <el-option v-for="ch in addableChannels" :key="ch.value" :label="ch.label" :value="ch.value">
                             <span class="channel-type-option">
-                                <ChannelIcon :type="ch.value" :class="['select-option-icon', getChannelIconClass(ch.value)]"/>
+                                <ChannelIcon :type="ch.value" class="select-option-icon"/>
                                 <span>{{ ch.label }}</span>
                             </span>
                         </el-option>
@@ -693,8 +693,7 @@ computed: {
             ...this.channels.map(ch => ({
                 value: ch.value,
                 label: ch.label,
-                channelType: ch.value,
-                iconClass: this.getChannelIconClass(ch.value)
+                channelType: ch.value
             }))
         ];
     },
@@ -767,9 +766,6 @@ methods: {
         if (glowEl && glowEl[0]) {
             glowEl[0].style.opacity = '0';
         }
-    },
-    getChannelIconClass(type) {
-        return `channel-brand-${type}`;
     },
     // 获取渠道类型标签
     getChannelTypeLabel(type) {
