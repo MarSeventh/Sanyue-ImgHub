@@ -50,14 +50,31 @@
                     >
                         {{ $t('upload.pasteUploadBtn') }}
                     </el-button>
-                    <el-radio-group 
-                        v-model="pasteUploadMethod" 
+                    <div
                         class="paste-card-method-group"
-                        :size="pasteCardMethodButtonSize"
+                        :class="{ 'is-external': pasteUploadMethod === 'external' }"
+                        role="group"
+                        :aria-label="$t('upload.switchUploadMethod')"
                     >
-                        <el-radio-button label="save">{{ $t('upload.pasteSave') }}</el-radio-button>
-                        <el-radio-button label="external">{{ $t('upload.pasteExternal') }}</el-radio-button>
-                    </el-radio-group>
+                        <button
+                            class="paste-card-method-button"
+                            :class="{ 'is-active': pasteUploadMethod === 'save' }"
+                            type="button"
+                            :aria-pressed="pasteUploadMethod === 'save'"
+                            @click="pasteUploadMethod = 'save'"
+                        >
+                            {{ $t('upload.pasteSave') }}
+                        </button>
+                        <button
+                            class="paste-card-method-button"
+                            :class="{ 'is-active': pasteUploadMethod === 'external' }"
+                            type="button"
+                            :aria-pressed="pasteUploadMethod === 'external'"
+                            @click="pasteUploadMethod = 'external'"
+                        >
+                            {{ $t('upload.pasteExternal') }}
+                        </button>
+                    </div>
                 </div>
             </el-card>
         </div>
@@ -1884,7 +1901,7 @@ html.dark .el-upload__text :deep(em) {
     margin-top: 16px;
 }
 
-/* 粘贴上传操作区：延续全站克制的扁平化按钮风格 */
+/* 粘贴上传操作区：延续全站克制的主题按钮风格 */
 .paste-card-upload-button {
     min-width: 92px;
     height: 38px;
@@ -1892,31 +1909,31 @@ html.dark .el-upload__text :deep(em) {
     font-weight: 600;
     font-size: 14px;
     letter-spacing: 0.04em;
-    color: var(--el-upload-dragger-uniform-color) !important;
-    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 10%, var(--toolbar-button-bg-color)) !important;
-    border: 1px solid color-mix(in srgb, var(--el-upload-dragger-uniform-color) 30%, var(--glass-border)) !important;
+    color: var(--primary-color-accent) !important;
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--primary-color) 36%, var(--glass-border)) !important;
     box-shadow: none;
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease !important;
 }
 
 .paste-card-upload-button:hover {
-    color: var(--el-upload-dragger-uniform-color) !important;
-    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 15%, var(--toolbar-button-bg-color)) !important;
-    border-color: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 48%, var(--glass-border)) !important;
+    color: var(--primary-color-accent) !important;
+    background: color-mix(in srgb, var(--primary-color) 14%, transparent) !important;
+    border-color: color-mix(in srgb, var(--primary-color) 52%, var(--glass-border)) !important;
     transform: translateY(-1px);
     box-shadow: none;
 }
 
 .paste-card-upload-button:focus-visible {
-    color: var(--el-upload-dragger-uniform-color) !important;
-    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 15%, var(--toolbar-button-bg-color)) !important;
-    border-color: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 48%, var(--glass-border)) !important;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--el-upload-dragger-uniform-color) 14%, transparent) !important;
+    color: var(--primary-color-accent) !important;
+    background: color-mix(in srgb, var(--primary-color) 14%, transparent) !important;
+    border-color: color-mix(in srgb, var(--primary-color) 52%, var(--glass-border)) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 14%, transparent) !important;
 }
 
 .paste-card-upload-button:active {
     transform: translateY(0);
-    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 18%, var(--toolbar-button-bg-color)) !important;
+    background: color-mix(in srgb, var(--primary-color) 18%, transparent) !important;
 }
 
 /* 上传状态下缩小按钮 */
@@ -1934,53 +1951,72 @@ html.dark .el-upload__text :deep(em) {
 
 /* 转存 / 外链分段选择 */
 .paste-card-method-group {
+    position: relative;
     display: inline-flex;
     align-items: center;
+    width: 158px;
     height: 38px;
     box-sizing: border-box;
     gap: 2px;
     padding: 3px;
-    background: var(--modern-action-group-bg);
-    border: 1px solid var(--modern-action-group-border);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 10px;
+    overflow: hidden;
 }
-.paste-card-method-group :deep(.el-radio-button__inner) {
+
+.paste-card-method-group::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc((100% - 8px) / 2);
+    height: calc(100% - 6px);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 42%, var(--glass-border)) inset;
+    transform: translateX(0);
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.paste-card-method-group.is-external::before {
+    transform: translateX(calc(100% + 2px));
+}
+
+.paste-card-method-button {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
+    flex: 1 1 0;
     align-items: center;
     justify-content: center;
-    min-width: 64px;
+    min-width: 0;
     height: 30px;
     box-sizing: border-box;
     padding: 0 14px;
-    border-radius: 7px !important;
-    border: none !important;
+    border: none;
+    border-radius: 7px;
     background: transparent;
     font-weight: 500;
     font-size: 13px;
     line-height: 1;
-    color: var(--toolbar-button-color);
-    box-shadow: none !important;
-    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 
-.paste-card-method-group :deep(.el-radio-button:first-child .el-radio-button__inner) {
-    border-radius: 7px !important;
+.paste-card-method-button:hover {
+    color: var(--primary-color-accent);
 }
 
-.paste-card-method-group :deep(.el-radio-button:last-child .el-radio-button__inner) {
-    border-radius: 7px !important;
+.paste-card-method-button.is-active {
+    color: var(--primary-color-accent);
 }
 
-.paste-card-method-group :deep(.el-radio-button__inner:hover) {
-    background: var(--modern-action-group-hover-bg);
-    color: var(--el-text-color-primary);
-}
-
-.paste-card-method-group :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-    background: color-mix(in srgb, var(--el-upload-dragger-uniform-color) 16%, var(--toolbar-button-bg-color)) !important;
-    color: var(--el-upload-dragger-uniform-color) !important;
-    font-weight: 600;
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--el-upload-dragger-uniform-color) 52%, var(--glass-border)) inset !important;
+.paste-card-method-button:focus-visible {
+    outline: none;
+    color: var(--primary-color-accent);
 }
 
 /* Mobile responsive for paste card */
@@ -2029,17 +2065,21 @@ html.dark .el-upload__text :deep(em) {
     }
 
     .paste-card-method-group {
+        width: 128px;
         height: 32px;
         padding: 3px;
         border-radius: 9px;
     }
 
-    .paste-card-method-group :deep(.el-radio-button__inner) {
-        min-width: 52px;
+    .paste-card-method-group::before {
+        border-radius: 6px;
+    }
+
+    .paste-card-method-button {
         height: 26px;
         padding: 0 10px;
         font-size: 11px;
-        border-radius: 6px !important;
+        border-radius: 6px;
     }
 }
 
