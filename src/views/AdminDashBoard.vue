@@ -2110,7 +2110,7 @@ beforeUnmount() {
     }
     
     .search-card :deep(.el-input__wrapper) {
-        padding: 0 10px;
+        padding: 0 12px;
     }
     
     .search-card :deep(.el-input__inner:focus) {
@@ -2285,6 +2285,7 @@ html.dark .stats-badge:hover {
     box-shadow: none !important;
 }
 .search-card :deep(.el-input__wrapper) {
+    padding: 0 14px;
     border-radius: 20px;
     background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(1.4);
@@ -2317,6 +2318,10 @@ html.dark .stats-badge:hover {
     transform: translateX(5px);
 }
 @media (max-width: 768px) {
+    .search-card :deep(.el-input__wrapper) {
+        padding: 0 12px;
+    }
+
     .search-card :deep(.el-input__inner) {
         width: 45vw;
         height: 32px;
