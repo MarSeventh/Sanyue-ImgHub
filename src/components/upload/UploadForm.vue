@@ -1550,6 +1550,7 @@ beforeDestroy() {
     --upload-card-height: 45vh;
     --upload-card-busy-height: 17vh;
     --upload-list-height: 7vh;
+    --upload-list-inner-height: calc(var(--upload-list-height) - 2px);
     --upload-list-busy-height: calc(var(--upload-card-height) - var(--upload-card-busy-height) + var(--upload-list-height));
     --upload-list-gap: 10px;
     --upload-list-radius: 15px;
@@ -1609,7 +1610,7 @@ beforeDestroy() {
     width: 200px;
     height: 200px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, transparent 70%);
+    background: var(--upload-card-hover-glow-bg);
     pointer-events: none;
     transform: translate(-50%, -50%);
     opacity: 0;
@@ -1679,12 +1680,12 @@ beforeDestroy() {
         from var(--border-angle),
         transparent 0deg,
         transparent 30deg,
-        var(--el-upload-dragger-uniform-color, #2563EB) 60deg,
-        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #2563EB) 70%, white) 90deg,
+        var(--upload-card-effect-color, #2563EB) 60deg,
+        var(--upload-card-effect-highlight-color, color-mix(in srgb, var(--upload-card-effect-color, #2563EB) 70%, white)) 90deg,
         transparent 120deg,
         transparent 180deg,
-        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #2563EB) 70%, white) 210deg,
-        var(--el-upload-dragger-uniform-color, #2563EB) 240deg,
+        var(--upload-card-effect-highlight-color, color-mix(in srgb, var(--upload-card-effect-color, #2563EB) 70%, white)) 210deg,
+        var(--upload-card-effect-color, #2563EB) 240deg,
         transparent 270deg,
         transparent 360deg
     );
@@ -1772,12 +1773,12 @@ html.dark .el-upload__text :deep(em) {
         from var(--border-angle),
         transparent 0deg,
         transparent 30deg,
-        var(--el-upload-dragger-uniform-color, #2563EB) 60deg,
-        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #2563EB) 70%, white) 90deg,
+        var(--upload-card-effect-color, #2563EB) 60deg,
+        var(--upload-card-effect-highlight-color, color-mix(in srgb, var(--upload-card-effect-color, #2563EB) 70%, white)) 90deg,
         transparent 120deg,
         transparent 180deg,
-        color-mix(in srgb, var(--el-upload-dragger-uniform-color, #2563EB) 70%, white) 210deg,
-        var(--el-upload-dragger-uniform-color, #2563EB) 240deg,
+        var(--upload-card-effect-highlight-color, color-mix(in srgb, var(--upload-card-effect-color, #2563EB) 70%, white)) 210deg,
+        var(--upload-card-effect-color, #2563EB) 240deg,
         transparent 270deg,
         transparent 360deg
     );
@@ -2066,7 +2067,7 @@ html.dark .el-upload__text :deep(em) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 7vh;
+    height: var(--upload-list-inner-height);
     padding: 0 15px;
     box-sizing: border-box;
     width: 100%;
@@ -2096,16 +2097,16 @@ html.dark .el-upload__text :deep(em) {
     inset: 0;
     pointer-events: none;
     background-image:
-        radial-gradient(2px 2px at 10% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 20% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 30% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 40% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 50% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 60% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 70% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 80% 30%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 90% 10%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2px 2px at 15% 70%, var(--el-upload-dragger-uniform-color) 50%, transparent 0);
+        radial-gradient(2px 2px at 10% 10%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 20% 30%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 30% 10%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 40% 30%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 50% 10%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 60% 30%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 70% 10%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 80% 30%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 90% 10%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2px 2px at 15% 70%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0);
     background-size: 200px 200px;
     opacity: 0;
     z-index: 0;
@@ -2119,11 +2120,11 @@ html.dark .el-upload__text :deep(em) {
     inset: 0;
     pointer-events: none;
     background-image:
-        radial-gradient(3px 3px at 15% 15%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(3px 3px at 50% 50%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(3px 3px at 85% 85%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2.5px 2.5px at 35% 65%, var(--el-upload-dragger-uniform-color) 50%, transparent 0),
-        radial-gradient(2.5px 2.5px at 65% 35%, var(--el-upload-dragger-uniform-color) 50%, transparent 0);
+        radial-gradient(3px 3px at 15% 15%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(3px 3px at 50% 50%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(3px 3px at 85% 85%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2.5px 2.5px at 35% 65%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
+        radial-gradient(2.5px 2.5px at 65% 35%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0);
     background-size: 150px 150px;
     opacity: 0;
     z-index: 0;
