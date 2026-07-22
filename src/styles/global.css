@@ -634,7 +634,7 @@ body {
     /* 移动端 el-message 样式 */
     .el-message {
         padding: 8px 18px !important;
-        border-radius: 30px !important;
+        border-radius: 10px !important;
     }
 
     .el-message .el-message__icon {
