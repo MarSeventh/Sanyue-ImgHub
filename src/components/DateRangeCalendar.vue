@@ -247,6 +247,8 @@ export default {
 
 <style scoped>
 .date-range-calendar {
+  --calendar-day-size: 38px;
+
   width: min(336px, 100%);
   max-width: 100%;
   min-width: 0;
@@ -277,6 +279,7 @@ export default {
   background: var(--glass-bg);
   color: var(--admin-container-color);
   font-size: 13px;
+  text-align: center;
   outline: none;
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
@@ -354,8 +357,8 @@ export default {
 
 .calendar-day {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: var(--calendar-day-size);
+  height: var(--calendar-day-size);
   box-sizing: border-box;
   justify-self: center;
   padding: 0;
@@ -404,5 +407,11 @@ export default {
 
 html.dark .calendar-day.is-muted {
   color: var(--el-text-color-placeholder);
+}
+
+@media (max-width: 768px) {
+  .date-range-calendar {
+    --calendar-day-size: clamp(30px, 8.5vw, 38px);
+  }
 }
 </style>
