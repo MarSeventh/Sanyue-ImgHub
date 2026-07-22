@@ -63,11 +63,11 @@ body {
     /* 上传拖拽区 hover 阴影 */
     --el-upload-dragger-uniform-color: #2563EB;
     /* 上传拖拽区图标与强调色 */
-    --upload-card-effect-color: #9BC9FD;
+    --upload-card-effect-color: color-mix(in srgb, var(--primary-color) 66%, white);
     /* 上传卡片 hover 光点与上传流光主色 */
-    --upload-card-effect-highlight-color: #A8CDF8;
+    --upload-card-effect-highlight-color: color-mix(in srgb, var(--primary-color) 56%, white);
     /* 上传卡片上传流光高亮色 */
-    --upload-card-hover-glow-bg: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, transparent 70%);
+    --upload-card-hover-glow-bg: radial-gradient(circle, color-mix(in srgb, var(--primary-color) 20%, transparent) 0%, transparent 70%);
     /* 上传卡片鼠标跟随 hover 光晕 */
 
     --el-icon--upload-color: #2563EB;
