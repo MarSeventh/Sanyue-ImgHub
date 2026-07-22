@@ -6,12 +6,12 @@
                 <span class="record-count">{{ $t('uploadHistory.totalRecords', { count: totalCount }) }}</span>
             </div>
             <div class="header-right">
-                <el-tooltip :content="$t('uploadHistory.switchView')" placement="bottom">
+                <el-tooltip :content="$t('uploadHistory.switchView')" placement="bottom" :show-after="1000">
                     <el-button circle @click="toggleViewMode">
                         <font-awesome-icon :icon="viewMode === 'grid' ? 'list' : 'th-large'" />
                     </el-button>
                 </el-tooltip>
-                <el-tooltip :content="$t('uploadHistory.clearRecords')" placement="bottom">
+                <el-tooltip :content="$t('uploadHistory.clearRecords')" placement="bottom" :show-after="1000">
                     <el-button circle type="danger" @click="clearHistory">
                         <font-awesome-icon icon="trash-alt" />
                     </el-button>

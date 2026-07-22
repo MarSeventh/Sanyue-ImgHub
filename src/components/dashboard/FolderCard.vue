@@ -16,17 +16,17 @@
             <div v-if="showActions" class="action-bar">
                 <div class="action-bar-left"></div>
                 <div class="action-bar-right">
-                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.copyLink')" placement="top">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.copyLink')" placement="top" :show-after="1000">
                         <button class="action-btn" @click.stop="$emit('copy')">
                             <font-awesome-icon icon="copy"></font-awesome-icon>
                         </button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.moveFile')" placement="top">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.moveFile')" placement="top" :show-after="1000">
                         <button class="action-btn" @click.stop="$emit('move')">
                             <font-awesome-icon icon="file-export"></font-awesome-icon>
                         </button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.delete')" placement="top">
+                    <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.delete')" placement="top" :show-after="1000">
                         <button class="action-btn action-btn-danger" @click.stop="$emit('delete')">
                             <font-awesome-icon icon="trash-alt"></font-awesome-icon>
                         </button>

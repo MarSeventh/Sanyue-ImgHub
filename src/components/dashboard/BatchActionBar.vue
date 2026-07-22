@@ -1,7 +1,7 @@
 <template>
   <transition name="batch-toolbar">
     <div v-if="selectedCount > 0" class="batch-floating-bar">
-      <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.clearSelection')" placement="top">
+      <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.clearSelection')" placement="top" :show-after="1000">
         <el-button
           class="batch-floating-btn ghost"
           :aria-label="$t('dashboard.clearSelection')"
@@ -10,7 +10,7 @@
           <font-awesome-icon icon="times" class="batch-floating-icon"></font-awesome-icon>
         </el-button>
       </el-tooltip>
-      <el-tooltip :disabled="disableTooltip" :content="`${selectedCount} ${$t('dashboard.selectedItems')}`" placement="top">
+      <el-tooltip :disabled="disableTooltip" :content="`${selectedCount} ${$t('dashboard.selectedItems')}`" placement="top" :show-after="1000">
         <div class="batch-selection-summary">
           <span class="batch-selection-count">{{ selectedCount }}</span>
         </div>
@@ -23,6 +23,7 @@
           :disabled="disableTooltip"
           :content="$t(action.label)"
           placement="top"
+          :show-after="1000"
         >
           <el-button
             class="batch-floating-btn"
@@ -86,30 +87,35 @@ export default {
   z-index: 1200;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   max-width: min(720px, calc(100vw - 48px));
-  padding: 6px;
+  padding: 8px;
   border: 1px solid var(--admin-batch-toolbar-border);
-  border-radius: 999px;
+  border-radius: 18px;
   background: var(--admin-batch-toolbar-bg);
   box-shadow: var(--admin-batch-toolbar-shadow);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 
 .batch-selection-summary {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  padding: 0 2px;
+  padding: 0 4px;
 }
 
 .batch-selection-count {
-  min-width: 18px;
-  height: 26px;
+  min-width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
-  color: var(--admin-batch-clear-color);
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 28%, transparent);
+  border-radius: 10px;
+  color: var(--primary-color-accent);
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
@@ -117,17 +123,17 @@ export default {
 
 .batch-toolbar-divider {
   width: 1px;
-  height: 16px;
+  height: 24px;
   flex: 0 0 auto;
   border-radius: 999px;
   background: var(--admin-batch-toolbar-border);
-  opacity: 0.58;
+  opacity: 0.78;
 }
 
 .batch-floating-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .batch-floating-btn {
@@ -136,31 +142,38 @@ export default {
   min-width: 36px;
   margin-left: 0 !important;
   padding: 0;
-  border: none;
-  border-radius: 50%;
+  border: 1px solid transparent;
+  border-radius: 12px;
   color: var(--admin-batch-clear-color);
   background: var(--admin-batch-action-bg);
   box-shadow: var(--admin-batch-action-shadow);
-  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease, color 0.22s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .batch-floating-btn:hover {
-  transform: none;
+  border-color: var(--glass-border-hover);
+  color: var(--primary-color-accent);
   background: var(--admin-batch-action-hover-bg);
   box-shadow: var(--admin-batch-action-hover-shadow);
+}
+
+.batch-floating-btn.copy,
+.batch-floating-btn.download,
+.batch-floating-btn.move,
+.batch-floating-btn.tag,
+.batch-floating-btn.ban,
+.batch-floating-btn.white {
+  color: var(--admin-batch-action-color);
 }
 
 .batch-floating-btn.danger {
   color: var(--admin-batch-delete-color);
 }
 
-.batch-floating-btn.tag {
-  color: var(--admin-batch-tag-color);
-}
-
-.batch-floating-btn.ban,
-.batch-floating-btn.white {
-  color: var(--admin-batch-tag-color);
+.batch-floating-btn.danger:hover {
+  border-color: color-mix(in srgb, var(--admin-batch-delete-color) 32%, transparent);
+  color: var(--admin-batch-delete-color);
+  background: color-mix(in srgb, var(--admin-batch-delete-color) 10%, transparent);
 }
 
 .batch-floating-btn.ghost {
@@ -197,9 +210,9 @@ export default {
     transform: translateX(-50%);
     width: max-content;
     max-width: calc(100vw - 24px);
-    gap: 4px;
-    padding: 5px;
-    border-radius: 999px;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 16px;
   }
 
   .batch-selection-summary {
@@ -207,20 +220,21 @@ export default {
   }
 
   .batch-selection-count {
-    min-width: 16px;
-    height: 22px;
-    padding: 0 3px;
+    min-width: 24px;
+    height: 26px;
+    padding: 0 7px;
     font-size: 12px;
+    border-radius: 9px;
   }
 
   .batch-toolbar-divider {
-    height: 14px;
+    height: 22px;
   }
 
   .batch-floating-actions {
     flex: 1;
     min-width: 0;
-    gap: 3px;
+    gap: 4px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
@@ -232,11 +246,11 @@ export default {
   }
 
   .batch-floating-btn {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
     padding: 0;
-    border-radius: 50%;
+    border-radius: 10px;
   }
 
   .batch-floating-icon {

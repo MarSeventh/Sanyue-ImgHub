@@ -61,7 +61,7 @@
                 </template>
             </DirectoryTreePicker>
         </div>
-        <el-tooltip :content="$t('upload.switchUploadMethod')" placement="bottom" :disabled="disableTooltip">
+        <el-tooltip :content="$t('upload.switchUploadMethod')" placement="bottom" :disabled="disableTooltip" :show-after="1000">
             <el-button class="upload-method-button desktop-only" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
                 <font-awesome-icon v-else-if="uploadMethod === 'paste'" icon="paste" class="upload-method-icon" size="lg"/>
@@ -109,24 +109,24 @@
         >
             <div class="quick-toolbar-actions">
                 <div class="quick-toolbar-actions-inner">
-                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.logout')" placement="left" :hide-after="0">
+                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.logout')" placement="left" :hide-after="0" :show-after="1000">
                         <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('logout')">
                             <font-awesome-icon icon="sign-out-alt" class="quick-toolbar-icon"/>
                         </el-button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.manage')" placement="left" :hide-after="0">
+                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.manage')" placement="left" :hide-after="0" :show-after="1000">
                         <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('manage')">
                             <font-awesome-icon icon="cog" class="quick-toolbar-icon"/>
                         </el-button>
                     </el-tooltip>
-                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.linkFormat')" placement="left" :hide-after="0">
+                    <el-tooltip :disabled="disableTooltip || !isQuickToolbarOpen" :content="$t('upload.linkFormat')" placement="left" :hide-after="0" :show-after="1000">
                         <el-button class="quick-toolbar-button" @click="handleQuickToolbarCommand('linkFormat')">
                             <font-awesome-icon icon="link" class="quick-toolbar-icon"/>
                         </el-button>
                     </el-tooltip>
                 </div>
             </div>
-            <el-tooltip :disabled="disableTooltip" :content="$t('upload.settings')" placement="left" :hide-after="0">
+            <el-tooltip :disabled="disableTooltip" :content="$t('upload.settings')" placement="left" :hide-after="0" :show-after="1000">
                 <el-button class="quick-toolbar-button" @click="openCompressDialog">
                     <font-awesome-icon icon="cloud-upload" class="quick-toolbar-icon"/>
                 </el-button>

@@ -20,12 +20,12 @@
                     />
                 </div>
                 <div class="actions">
-                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.linkFormat')" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.linkFormat')" placement="bottom" :show-after="1000">
                     <span class="el-dropdown-link">
                         <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
                     </span>
                 </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.logout')" placement="bottom">
+                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.logout')" placement="bottom" :show-after="1000">
                     <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
                 </el-tooltip>
                 </div>

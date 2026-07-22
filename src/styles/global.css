@@ -230,16 +230,16 @@ body {
     --skeleton-shimmer-color: #F7F8FA;
     /* 骨架屏高光颜色 */
     /* 文件管理批量操作工具栏 */
-    --admin-batch-toolbar-bg: #FFFFFF;
-    --admin-batch-toolbar-border: #E5E6EB;
-    --admin-batch-toolbar-shadow: none;
+    --admin-batch-toolbar-bg: var(--glass-bg);
+    --admin-batch-toolbar-border: var(--glass-border);
+    --admin-batch-toolbar-shadow: var(--glass-shadow);
     --admin-batch-action-bg: transparent;
     --admin-batch-action-shadow: none;
-    --admin-batch-action-hover-bg: #F2F3F5;
+    --admin-batch-action-hover-bg: color-mix(in srgb, var(--primary-color) 10%, transparent);
     --admin-batch-action-hover-shadow: none;
-    --admin-batch-delete-color: #DC2626;
-    --admin-batch-tag-color: #D97706;
-    --admin-batch-clear-color: #4E5969;
+    --admin-batch-action-color: var(--el-text-color-regular);
+    --admin-batch-delete-color: var(--el-color-danger);
+    --admin-batch-clear-color: var(--el-text-color-secondary);
 
     /* 主题切换图标：color 控制描线，bg-color 控制月亮填充 */
     --theme-toggle-color: #1D2129;
@@ -523,16 +523,16 @@ body {
     /* 管理端月亮图标本体填充色 */
 
     /* 文件管理批量操作工具栏 */
-    --admin-batch-toolbar-bg: #161618;
-    --admin-batch-toolbar-border: #2A2A2E;
-    --admin-batch-toolbar-shadow: none;
+    --admin-batch-toolbar-bg: var(--glass-bg);
+    --admin-batch-toolbar-border: var(--glass-border);
+    --admin-batch-toolbar-shadow: var(--glass-shadow);
     --admin-batch-action-bg: transparent;
     --admin-batch-action-shadow: none;
-    --admin-batch-action-hover-bg: #1F1F22;
+    --admin-batch-action-hover-bg: color-mix(in srgb, var(--primary-color) 18%, transparent);
     --admin-batch-action-hover-shadow: none;
-    --admin-batch-delete-color: #F87171;
-    --admin-batch-tag-color: #FBBF24;
-    --admin-batch-clear-color: #A1A1AA;
+    --admin-batch-action-color: var(--el-text-color-regular);
+    --admin-batch-delete-color: var(--el-color-danger);
+    --admin-batch-clear-color: var(--el-text-color-secondary);
 
     /* 404、访问拦截和白名单提示页 */
     --not-found-title-text-color: #FAFAFA;

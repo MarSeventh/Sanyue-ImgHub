@@ -72,12 +72,12 @@
                         </el-text>
                         <div class="upload-list-dashboard-action">
                             <div class="modern-action-group">
-                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.copyAll')" placement="top">
+                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.copyAll')" placement="top" :show-after="1000">
                                     <button class="modern-action-btn modern-action-btn-copy" @click="copyAll">
                                         <font-awesome-icon icon="copy" />
                                     </button>
                                 </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.retryFailed')" placement="top">
+                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.retryFailed')" placement="top" :show-after="1000">
                                     <el-dropdown>
                                         <button class="modern-action-btn modern-action-btn-retry" @click="retryError">
                                             <font-awesome-icon icon="redo" />
@@ -94,7 +94,7 @@
                                         </template>
                                     </el-dropdown>
                                 </el-tooltip>
-                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.clearList')" placement="top">
+                                <el-tooltip :disabled="disableTooltip" :content="$t('upload.clearList')" placement="top" :show-after="1000">
                                     <el-dropdown>
                                         <button class="modern-action-btn modern-action-btn-danger">
                                             <font-awesome-icon icon="trash-alt" />
