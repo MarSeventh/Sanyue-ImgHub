@@ -63,9 +63,9 @@ body {
     /* 上传拖拽区 hover 阴影 */
     --el-upload-dragger-uniform-color: #2563EB;
     /* 上传拖拽区图标与强调色 */
-    --upload-card-effect-color: #93C5FD;
+    --upload-card-effect-color: #9BC9FD;
     /* 上传卡片 hover 光点与上传流光主色 */
-    --upload-card-effect-highlight-color: #BFDBFE;
+    --upload-card-effect-highlight-color: #A8CDF8;
     /* 上传卡片上传流光高亮色 */
     --upload-card-hover-glow-bg: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, transparent 70%);
     /* 上传卡片鼠标跟随 hover 光晕 */
