@@ -808,6 +808,11 @@ html.dark .el-cascader__dropdown__item.is-active {
     border-radius: 50% !important;
 }
 
+.el-checkbox__input.is-indeterminate .el-checkbox__inner::before {
+    top: calc(50% - 0.5px) !important;
+    transform: translateY(-50%) scale(0.5);
+}
+
 .dark .el-checkbox__input.is-checked + .el-checkbox__label,
 .dark .el-radio__input.is-checked + .el-radio__label {
     color: var(--el-text-color-primary) !important;
