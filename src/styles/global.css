@@ -73,6 +73,10 @@ body {
     /* 浅色主题：中性灰页面、蓝色交互强调、无阴影 */
     --bg-color: #F5F5F7;
     /* body 与页面外层容器的统一底色 */
+    --primary-color: #2563EB;
+    /* 项目级主操作色 */
+    --primary-color-accent: #1D4ED8;
+    /* 项目级主操作强调色 */
     --popper-bg-color: #FFFFFF;
     /* Element Plus 下拉浮层背景 */
     --popper-shadow: none;
@@ -145,7 +149,7 @@ body {
     /* 上传列表顶部工具按钮悬浮阴影 */
     --upload-action-btn-active-shadow: none;
     /* 上传列表顶部工具按钮按下阴影 */
-    --upload-action-copy-color: #2563EB;
+    --upload-action-copy-color: var(--primary-color);
     /* 上传列表复制按钮颜色 */
     --upload-action-retry-color: #16A34A;
     /* 上传列表重试按钮颜色 */
@@ -196,13 +200,11 @@ body {
     /* 登录容器阴影 */
     --login-container-hover-box-shadow: none;
     /* 登录容器悬浮阴影 */
-    --login-submit-btn-bg-color: #2563EB;
-    /* 登录按钮背景 */
     --login-title-glow-color: transparent;
     /* 登录标题光晕（transparent 表示关闭） */
-    --login-input-underline-color: #2563EB;
+    --login-input-underline-color: var(--primary-color);
     /* 登录输入框下划线颜色 */
-    --login-input-label-focus-color: #2563EB;
+    --login-input-label-focus-color: var(--primary-color);
     /* 登录输入框标签聚焦颜色 */
 
     /* 弹窗与设置表单 */
@@ -226,10 +228,10 @@ body {
     /* 页面切换器展开菜单阴影 */
     --tabs-switcher-hover-bg: #F2F3F5;
     --tabs-switcher-border-color: #E5E6EB;
-    --tabs-switcher-accent-color: #2563EB;
-    --tabs-switcher-current-color: #2563EB;
-    --tabs-switcher-current-bg: #EFF6FF;
-    --tabs-switcher-current-border-color: #2563EB;
+    --tabs-switcher-accent-color: var(--primary-color);
+    --tabs-switcher-current-color: var(--primary-color);
+    --tabs-switcher-current-bg: var(--el-color-primary-light-9);
+    --tabs-switcher-current-border-color: var(--primary-color);
 
     /* 管理端页面与文件管理 */
     --admin-container-bg-color: #F5F5F7;
@@ -293,7 +295,6 @@ body {
     --not-found-title-text-color: #1D2129;
 
     /* 悬浮保存按钮 */
-    --floating-btn-bg: #2563EB;
     --floating-btn-color: #FFFFFF;
     --floating-btn-shadow: none;
     --floating-btn-shadow-hover: none;
@@ -319,6 +320,15 @@ body {
     --el-text-color-placeholder: #86909C;
     /* 禁用文字 */
     --el-text-color-disabled: #C0C4CC;
+    /* Element Plus 主色：与项目主操作色统一 */
+    --el-color-primary: var(--primary-color);
+    --el-color-primary-rgb: 37, 99, 235;
+    --el-color-primary-light-3: #60A5FA;
+    --el-color-primary-light-5: #93C5FD;
+    --el-color-primary-light-7: #BFDBFE;
+    --el-color-primary-light-8: #DBEAFE;
+    --el-color-primary-light-9: #EFF6FF;
+    --el-color-primary-dark-2: var(--primary-color-accent);
     /* 边框层级：保证卡片和输入框边界清晰 */
     --el-border-color: #C9CDD4;
     --el-border-color-light: #D9DCE2;
@@ -347,6 +357,10 @@ body {
     /* 深色主题：近黑页面、无阴影 */
     --bg-color: #0F0F0F;
     /* body 与页面外层容器的统一底色 */
+    --primary-color: #4A5D9B;
+    /* 项目级主操作色 */
+    --primary-color-accent: #6F82C2;
+    /* 项目级主操作强调色 */
     --popper-bg-color: #161618;
     /* Element Plus 下拉浮层背景 */
     --popper-shadow: none;
@@ -430,7 +444,7 @@ body {
     /* 上传列表顶部工具按钮悬浮阴影 */
     --upload-action-btn-active-shadow: none;
     /* 上传列表顶部工具按钮按下阴影 */
-    --upload-action-copy-color: #60A5FA;
+    --upload-action-copy-color: var(--primary-color-accent);
     /* 上传列表复制按钮颜色 */
     --upload-action-retry-color: #4ADE80;
     /* 上传列表重试按钮颜色 */
@@ -472,13 +486,11 @@ body {
     /* 登录容器阴影 */
     --login-container-hover-box-shadow: none;
     /* 登录容器悬浮阴影 */
-    --login-submit-btn-bg-color: #4A5D9B;
-    /* 登录按钮背景：低饱和灰蓝 */
     --login-title-glow-color: transparent;
     /* 登录标题光晕（transparent 表示关闭） */
-    --login-input-underline-color: #60A5FA;
+    --login-input-underline-color: var(--primary-color-accent);
     /* 登录输入框下划线颜色 */
-    --login-input-label-focus-color: #60A5FA;
+    --login-input-label-focus-color: var(--primary-color-accent);
     /* 登录输入框标签聚焦颜色 */
 
     /* 弹窗与设置表单 */
@@ -502,10 +514,10 @@ body {
     /* 页面切换器展开菜单阴影 */
     --tabs-switcher-hover-bg: #1F1F22;
     --tabs-switcher-border-color: #2A2A2E;
-    --tabs-switcher-accent-color: #60A5FA;
-    --tabs-switcher-current-color: #60A5FA;
-    --tabs-switcher-current-bg: rgba(59, 130, 246, 0.14);
-    --tabs-switcher-current-border-color: #3B82F6;
+    --tabs-switcher-accent-color: var(--primary-color-accent);
+    --tabs-switcher-current-color: var(--primary-color-accent);
+    --tabs-switcher-current-bg: color-mix(in srgb, var(--primary-color) 22%, transparent);
+    --tabs-switcher-current-border-color: var(--primary-color);
 
     /* 管理端页面与文件管理 */
     --admin-container-bg-color: #0F0F0F;
@@ -567,7 +579,6 @@ body {
     /* 异常提示页标题颜色 */
 
     /* 悬浮保存按钮 */
-    --floating-btn-bg: #3B82F6;
     --floating-btn-color: #FFFFFF;
     --floating-btn-shadow: none;
     --floating-btn-shadow-hover: none;
@@ -586,6 +597,38 @@ body {
     --login-input-icon-color: #71717A;
     --icon-color: #A1A1AA;
     --placeholder-color: #6B6B73;
+}
+
+html.dark {
+    /* Element Plus 深色主色与灰阶：与项目低饱和灰蓝视觉统一 */
+    --el-color-primary: var(--primary-color);
+    --el-color-primary-rgb: 74, 93, 155;
+    --el-color-primary-light-3: #53649C;
+    --el-color-primary-light-5: #3F4A72;
+    --el-color-primary-light-7: #303852;
+    --el-color-primary-light-8: #252B3D;
+    --el-color-primary-light-9: #1C2030;
+    --el-color-primary-dark-2: var(--primary-color-accent);
+
+    --el-text-color-primary: #FAFAFA;
+    --el-text-color-regular: #D4D4D8;
+    --el-text-color-secondary: #A1A1AA;
+    --el-text-color-placeholder: #71717A;
+    --el-text-color-disabled: #52525B;
+
+    --el-border-color: #3A3A3F;
+    --el-border-color-light: #34343A;
+    --el-border-color-lighter: #2A2A2E;
+    --el-border-color-extra-light: #242428;
+
+    --el-fill-color: #26262A;
+    --el-fill-color-light: #1F1F22;
+    --el-fill-color-lighter: #18181B;
+    --el-fill-color-blank: #161618;
+
+    --el-bg-color-page: #0F0F0F;
+    --el-bg-color: #161618;
+    --el-bg-color-overlay: #1F1F22;
 }
 
 /* ==============================
@@ -769,7 +812,7 @@ html.dark .el-cascader__dropdown__item.hover {
 }
 html.dark .el-select-dropdown__item.is-selected,
 html.dark .el-cascader__dropdown__item.is-active {
-    background-color: rgba(74, 93, 155, 0.38) !important;
+    background-color: color-mix(in srgb, var(--primary-color) 38%, transparent) !important;
     color: #fff !important;
 }
 .dark .el-switch.is-checked .el-switch__core {

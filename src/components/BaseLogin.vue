@@ -382,7 +382,7 @@ export default {
     font-weight: 600;
     letter-spacing: 2px;
     border-radius: 12px;
-    background-color: var(--login-submit-btn-bg-color);
+    background-color: var(--primary-color);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
     overflow: hidden;

@@ -68,12 +68,12 @@
 }
 
 .settings-dialog-scope .radio-card-group .radio-card.is-checked {
-    background: #EFF6FF;
+    background: var(--el-color-primary-light-9);
     border-color: var(--el-color-primary);
 }
 
 html.dark .settings-dialog-scope .radio-card-group .radio-card.is-checked {
-    background: rgba(74, 93, 155, 0.38);
+    background: color-mix(in srgb, var(--primary-color) 38%, transparent);
     border-color: var(--el-color-primary-light-5);
     color: var(--el-text-color-primary);
 }

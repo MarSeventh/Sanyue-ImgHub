@@ -175,12 +175,12 @@ html.dark .menu-item:hover {
 }
 
 .menu-item.is-active {
-    background: rgba(37, 99, 235, 0.2);
-    color: #2563EB;
+    background: color-mix(in srgb, var(--primary-color) 20%, transparent);
+    color: var(--primary-color);
 }
 
 html.dark .menu-item.is-active {
-    background: rgba(37, 99, 235, 0.3);
+    background: color-mix(in srgb, var(--primary-color) 30%, transparent);
     color: var(--el-text-color-primary);
 }
 

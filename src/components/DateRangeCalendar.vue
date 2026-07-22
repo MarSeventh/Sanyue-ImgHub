@@ -325,7 +325,7 @@ export default {
 .calendar-nav:focus {
   color: var(--el-color-primary);
   border-color: var(--el-color-primary);
-  background: rgba(37, 99, 235, 0.08);
+  background: color-mix(in srgb, var(--primary-color) 8%, transparent);
   box-shadow: none;
 }
 
@@ -374,8 +374,8 @@ export default {
 
 .calendar-day:hover,
 .calendar-day:focus {
-  border-color: rgba(37, 99, 235, 0.45);
-  background: rgba(37, 99, 235, 0.1);
+  border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
   color: var(--el-color-primary);
 }
 
@@ -390,7 +390,7 @@ export default {
 
 .calendar-day.is-in-range {
   border-radius: 12px;
-  background: rgba(37, 99, 235, 0.12);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
   color: var(--el-color-primary);
 }
 

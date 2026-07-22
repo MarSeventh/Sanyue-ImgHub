@@ -1308,23 +1308,7 @@ mounted() {
 
 .add-btn {
     border-radius: 8px;
-    /* 主操作 CTA:微透明蓝,保持可读性同时贴合半透明风格 */
-    background-color: rgba(37, 99, 235, 0.9) !important;
-    border-color: rgba(37, 99, 235, 0.9) !important;
-    color: #fff !important;
     transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-html.dark .add-btn {
-    background-color: rgba(59, 130, 246, 0.9) !important;
-    border-color: rgba(59, 130, 246, 0.9) !important;
-}
-.add-btn:hover {
-    background-color: rgba(37, 99, 235, 0.78) !important;
-    border-color: rgba(37, 99, 235, 0.78) !important;
-}
-html.dark .add-btn:hover {
-    background-color: rgba(59, 130, 246, 0.78) !important;
-    border-color: rgba(59, 130, 246, 0.78) !important;
 }
 
 .header-actions {

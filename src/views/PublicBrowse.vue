@@ -1275,7 +1275,7 @@ html.dark .search-box:hover {
 }
 
 .search-box:focus-within {
-  border-color: rgba(59, 130, 246, 0.72);
+  border-color: color-mix(in srgb, var(--primary-color-accent) 72%, transparent);
 }
 
 .search-input {

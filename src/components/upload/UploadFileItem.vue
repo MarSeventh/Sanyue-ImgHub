@@ -206,7 +206,7 @@ export default {
     border: 1px solid var(--progress-wrapper-border, rgba(37, 99, 235, 0.1));
 }
 .upload-list-item-progress :deep(.el-progress) {
-    --el-color-primary: #2563EB;
+    --el-color-primary: var(--primary-color);
 }
 .upload-list-item-progress :deep(.el-progress-bar) {
     padding-right: 0;
@@ -221,7 +221,7 @@ export default {
 }
 .upload-list-item-progress :deep(.el-progress-bar__inner) {
     border-radius: 8px;
-    background: #2563EB !important;
+    background: var(--primary-color) !important;
     box-shadow: none;
     position: relative;
     overflow: hidden;
