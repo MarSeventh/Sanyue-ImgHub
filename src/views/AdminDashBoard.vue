@@ -40,7 +40,11 @@
                     variant="breadcrumb"
                     @click="handleSelectPage"
                 />
-                <div class="breadcrumb-view-toggle" role="group">
+                <div
+                    class="breadcrumb-view-toggle"
+                    :class="{ 'is-list': viewMode === 'list' }"
+                    role="group"
+                >
                     <button
                         class="breadcrumb-view-button"
                         :class="{ 'is-active': viewMode === 'card' }"
@@ -2142,6 +2146,7 @@ beforeUnmount() {
 }
 
 .breadcrumb-view-toggle {
+    position: relative;
     height: 32px;
     box-sizing: border-box;
     flex: 0 0 auto;
@@ -2153,6 +2158,7 @@ beforeUnmount() {
     border-radius: 10px;
     background: var(--glass-bg);
     box-shadow: none;
+    overflow: hidden;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -2160,7 +2166,27 @@ beforeUnmount() {
     border-color: var(--glass-border-hover);
 }
 
+.breadcrumb-view-toggle::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 28px;
+    height: 26px;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    transform: translateX(0);
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.breadcrumb-view-toggle.is-list::before {
+    transform: translateX(30px);
+}
+
 .breadcrumb-view-button {
+    position: relative;
+    z-index: 1;
     width: 28px;
     height: 26px;
     display: inline-flex;
@@ -2181,7 +2207,7 @@ beforeUnmount() {
 
 .breadcrumb-view-button.is-active {
     color: var(--primary-color-accent);
-    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    background: transparent;
     box-shadow: none;
 }
 
@@ -2239,6 +2265,14 @@ beforeUnmount() {
         height: 28px;
         padding: 2px;
         border-radius: 8px;
+    }
+    .breadcrumb-view-toggle::before {
+        width: 24px;
+        height: 22px;
+        border-radius: 6px;
+    }
+    .breadcrumb-view-toggle.is-list::before {
+        transform: translateX(26px);
     }
     .breadcrumb-view-button {
         width: 24px;
