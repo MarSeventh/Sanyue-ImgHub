@@ -20,17 +20,6 @@
                     />
                 </div>
                 <div class="actions">
-                <el-dropdown @command="sort" :hide-on-click="false">
-                    <span class="el-dropdown-link">
-                        <font-awesome-icon :icon="sortIcon" class="header-icon"></font-awesome-icon>
-                    </span>
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item command="dateDesc">{{ $t('dashboard.sortByDateDesc') }}</el-dropdown-item>
-                            <el-dropdown-item command="nameAsc">{{ $t('dashboard.sortByNameAsc') }}</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
                 <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.linkFormat')" placement="bottom">
                     <span class="el-dropdown-link">
                         <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
@@ -73,6 +62,25 @@
                         <font-awesome-icon icon="list" class="breadcrumb-view-icon"></font-awesome-icon>
                     </button>
                 </div>
+                <el-dropdown
+                    trigger="click"
+                    @command="sort"
+                    class="breadcrumb-sort-dropdown"
+                >
+                    <button
+                        class="breadcrumb-sort-button"
+                        type="button"
+                        :title="sortLabel"
+                    >
+                        <font-awesome-icon :icon="sortIcon" class="breadcrumb-sort-icon"></font-awesome-icon>
+                    </button>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item command="dateDesc">{{ $t('dashboard.sortByDateDesc') }}</el-dropdown-item>
+                            <el-dropdown-item command="nameAsc">{{ $t('dashboard.sortByNameAsc') }}</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
                 <!-- 移动端目录按钮 -->
                 <div class="mobile-directory-trigger" @click="showMobileDirectoryDrawer = true">
                     <font-awesome-icon icon="folder-open" class="mobile-directory-icon"/>
@@ -570,6 +578,9 @@ computed: {
     },
     sortIcon() {
         return this.sortOption === 'dateDesc' ? 'sort-amount-down' : 'sort-alpha-up';
+    },
+    sortLabel() {
+        return this.sortOption === 'dateDesc' ? this.$t('dashboard.sortByDateDesc') : this.$t('dashboard.sortByNameAsc');
     },
     dialogWidth() {
         return window.innerWidth > 768 ? '50%' : '90%';
@@ -2138,21 +2149,15 @@ beforeUnmount() {
     align-items: center;
     gap: 2px;
     padding: 2px;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     border-radius: 10px;
     background: var(--glass-bg);
     box-shadow: none;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
-html.dark .breadcrumb-view-toggle {
-    border: 1px solid #34343A;
-}
 
 .breadcrumb-view-toggle:hover {
-    border-color: #BFC4CC;
-}
-html.dark .breadcrumb-view-toggle:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 
 .breadcrumb-view-button {
@@ -2185,6 +2190,42 @@ html.dark .breadcrumb-view-toggle:hover {
     height: 14px;
 }
 
+.breadcrumb-sort-dropdown {
+    flex: 0 0 auto;
+}
+
+.breadcrumb-sort-button {
+    width: 32px;
+    height: 32px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    color: var(--el-text-color-secondary);
+    background: var(--glass-bg);
+    box-shadow: none;
+    cursor: pointer;
+    transition: color 0.16s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.breadcrumb-sort-button:hover,
+.breadcrumb-sort-button:focus-visible {
+    border-color: var(--glass-border-hover);
+    color: var(--primary-color-accent);
+}
+
+.breadcrumb-sort-button:focus-visible {
+    outline: none;
+}
+
+.breadcrumb-sort-icon {
+    width: 14px;
+    height: 14px;
+}
+
 @media (max-width: 768px) {
     .breadcrumb-container {
         flex-direction: row;
@@ -2205,6 +2246,15 @@ html.dark .breadcrumb-view-toggle:hover {
         border-radius: 6px;
     }
     .breadcrumb-view-icon {
+        width: 12px;
+        height: 12px;
+    }
+    .breadcrumb-sort-button {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+    }
+    .breadcrumb-sort-icon {
         width: 12px;
         height: 12px;
     }
