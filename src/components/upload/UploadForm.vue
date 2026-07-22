@@ -78,8 +78,8 @@
                 </div>
             </el-card>
         </div>
-        <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length, 'is-uploading': uploading}">
-            <div class="upload-list-container" :class="{'upload-list-busy': fileList.length}">
+        <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
+            <div class="upload-list-container">
                 <el-scrollbar @scroll="handleScroll" ref="scrollContainer">
                     <div class="upload-list-dashboard" :class="{ 'list-scrolled': listScrolled }">
                         <el-text class="upload-list-dashboard-title">
@@ -1547,20 +1547,28 @@ beforeDestroy() {
     }
 }
 .upload-form {
+    --upload-card-height: 45vh;
+    --upload-card-busy-height: 17vh;
+    --upload-list-height: 7vh;
+    --upload-list-busy-height: calc(var(--upload-card-height) - var(--upload-card-busy-height) + var(--upload-list-height));
+    --upload-list-gap: 10px;
+    --upload-list-radius: 15px;
+    --upload-card-vertical-padding: 40px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    height: calc(var(--upload-card-height) + var(--upload-list-height) + var(--upload-list-gap) + var(--upload-card-vertical-padding));
 }
 .upload-list-card {
     width: 55vw;
-    height: 7vh;
-    margin-top: 10px;
+    height: var(--upload-list-height);
+    margin-top: var(--upload-list-gap);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 15px;
+    border-radius: var(--upload-list-radius);
     background-color: var(--glass-bg) !important;
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
@@ -1572,33 +1580,21 @@ beforeDestroy() {
 .upload-list-card :deep(.el-card__body) {
     padding: 0;
     width: 100%;
+    height: 100%;
     overflow: hidden;
 }
 .upload-list-container {
-    width: 55vw;
-    height: 7vh;
-    transition: height 0.3s ease;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
 }
 @media (max-width: 768px) {
     .upload-list-card {
         width: 70vw;
     }
-    .upload-list-container {
-        width: 70vw;
-    }
 }
 .upload-list-card.upload-list-busy {
-    height: 40vh;
-}
-.upload-list-container.upload-list-busy {
-    height: 40vh;
-}
-
-/* 上传时列表卡片边框效果 - 与流光颜色一致 */
-.upload-list-card.is-uploading {
-    border: 1px solid var(--el-upload-dragger-uniform-color, #2563EB) !important;
-    box-shadow: none !important;
+    height: var(--upload-list-busy-height);
 }
 
 /* 拖拽上传卡片包装器 - 用于悬浮光斑效果 */
@@ -1632,14 +1628,14 @@ beforeDestroy() {
     }
 }
 .upload-card-busy :deep(.el-upload-dragger) {
-    height: 17vh;
+    height: var(--upload-card-busy-height);
 }
 :deep(.el-upload-dragger)  {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 45vh;
+    height: var(--upload-card-height);
     border-radius: 15px;
     border: 1px solid var(--glass-border);
     opacity: 0.7;
@@ -1647,6 +1643,7 @@ beforeDestroy() {
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
     box-shadow: var(--glass-shadow);
+    transition: height 0.3s ease, opacity 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
 }
 :deep(.el-upload:focus .el-upload-dragger) {
     border-color: var(--glass-border-hover);
@@ -1744,7 +1741,7 @@ html.dark .el-upload__text :deep(em) {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 45vh;
+    height: var(--upload-card-height);
     border-radius: 15px;
     border: var(--el-upload-dragger-border);
     box-shadow: none;
@@ -1803,72 +1800,58 @@ html.dark .el-upload__text :deep(em) {
     align-items: center;
 }
 .upload-card-busy.paste-card {
-    height: 17vh;
+    height: var(--upload-card-busy-height);
 }
 .upload-card-textarea {
     width: 50vw;
     height: 70%;
     border-radius: 16px;
-    background: var(--textarea-bg, rgba(37, 99, 235, 0.02));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: color-mix(in srgb, var(--primary-color) 4%, var(--glass-bg));
+    border: 1px solid var(--glass-border);
+    box-shadow: none;
+    transition: background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
     box-sizing: border-box;
     display: flex;
     position: relative;
+    overflow: hidden;
 }
 .upload-card-busy .upload-card-textarea {
     height: 50%;
 }
 
-.upload-card-textarea::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: 17px;
-    padding: 1px;
-    background: rgba(37, 99, 235, 0.2);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
+.upload-card-textarea:hover {
+    background: color-mix(in srgb, var(--primary-color) 6%, var(--glass-bg));
+    border-color: var(--glass-border-hover);
 }
 
-.upload-card-textarea:hover::before {
-    opacity: 1;
+.upload-card-textarea:focus-within {
+    background: color-mix(in srgb, var(--primary-color) 7%, var(--glass-bg));
+    border-color: color-mix(in srgb, var(--primary-color) 45%, var(--glass-border));
+    box-shadow: none;
 }
 
-.upload-card-textarea:focus-within::before {
-    opacity: 1;
-    background: rgba(37, 99, 235, 0.4);
-}
-
-:deep(.el-textarea__inner) {
+.upload-card-textarea :deep(.el-textarea__inner) {
     border-radius: 16px;
-    background: var(--textarea-inner-bg, rgba(0, 0, 0, 0.02));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    transition: color 0.2s ease, background-color 0.2s ease;
     resize: none;
-    border: 1px solid transparent;
+    border: none;
+    box-shadow: none !important;
     padding: 16px 20px;
     font-size: 14px;
     line-height: 1.6;
     color: var(--el-text-color-primary);
 }
 
-:deep(.el-textarea__inner::placeholder) {
+.upload-card-textarea :deep(.el-textarea__inner::placeholder) {
     color: var(--el-text-color-placeholder);
     font-weight: 400;
     opacity: 0.7;
 }
 
-:deep(.el-textarea__inner:hover) {
-    background: var(--textarea-inner-hover-bg, rgba(37, 99, 235, 0.03));
-}
-
-:deep(.el-textarea__inner:focus) {
-    border-color: transparent;
-    box-shadow: none;
-    background: var(--textarea-inner-focus-bg, rgba(37, 99, 235, 0.02));
+.upload-card-textarea :deep(.el-textarea__inner:focus) {
+    background: transparent;
+    box-shadow: none !important;
 }
 
 /* Modern Scrollbar Styles */
@@ -2039,11 +2022,7 @@ html.dark .el-upload__text :deep(em) {
         width: calc(100% - 4px) !important;
     }
 
-    .upload-card-textarea::before {
-        border-radius: 11px;
-    }
-
-    :deep(.el-textarea__inner) {
+    .upload-card-textarea :deep(.el-textarea__inner) {
         border-radius: 10px;
         padding: 8px 10px;
         font-size: 12px;
@@ -2099,7 +2078,7 @@ html.dark .el-upload__text :deep(em) {
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--glass-border);
-    border-radius: 16px;
+    border-radius: var(--upload-list-radius);
     box-shadow: var(--glass-shadow);
     opacity: 0.7;
 }
