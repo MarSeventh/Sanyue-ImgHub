@@ -140,7 +140,7 @@ export default {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: var(--bg-color, #6366F1);
+  background: var(--bg-color, #2563EB);
   color: var(--text-color, #333);
 }
 

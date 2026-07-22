@@ -22,43 +22,6 @@ body {
     background-color: var(--bg-color);
 }
 
-/* 文件管理、用户管理、系统设置共用顶部导航容器 */
-.admin-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 45px;
-    padding: 10px 24px;
-    position: fixed;
-    top: 8px;
-    left: 50%;
-    width: calc(95% - 16px);
-    z-index: 2001;
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    background: var(--glass-bg);
-    box-shadow: none;
-    transform: translateX(-50%);
-    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.admin-header-content:hover {
-    background: var(--glass-bg);
-    box-shadow: none;
-    transform: translateX(-50%);
-}
-
-@media (max-width: 768px) {
-    .admin-header-content {
-        flex-direction: column;
-        top: 6px;
-        width: calc(100% - 32px);
-        padding: 6px 12px;
-        gap: 4px;
-        border-radius: 14px;
-    }
-}
-
 :focus-visible {
     outline: none;
 }
@@ -266,9 +229,6 @@ body {
     /* 骨架屏基础色 */
     --skeleton-shimmer-color: #F7F8FA;
     /* 骨架屏高光颜色 */
-    --admin-purple: #6366F1;
-    /* 管理端强调色（变量名沿用 purple，实际为靛蓝） */
-
     /* 文件管理批量操作工具栏 */
     --admin-batch-toolbar-bg: #FFFFFF;
     --admin-batch-toolbar-border: #E5E6EB;
@@ -827,7 +787,7 @@ html.dark .el-cascader__dropdown__item.is-active {
 .el-checkbox__inner {
     box-sizing: border-box;
     width: var(--el-checkbox-input-width, 14px);
-    height: var(--el-checkbox-input-width, 14px);
+    height: var(--el-checkbox-input-height, var(--el-checkbox-input-width, 14px));
     aspect-ratio: 1 / 1;
     border-radius: 50% !important;
 }

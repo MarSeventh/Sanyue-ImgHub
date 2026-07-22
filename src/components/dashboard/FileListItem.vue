@@ -7,7 +7,11 @@
     >
         <!-- 复选框 -->
         <div class="list-col list-col-checkbox">
-            <DashboardCheckbox :checked="localSelected" @click.stop="toggleSelect" />
+            <el-checkbox
+                v-model="localSelected"
+                @click.stop
+                @change="handleSelectChange"
+            />
         </div>
         <!-- 预览 -->
         <div class="list-col list-col-preview" @click="handlePreviewClick">
@@ -107,13 +111,8 @@
 </template>
 
 <script>
-import DashboardCheckbox from '@/components/dashboard/DashboardCheckbox.vue';
-
 export default {
     name: 'FileListItem',
-    components: {
-        DashboardCheckbox
-    },
     props: {
         item: { type: Object, required: true },
         selected: { type: Boolean, default: false },
@@ -189,9 +188,9 @@ export default {
         }
     },
     methods: {
-        toggleSelect() {
-            this.localSelected = !this.localSelected;
-            this.$emit('update:selected', this.localSelected);
+        handleSelectChange(value) {
+            this.localSelected = value;
+            this.$emit('update:selected', value);
         },
         handlePreviewClick() {
             if (this.isFolder) {
@@ -238,6 +237,11 @@ export default {
     justify-content: center;
     min-width: 40px;
 }
+
+.list-col-checkbox :deep(.el-checkbox) {
+    --el-checkbox-input-width: 16px;
+    --el-checkbox-input-height: 16px;
+}
 .list-col-preview {
     justify-content: center;
     cursor: pointer;
@@ -249,7 +253,7 @@ export default {
     min-width: 0;
 }
 .list-col-name:hover {
-    color: #38bdf8;
+    color: var(--primary-color-accent);
 }
 .filename-ellipsis {
     display: flex;
@@ -349,7 +353,7 @@ export default {
     transition: all 0.2s ease;
 }
 .list-action-btn:hover {
-    background: #38bdf8;
+    background: var(--primary-color);
     color: white;
 }
 .list-action-danger:hover {
@@ -388,5 +392,9 @@ export default {
         font-size: 12px;
     }
     .list-col-checkbox { width: 18px; min-width: 18px; }
+    .list-col-checkbox :deep(.el-checkbox) {
+        --el-checkbox-input-width: 14px;
+        --el-checkbox-input-height: 14px;
+    }
 }
 </style>

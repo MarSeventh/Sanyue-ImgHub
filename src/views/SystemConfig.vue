@@ -115,6 +115,7 @@ export default {
     },
 }
 </script>
+<style scoped src="@/styles/admin-pagination.css"></style>
 <style scoped>
 .container {
     background: var(--admin-container-bg-color);
@@ -124,30 +125,6 @@ export default {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-}
-
-@media (max-width: 768px) {
-    .header-icon {
-        font-size: 0.95em;
-    }
-}
-
-.header-icon {
-    font-size: 1.5em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: var(--admin-container-color);
-    outline: none;
-}
-
-.header-icon:hover {
-    color: #B39DDB; /* 使用柔和的淡紫色 */
-    transform: scale(1.2);
-}
-
-.header-action {
-    display: flex;
-    gap: 10px;
 }
 
 .main-container {

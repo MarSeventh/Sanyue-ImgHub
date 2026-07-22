@@ -100,13 +100,13 @@ html.dark .mobile-drawer {
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    background: rgba(56, 189, 248, 0.1);
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
     border-bottom: 1px solid var(--el-border-color-lighter);
 }
 .mobile-drawer-title {
     font-size: 15px;
     font-weight: 600;
-    color: #38bdf8;
+    color: var(--primary-color-accent);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -116,7 +116,7 @@ html.dark .mobile-drawer {
     display: inline-block;
     width: 4px;
     height: 16px;
-    background: #38bdf8;
+    background: var(--primary-color-accent);
     border-radius: 2px;
 }
 .mobile-drawer-close {
@@ -158,8 +158,8 @@ html.dark .mobile-drawer {
     transform: scale(0.98);
 }
 .mobile-drawer-item.active {
-    background: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
+    background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+    color: var(--primary-color-accent);
     font-weight: 600;
 }
 .mobile-drawer-item-icon {
@@ -170,7 +170,7 @@ html.dark .mobile-drawer {
 }
 .mobile-drawer-item.active .mobile-drawer-item-icon {
     opacity: 1;
-    color: #38bdf8;
+    color: var(--primary-color-accent);
 }
 .mobile-drawer-back {
     display: flex;

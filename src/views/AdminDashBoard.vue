@@ -165,10 +165,11 @@
             >
                 <div class="list-header">
                     <div class="list-col list-col-checkbox">
-                        <DashboardCheckbox
-                            :checked="isSelectAll"
+                        <el-checkbox
+                            :model-value="isSelectAll"
                             :indeterminate="isIndeterminate"
-                            @click="handleSelectAllPage(!isSelectAll)"
+                            @click.stop
+                            @change="handleSelectAllPage"
                         />
                     </div>
                     <div class="list-col list-col-preview">{{ $t('dashboard.preview') }}</div>
@@ -2074,6 +2075,7 @@ beforeUnmount() {
 </script>
 
 <style src="@/styles/settings-dialog.css"></style>
+<style scoped src="@/styles/admin-pagination.css"></style>
 
 <style scoped>
 .container {
@@ -2101,14 +2103,6 @@ beforeUnmount() {
 }
 
 @media (max-width: 768px) {
-    .header-icon {
-        font-size: 0.95em;
-    }
-    
-    .header-content .actions {
-        gap: 10px;
-    }
-    
     .search-card :deep(.el-input__inner) {
         height: 28px;
         font-size: 0.85em;
@@ -2122,19 +2116,6 @@ beforeUnmount() {
     .search-card :deep(.el-input__inner:focus) {
         width: 65vw;
     }
-}
-
-.header-icon {
-    font-size: 1.5em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: var(--admin-container-color);
-    outline: none;
-}
-
-.header-icon:hover {
-    color: var(--admin-purple); /* 使用柔和的淡紫色 */
-    transform: scale(1.2);
 }
 
 
@@ -2190,12 +2171,12 @@ html.dark .breadcrumb-view-toggle:hover {
 }
 
 .breadcrumb-view-button:hover {
-    color: #38bdf8;
+    color: var(--primary-color-accent);
 }
 
 .breadcrumb-view-button.is-active {
-    color: #38bdf8;
-    background: rgba(56, 189, 248, 0.12);
+    color: var(--primary-color-accent);
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
     box-shadow: none;
 }
 
@@ -2275,47 +2256,6 @@ html.dark .stats-badge:hover {
     }
 }
 
-
-.header-content .actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-@media (max-width: 768px) {
-    .header-content .actions {
-        margin-top: 10px;
-    }
-}
-
-.header-content .actions i {
-    font-size: 1.5em;
-    cursor: pointer;
-    transition: color 0.3s, transform 0.3s;
-    color: var(--admin-container-color);
-}
-
-.header-content .actions i:hover {
-    color: var(--admin-purple); /* 使用柔和的淡紫色 */
-    transform: scale(1.2);
-}
-
-.header-content .actions .el-dropdown-link i {
-    color: var(--admin-container-color);
-}
-
-.header-content .actions .el-dropdown-link i:hover {
-    color: var(--admin-purple); /* 使用柔和的淡紫色 */
-}
-
-.header-content .actions .disabled {
-    color: #C0C4CC;
-    pointer-events: none;
-}
-
-.header-content .actions .enabled {
-    color: var(--admin-purple); /* 使用柔和的淡紫色 */
-}
 
 /* 搜索区域样式（包含搜索框和筛选按钮） */
 .search-area {
@@ -2406,7 +2346,7 @@ html.dark .stats-badge:hover {
     pointer-events: auto;
 }
 .search-card:focus-within .search-icon:hover {
-    color: var(--admin-purple);
+    color: var(--primary-color-accent);
     transform: scale(1.2);
 }
 .search-card :deep(.el-input__suffix) {
@@ -2574,345 +2514,15 @@ html.dark .stats-badge:hover {
     min-width: 40px;
 }
 
+.list-col-checkbox :deep(.el-checkbox) {
+    --el-checkbox-input-width: 16px;
+    --el-checkbox-input-height: 16px;
+}
+
 /* 移动端列表视图 */
 @media (max-width: 768px) {
     .list-header {
         display: none;
-    }
-}
-
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-    padding-bottom: 20px;
-    gap: 15px;
-    position: relative;
-}
-
-.pagination-center {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* 页码按钮美化 */
-.pagination-container :deep(.el-pagination) {
-    --el-pagination-button-bg-color: var(--admin-dashboard-btn-bg-color);
-    --el-pagination-hover-color: var(--admin-purple);
-}
-
-.pagination-container :deep(.el-pager li) {
-    background: rgba(255, 255, 255, 0.72);
-    border-radius: 10px;
-    margin: 0 4px;
-    min-width: 36px;
-    height: 36px;
-    line-height: 36px;
-    font-weight: 500;
-    border: 1px solid #D9DCE2;
-    box-shadow: none;
-    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-}
-html.dark .pagination-container :deep(.el-pager li) {
-    background: rgba(22, 22, 24, 0.75);
-    border: 1px solid #34343A;
-}
-
-.pagination-container :deep(.el-pager li:hover) {
-    color: #38bdf8;
-    background: rgba(255, 255, 255, 0.85);
-    border-color: #BFC4CC;
-}
-html.dark .pagination-container :deep(.el-pager li:hover) {
-    background: rgba(22, 22, 24, 0.88);
-    border-color: #4A4A52;
-}
-
-.pagination-container :deep(.el-pager li.is-active) {
-    background: #0ea5e9 !important;
-    color: white !important;
-    border-radius: 10px;
-    box-shadow: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.pagination-container :deep(.el-pager li.is-active:hover) {
-    box-shadow: none !important;
-}
-
-.pagination-container :deep(.btn-prev),
-.pagination-container :deep(.btn-next) {
-    background: rgba(255, 255, 255, 0.72) !important;
-    border-radius: 10px !important;
-    min-width: 36px;
-    height: 36px;
-    border: 1px solid #D9DCE2 !important;
-    box-shadow: none;
-    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-}
-html.dark .pagination-container :deep(.btn-prev),
-html.dark .pagination-container :deep(.btn-next) {
-    background: rgba(22, 22, 24, 0.75) !important;
-    border: 1px solid #34343A !important;
-}
-
-.pagination-container :deep(.btn-prev:hover),
-.pagination-container :deep(.btn-next:hover) {
-    color: #38bdf8;
-    background: rgba(255, 255, 255, 0.85) !important;
-    border-color: #BFC4CC !important;
-}
-html.dark .pagination-container :deep(.btn-prev:hover),
-html.dark .pagination-container :deep(.btn-next:hover) {
-    background: rgba(22, 22, 24, 0.88) !important;
-    border-color: #4A4A52 !important;
-}
-
-.pagination-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    position: absolute;
-    right: 0;
-}
-
-/* 分页信息区域 */
-.page-total {
-    font-size: 13px;
-    color: var(--el-text-color-secondary);
-    white-space: nowrap;
-}
-
-.page-jump {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--el-text-color-secondary);
-}
-
-.page-jump .jump-input {
-    width: 50px;
-}
-
-.page-jump .jump-input :deep(.el-input__wrapper) {
-    background-color: var(--glass-bg) !important;
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
-    box-shadow: none;
-    border: 1px solid #D9DCE2;
-    border-radius: 8px;
-    padding: 0 8px;
-    height: 28px;
-}
-html.dark .page-jump .jump-input :deep(.el-input__wrapper) {
-    border: 1px solid #34343A;
-}
-
-.page-jump .jump-input :deep(.el-input__inner) {
-    text-align: center;
-    color: var(--el-text-color-primary);
-    height: 28px;
-    line-height: 28px;
-}
-
-.page-jump .jump-btn {
-    background: #0ea5e9;
-    border: none;
-    border-radius: 8px;
-    padding: 0 12px;
-    height: 28px;
-    font-size: 12px;
-    font-weight: 600;
-    color: white;
-    box-shadow: none;
-    transition: all 0.3s ease;
-}
-
-.page-jump .jump-btn:hover {
-    box-shadow: none;
-}
-
-/* 移动端分页适配 */
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 14px;
-        padding-bottom: 10px;
-    }
-    
-    .pagination-center {
-        order: 0;
-        gap: 6px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .pagination-container :deep(.el-pager li) {
-        min-width: 30px;
-        height: 30px;
-        line-height: 30px;
-        margin: 0 2px;
-        border-radius: 8px;
-        font-size: 12px;
-    }
-
-    .pagination-container :deep(.btn-prev),
-    .pagination-container :deep(.btn-next) {
-        position: static !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        display: none !important;
-        min-width: 30px !important;
-        width: 30px !important;
-        height: 30px !important;
-        border-radius: 8px !important;
-        font-size: 12px;
-        scale: 1 !important;
-    }
-    
-    .pagination-right {
-        position: static;
-        width: 100%;
-        justify-content: center;
-        gap: 6px;
-        order: 1;
-    }
-
-    .page-total,
-    .page-jump {
-        font-size: 12px;
-    }
-    
-    .page-jump .jump-input {
-        width: 40px;
-    }
-
-    .page-jump .jump-input :deep(.el-input__wrapper) {
-        height: 26px;
-        padding: 0 6px;
-        border-radius: 7px;
-    }
-
-    .page-jump .jump-input :deep(.el-input__inner) {
-        height: 26px;
-        line-height: 26px;
-        font-size: 12px;
-    }
-
-    .page-jump .jump-btn {
-        height: 26px;
-        padding: 0 10px;
-        border-radius: 7px;
-        font-size: 11px;
-    }
-
-    .refresh-btn {
-        --el-button-size: 30px;
-        width: 30px !important;
-        height: 30px !important;
-        min-width: 30px !important;
-        padding: 0 !important;
-        border-radius: 8px !important;
-        font-size: 12px !important;
-    }
-
-    .load-more {
-        --el-button-size: 30px;
-        height: 30px !important;
-        min-height: 30px !important;
-        padding: 0 10px !important;
-        border-radius: 8px !important;
-        font-size: 12px !important;
-    }
-}
-
-.refresh-btn {
-    cursor: pointer;
-    background: var(--glass-bg);
-    box-shadow: none;
-    color: #38bdf8;
-    border: 1px solid #D9DCE2;
-    border-radius: 10px;
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-}
-html.dark .refresh-btn {
-    border: 1px solid #34343A;
-}
-
-.refresh-btn:hover {
-    border-color: #BFC4CC;
-    color: #0ea5e9;
-}
-html.dark .refresh-btn:hover {
-    border-color: #4A4A52;
-}
-
-.load-more {
-    cursor: pointer;
-    background: #0ea5e9;
-    box-shadow: none;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    height: 36px;
-    padding: 0 16px;
-    font-weight: 500;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.load-more:hover {
-    box-shadow: none;
-}
-
-:deep(.btn-prev){
-    border-radius: 100%;
-    position: fixed;
-    top: 50%;
-    left: 8px;
-    scale: 1;
-    color: var(--admin-dashboard-btn-color);
-}
-:deep(.btn-next) {
-    border-radius: 100%;
-    position: fixed;
-    top: 50%;
-    right: 8px;
-    scale: 1;
-    color: var(--admin-dashboard-btn-color);
-}
-@media (min-width: 768px) {
-    :deep(.el-pagination.is-background .btn-prev), :deep(.el-pagination.is-background .btn-next) {
-        background-color: rgba(255, 255, 255, 0.72);
-        border: 1px solid #D9DCE2;
-        box-shadow: none;
-        transition: background-color 0.25s ease, border-color 0.25s ease;
-    }
-    html.dark :deep(.el-pagination.is-background .btn-prev),
-    html.dark :deep(.el-pagination.is-background .btn-next) {
-        background-color: rgba(22, 22, 24, 0.75);
-        border: 1px solid #34343A;
-    }
-    :deep(.el-pagination.is-background .btn-prev:hover), :deep(.el-pagination.is-background .btn-next:hover) {
-        background-color: rgba(255, 255, 255, 0.85);
-        border-color: #BFC4CC;
-    }
-    html.dark :deep(.el-pagination.is-background .btn-prev:hover),
-    html.dark :deep(.el-pagination.is-background .btn-next:hover) {
-        background-color: rgba(22, 22, 24, 0.88);
-        border-color: #4A4A52;
     }
 }
 
@@ -2953,7 +2563,7 @@ html.dark .breadcrumb:hover {
 }
 
 .breadcrumb-home-icon:hover {
-    color: #38bdf8;
+    color: var(--primary-color-accent);
 }
 
 :deep(.el-breadcrumb__item) {
@@ -2975,7 +2585,7 @@ html.dark .breadcrumb:hover {
     cursor: pointer;
 }
 :deep(.el-breadcrumb__inner:hover) {
-    color: var(--el-color-primary);
+    color: var(--primary-color-accent);
 }
 
 /* 移动端目录触发按钮 */
@@ -3014,7 +2624,7 @@ html.dark .mobile-directory-trigger {
 .mobile-directory-icon {
     flex: 0 0 auto;
     font-size: 12px;
-    color: #38bdf8;
+    color: var(--primary-color-accent);
 }
 
 .mobile-directory-path {

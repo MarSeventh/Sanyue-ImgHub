@@ -162,7 +162,7 @@ html.dark .bottom-sheet-item:active {
     font-size: 20px;
     width: 28px;
     text-align: center;
-    color: #38bdf8;
+    color: var(--primary-color-accent);
 }
 .bottom-sheet-danger {
     color: var(--el-color-danger);

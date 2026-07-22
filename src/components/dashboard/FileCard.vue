@@ -275,6 +275,7 @@ export default {
     min-width: 14px;
     height: 14px !important;
     min-height: 14px;
+    border-radius: 50% !important;
 }
 .img-card:hover {
     transform: scale(1.05);

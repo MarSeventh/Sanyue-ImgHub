@@ -433,7 +433,7 @@ export default {
       trendDateRange: getDefaultTrendDateRange(),
       // 渠道图表颜色
       channelColors: [
-        '#8B5CF6', '#EC4899', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#84CC16'
+        '#8B5CF6', '#EC4899', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#2563EB', '#84CC16'
       ],
       // 状态图表颜色
       typeColors: [
@@ -1332,11 +1332,6 @@ export default {
   color: var(--admin-container-color);
 }
 
-.chart-header .fa-icon {
-  margin-right: 10px;
-  color: var(--admin-purple);
-}
-
 .trend-chart-card {
   grid-column: 1 / -1;
 }
@@ -1495,7 +1490,7 @@ export default {
 
 .stats-fill {
   height: 100%;
-  background: #6366F1;
+  background: var(--primary-color);
   border-radius: 4px;
   transition: width 0.6s ease;
 }
@@ -1646,11 +1641,6 @@ html.dark .legend-item:hover {
   font-size: 16px;
   font-weight: 600;
   color: var(--admin-container-color);
-}
-
-.action-header .fa-icon {
-  margin-right: 10px;
-  color: var(--admin-purple);
 }
 
 .action-content {
@@ -2040,7 +2030,7 @@ html.dark .legend-item:hover {
 .progress-percentage {
   font-size: 18px;
   font-weight: 700;
-  color: var(--admin-purple);
+  color: var(--primary-color-accent);
 }
 
 .progress-bar {
@@ -2053,7 +2043,7 @@ html.dark .legend-item:hover {
 }
 
 .progress-bar :deep(.el-progress-bar__inner) {
-  background: #6366F1;
+  background: var(--primary-color);
   border-radius: 6px;
   transition: width 0.3s ease;
 }
@@ -2077,7 +2067,7 @@ html.dark .legend-item:hover {
 
 .progress-count .fa-icon,
 .progress-time .fa-icon {
-  color: var(--admin-purple);
+  color: var(--primary-color-accent);
   font-size: 12px;
 }
 
@@ -2164,13 +2154,13 @@ html.dark .legend-item:hover {
 }
 
 .error-actions .el-button--primary {
-  background: #6366F1;
+  background: var(--primary-color);
   border: none;
   color: #fff;
 }
 
 .error-actions .el-button--primary:hover {
-  background: #4F46E5;
+  background: var(--el-color-primary-dark-2);
   box-shadow: none;
 }
 

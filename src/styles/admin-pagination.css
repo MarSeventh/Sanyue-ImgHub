@@ -1,0 +1,328 @@
+/* 管理端公共顶部导航、分页与加载操作 */
+
+.admin-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 45px;
+    padding: 10px 24px;
+    position: fixed;
+    top: 8px;
+    left: 50%;
+    width: calc(95% - 16px);
+    z-index: 2001;
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    background: var(--glass-bg);
+    box-shadow: none;
+    transform: translateX(-50%);
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.admin-header-content:hover {
+    background: var(--glass-bg);
+    box-shadow: none;
+    transform: translateX(-50%);
+}
+
+.header-action,
+.header-content .actions {
+    display: flex;
+    align-items: center;
+}
+
+.header-action {
+    gap: 10px;
+}
+
+.header-content .actions {
+    gap: 15px;
+}
+
+.header-icon,
+.header-content .actions i {
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.3s ease;
+    color: var(--admin-container-color);
+    outline: none;
+}
+
+.header-icon:hover,
+.header-content .actions i:hover,
+.header-content .actions .el-dropdown-link i:hover {
+    color: var(--primary-color-accent);
+    transform: scale(1.2);
+}
+
+.header-content .actions .el-dropdown-link i {
+    color: var(--admin-container-color);
+}
+
+.header-content .actions .disabled {
+    color: var(--el-text-color-disabled);
+    pointer-events: none;
+}
+
+.header-content .actions .enabled {
+    color: var(--primary-color-accent);
+}
+
+@media (max-width: 768px) {
+    .admin-header-content {
+        flex-direction: column;
+        top: 6px;
+        width: calc(100% - 32px);
+        padding: 6px 12px;
+        gap: 4px;
+        border-radius: 14px;
+    }
+
+    .header-icon,
+    .header-content .actions i {
+        font-size: 0.95em;
+    }
+
+    .header-content .actions {
+        gap: 10px;
+        margin-top: 10px;
+    }
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding-bottom: 20px;
+    gap: 15px;
+    position: relative;
+}
+
+.pagination-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-container :deep(.el-pagination) {
+    --el-pagination-button-bg-color: var(--glass-bg);
+    --el-pagination-hover-color: var(--primary-color-accent);
+}
+
+.pagination-container :deep(.el-pager li),
+.pagination-container :deep(.btn-prev),
+.pagination-container :deep(.btn-next) {
+    min-width: 36px;
+    height: 36px;
+    margin: 0 4px;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 10px !important;
+    background: var(--glass-bg) !important;
+    color: var(--el-text-color-secondary);
+    box-shadow: none;
+    font-weight: 500;
+    line-height: 36px;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+.pagination-container :deep(.el-pager li:hover),
+.pagination-container :deep(.btn-prev:hover),
+.pagination-container :deep(.btn-next:hover) {
+    border-color: var(--glass-border-hover) !important;
+    background: var(--glass-header-bg) !important;
+    color: var(--primary-color-accent);
+}
+
+.pagination-container :deep(.el-pager li.is-active),
+.pagination-container :deep(.el-pager li.is-active:hover) {
+    border-color: var(--primary-color) !important;
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+
+.pagination-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: absolute;
+    right: 0;
+}
+
+.page-total,
+.page-jump {
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.page-jump {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-jump .jump-input {
+    width: 50px;
+}
+
+.page-jump .jump-input :deep(.el-input__wrapper) {
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    background-color: var(--glass-bg) !important;
+    box-shadow: none;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+
+.page-jump .jump-input :deep(.el-input__inner) {
+    height: 28px;
+    color: var(--el-text-color-primary);
+    line-height: 28px;
+    text-align: center;
+}
+
+.pagination-container .refresh-btn {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 10px !important;
+    background: var(--glass-bg) !important;
+    color: var(--primary-color-accent) !important;
+    box-shadow: none;
+    font-size: 14px;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+.pagination-container .refresh-btn:hover {
+    border-color: var(--glass-border-hover) !important;
+    background: var(--glass-header-bg) !important;
+    color: var(--primary-color-accent) !important;
+    box-shadow: none;
+}
+
+.pagination-container .load-more,
+.page-jump .jump-btn {
+    border-color: var(--primary-color) !important;
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    box-shadow: none;
+    font-weight: 500;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+.pagination-container .load-more {
+    height: 36px;
+    padding: 0 16px !important;
+    border-radius: 10px !important;
+}
+
+.page-jump .jump-btn {
+    height: 28px;
+    padding: 0 12px !important;
+    border-radius: 8px !important;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pagination-container .load-more:hover,
+.page-jump .jump-btn:hover {
+    border-color: var(--el-color-primary-dark-2) !important;
+    background: var(--el-color-primary-dark-2) !important;
+    box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 14px;
+        padding-bottom: 10px;
+    }
+
+    .pagination-center {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        order: 0;
+    }
+
+    .pagination-container :deep(.el-pager li) {
+        min-width: 30px;
+        height: 30px;
+        margin: 0 2px;
+        border-radius: 8px !important;
+        font-size: 12px;
+        line-height: 30px;
+    }
+
+    .pagination-container :deep(.btn-prev),
+    .pagination-container :deep(.btn-next) {
+        display: none !important;
+        position: static !important;
+        min-width: 30px !important;
+        width: 30px !important;
+        height: 30px !important;
+        border-radius: 8px !important;
+        font-size: 12px;
+    }
+
+    .pagination-right {
+        position: static;
+        width: 100%;
+        justify-content: center;
+        gap: 6px;
+        order: 1;
+    }
+
+    .page-total,
+    .page-jump {
+        font-size: 12px;
+    }
+
+    .page-jump .jump-input {
+        width: 40px;
+    }
+
+    .page-jump .jump-input :deep(.el-input__wrapper) {
+        height: 26px;
+        padding: 0 6px;
+        border-radius: 7px;
+    }
+
+    .page-jump .jump-input :deep(.el-input__inner) {
+        height: 26px;
+        font-size: 12px;
+        line-height: 26px;
+    }
+
+    .pagination-container .refresh-btn {
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
+    }
+
+    .pagination-container .load-more {
+        height: 30px !important;
+        min-height: 30px !important;
+        padding: 0 10px !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
+    }
+
+    .page-jump .jump-btn {
+        height: 26px;
+        padding: 0 10px !important;
+        border-radius: 7px !important;
+        font-size: 11px;
+    }
+}
