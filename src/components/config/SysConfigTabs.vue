@@ -121,7 +121,7 @@ beforeDestroy() {
     background: var(--glass-bg);
     backdrop-filter: blur(12px) saturate(1.4);
     -webkit-backdrop-filter: blur(12px) saturate(1.4);
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     border-radius: 16px;
     box-shadow: none;
     transition: width 0.3s ease, box-shadow 0.3s ease;
@@ -135,7 +135,6 @@ beforeDestroy() {
 /* 深色模式 */
 html.dark .sidebar-container {
     background: var(--glass-bg);
-    border: 1px solid #34343A;
     box-shadow: none;
 }
 
@@ -167,11 +166,11 @@ html.dark .sidebar-container:hover {
 }
 
 .menu-item:hover {
-    background: rgba(0, 0, 0, 0.06);
+    background: color-mix(in srgb, var(--el-text-color-primary) 6%, transparent);
 }
 
 html.dark .menu-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: color-mix(in srgb, var(--el-text-color-primary) 10%, transparent);
 }
 
 .menu-item.is-active {
@@ -211,21 +210,21 @@ html.dark .menu-item.is-active {
     padding: 12px;
     text-align: center;
     cursor: pointer;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-top: 1px solid color-mix(in srgb, var(--el-text-color-primary) 8%, transparent);
     transition: all 0.2s ease;
     color: var(--admin-container-color, #333);
 }
 
 html.dark .toggle-button {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid color-mix(in srgb, var(--el-text-color-primary) 8%, transparent);
 }
 
 .toggle-button:hover {
-    background: rgba(0, 0, 0, 0.04);
+    background: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
 }
 
 html.dark .toggle-button:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: color-mix(in srgb, var(--el-text-color-primary) 6%, transparent);
 }
 
 /* 移动端 */

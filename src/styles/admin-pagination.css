@@ -138,7 +138,7 @@
 .pagination-container :deep(.el-pager li.is-active:hover) {
     border-color: var(--primary-color) !important;
     background: var(--primary-color) !important;
-    color: #fff !important;
+    color: var(--el-color-white) !important;
     box-shadow: none !important;
 }
 
@@ -212,7 +212,7 @@
 .page-jump .jump-btn {
     border-color: var(--primary-color) !important;
     background: var(--primary-color) !important;
-    color: #fff !important;
+    color: var(--el-color-white) !important;
     box-shadow: none;
     font-weight: 500;
     transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;

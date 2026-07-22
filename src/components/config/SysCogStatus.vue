@@ -1259,8 +1259,8 @@ export default {
   justify-content: center;
   font-size: 24px;
   margin-right: 20px;
-  background: #2563EB;
-  color: white;
+  background: var(--primary-color);
+  color: var(--el-color-white);
 }
 
 .card-content {
@@ -1283,7 +1283,7 @@ export default {
 
 .card-subtitle {
   font-size: 11px;
-  color: #59636E;
+  color: var(--el-text-color-secondary);
   margin-top: 4px;
   opacity: 0.8;
 }
@@ -1452,7 +1452,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 160px;
-  color: #59636E;
+  color: var(--el-text-color-secondary);
   font-size: 14px;
 }
 
@@ -1563,21 +1563,21 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.03);
+  background: color-mix(in srgb, var(--el-text-color-primary) 3%, transparent);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
 }
 
 .legend-item:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: color-mix(in srgb, var(--el-text-color-primary) 3%, transparent);
 }
 
 html.dark .legend-item {
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--el-text-color-primary) 5%, transparent);
 }
 
 html.dark .legend-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--el-text-color-primary) 5%, transparent);
 }
 
 .legend-color {
@@ -1688,8 +1688,8 @@ html.dark .legend-item:hover {
 /* 重建索引：描边按钮(与备份统一) */
 /* 重建索引：蓝色语义(主操作) */
 .rebuild-btn {
-  background: #FFFFFF;
-  border-color: #E5E6EB;
+  background: var(--el-fill-color-blank);
+  border-color: var(--el-border-color-lighter);
   color: #2563EB;
 }
 
@@ -1701,8 +1701,8 @@ html.dark .legend-item:hover {
 
 /* 备份数据：绿色语义(安全保存) */
 .backup-btn {
-  background: #FFFFFF;
-  border-color: #E5E6EB;
+  background: var(--el-fill-color-blank);
+  border-color: var(--el-border-color-lighter);
   color: #16A34A;
 }
 
@@ -1714,8 +1714,8 @@ html.dark .legend-item:hover {
 
 /* 恢复数据：橙色语义(有风险) */
 .restore-btn {
-  background: #FFFFFF;
-  border-color: #E5E6EB;
+  background: var(--el-fill-color-blank);
+  border-color: var(--el-border-color-lighter);
   color: #D97706;
 }
 
@@ -1727,8 +1727,8 @@ html.dark .legend-item:hover {
 
 /* 深色模式 */
 .dark .rebuild-btn {
-  background: #1F1F22;
-  border-color: #2A2A2E;
+  background: var(--el-fill-color-light);
+  border-color: var(--el-border-color-lighter);
   color: #60A5FA;
 }
 
@@ -1739,8 +1739,8 @@ html.dark .legend-item:hover {
 }
 
 .dark .backup-btn {
-  background: #1F1F22;
-  border-color: #2A2A2E;
+  background: var(--el-fill-color-light);
+  border-color: var(--el-border-color-lighter);
   color: #4ADE80;
 }
 
@@ -1751,8 +1751,8 @@ html.dark .legend-item:hover {
 }
 
 .dark .restore-btn {
-  background: #1F1F22;
-  border-color: #2A2A2E;
+  background: var(--el-fill-color-light);
+  border-color: var(--el-border-color-lighter);
   color: #FBBF24;
 }
 
@@ -2172,7 +2172,7 @@ html.dark .legend-item:hover {
 
 .error-actions .el-button--default:hover {
   background: rgba(255, 255, 255, 0.15);
-  border-color: #4A4A52;
+  border-color: var(--glass-border-hover);
   box-shadow: none;
 }
 

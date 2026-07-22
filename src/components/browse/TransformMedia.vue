@@ -770,7 +770,7 @@ export default {
 .audio-icon-large {
   width: 80px;
   height: 80px;
-  color: #A1A1AA;
+  color: var(--el-text-color-secondary);
 }
 
 .audio-info {
@@ -800,7 +800,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: #A1A1AA;
+  color: var(--el-text-color-secondary);
 }
 
 .video-placeholder svg {

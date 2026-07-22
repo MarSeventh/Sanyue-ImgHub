@@ -543,21 +543,15 @@ export default {
     position: fixed;
     top: 30px;
     right: 30px;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
     background-color: var(--glass-bg);
     box-shadow: none;
     border-radius: 12px;
 }
-html.dark .toggle-dark {
-    border: 1px solid #34343A;
-}
 .toggle-dark:hover {
     transform: scale(1.05);
-    border-color: #BFC4CC;
-}
-html.dark .toggle-dark:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 .language-switcher {
     position: fixed;
@@ -566,7 +560,7 @@ html.dark .toggle-dark:hover {
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
     background-color: var(--glass-bg);
     box-shadow: none;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
     width: 2.5rem;
     height: 2.5rem;
@@ -574,9 +568,6 @@ html.dark .toggle-dark:hover {
     align-items: center;
     justify-content: center;
     z-index: 100;
-}
-html.dark .language-switcher {
-    border: 1px solid #34343A;
 }
 @media (max-width: 768px) {
     .language-switcher {
@@ -586,10 +577,7 @@ html.dark .language-switcher {
 }
 .language-switcher:hover {
     transform: scale(1.05);
-    border-color: #BFC4CC;
-}
-html.dark .language-switcher:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 
 .toggle-dark,

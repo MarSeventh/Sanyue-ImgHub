@@ -85,7 +85,7 @@
                     <span>{{ file?.metadata?.Width }} × {{ file?.metadata?.Height }}</span>
                     <el-tag size="small" type="info" style="display: inline-flex; align-items: center; justify-content: center;">{{ orientationIcon }}</el-tag>
                 </div>
-                <span v-else style="color: #59636E;">{{ $t('fileDetail.noDimensions') }}</span>
+                <span v-else style="color: var(--el-text-color-secondary);">{{ $t('fileDetail.noDimensions') }}</span>
             </el-descriptions-item>
             <el-descriptions-item :label="$t('fileDetail.uploadTimeLabel')">{{ uploadTime }}</el-descriptions-item>
             <el-descriptions-item :label="$t('fileDetail.channelTypeAndName')">
@@ -102,7 +102,7 @@
                 <div v-if="file?.metadata?.Tags && file?.metadata?.Tags.length > 0" style="display: flex; flex-wrap: wrap; gap: 5px;">
                     <el-tag v-for="tag in file?.metadata?.Tags" :key="tag" size="small">{{ tag }}</el-tag>
                 </div>
-                <span v-else style="color: #59636E;">{{ $t('fileDetail.noTags') }}</span>
+                <span v-else style="color: var(--el-text-color-secondary);">{{ $t('fileDetail.noTags') }}</span>
             </el-descriptions-item>
         </el-descriptions>
         <!-- 重命名弹窗 -->

@@ -1224,7 +1224,7 @@ export default {
   box-sizing: border-box;
   padding: 0 10px;
   background-color: var(--glass-bg);
-  border: 1px solid #D9DCE2;
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
   box-shadow: none;
   backdrop-filter: blur(20px) saturate(1.4);
@@ -1236,15 +1236,15 @@ export default {
 }
 
 html.dark .search-box {
-  border-color: #34343A;
+  border-color: var(--glass-border);
 }
 
 .search-box:hover {
-  border-color: #BFC4CC;
+  border-color: var(--glass-border-hover);
 }
 
 html.dark .search-box:hover {
-  border-color: #4A4A52;
+  border-color: var(--glass-border-hover);
 }
 
 .search-box .search-icon {
@@ -1377,7 +1377,7 @@ html.dark .search-box:hover {
 .error-credit {
   margin-top: 40px;
   text-align: center;
-  color: #A1A1AA;
+  color: var(--el-text-color-secondary);
   font-size: 14px;
 }
 
@@ -1798,7 +1798,7 @@ html.dark .search-box:hover {
 
 .swipe-hint {
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--el-text-color-secondary);
 }
 
 /* 手机端其他文件预览 */
@@ -2102,12 +2102,12 @@ html.dark .search-box:hover {
 }
 
 :root:not(.dark) .file-count {
-  color: #59636E;
+  color: var(--el-text-color-secondary);
 }
 
 :root:not(.dark) .loading-container,
 :root:not(.dark) .error-container {
-  color: #59636E;
+  color: var(--el-text-color-secondary);
 }
 
 :root:not(.dark) .error-credit {
@@ -2139,7 +2139,7 @@ html.dark .search-box:hover {
 }
 
 :root:not(.dark) .folder-icon {
-  color: #59636E;
+  color: var(--el-text-color-secondary);
 }
 
 :root:not(.dark) .folder-name {
@@ -2152,7 +2152,7 @@ html.dark .search-box:hover {
 }
 
 :root:not(.dark) .image-wrapper::before {
-  background: #E5E6EB;
+  background: var(--el-border-color-lighter);
 }
 
 :root:not(.dark) .image-wrapper:hover {
@@ -2161,7 +2161,7 @@ html.dark .search-box:hover {
 
 :root:not(.dark) .file-placeholder {
   background: #f5f5f5;
-  color: #59636E;
+  color: var(--el-text-color-secondary);
 }
 
 :root:not(.dark) .file-name {
@@ -2193,12 +2193,12 @@ html.dark .search-box:hover {
 }
 
 :root:not(.dark) .loading-more {
-  color: #59636E;
+  color: var(--el-text-color-secondary);
 }
 
 :root:not(.dark) .floating-page-indicator {
-  background: rgba(255, 255, 255, 0.85);
-  color: #1D2129;
+  background: color-mix(in srgb, var(--el-fill-color-blank) 85%, transparent);
+  color: var(--el-text-color-primary);
   box-shadow: none;
 }
 </style>

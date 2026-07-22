@@ -92,7 +92,7 @@ export default {
 
 <style scoped>
 #themeToggle {
-  border: 1px solid #D9DCE2;
+  border: 1px solid var(--glass-border);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -104,14 +104,8 @@ export default {
   box-shadow: none;
   transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
 }
-html.dark #themeToggle {
-  border: 1px solid #34343A;
-}
 #themeToggle:hover {
-  border-color: #BFC4CC;
-}
-html.dark #themeToggle:hover {
-  border-color: #4A4A52;
+  border-color: var(--glass-border-hover);
 }
 
 #themeToggle {

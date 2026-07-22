@@ -103,25 +103,24 @@ export default {
     justify-content: space-between;
     height: 32px;
     padding: 0 12px;
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid #D9DCE2;
+    background: color-mix(in srgb, var(--el-fill-color-blank) 72%, transparent);
+    border: 1px solid var(--glass-border);
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease;
     box-sizing: border-box;
 }
 html.dark .custom-select-trigger {
-    background: rgba(22, 22, 24, 0.75);
-    border: 1px solid #34343A;
+    background: color-mix(in srgb, var(--el-bg-color) 75%, transparent);
 }
 
 .custom-select-trigger:hover {
-    background: rgba(255, 255, 255, 0.85);
-    border-color: #BFC4CC;
+    background: color-mix(in srgb, var(--el-fill-color-blank) 85%, transparent);
+    border-color: var(--glass-border-hover);
 }
 html.dark .custom-select-trigger:hover {
-    background: rgba(22, 22, 24, 0.88);
-    border-color: #4A4A52;
+    background: color-mix(in srgb, var(--el-bg-color) 88%, transparent);
+    border-color: var(--glass-border-hover);
 }
 
 .custom-select.is-open .custom-select-trigger {
@@ -157,8 +156,8 @@ html.dark .custom-select-trigger:hover {
     top: calc(100% + 4px);
     left: 0;
     width: 100%;
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid #D9DCE2;
+    background: color-mix(in srgb, var(--el-fill-color-blank) 88%, transparent);
+    border: 1px solid var(--glass-border);
     border-radius: 8px;
     box-shadow: none;
     z-index: 2000;
@@ -168,8 +167,7 @@ html.dark .custom-select-trigger:hover {
     overscroll-behavior: contain;
 }
 html.dark .custom-select-dropdown {
-    background: rgba(22, 22, 24, 0.9);
-    border: 1px solid #34343A;
+    background: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
 }
 
 .custom-select-option {
@@ -185,10 +183,10 @@ html.dark .custom-select-dropdown {
 }
 
 .custom-select-option:hover {
-    background: rgba(0, 0, 0, 0.04);
+    background: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
 }
 html.dark .custom-select-option:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent);
     color: var(--el-text-color-primary);
 }
 

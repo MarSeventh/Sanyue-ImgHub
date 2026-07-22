@@ -794,7 +794,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
     background-color: var(--glass-bg);
     box-shadow: none;
@@ -804,10 +804,6 @@ export default {
     right: 80px;
     padding: 0;
 }
-html.dark .toggle-dark-button {
-    border: 1px solid #34343A;
-}
-
 .more-dropdown {
     position: fixed;
     top: 30px;
@@ -821,7 +817,7 @@ html.dark .toggle-dark-button {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
     background-color: var(--glass-bg);
     box-shadow: none;
@@ -830,15 +826,9 @@ html.dark .toggle-dark-button {
     outline: none;
     padding: 0;
 }
-html.dark .more-dropdown .more-button {
-    border: 1px solid #34343A;
-}
 .more-dropdown .more-button:hover {
     transform: scale(1.05);
-    border-color: #BFC4CC;
-}
-html.dark .more-dropdown .more-button:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 
 .upload-method-button {
@@ -848,7 +838,7 @@ html.dark .more-dropdown .more-button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
     background-color: var(--glass-bg);
     box-shadow: none;
@@ -859,9 +849,6 @@ html.dark .more-dropdown .more-button:hover {
     right: 130px;
     outline: none;
     padding: 0;
-}
-html.dark .upload-method-button {
-    border: 1px solid #34343A;
 }
 @media (max-width: 768px) {
     .upload-method-button {
@@ -894,7 +881,7 @@ html.dark .upload-method-button {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
     background-color: var(--glass-bg);
     box-shadow: none;
@@ -903,15 +890,9 @@ html.dark .upload-method-button {
     outline: none;
     padding: 0;
 }
-html.dark .mobile-more-button {
-    border: 1px solid #34343A;
-}
 .mobile-more-button:hover {
     transform: scale(1.05);
-    border-color: #BFC4CC;
-}
-html.dark .mobile-more-button:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 
 /* 上传文件输入框容器样式 */
@@ -977,11 +958,8 @@ html.dark .mobile-more-button:hover {
     transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
 }
 .directory-tree-trigger:hover {
-    border-color: #BFC4CC;
+    border-color: var(--glass-border-hover);
     transform: scale(1.05);
-}
-html.dark .directory-tree-trigger:hover {
-    border-color: #4A4A52;
 }
 @media (max-width: 768px) {
     .directory-tree-trigger {
@@ -1016,12 +994,12 @@ html.dark .directory-tree-trigger:hover {
     transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
 }
 .upload-folder :deep(.el-input__wrapper:hover) {
-    background-color: rgba(255, 255, 255, 0.85);
-    border-color: #BFC4CC;
+    background-color: color-mix(in srgb, var(--el-fill-color-blank) 85%, transparent);
+    border-color: var(--glass-border-hover);
 }
 html.dark .upload-folder :deep(.el-input__wrapper:hover) {
-    background-color: rgba(22, 22, 24, 0.88);
-    border-color: #4A4A52;
+    background-color: color-mix(in srgb, var(--el-bg-color) 88%, transparent);
+    border-color: var(--glass-border-hover);
 }
 
 .upload-folder :deep(.el-input__wrapper.is-focus),
@@ -1046,15 +1024,11 @@ html.dark .upload-folder :deep(.el-input__wrapper:hover) {
     z-index: 200;
     padding: 3px;
     border-radius: 999px;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     background-color: var(--glass-bg);
     box-shadow: none;
     transition: background-color 0.24s ease, border-color 0.24s ease;
 }
-html.dark .quick-toolbar {
-    border: 1px solid #34343A;
-}
-
 .toggle-dark-button,
 .more-dropdown .more-button,
 .upload-method-button,
@@ -1134,10 +1108,7 @@ html.dark .quick-toolbar {
     box-shadow: var(--upload-action-btn-hover-shadow);
 }
 .quick-toolbar:hover {
-    border-color: #BFC4CC;
-}
-html.dark .quick-toolbar:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 .quick-toolbar-button:hover {
     transform: none;
@@ -1145,19 +1116,15 @@ html.dark .quick-toolbar:hover {
 .toggle-dark-button:hover,
 .upload-method-button:hover {
     transform: scale(1.05);
-    border-color: #BFC4CC;
-}
-html.dark .toggle-dark-button:hover,
-html.dark .upload-method-button:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 .upload-folder:hover :deep(.el-input__wrapper) {
-    background-color: rgba(255, 255, 255, 0.85);
-    border-color: #BFC4CC;
+    background-color: color-mix(in srgb, var(--el-fill-color-blank) 85%, transparent);
+    border-color: var(--glass-border-hover);
 }
 html.dark .upload-folder:hover :deep(.el-input__wrapper) {
-    background-color: rgba(22, 22, 24, 0.88);
-    border-color: #4A4A52;
+    background-color: color-mix(in srgb, var(--el-bg-color) 88%, transparent);
+    border-color: var(--glass-border-hover);
 }
 
 @media (max-width: 768px) {

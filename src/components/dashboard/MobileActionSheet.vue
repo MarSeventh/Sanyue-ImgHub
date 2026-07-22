@@ -91,16 +91,14 @@ export default {
 .bottom-sheet {
     width: 100%;
     max-width: 100%;
-    background: var(--bottom-sheet-bg, rgba(255, 255, 255, 0.95));
+    background: var(--mobile-action-sheet-bg);
     border-radius: 20px 20px 0 0;
     max-height: 70vh;
     overflow: hidden;
     box-shadow: none;
-    border-top: 1px solid var(--bottom-sheet-border, rgba(0, 0, 0, 0.05));
+    border-top: 1px solid var(--mobile-action-sheet-border);
 }
 html.dark .bottom-sheet {
-    --bottom-sheet-bg: rgba(40, 44, 52, 0.95);
-    --bottom-sheet-border: rgba(255, 255, 255, 0.1);
     box-shadow: none;
 }
 .bottom-sheet-header {
@@ -127,9 +125,6 @@ html.dark .bottom-sheet {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-html.dark .bottom-sheet-title {
-    color: #f0f0f0;
-}
 .bottom-sheet-content {
     padding: 12px 16px;
     padding-bottom: calc(20px + env(safe-area-inset-bottom));
@@ -145,18 +140,12 @@ html.dark .bottom-sheet-title {
     border-radius: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: var(--bottom-sheet-item-bg, rgba(0, 0, 0, 0.04));
+    background: var(--mobile-action-sheet-item-bg);
     color: var(--el-text-color-primary);
-}
-html.dark .bottom-sheet-item {
-    --bottom-sheet-item-bg: rgba(255, 255, 255, 0.08);
 }
 .bottom-sheet-item:active {
     transform: scale(0.98);
-    background: var(--bottom-sheet-item-active-bg, rgba(0, 0, 0, 0.08));
-}
-html.dark .bottom-sheet-item:active {
-    --bottom-sheet-item-active-bg: rgba(255, 255, 255, 0.15);
+    background: var(--mobile-action-sheet-item-active-bg);
 }
 .bottom-sheet-icon {
     font-size: 20px;

@@ -2305,22 +2305,15 @@ beforeUnmount() {
     background: var(--glass-bg);
     padding: 4px 12px;
     border-radius: 12px;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     box-shadow: none;
     transition: background-color 0.2s ease, border-color 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
     margin-left: auto;
 }
-html.dark .stats-badge {
-    border: 1px solid #34343A;
-}
-
 .stats-badge:hover {
-    border-color: #BFC4CC;
-}
-html.dark .stats-badge:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 
 .stats-badge-icon {
@@ -2626,22 +2619,15 @@ html.dark .stats-badge:hover {
     align-items: center;
     padding: 0 12px;
     background-color: var(--glass-bg);
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     border-radius: 10px;
     font-size: 0.95em;
     box-shadow: none;
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
-html.dark .breadcrumb {
-    border: 1px solid #34343A;
-}
-
 .breadcrumb:hover {
-    border-color: #BFC4CC;
-}
-html.dark .breadcrumb:hover {
-    border-color: #4A4A52;
+    border-color: var(--glass-border-hover);
 }
 
 .breadcrumb-home-icon {
@@ -2689,16 +2675,12 @@ html.dark .breadcrumb:hover {
     padding: 0 10px;
     background: var(--glass-bg);
     border-radius: 8px;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
-html.dark .mobile-directory-trigger {
-    border: 1px solid #34343A;
-}
-
 .mobile-directory-trigger:active {
-    border-color: #BFC4CC;
+    border-color: var(--glass-border-hover);
 }
 
 .breadcrumb-view-toggle,

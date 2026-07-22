@@ -13,7 +13,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
-    color: #1D2129;
+    color: var(--el-text-color-primary);
 }
 
 body {
@@ -183,6 +183,14 @@ body {
     /* 弹窗表单区块背景 */
     --dialog-control-bg-color: #F7F8FA;
     /* 弹窗设置项与选项卡背景 */
+    --mobile-action-sheet-bg: rgba(255, 255, 255, 0.95);
+    /* 移动端底部操作面板背景 */
+    --mobile-action-sheet-border: rgba(0, 0, 0, 0.05);
+    /* 移动端底部操作面板边框 */
+    --mobile-action-sheet-item-bg: rgba(0, 0, 0, 0.04);
+    /* 移动端底部操作项背景 */
+    --mobile-action-sheet-item-active-bg: rgba(0, 0, 0, 0.08);
+    /* 移动端底部操作项按下背景 */
 
     /* 管理端顶部页面切换器 */
     --tabs-dropdown-popper-bg-color: #FFFFFF;
@@ -466,6 +474,14 @@ body {
     /* 弹窗表单区块背景 */
     --dialog-control-bg-color: #161618;
     /* 弹窗设置项与选项卡背景 */
+    --mobile-action-sheet-bg: rgba(40, 44, 52, 0.95);
+    /* 移动端底部操作面板背景 */
+    --mobile-action-sheet-border: rgba(255, 255, 255, 0.1);
+    /* 移动端底部操作面板边框 */
+    --mobile-action-sheet-item-bg: rgba(255, 255, 255, 0.08);
+    /* 移动端底部操作项背景 */
+    --mobile-action-sheet-item-active-bg: rgba(255, 255, 255, 0.15);
+    /* 移动端底部操作项按下背景 */
 
     /* 管理端顶部页面切换器 */
     --tabs-dropdown-popper-bg-color: #161618;
@@ -680,7 +696,7 @@ html.dark {
     left: 20px;
     right: 20px;
     height: 1px;
-    background: #E5E6EB;
+    background: var(--el-border-color-lighter);
 }
 
 /* MessageBox 标题区分隔线 */
@@ -691,7 +707,7 @@ html.dark {
     left: 20px;
     right: 20px;
     height: 1px;
-    background: #E5E6EB;
+    background: var(--el-border-color-lighter);
 }
 
 /* 弹窗内容区域样式 */
@@ -713,50 +729,50 @@ html.dark {
    ============================== */
 /* 深色主题 Dialog 分隔线 */
 .dark .el-dialog__header::after {
-    background: #2A2A2E;
+    background: var(--el-border-color-lighter);
 }
 
 /* 深色主题 MessageBox 分隔线 */
 .dark .el-message-box__header::after {
-    background: #2A2A2E;
+    background: var(--el-border-color-lighter);
 }
 
 /* 深色主题朴素主按钮使用低亮度背景和高对比度文字 */
 html.dark .el-button--primary.is-plain {
     --el-button-text-color: var(--el-text-color-primary);
-    --el-button-bg-color: rgba(255, 255, 255, 0.04);
-    --el-button-border-color: rgba(118, 140, 198, 0.65);
-    --el-button-hover-text-color: #fff;
+    --el-button-bg-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
+    --el-button-border-color: color-mix(in srgb, var(--primary-color-accent) 65%, transparent);
+    --el-button-hover-text-color: var(--el-color-white);
     --el-button-hover-bg-color: var(--el-color-primary);
     --el-button-hover-border-color: var(--el-color-primary-light-3);
     --el-button-active-bg-color: var(--el-color-primary-dark-2);
     --el-button-active-border-color: var(--el-color-primary-dark-2);
     color: var(--el-text-color-primary) !important;
-    background-color: rgba(255, 255, 255, 0.04) !important;
-    border-color: rgba(118, 140, 198, 0.65) !important;
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent) !important;
+    border-color: color-mix(in srgb, var(--primary-color-accent) 65%, transparent) !important;
 }
 
 html.dark .el-button--primary.is-plain:hover,
 html.dark .el-button--primary.is-plain:focus {
-    color: #fff !important;
+    color: var(--el-color-white) !important;
     background-color: var(--el-color-primary) !important;
     border-color: var(--el-color-primary-light-3) !important;
 }
 
 .dark .el-pager li.is-active {
     background-color: var(--el-color-primary);
-    color: #fff;
+    color: var(--el-color-white);
 }
 
 .dark .el-pager li {
-    color: #A1A1AA;
+    color: var(--el-text-color-secondary);
 }
 
 .dark .el-pagination .btn-next,
 .dark .el-pagination .btn-prev,
 .dark .el-pagination button {
     background-color: transparent;
-    color: #A1A1AA;
+    color: var(--el-text-color-secondary);
 }
 
 /* 深色主题统一输入焦点、下拉项、开关、标签页、复选框和单选框状态 */
@@ -767,13 +783,13 @@ html.dark .el-button--primary.is-plain:focus {
 }
 html.dark .el-select-dropdown__item.is-hovering,
 html.dark .el-cascader__dropdown__item.hover {
-    background-color: rgba(255, 255, 255, 0.08) !important;
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent) !important;
     color: var(--el-text-color-primary) !important;
 }
 html.dark .el-select-dropdown__item.is-selected,
 html.dark .el-cascader__dropdown__item.is-active {
     background-color: color-mix(in srgb, var(--primary-color) 38%, transparent) !important;
-    color: #fff !important;
+    color: var(--el-color-white) !important;
 }
 .dark .el-switch.is-checked .el-switch__core {
     background-color: var(--el-color-primary) !important;
@@ -807,13 +823,13 @@ html.dark .el-cascader__dropdown__item.is-active {
    ============================== */
 .el-dropdown__popper.el-popper {
     border-radius: 8px;
-    border: 1px solid #D9DCE2;
+    border: 1px solid var(--glass-border);
     background-color: var(--popper-bg-color);
     box-shadow: var(--popper-shadow);
 }
 
 html.dark .el-dropdown__popper.el-popper {
-    border-color: #34343A;
+    border-color: var(--glass-border);
 }
 
 .el-dropdown__popper.el-popper .el-dropdown-menu {
@@ -835,13 +851,13 @@ html.dark .el-dropdown__popper.el-popper {
 
 .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover,
 .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
     color: var(--el-text-color-primary);
 }
 
 html.dark .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover,
 html.dark .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent);
     color: var(--el-text-color-primary);
 }
 

@@ -288,7 +288,7 @@ export default {
 }
 
 .date-range-separator {
-  color: #59636E;
+  color: var(--el-text-color-secondary);
   font-size: 12px;
   font-weight: 700;
 }
@@ -337,7 +337,7 @@ export default {
 
 .calendar-weekdays {
   margin-bottom: 8px;
-  color: #59636E;
+  color: var(--el-text-color-secondary);
   font-size: 12px;
   font-weight: 600;
   text-align: center;
@@ -380,7 +380,7 @@ export default {
 }
 
 .calendar-day.is-muted {
-  color: #86909C;
+  color: var(--el-text-color-placeholder);
   opacity: 0.62;
 }
 
@@ -402,11 +402,7 @@ export default {
   box-shadow: none;
 }
 
-html.dark .calendar-weekdays {
-  color: #A1A1AA;
-}
-
 html.dark .calendar-day.is-muted {
-  color: #737b88;
+  color: var(--el-text-color-placeholder);
 }
 </style>

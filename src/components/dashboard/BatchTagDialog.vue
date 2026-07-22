@@ -450,7 +450,7 @@ export default {
 
 .tab-description {
     margin: 0 0 15px 0;
-    color: #606266;
+    color: var(--el-text-color-regular);
     font-size: 14px;
 }
 
@@ -493,7 +493,7 @@ export default {
 .common-tags-section h4 {
     margin: 0 0 10px 0;
     font-size: 14px;
-    color: #606266;
+    color: var(--el-text-color-regular);
 }
 
 .tags-container {
@@ -508,7 +508,7 @@ export default {
 }
 
 .empty-message {
-    color: #59636E;
+    color: var(--el-text-color-secondary);
     font-size: 13px;
     padding: 10px 0;
 }

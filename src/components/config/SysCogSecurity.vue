@@ -1159,32 +1159,31 @@ mounted() {
 }
 
 .token-table :deep(.el-table__header) {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
 }
 
 .token-table :deep(.el-table th) {
-    background-color: rgba(0, 0, 0, 0.04) !important;
-    border-bottom: 1px solid #D9DCE2;
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent) !important;
+    border-bottom: 1px solid var(--glass-border);
     text-align: center;
 }
 
 .token-table :deep(.el-table td) {
     background-color: transparent !important;
-    border-bottom: 1px solid #D9DCE2;
+    border-bottom: 1px solid var(--glass-border);
 }
 html.dark .token-table :deep(.el-table th) {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    border-bottom: 1px solid #34343A;
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 5%, transparent) !important;
 }
 html.dark .token-table :deep(.el-table td) {
-    border-bottom: 1px solid #34343A;
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .token-table :deep(.el-table__row:hover td) {
-    background-color: rgba(0, 0, 0, 0.03) !important;
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 3%, transparent) !important;
 }
 html.dark .token-table :deep(.el-table__row:hover td) {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 5%, transparent) !important;
 }
 
 .token-table :deep(.el-table__row:last-child td) {
