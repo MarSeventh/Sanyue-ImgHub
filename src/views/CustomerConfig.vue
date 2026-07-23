@@ -12,7 +12,7 @@
         </el-header>
         <div class="main-container">
             <el-table :data="paginatedData" :default-sort="{ prop: 'count', order: 'descending' }" row-key="ip" class="main-table" table-layout="fixed" v-loading="loading" @expand-change="handleExpandChange">
-                <el-table-column type="expand">
+                <el-table-column type="expand" width="48">
                     <template v-slot="props">
                         <div style="margin: 8px;">
                             <h3 style="text-align: center;">{{ $t('customerConfig.uploadFileList') }}</h3>
@@ -41,15 +41,14 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="ip" :label="$t('customerConfig.ipAddress')"></el-table-column>
-                <el-table-column prop="address" :label="$t('customerConfig.address')"></el-table-column>
-                <el-table-column prop="count" :label="$t('customerConfig.uploadCount')" sortable></el-table-column>
-                <el-table-column :label="$t('customerConfig.allowUpload')">
+                <el-table-column prop="ip" :label="$t('customerConfig.ipAddress')" min-width="180"></el-table-column>
+                <el-table-column prop="address" :label="$t('customerConfig.address')" min-width="220"></el-table-column>
+                <el-table-column prop="count" :label="$t('customerConfig.uploadCount')" sortable min-width="110"></el-table-column>
+                <el-table-column :label="$t('customerConfig.allowUpload')" :fixed="allowUploadColumnFixed" :width="allowUploadColumnWidth" align="center">
                     <template v-slot="{ row }">
                         <el-switch
+                            class="allow-upload-switch"
                             v-model="row.enable"
-                            active-color="#13ce66"
-                            inactive-color="#ff4949"
                             :active-text="$t('customerConfig.allow')"
                             :inactive-text="$t('customerConfig.deny')"
                             @change="handleSwitchEnable(row)"
@@ -93,6 +92,7 @@ export default {
             blockipList: [], // 禁止上传的IP列表
 
             loading: false,
+            viewportWidth: window.innerWidth,
 
             // 分页数据
             currentPage: 1,
@@ -103,11 +103,20 @@ export default {
         DashboardTabs
     },
     computed: {
+        isMobile() {
+            return this.viewportWidth < 768;
+        },
         disableTooltip() {
-            return window.innerWidth < 768;
+            return this.isMobile;
         },
         pagerCount() {
-            return window.innerWidth < 768 ? 3 : 7;
+            return this.isMobile ? 3 : 7;
+        },
+        allowUploadColumnFixed() {
+            return this.isMobile ? 'right' : false;
+        },
+        allowUploadColumnWidth() {
+            return this.isMobile ? 96 : 170;
         },
         paginatedData() {
             // 计算分页数据
@@ -208,9 +217,14 @@ export default {
         handleSizeChange(size) {
             this.pageSize = size;
             this.currentPage = 1;
+        },
+        handleResize() {
+            this.viewportWidth = window.innerWidth;
         }
     },
     mounted() {
+        window.addEventListener('resize', this.handleResize);
+
         // 初始化背景图
         this.initializeBackground('adminBkImg', '.container', false, true);
 
@@ -245,6 +259,9 @@ export default {
         .finally(() => {
             this.loading = false;
         });
+    },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.handleResize);
     }
 }
 </script>
@@ -316,6 +333,30 @@ export default {
 @media (max-width: 768px) {
     .main-container {
         margin-top: 60px;
+    }
+
+    .allow-upload-switch :deep(.el-switch__label) {
+        display: none;
+    }
+
+    .main-table :deep(.el-table-fixed-column--right),
+    .main-table :deep(.el-table__fixed-right-patch) {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    }
+
+    .main-table :deep(.el-table__body-wrapper .el-table__row td.el-table-fixed-column--right) {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    }
+
+    .main-table :deep(.el-table__header-wrapper .el-table-fixed-column--right),
+    .main-table :deep(.el-table__body-wrapper .el-table__row:hover .el-table-fixed-column--right) {
+        background: var(--glass-header-bg) !important;
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
     }
 }
 

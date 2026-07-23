@@ -803,12 +803,20 @@ html.dark .el-cascader__dropdown__item.is-active {
     background-color: color-mix(in srgb, var(--primary-color) 38%, transparent) !important;
     color: var(--el-color-white) !important;
 }
-.dark .el-switch.is-checked .el-switch__core {
-    background-color: var(--el-color-primary) !important;
-    border-color: var(--el-color-primary) !important;
-}
 .dark .el-tabs__item.is-active {
     color: var(--el-text-color-primary);
+}
+
+html.dark .el-tabs__item:not(.is-disabled):hover {
+    color: var(--primary-color-accent);
+}
+
+html.dark .el-switch__label.is-active {
+    color: var(--el-text-color-primary);
+}
+
+html.dark .el-switch__label:not(.is-active) {
+    color: var(--el-text-color-secondary);
 }
 
 /* Element Plus 复选框统一使用正圆外形 */
