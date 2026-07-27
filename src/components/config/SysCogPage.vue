@@ -32,7 +32,15 @@
                     <!-- 如果是boolean类型则使用切换按钮 -->
                     <el-switch v-else-if="setting.type === 'boolean'" v-model="setting.value" :disabled="setting.fixed"></el-switch>
                     <!-- 如果是textarea类型则使用可拖拽文本域 -->
-                    <el-input v-else-if="setting.type === 'textarea'" v-model="setting.value" type="textarea" :autosize="{ minRows: 2 }" resize="vertical" :disabled="setting.fixed" :placeholder="localized(setting, 'placeholder')"></el-input>
+                    <el-input
+                        v-else-if="setting.type === 'textarea'"
+                        v-model="setting.value"
+                        type="textarea"
+                        :autosize="{ minRows: 2, maxRows: setting.id === 'announcement' ? 8 : undefined }"
+                        resize="vertical"
+                        :disabled="setting.fixed"
+                        :placeholder="localized(setting, 'placeholder')">
+                    </el-input>
                     <!-- 否则使用输入框 -->
                     <el-input v-else v-model="setting.value" :disabled="setting.fixed" :placeholder="localized(setting, 'placeholder')"></el-input>
                     <div v-if="setting.id === 'announcement'" class="announcement-refresh-option">
