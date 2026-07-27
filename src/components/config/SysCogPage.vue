@@ -4,7 +4,16 @@
         <div v-for="(categoryGroup, categoryName) in groupedSettings" :key="categoryName" class="first-settings">
             <h3 class="first-title">{{ categoryName }}</h3>
             <el-form :model="settings" label-width="150px">
-                <el-form-item v-for="(setting, index) in categoryGroup" :key="setting.id">
+                <el-form-item
+                    v-for="(setting, index) in categoryGroup"
+                    :key="setting.id"
+                    :class="{
+                        'announcement-manual-height': setting.id === 'announcement'
+                            && announcementManualHeight !== null
+                    }"
+                    :style="setting.id === 'announcement' && announcementManualHeight !== null
+                        ? { '--announcement-manual-height': `${announcementManualHeight}px` }
+                        : undefined">
                     <template #label>
                         {{ localized(setting, 'label') }}
                         <el-tooltip v-if="setting.tooltip" :content="localized(setting, 'tooltip')" placement="top" raw-content>
@@ -39,7 +48,8 @@
                         :autosize="{ minRows: 2, maxRows: setting.id === 'announcement' ? 8 : undefined }"
                         resize="vertical"
                         :disabled="setting.fixed"
-                        :placeholder="localized(setting, 'placeholder')">
+                        :placeholder="localized(setting, 'placeholder')"
+                        @mousedown="handleAnnouncementResizeStart($event, setting)">
                     </el-input>
                     <!-- 否则使用输入框 -->
                     <el-input v-else v-model="setting.value" :disabled="setting.fixed" :placeholder="localized(setting, 'placeholder')"></el-input>
@@ -76,6 +86,9 @@ data() {
         loading: true,
         // 即使公告内容未变化，也在本次保存时刷新公告已读状态
         refreshAnnouncement: false,
+        // 公告文本域手动拖拽后的高度
+        announcementManualHeight: null,
+        announcementResizeMouseUpHandler: null,
         // 可用渠道列表
         availableChannels: {}
     };
@@ -133,6 +146,40 @@ methods: {
         if (this.isEn && option.label_en) return option.label_en;
         return option.label;
     },
+    handleAnnouncementResizeStart(event, setting) {
+        if (setting.id !== 'announcement') return;
+
+        const textarea = event.target.closest?.('textarea');
+        if (!textarea) return;
+
+        const rect = textarea.getBoundingClientRect();
+        const resizeHandleSize = 24;
+        const isResizeHandle = event.clientX >= rect.right - resizeHandleSize
+            && event.clientY >= rect.bottom - resizeHandleSize;
+        if (!isResizeHandle) return;
+
+        const formItem = textarea.closest('.el-form-item');
+        if (this.announcementResizeMouseUpHandler) {
+            window.removeEventListener('mouseup', this.announcementResizeMouseUpHandler);
+        }
+
+        const startHeight = textarea.offsetHeight;
+        textarea.style.height = `${startHeight}px`;
+        formItem?.classList.remove('announcement-manual-height');
+        this.announcementResizeMouseUpHandler = () => {
+            const resizedHeight = textarea.offsetHeight;
+            const manualHeight = Math.abs(resizedHeight - startHeight) > 1
+                ? resizedHeight
+                : this.announcementManualHeight;
+            if (manualHeight !== null) {
+                this.announcementManualHeight = manualHeight;
+                formItem?.style.setProperty('--announcement-manual-height', `${manualHeight}px`);
+                formItem?.classList.add('announcement-manual-height');
+            }
+            this.announcementResizeMouseUpHandler = null;
+        };
+        window.addEventListener('mouseup', this.announcementResizeMouseUpHandler, { once: true });
+    },
     saveSettings() {
         fetchWithAuth('/api/manage/sysConfig/page', {
             method: 'POST',
@@ -159,6 +206,11 @@ methods: {
         } catch (error) {
             console.error('Failed to fetch available channels:', error);
         }
+    }
+},
+beforeUnmount() {
+    if (this.announcementResizeMouseUpHandler) {
+        window.removeEventListener('mouseup', this.announcementResizeMouseUpHandler);
     }
 },
 mounted() {
@@ -275,6 +327,10 @@ mounted() {
 
 .first-settings :deep(.el-switch) {
     --el-switch-on-color: var(--el-color-primary);
+}
+
+.announcement-manual-height :deep(.el-textarea__inner) {
+    height: var(--announcement-manual-height) !important;
 }
 
 .announcement-refresh-option {
