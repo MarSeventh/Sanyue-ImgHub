@@ -20,6 +20,7 @@
     "folderPlaceholder": "Upload directory",
     "pasteUpload": "Paste Upload",
     "fileUpload": "File Upload",
+    "folderUpload": "Folder Upload",
     "dragUploadText": "<em>Drag</em> <em>Click</em> or <em>Ctrl + V</em> to paste upload",
     "pasteUrlPlaceholder": "Paste external links, separate multiple links with line breaks",
     "pasteUploadBtn": "Upload",

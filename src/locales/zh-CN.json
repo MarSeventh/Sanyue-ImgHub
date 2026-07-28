@@ -20,6 +20,7 @@
     "folderPlaceholder": "上传目录",
     "pasteUpload": "粘贴上传",
     "fileUpload": "文件上传",
+    "folderUpload": "文件夹上传",
     "dragUploadText": "<em>拖拽</em> <em>点击</em> 或 <em>Ctrl + V</em> 粘贴上传",
     "pasteUrlPlaceholder": "粘贴外链上传，多个外链用换行分隔",
     "pasteUploadBtn": "上 传",

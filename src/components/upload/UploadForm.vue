@@ -28,7 +28,25 @@
                     </svg>
                 </el-icon>
                 <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}" v-html="$t('upload.dragUploadText')"></div>
+                <button
+                    type="button"
+                    class="folder-upload-button"
+                    :class="{'upload-list-busy': fileList.length}"
+                    @click.stop.prevent="openFolderPicker"
+                >
+                    <font-awesome-icon icon="folder-open" />
+                    <span>{{ $t('upload.folderUpload') }}</span>
+                </button>
             </el-upload>
+            <input
+                ref="folderInput"
+                class="folder-upload-input"
+                type="file"
+                webkitdirectory
+                directory
+                multiple
+                @change="handleFolderSelection"
+            />
         </div>
         <div v-if="uploadMethod === 'paste'" class="upload-card">
             <el-card 
@@ -380,6 +398,14 @@ methods: {
                 this.uploadFile(this.createUploadRequest(processedFile))
             }
         }))
+    },
+    openFolderPicker() {
+        this.$refs.folderInput?.click()
+    },
+    async handleFolderSelection(event) {
+        const entries = filesToUploadEntries(event.target.files)
+        event.target.value = ''
+        await this.uploadLocalEntries(entries)
     },
     async handleDrop(event) {
         const dataTransfer = event.dataTransfer
@@ -1656,6 +1682,51 @@ beforeDestroy() {
 .upload-card-wrapper {
     position: relative;
     overflow: visible;
+}
+
+.folder-upload-input {
+    display: none;
+}
+
+.folder-upload-button {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 18px;
+    padding: 7px 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    color: var(--upload-text-color);
+    background: color-mix(in srgb, var(--glass-bg) 88%, transparent);
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.folder-upload-button:hover {
+    color: var(--el-color-primary);
+    border-color: color-mix(in srgb, var(--el-color-primary) 55%, transparent);
+    background: color-mix(in srgb, var(--el-color-primary-light-9) 70%, var(--glass-bg));
+}
+
+.folder-upload-button.upload-list-busy {
+    margin-top: 9px;
+    padding: 5px 11px;
+    font-size: 12px;
+}
+
+@media (max-width: 768px) {
+    .folder-upload-button {
+        margin-top: 12px;
+        padding: 6px 11px;
+        font-size: 12px;
+    }
+
+    .folder-upload-button.upload-list-busy {
+        margin-top: 6px;
+        padding-block: 4px;
+    }
 }
 
 /* 悬浮光斑效果 */
