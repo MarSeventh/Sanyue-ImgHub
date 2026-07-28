@@ -28,15 +28,17 @@
                     </svg>
                 </el-icon>
                 <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}" v-html="$t('upload.dragUploadText')"></div>
-                <button
-                    type="button"
-                    class="folder-upload-button"
-                    :class="{'upload-list-busy': fileList.length}"
-                    @click.stop.prevent="openFolderPicker"
-                >
-                    <font-awesome-icon icon="folder-open" />
-                    <span>{{ $t('upload.folderUpload') }}</span>
-                </button>
+                <el-tooltip :disabled="disableTooltip" :content="$t('upload.selectFolderUpload')" placement="top" :show-after="1000">
+                    <button
+                        type="button"
+                        class="folder-upload-icon-button"
+                        :class="{'upload-list-busy': fileList.length}"
+                        :aria-label="$t('upload.selectFolderUpload')"
+                        @click.stop.prevent="openFolderPicker"
+                    >
+                        <font-awesome-icon icon="folder-open" />
+                    </button>
+                </el-tooltip>
             </el-upload>
             <input
                 ref="folderInput"
@@ -1162,25 +1164,7 @@ methods: {
     },
     uploadFromUrl(items) {
         for (let i = 0; i < items.length; i++) {
-            if (items[i].kind === 'file') {
-                const file = items[i].getAsFile()
-                // 允许上传任意类型的文件
-                file.uid = Date.now() + i
-                //接收beforeUpload的Promise对象
-                const checkResult = this.beforeUpload(file)
-                if (checkResult instanceof Promise) {
-                    checkResult.then((newFile) => {
-                        if (newFile instanceof File) {
-                            this.uploadFile({ file: newFile, 
-                                onProgress: (evt) => this.handleProgress(evt), 
-                                onSuccess: (response, file) => this.handleSuccess(response, file), 
-                                onError: (error, file) => this.handleError(error, file) })
-                        }
-                    }).catch((err) => {
-                        console.log(err)
-                    })
-                }
-            } else if (items[i].kind === 'string') {
+            if (items[i].kind === 'string') {
                 items[i].getAsString((text) => {
                     const urlPattern = /^(https?:\/\/[^\s$.?#].[^\s]*)$/;
                     let fileName = '';
@@ -1688,44 +1672,58 @@ beforeDestroy() {
     display: none;
 }
 
-.folder-upload-button {
-    position: relative;
+.folder-upload-icon-button {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
     z-index: 2;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    margin-top: 18px;
-    padding: 7px 14px;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    box-sizing: border-box;
+    padding: 0;
     border: 1px solid var(--glass-border);
-    border-radius: 999px;
-    color: var(--upload-text-color);
-    background: color-mix(in srgb, var(--glass-bg) 88%, transparent);
+    border-radius: 9px;
+    background: var(--glass-bg);
+    color: var(--el-text-color-secondary);
+    font-size: 11px;
+    line-height: 1;
     cursor: pointer;
-    transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.folder-upload-button:hover {
-    color: var(--el-color-primary);
-    border-color: color-mix(in srgb, var(--el-color-primary) 55%, transparent);
-    background: color-mix(in srgb, var(--el-color-primary-light-9) 70%, var(--glass-bg));
+.folder-upload-icon-button:hover {
+    color: var(--primary-color-accent);
+    border-color: color-mix(in srgb, var(--primary-color) 48%, var(--glass-border));
+    background: color-mix(in srgb, var(--primary-color) 14%, var(--glass-bg));
 }
 
-.folder-upload-button.upload-list-busy {
-    margin-top: 9px;
-    padding: 5px 11px;
-    font-size: 12px;
+.folder-upload-icon-button:focus-visible {
+    outline: none;
+    color: var(--primary-color-accent);
+    border-color: color-mix(in srgb, var(--primary-color) 60%, var(--glass-border));
+    background: color-mix(in srgb, var(--primary-color) 14%, var(--glass-bg));
+}
+
+.folder-upload-icon-button.upload-list-busy {
+    right: 12px;
+    bottom: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    font-size: 10px;
 }
 
 @media (max-width: 768px) {
-    .folder-upload-button {
-        margin-top: 12px;
-        padding: 6px 11px;
-        font-size: 12px;
-    }
-
-    .folder-upload-button.upload-list-busy {
-        margin-top: 6px;
-        padding-block: 4px;
+    .folder-upload-icon-button {
+        right: 10px;
+        bottom: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        font-size: 10px;
     }
 }
 
