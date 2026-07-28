@@ -27,18 +27,20 @@
                         <path d="M7 12h10"/>
                     </svg>
                 </el-icon>
-                <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}" v-html="$t('upload.dragUploadText')"></div>
-                <el-tooltip :disabled="disableTooltip" :content="$t('upload.selectFolderUpload')" placement="top" :show-after="1000">
-                    <button
-                        type="button"
-                        class="folder-upload-icon-button"
-                        :class="{'upload-list-busy': fileList.length}"
-                        :aria-label="$t('upload.selectFolderUpload')"
-                        @click.stop.prevent="openFolderPicker"
-                    >
-                        <font-awesome-icon icon="folder-open" />
-                    </button>
-                </el-tooltip>
+                <div class="upload-prompt-row">
+                    <div class="el-upload__text" :class="{'upload-list-busy': fileList.length}" v-html="$t('upload.dragUploadText')"></div>
+                    <el-tooltip :disabled="disableTooltip" :content="$t('upload.selectFolderUpload')" placement="top" :show-after="1000">
+                        <button
+                            type="button"
+                            class="folder-upload-icon-button"
+                            :class="{'upload-list-busy': fileList.length}"
+                            :aria-label="$t('upload.selectFolderUpload')"
+                            @click.stop.prevent="openFolderPicker"
+                        >
+                            <font-awesome-icon icon="folder-open" />
+                        </button>
+                    </el-tooltip>
+                </div>
             </el-upload>
             <input
                 ref="folderInput"
@@ -1676,58 +1678,87 @@ beforeDestroy() {
     display: none;
 }
 
-.folder-upload-icon-button {
-    position: absolute;
-    right: 18px;
-    bottom: 18px;
-    z-index: 2;
-    display: inline-flex;
+.upload-prompt-row {
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    gap: 6px;
+    max-width: calc(100% - 24px);
+    min-width: 0;
+}
+
+.folder-upload-icon-button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
     box-sizing: border-box;
     padding: 0;
-    border: 1px solid var(--glass-border);
-    border-radius: 9px;
-    background: var(--glass-bg);
+    border: none;
+    border-radius: 7px;
+    background: transparent;
     color: var(--el-text-color-secondary);
-    font-size: 11px;
     line-height: 1;
     cursor: pointer;
-    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.folder-upload-icon-button :deep(svg) {
+    display: block;
+    width: 15px;
+    height: 15px;
+    transform: translateY(1px);
 }
 
 .folder-upload-icon-button:hover {
     color: var(--primary-color-accent);
-    border-color: color-mix(in srgb, var(--primary-color) 48%, var(--glass-border));
-    background: color-mix(in srgb, var(--primary-color) 14%, var(--glass-bg));
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
 }
 
 .folder-upload-icon-button:focus-visible {
     outline: none;
     color: var(--primary-color-accent);
-    border-color: color-mix(in srgb, var(--primary-color) 60%, var(--glass-border));
-    background: color-mix(in srgb, var(--primary-color) 14%, var(--glass-bg));
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
 }
 
 .folder-upload-icon-button.upload-list-busy {
-    right: 12px;
-    bottom: 12px;
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    font-size: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+}
+
+.folder-upload-icon-button.upload-list-busy :deep(svg) {
+    width: 13px;
+    height: 13px;
 }
 
 @media (max-width: 768px) {
+    .upload-prompt-row {
+        gap: 2px;
+        max-width: calc(100% - 12px);
+    }
+
     .folder-upload-icon-button {
-        right: 10px;
-        bottom: 10px;
-        width: 26px;
-        height: 26px;
-        border-radius: 8px;
-        font-size: 10px;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+    }
+
+    .folder-upload-icon-button.upload-list-busy {
+        width: 20px;
+        height: 20px;
+    }
+
+    .folder-upload-icon-button :deep(svg) {
+        width: 12px;
+        height: 12px;
+    }
+
+    .folder-upload-icon-button.upload-list-busy :deep(svg) {
+        width: 11px;
+        height: 11px;
     }
 }
 
@@ -1830,13 +1861,14 @@ beforeDestroy() {
     user-select: none;
     transition: all 0.3s ease;
 }
-@media (max-width: 768px) {
-    .el-upload__text {
-        font-size: small;
-    }
-}
 .el-upload__text.upload-list-busy {
     font-size: small;
+}
+@media (max-width: 768px) {
+    .el-upload__text,
+    .el-upload__text.upload-list-busy {
+        font-size: 12px;
+    }
 }
 .el-icon--upload {
     font-size: 100px;
