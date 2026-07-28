@@ -1754,6 +1754,7 @@ beforeDestroy() {
     .folder-upload-icon-button :deep(svg) {
         width: 12px;
         height: 12px;
+        transform: none;
     }
 
     .folder-upload-icon-button.upload-list-busy :deep(svg) {
