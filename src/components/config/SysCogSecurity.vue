@@ -279,6 +279,33 @@
                     <el-switch v-model="accessSettings.whiteListMode"/>
                 </el-form-item>
             </el-form>
+            <h4 class="second-title">{{ $t('sysSecurity.imageTransform') }}</h4>
+            <el-form :model="accessSettings" :rules="accessRules" ref="imageTransformForm" label-width="120px">
+                <el-form-item>
+                    <template #label>
+                        {{ $t('sysSecurity.enableImageTransform') }}
+                        <el-tooltip :content="$t('sysSecurity.enableImageTransformTooltip')" placement="top" raw-content>
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-switch v-model="accessSettings.imageTransformEnabled"/>
+                </el-form-item>
+                <el-form-item
+                    v-if="accessSettings.imageTransformEnabled"
+                    prop="imageTransformAllowedSizes"
+                >
+                    <template #label>
+                        {{ $t('sysSecurity.imageTransformAllowedSizes') }}
+                        <el-tooltip :content="$t('sysSecurity.imageTransformAllowedSizesHint')" placement="top" raw-content>
+                            <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                        </el-tooltip>
+                    </template>
+                    <el-input
+                        v-model="accessSettings.imageTransformAllowedSizes"
+                        :placeholder="$t('sysSecurity.imageTransformAllowedSizesPlaceholder')"
+                    />
+                </el-form-item>
+            </el-form>
             <h4 class="second-title">{{ $t('sysSecurity.sessionSecurityPolicy') }}</h4>
             <el-form :model="accessSettings" label-width="120px">
                 <el-form-item>
@@ -554,6 +581,25 @@ computed: {
                 callback();
             }
         };
+        const validateImageTransformAllowedSizes = (rule, value, callback) => {
+            if (!this.accessSettings.imageTransformEnabled || !value || !value.trim()) {
+                callback();
+                return;
+            }
+
+            const sizes = value.split(',').map(size => size.trim().toLowerCase()).filter(Boolean);
+            const valid = sizes.every(size => {
+                const match = size.match(/^(auto|[1-9]\d*)x(auto|[1-9]\d*)$/);
+                if (!match || (match[1] === 'auto' && match[2] === 'auto')) return false;
+                return match.slice(1).every(dimension => dimension === 'auto' || Number(dimension) <= 4096);
+            });
+
+            if (!valid) {
+                callback(new Error(this.$t('sysSecurity.imageTransformAllowedSizesInvalid')));
+            } else {
+                callback();
+            }
+        };
 
         return {
             userSessionMaxAge: [
@@ -561,6 +607,9 @@ computed: {
             ],
             adminSessionMaxAge: [
                 { validator: validateSessionMaxAge, trigger: 'change' }
+            ],
+            imageTransformAllowedSizes: [
+                { validator: validateImageTransformAllowedSizes, trigger: ['blur', 'change'] }
             ]
         };
     },
@@ -888,6 +937,12 @@ methods: {
             });
         }));
 
+        validationPromises.push(new Promise((resolve) => {
+            this.$refs.imageTransformForm.validate((valid) => {
+                resolve(valid);
+            });
+        }));
+
         // 等待所有验证完成
         Promise.all(validationPromises).then((results) => {
             const isValid = results.every(valid => valid);
@@ -979,7 +1034,11 @@ mounted() {
     .then((data) => {
         this.authSettings = data.auth;
         this.uploadSettings = this.normalizeIpQuerySettings(data.upload);
-        this.accessSettings = data.access;
+        this.accessSettings = {
+            imageTransformEnabled: false,
+            imageTransformAllowedSizes: '',
+            ...data.access
+        };
 
         // 密码从后端返回为空（安全考虑），记录原始空值
         this.oriUserPassword = '';
