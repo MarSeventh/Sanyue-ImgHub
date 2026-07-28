@@ -1614,7 +1614,7 @@ beforeDestroy() {
     --upload-card-height: 45vh;
     --upload-card-busy-height: 17vh;
     --upload-list-height: 7vh;
-    --upload-list-inner-height: calc(var(--upload-list-height) - 2px);
+    --upload-list-inner-height: var(--upload-list-height);
     --upload-list-busy-height: calc(var(--upload-card-height) - var(--upload-card-busy-height) + var(--upload-list-height));
     --upload-list-gap: 10px;
     --upload-list-radius: 15px;
@@ -1660,6 +1660,15 @@ beforeDestroy() {
 }
 .upload-list-card.upload-list-busy {
     height: var(--upload-list-busy-height);
+}
+
+/* 收缩态没有文件列表，避免 vh 小数像素取整触发无意义的滚动条 */
+.upload-list-card:not(.upload-list-busy) :deep(.el-scrollbar__wrap) {
+    overflow: hidden;
+}
+
+.upload-list-card:not(.upload-list-busy) :deep(.el-scrollbar__bar) {
+    display: none;
 }
 
 /* 拖拽上传卡片包装器 - 用于悬浮光斑效果 */
@@ -2129,59 +2138,82 @@ html.dark .el-upload__text :deep(em) {
 /* Mobile responsive for paste card */
 @media (max-width: 768px) {
     .paste-card {
-        height: auto;
-        min-height: 30vh;
+        height: var(--upload-card-height);
+        min-height: 0;
+        max-height: var(--upload-card-height);
         padding: 6px;
         border-radius: 12px;
     }
 
     .upload-card-busy.paste-card {
-        height: auto;
-        min-height: 18vh;
+        height: var(--upload-card-busy-height);
+        min-height: 0;
+        max-height: var(--upload-card-busy-height);
         padding: 5px;
     }
 
     .upload-card-textarea {
         margin-top: 4px;
         width: calc(100% - 4px) !important;
+        min-height: 0;
+        flex-shrink: 1;
     }
 
     .upload-card-textarea :deep(.el-textarea__inner) {
+        height: 100%;
+        min-height: 0 !important;
+        box-sizing: border-box;
         border-radius: 10px;
         padding: 8px 10px;
         font-size: 12px;
     }
 
     .paste-card-actions {
+        flex: 0 0 auto;
         width: 100% !important;
-        margin-top: 8px;
-        gap: 8px;
+        margin-top: 6px;
+        gap: 6px;
     }
 
     .paste-card-upload-button {
-        height: 32px;
-        min-width: 64px;
-        border-radius: 8px !important;
-        font-size: 12px;
+        height: 28px;
+        min-width: 56px;
+        border-radius: 7px !important;
+        font-size: 11px;
         letter-spacing: 0.02em;
-        padding: 0 12px;
+        padding: 0 10px;
+    }
+
+    .upload-card-busy .paste-card-upload-button {
+        height: 28px;
+        min-width: 56px;
+        border-radius: 7px !important;
+        font-size: 11px;
+    }
+
+    .upload-card-busy .paste-card-actions {
+        margin-top: 6px;
     }
 
     .paste-card-method-group {
-        width: 128px;
-        height: 32px;
-        padding: 3px;
-        border-radius: 9px;
+        width: 112px;
+        height: 28px;
+        padding: 2px;
+        border-radius: 8px;
     }
 
     .paste-card-method-group::before {
+        top: 2px;
+        left: 2px;
+        width: calc((100% - 6px) / 2);
+        height: calc(100% - 4px);
         border-radius: 6px;
     }
 
     .paste-card-method-button {
-        height: 26px;
-        padding: 0 10px;
-        font-size: 11px;
+        height: 22px;
+        padding: 0 8px;
+        font-size: 10px;
         border-radius: 6px;
     }
 }
