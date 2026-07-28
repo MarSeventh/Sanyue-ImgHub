@@ -4,6 +4,7 @@
             class="upload-card-wrapper"
             @mousemove="handleUploadCardMouseMove"
             @mouseleave="handleUploadCardMouseLeave"
+            @drop.capture.stop.prevent="handleDrop"
         >
             <div class="upload-card-glow" ref="uploadCardGlow"></div>
             <el-upload
@@ -129,7 +130,7 @@
                     </div>
                     <UploadFileItem
                         v-for="file in fileList.slice().reverse()"
-                        :key="file.name"
+                        :key="file.uid"
                         :file="file"
                         @copy="handleCopy"
                         @remove="handleRemove"
@@ -147,6 +148,12 @@ import * as imageConversion from 'image-conversion'
 import { mapGetters } from 'vuex'
 import { buildFileUrls, updateFileListUrls, getUrlByFormat } from '@/utils/upload/urlBuilder'
 import { computeSha256 } from '@/utils/upload/sha256'
+import {
+    collectFilesFromDataTransferItems,
+    filesToUploadEntries,
+    getRelativeDirectory,
+    joinUploadFolder
+} from '@/utils/upload/directoryTraversal'
 import UploadFileItem from '@/components/upload/UploadFileItem.vue'
 
 export default {
@@ -239,7 +246,7 @@ data() {
         exceptionList: [],
         listScrolled: false,
         fileListLength: 0,
-        uploadCount: 0,
+        localUidCounter: 0,
         pastedUrls: '',
         pasteUploadMethod: 'save',
         // 失败文件自动重试相关
@@ -337,6 +344,53 @@ beforeUnmount() {
     this.activeUploads = 0
 },
 methods: {
+    createLocalUid() {
+        this.localUidCounter += 1
+        return `local-${Date.now()}-${this.localUidCounter}`
+    },
+    applyUploadPath(file, relativePath = file.name) {
+        const normalizedRelativePath = String(relativePath || file.name).replace(/\\/g, '/').replace(/^\/+/, '')
+        file.uploadRelativePath = normalizedRelativePath
+        file.uploadFolder = joinUploadFolder(this.uploadFolder, getRelativeDirectory(normalizedRelativePath))
+        return file
+    },
+    copyUploadPath(sourceFile, targetFile) {
+        targetFile.uploadRelativePath = sourceFile.uploadRelativePath || sourceFile.name
+        targetFile.uploadFolder = sourceFile.uploadFolder ?? this.uploadFolder
+        return targetFile
+    },
+    getFileUploadFolder(file) {
+        const fileItem = this.fileList.find(item => item.uid === file.file.uid)
+        return fileItem?.uploadFolder ?? file.file.uploadFolder ?? this.uploadFolder
+    },
+    createUploadRequest(file) {
+        return {
+            file,
+            onProgress: (evt) => this.handleProgress(evt),
+            onSuccess: (response, uploadedFile) => this.handleSuccess(response, uploadedFile),
+            onError: (error, uploadedFile) => this.handleError(error, uploadedFile)
+        }
+    },
+    async uploadLocalEntries(entries) {
+        await Promise.allSettled(entries.map(async ({ file, relativePath }) => {
+            file.uid = this.createLocalUid()
+            this.applyUploadPath(file, relativePath)
+            const processedFile = await this.beforeUpload(file)
+            if (processedFile instanceof File) {
+                this.uploadFile(this.createUploadRequest(processedFile))
+            }
+        }))
+    },
+    async handleDrop(event) {
+        const dataTransfer = event.dataTransfer
+        if (!dataTransfer) return
+
+        const entries = dataTransfer.items?.length
+            ? await collectFilesFromDataTransferItems(dataTransfer.items)
+            : filesToUploadEntries(dataTransfer.files)
+
+        if (entries.length) await this.uploadLocalEntries(entries)
+    },
     // 文件名中间截断，保留前缀和扩展名
     truncateFilename(filename, maxLength = 20) {
         if (!filename || filename.length <= maxLength) {
@@ -456,6 +510,7 @@ methods: {
         const uploadChannel = fileItem.uploadChannel || this.uploadChannel
         const autoRetry = this.autoRetry && uploadChannel !== 'external'
         const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
+        const targetUploadFolder = this.getFileUploadFolder(file)
         
         // 创建 AbortController 用于取消上传
         const abortController = new AbortController()
@@ -487,7 +542,7 @@ methods: {
                 (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                 '&uploadNameType=' + uploadNameType + 
                 '&autoRetry=' + autoRetry + 
-                '&uploadFolder=' + encodeURIComponent(this.uploadFolder),
+                '&uploadFolder=' + encodeURIComponent(targetUploadFolder),
             method: 'post',
             data: formData,
             withAuthCode: true,
@@ -544,6 +599,7 @@ methods: {
         const needServerCompress = fileItem.serverCompress
         const autoRetry = this.autoRetry && uploadChannel !== 'external'
         const uploadNameType = uploadChannel === 'external' ? 'default' : this.uploadNameType
+        const targetUploadFolder = this.getFileUploadFolder(file)
 
         // HuggingFace 渠道：在前端预计算 SHA256
         let precomputedSha256 = null
@@ -571,7 +627,7 @@ methods: {
                     (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                     '&uploadNameType=' + uploadNameType + 
                     '&autoRetry=' + autoRetry + 
-                    '&uploadFolder=' + encodeURIComponent(this.uploadFolder) +
+                    '&uploadFolder=' + encodeURIComponent(targetUploadFolder) +
                     '&initChunked=true',
                 method: 'post',
                 data: initFormData,
@@ -628,7 +684,7 @@ methods: {
                                 (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                                 '&uploadNameType=' + uploadNameType + 
                                 '&autoRetry=' + autoRetry + 
-                                '&uploadFolder=' + encodeURIComponent(this.uploadFolder) +
+                                '&uploadFolder=' + encodeURIComponent(targetUploadFolder) +
                                 '&chunked=true',
                             method: 'post',
                             data: formData,
@@ -718,7 +774,7 @@ methods: {
                     (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                     '&uploadNameType=' + uploadNameType + 
                     '&autoRetry=' + autoRetry + 
-                    '&uploadFolder=' + encodeURIComponent(this.uploadFolder) +
+                    '&uploadFolder=' + encodeURIComponent(targetUploadFolder) +
                     '&chunked=true&merge=true',
                 method: 'post',
                 data: mergeFormData,
@@ -901,7 +957,7 @@ methods: {
                 const fileUrl = URL.createObjectURL(file)
                 this.fileList.push({
                     uid: file.uid,
-                    name: file.name,
+                    name: file.uploadRelativePath || file.name,
                     url: fileUrl,
                     finalURL: '',
                     mdURL: '',
@@ -911,6 +967,7 @@ methods: {
                     status: 'uploading',
                     progreess: 0,
                     serverCompress: serverCompress,
+                    uploadFolder: file.uploadFolder ?? this.uploadFolder,
                     retryCount: 0,
                 })
                 resolve(file)
@@ -928,20 +985,12 @@ methods: {
                     //将res包装成新的file
                     const newFile = new File([res], processedFile.name, { type: res.type })
                     newFile.uid = file.uid
-
-                    const myUploadCount = this.uploadCount++
+                    this.copyUploadPath(processedFile, newFile)
 
                     //开启服务端压缩条件：1.开启服务端压缩 2.文件大小小于10MB 3.上传渠道为Telegram
                     const needServerCompress = this.serverCompress && newFile.size / 1024 / 1024 < 10 && this.uploadChannel === 'telegram'
 
-                    if (myUploadCount === 0) {
-                        pushFileToQueue(newFile, needServerCompress)
-                    } else {
-                        setTimeout(() => {
-                            pushFileToQueue(newFile, needServerCompress)
-                            this.uploadCount--
-                        }, 300 * myUploadCount)
-                    }
+                    pushFileToQueue(newFile, needServerCompress)
                 }).catch((err) => {
                     this.$message.error(this.$t('uploadForm.compressFailedCannotUpload', { name: processedFile.name }))
                     reject(err)
@@ -949,19 +998,9 @@ methods: {
             } else if (isLtLim) {
                 this.uploading = true
                 
-                const myUploadCount = this.uploadCount++
-
                 // 开启服务端压缩条件：1.上传渠道为Telegram 2.开启服务端压缩 3.如果为图片，则文件大小小于10MB，否则不限制大小
                 const needServerCompress = this.uploadChannel === 'telegram' && this.serverCompress && (processedFile.type.includes('image') ? processedFile.size / 1024 / 1024 < 10 : true)
-
-                if (myUploadCount === 0) {
-                    pushFileToQueue(processedFile, needServerCompress)
-                } else {
-                    setTimeout(() => {
-                        pushFileToQueue(processedFile, needServerCompress)
-                        this.uploadCount--
-                    }, 300 * myUploadCount)
-                }
+                pushFileToQueue(processedFile, needServerCompress)
             } else {
                 this.$message.error(this.$t('uploadForm.fileTooLarge', { name: processedFile.name }))
                 reject(this.$t('uploadForm.fileSizeTooLarge'))
@@ -1018,15 +1057,28 @@ methods: {
             })
         }
     },
-    handlePaste(event) {
+    async handlePaste(event) {
         // 当粘贴位置是文本框时，不执行该操作
         if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
             return
         }
-        const items = event.clipboardData.items
-        if (items.length > 0) {
-            this.uploadFromUrl(items)
+        const clipboardData = event.clipboardData
+        if (!clipboardData) return
+
+        const items = Array.from(clipboardData.items || [])
+        const fileItems = items.filter(item => item.kind === 'file')
+        const stringItems = items.filter(item => item.kind === 'string')
+
+        if (fileItems.length > 0) {
+            event.preventDefault()
+            const entries = await collectFilesFromDataTransferItems(fileItems)
+            if (entries.length) await this.uploadLocalEntries(entries)
+        } else if (clipboardData.files?.length) {
+            event.preventDefault()
+            await this.uploadLocalEntries(filesToUploadEntries(clipboardData.files))
         }
+
+        if (stringItems.length > 0) this.uploadFromUrl(stringItems)
     },
     handleUploadPasteUrls() {
         // 用于上传在上传文本框中粘贴的外链
@@ -1252,6 +1304,7 @@ methods: {
         // 创建 AbortController 用于取消上传
         const abortController = new AbortController();
         this.abortControllers.set(file.file.uid, abortController);
+        const targetUploadFolder = this.getFileUploadFolder(file);
 
         try {
             console.log('=== HuggingFace Direct Upload ===');
@@ -1287,7 +1340,7 @@ methods: {
                     fileSample,
                     channelName: this.channelName, // 传递指定的渠道名称
                     uploadNameType: this.uploadNameType,
-                    uploadFolder: this.uploadFolder
+                    uploadFolder: targetUploadFolder
                 },
                 withAuthCode: true,
                 signal: abortController.signal
@@ -1486,6 +1539,7 @@ methods: {
                         
                         const webpFile = new File([blob], newName, { type: 'image/webp' })
                         webpFile.uid = file.uid
+                        this.copyUploadPath(file, webpFile)
                         resolve(webpFile)
                     } else {
                         reject(new Error('WebP 转换失败'))
