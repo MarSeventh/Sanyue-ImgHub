@@ -1662,13 +1662,8 @@ beforeDestroy() {
     height: var(--upload-list-busy-height);
 }
 
-/* 收缩态没有文件列表，避免 vh 小数像素取整触发无意义的滚动条 */
-.upload-list-card:not(.upload-list-busy) :deep(.el-scrollbar__wrap) {
-    overflow: hidden;
-}
-
-.upload-list-card:not(.upload-list-busy) :deep(.el-scrollbar__bar) {
-    display: none;
+.upload-list-card:not(.upload-list-busy) :deep(.el-scrollbar__view) {
+    height: 100%;
 }
 
 /* 拖拽上传卡片包装器 - 用于悬浮光斑效果 */
@@ -2237,6 +2232,11 @@ html.dark .el-upload__text :deep(em) {
     border-radius: var(--upload-list-radius);
     box-shadow: var(--glass-shadow);
     opacity: 0.7;
+}
+
+/* 收缩态直接跟随卡片内容区，避免固定 vh 与边框产生亚像素误差 */
+.upload-list-card:not(.upload-list-busy) .upload-list-dashboard {
+    height: 100%;
 }
 
 /* Enhanced Starry Sky Effect */
