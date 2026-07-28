@@ -1309,8 +1309,8 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
 
 @media (max-width: 768px) {
     .title {
-        font-size: 1.55rem;
-        letter-spacing: 1px;
+        font-size: 1.4rem;
+        letter-spacing: 0.75px;
     }
     .title:hover {
         transform: scale(1.05);
@@ -1333,11 +1333,13 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
 
 @media (max-width: 768px) {
     .header {
-        padding: 8px 15px 4px;
+        padding: 5px 15px 2px;
         top: -2.5vh;
     }
     .title {
-        padding-bottom: 5px;
+        margin: 0.4em 0;
+        padding-bottom: 3px;
+        line-height: 1.2;
     }
     .upload {
         top: -3.8vh;
