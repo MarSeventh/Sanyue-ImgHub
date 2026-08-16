@@ -266,7 +266,7 @@ export default {
 }
 </script>
 
-<style scoped src="@/styles/admin-pagination.css"></style>
+<style scoped src="@/styles/admin-common.css"></style>
 
 <style scoped>
 .main-table {

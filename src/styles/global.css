@@ -280,6 +280,7 @@ body {
     --glass-border: #D9DCE2;
     --glass-border-hover: #BFC4CC;
     --glass-shadow: none;
+    --glass-backdrop-blur: 20px;
     --glass-header-bg: rgba(247, 248, 250, 0.45);
     --glass-header-border: #D9DCE2;
 
@@ -953,7 +954,7 @@ html.dark .os-theme-dark,
 .el-card,
 .el-dropdown__popper.el-popper {
     background-color: var(--glass-bg) !important;
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
+    -webkit-backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
 }
 

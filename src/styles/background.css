@@ -1,3 +1,5 @@
+/* 壁纸背景状态辅助样式：隐藏空图片，并在壁纸生效后透出页面背景。 */
+
 .background-image1:not([src]),
 .background-image2:not([src]) {
     display: none;

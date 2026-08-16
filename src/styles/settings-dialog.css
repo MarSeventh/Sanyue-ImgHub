@@ -1,3 +1,5 @@
+/* 设置弹窗共用样式：统一分区、表单控件及响应式布局。 */
+
 .settings-dialog-scope .dialog-section {
     margin-bottom: 24px;
     background: var(--dialog-section-bg-color, var(--el-fill-color-lighter));

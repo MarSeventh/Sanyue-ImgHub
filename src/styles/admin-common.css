@@ -1,4 +1,4 @@
-/* 管理端公共顶部导航、分页与加载操作 */
+/* 管理端页面共用样式：固定顶栏、分页、加载及相关操作控件。 */
 
 .admin-header-content {
     display: flex;
@@ -15,6 +15,8 @@
     border-radius: 16px;
     background: var(--glass-bg);
     box-shadow: none;
+    backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
+    -webkit-backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
     transform: translateX(-50%);
     transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
