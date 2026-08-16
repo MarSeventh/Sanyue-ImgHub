@@ -268,4 +268,148 @@ export default {
 </script>
 
 <style src="@/styles/settings-dialog.css"></style>
-<style src="./UploadSettingsDialog.css"></style>
+<style scoped>
+.channel-type-setting {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.channel-type-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.channel-visibility-filter {
+    flex-shrink: 0;
+}
+
+.channel-visibility-filter :deep(.el-radio-button__inner) {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.channel-empty-state {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px dashed var(--el-border-color);
+    border-radius: 8px;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    text-align: center;
+}
+
+.radio-card-group.compact {
+    gap: 8px;
+    width: 100%;
+}
+
+.radio-card-group.compact .radio-card {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.radio-card-group.compact .radio-card :deep(.el-radio__label) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.radio-card-group.compact .channel-icon {
+    width: 18px;
+    font-size: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.slider-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.slider-wrapper .el-slider {
+    flex: 1;
+    min-width: 0;
+}
+
+.slider-input {
+    width: 96px !important;
+    flex-shrink: 0;
+}
+
+.slider-input :deep(.el-input__inner) {
+    text-align: center;
+}
+
+.slider-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.slider-unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--el-text-color-secondary);
+}
+
+@media (max-width: 768px) {
+    .channel-type-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .channel-visibility-filter {
+        display: flex;
+        width: 100%;
+    }
+
+    .channel-visibility-filter .el-radio-button {
+        flex: 1;
+    }
+
+    .channel-visibility-filter :deep(.el-radio-button__inner) {
+        width: 100%;
+    }
+
+    .setting-item .radio-card-group.compact {
+        width: 100%;
+    }
+
+    .radio-card-group.compact {
+        flex-direction: row;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+    }
+
+    .radio-card-group.compact .radio-card {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+        flex: 1;
+    }
+
+    .radio-card-group.compact .radio-card :deep(.el-radio__label) {
+        justify-content: center;
+    }
+
+    .slider-wrapper {
+        gap: 8px;
+    }
+}
+</style>
