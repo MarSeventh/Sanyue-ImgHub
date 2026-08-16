@@ -1,5 +1,40 @@
+.upload-settings-dialog .channel-type-setting {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.upload-settings-dialog .channel-type-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.upload-settings-dialog .channel-visibility-filter {
+    flex-shrink: 0;
+}
+
+.upload-settings-dialog .channel-visibility-filter .el-radio-button__inner {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.upload-settings-dialog .channel-empty-state {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px dashed var(--el-border-color);
+    border-radius: 8px;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    text-align: center;
+}
+
 .upload-settings-dialog .radio-card-group.compact {
     gap: 8px;
+    width: 100%;
 }
 
 .upload-settings-dialog .radio-card-group.compact .radio-card {
@@ -61,6 +96,24 @@
 }
 
 @media (max-width: 768px) {
+    .upload-settings-dialog .channel-type-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .upload-settings-dialog .channel-visibility-filter {
+        display: flex;
+        width: 100%;
+    }
+
+    .upload-settings-dialog .channel-visibility-filter .el-radio-button {
+        flex: 1;
+    }
+
+    .upload-settings-dialog .channel-visibility-filter .el-radio-button__inner {
+        width: 100%;
+    }
+
     .upload-settings-dialog .setting-item .radio-card-group.compact {
         width: 100%;
     }

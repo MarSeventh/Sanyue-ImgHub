@@ -220,6 +220,7 @@
             v-model="showCompressDialog"
             v-model:uploadChannel="uploadChannel"
             v-model:channelName="channelName"
+            :availableChannels="availableChannels"
             :currentChannelList="currentChannelList"
             v-model:uploadFolder="uploadFolder"
             v-model:autoRetry="autoRetry"
