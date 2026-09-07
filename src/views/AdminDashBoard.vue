@@ -68,7 +68,7 @@
                 </div>
                 <el-dropdown
                     trigger="click"
-                    @command="sort"
+
                     class="breadcrumb-sort-dropdown"
                 >
                     <button
@@ -1274,21 +1274,20 @@ methods: {
         }
     },
     // 欄位切換（點選：時間/大小/原檔名/文件名）
-  setSortField(field) {
+    setSortField(field) {
       const validFields = ['time', 'size', 'rawName', 'fileName'];
       if (validFields.includes(field)) {
         this.sortField = field;
         localStorage.setItem('sortField', field);
       }
-    }
-  },
-  // 方向切換（點選：升序/降序 Segmented Button）
-  setSortOrder(order) {
-    if (['asc', 'desc'].includes(order)) {
-      this.sortOrder = order;
-      localStorage.setItem('sortOrder', order);
-    }
-  },
+    },
+    // 方向切換（點選：升序/降序 Segmented Button）
+    setSortOrder(order) {
+        if (['asc', 'desc'].includes(order)) {
+            this.sortOrder = order;
+            localStorage.setItem('sortOrder', order);
+        }
+    },
     sortData(data) {
       if (!Array.isArray(data)) return [];
     
