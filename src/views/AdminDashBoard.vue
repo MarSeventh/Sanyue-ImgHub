@@ -1260,9 +1260,11 @@ methods: {
     },
     // 欄位切換（點選：時間/大小/原檔名/文件名）
   setSortField(field) {
-    if (SORT_FIELD_MAP[field]) {
-      this.sortField = field;
-      localStorage.setItem('sortField', field);
+      const validFields = ['time', 'size', 'rawName', 'fileName'];
+      if (validFields.includes(field)) {
+        this.sortField = field;
+        localStorage.setItem('sortField', field);
+      }
     }
   },
   // 方向切換（點選：升序/降序 Segmented Button）
@@ -1299,8 +1301,8 @@ methods: {
         const valB = getValue(b);
     
         let result = 0;
-        if (typeof valA === 'string') {
-          result = valA.localeCompare(valB);
+        if (typeof valA === 'string' || typeof valB === 'string') {
+          result = String(valA || '').localeCompare(String(valB || ''));
         } else {
           result = valA - valB;
         }
@@ -1316,10 +1318,6 @@ methods: {
     handleSortChange(field, order) {
       if (field) this.sortField = field;
       if (order) this.sortOrder = order;
-    
-      const comboKey = `${this.sortField}_${this.sortOrder}`;
-      this.sortOption = comboKey;
-      localStorage.setItem('sortOption', comboKey);
      },
     handleVideoClick(event) {
         const videoElement = event.target;
