@@ -80,7 +80,7 @@
                     </button>
                     <template #dropdown>
                         <el-dropdown-menu class="sort-dropdown-menu">
-                            <!-- 1. 升降序 Segments -->
+                            <!-- 1. 上方 Segmented Button（升序 / 降序） -->
                             <div class="sort-order-wrapper">
                                 <el-radio-group v-model="sortOrder" size="small" @change="setSortOrder">
                                     <el-radio-button label="asc">{{ $t('dashboard.sortAsc') }}</el-radio-button>
@@ -90,31 +90,52 @@
 
                             <el-divider class="sort-divider" />
 
-                            <!-- 2. 欄位清單 -->
-                            <el-dropdown-item 
-                                :class="{ 'is-selected': sortField === 'time' }" 
-                                @click.native="setSortField('time')"
-                            >
-                                {{ $t('dashboard.sortByTime') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item 
-                                :class="{ 'is-selected': sortField === 'size' }" 
-                                @click.native="setSortField('size')"
-                            >
-                                {{ $t('dashboard.sortBySize') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item 
-                                :class="{ 'is-selected': sortField === 'rawName' }" 
-                                @click.native="setSortField('rawName')"
-                            >
-                                {{ $t('dashboard.sortByRawName') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item 
-                                :class="{ 'is-selected': sortField === 'fileName' }" 
-                                @click.native="setSortField('fileName')"
-                            >
-                                {{ $t('dashboard.sortByFileName') }}
-                            </el-dropdown-item>
+                            <!-- 2. 下方 Radio 單選清單 -->
+                            <div class="sort-field-list">
+                                <div class="sort-radio-item" @click="setSortField('time')">
+                                    <input 
+                                        type="radio" 
+                                        id="sort-time" 
+                                        name="sortField" 
+                                        value="time" 
+                                        v-model="sortField"
+                                    >
+                                    <label for="sort-time">{{ $t('dashboard.sortByTime') }}</label>
+                                </div>
+                    
+                                <div class="sort-radio-item" @click="setSortField('size')">
+                                    <input 
+                                        type="radio" 
+                                        id="sort-size" 
+                                        name="sortField" 
+                                        value="size" 
+                                        v-model="sortField"
+                                    >
+                                    <label for="sort-size">{{ $t('dashboard.sortBySize') }}</label>
+                                </div>
+                    
+                                <div class="sort-radio-item" @click="setSortField('rawName')">
+                                    <input 
+                                        type="radio" 
+                                        id="sort-rawName" 
+                                        name="sortField" 
+                                        value="rawName" 
+                                        v-model="sortField"
+                                    >
+                                    <label for="sort-rawName">{{ $t('dashboard.sortByRawName') }}</label>
+                                </div>
+                    
+                                <div class="sort-radio-item" @click="setSortField('fileName')">
+                                    <input 
+                                        type="radio" 
+                                        id="sort-fileName" 
+                                        name="sortField" 
+                                        value="fileName" 
+                                        v-model="sortField"
+                                    >
+                                    <label for="sort-fileName">{{ $t('dashboard.sortByFileName') }}</label>
+                                </div>
+                            </div>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
