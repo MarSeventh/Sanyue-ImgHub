@@ -1261,7 +1261,14 @@ methods: {
     },
     sort(command) {
         this.sortOption = command;
-    },
+        if (command === 'dateDesc') {
+            this.sortField = 'time';
+            this.sortOrder = 'desc';
+        } else if (command === 'nameAsc') {
+            this.sortField = 'fileName';
+            this.sortOrder = 'asc';
+        }
+    }
     sortData(data) {
       if (!Array.isArray(data)) return [];
     
