@@ -439,9 +439,8 @@ data() {
         currentPage: 1,
         pageSize: 15,
         selectedFiles: [],
-        sortOption: localStorage.getItem('sortOption') || 'dateDesc',
-        sortField: 'time',
-        sortOrder: 'desc',
+        sortField: localStorage.getItem('sortField') || 'time',
+        sortOrder: localStorage.getItem('sortOrder') || 'desc',
         isUploading: false,
         showdetailDialog: false,
         detailFile: null,
@@ -1259,16 +1258,20 @@ methods: {
             this.Number += num;
         }
     },
-    sort(command) {
-        this.sortOption = command;
-        if (command === 'dateDesc') {
-            this.sortField = 'time';
-            this.sortOrder = 'desc';
-        } else if (command === 'nameAsc') {
-            this.sortField = 'fileName';
-            this.sortOrder = 'asc';
-        }
+    // 欄位切換（點選：時間/大小/原檔名/文件名）
+  setSortField(field) {
+    if (SORT_FIELD_MAP[field]) {
+      this.sortField = field;
+      localStorage.setItem('sortField', field);
     }
+  },
+  // 方向切換（點選：升序/降序 Segmented Button）
+  setSortOrder(order) {
+    if (['asc', 'desc'].includes(order)) {
+      this.sortOrder = order;
+      localStorage.setItem('sortOrder', order);
+    }
+  },
     sortData(data) {
       if (!Array.isArray(data)) return [];
     
