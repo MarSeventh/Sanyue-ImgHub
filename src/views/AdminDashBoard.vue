@@ -79,9 +79,42 @@
                         <font-awesome-icon :icon="sortIcon" class="breadcrumb-sort-icon"></font-awesome-icon>
                     </button>
                     <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item command="dateDesc">{{ $t('dashboard.sortByDateDesc') }}</el-dropdown-item>
-                            <el-dropdown-item command="nameAsc">{{ $t('dashboard.sortByNameAsc') }}</el-dropdown-item>
+                        <el-dropdown-menu class="sort-dropdown-menu">
+                            <!-- 1. 升降序 Segments -->
+                            <div class="sort-order-wrapper">
+                                <el-radio-group v-model="sortOrder" size="small" @change="setSortOrder">
+                                    <el-radio-button label="asc">{{ $t('dashboard.sortAsc') }}</el-radio-button>
+                                    <el-radio-button label="desc">{{ $t('dashboard.sortDesc') }}</el-radio-button>
+                                </el-radio-group>
+                            </div>
+
+                            <el-divider class="sort-divider" />
+
+                            <!-- 2. 欄位清單 -->
+                            <el-dropdown-item 
+                                :class="{ 'is-selected': sortField === 'time' }" 
+                                @click.native="setSortField('time')"
+                            >
+                                {{ $t('dashboard.sortByTime') }}
+                            </el-dropdown-item>
+                            <el-dropdown-item 
+                                :class="{ 'is-selected': sortField === 'size' }" 
+                                @click.native="setSortField('size')"
+                            >
+                                {{ $t('dashboard.sortBySize') }}
+                            </el-dropdown-item>
+                            <el-dropdown-item 
+                                :class="{ 'is-selected': sortField === 'rawName' }" 
+                                @click.native="setSortField('rawName')"
+                            >
+                                {{ $t('dashboard.sortByRawName') }}
+                            </el-dropdown-item>
+                            <el-dropdown-item 
+                                :class="{ 'is-selected': sortField === 'fileName' }" 
+                                @click.native="setSortField('fileName')"
+                            >
+                                {{ $t('dashboard.sortByFileName') }}
+                            </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
