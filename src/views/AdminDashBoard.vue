@@ -1260,64 +1260,55 @@ methods: {
     sort(command) {
         this.sortOption = command;
     },
-   sortData(data) {
-  if (!Array.isArray(data)) return [];
-
-  // 文件夹始终在前
-  const folders = data.filter(file => file.isFolder);
-  const files = data.filter(file => !file.isFolder);
-
-  // 安全取值
-  const getValue = (item) => {
-    switch (this.sortField) {
-      case 'size':
-        return item.metadata?.FileSizeBytes || item.size || 0;
-      case 'rawName':
-        return item.metadata?.RawName || item.name || '';
-      case 'fileName':
-        return item.metadata?.FileName || item.name || '';
-      case 'time':
-      default:
-        return item.metadata?.TimeStamp ? new Date(item.metadata.TimeStamp).getTime() : 0;
-    }
-  };
-
-  const compare = (a, b) => {
-    const valA = getValue(a);
-    const valB = getValue(b);
-
-    let result = 0;
-    if (typeof valA === 'string') {
-      result = valA.localeCompare(valB);
-    } else {
-      result = valA - valB;
-    }
-
-    return this.sortOrder === 'desc' ? -result : result;
-  };
-
-  folders.sort(compare);
-  files.sort(compare);
-
-  return folders.concat(files);
-},
-handleSortChange(field, order) {
-  if (field) this.sortField = field;
-  if (order) this.sortOrder = order;
-
-  const comboKey = `${this.sortField}_${this.sortOrder}`;
-  this.sortOption = comboKey;
-  localStorage.setItem('sortOption', comboKey);
-}
-
-        return folders.concat(files);
-    },
-
-
-
-
-
+    sortData(data) {
+      if (!Array.isArray(data)) return [];
     
+      // 文件夹始终在前
+      const folders = data.filter(file => file.isFolder);
+      const files = data.filter(file => !file.isFolder);
+    
+      // 安全取值
+      const getValue = (item) => {
+        switch (this.sortField) {
+          case 'size':
+            return item.metadata?.FileSizeBytes || item.size || 0;
+          case 'rawName':
+            return item.metadata?.RawName || item.name || '';
+          case 'fileName':
+            return item.metadata?.FileName || item.name || '';
+          case 'time':
+          default:
+            return item.metadata?.TimeStamp ? new Date(item.metadata.TimeStamp).getTime() : 0;
+        }
+      };
+    
+      const compare = (a, b) => {
+        const valA = getValue(a);
+        const valB = getValue(b);
+    
+        let result = 0;
+        if (typeof valA === 'string') {
+          result = valA.localeCompare(valB);
+        } else {
+          result = valA - valB;
+        }
+    
+        return this.sortOrder === 'desc' ? -result : result;
+      };
+    
+      folders.sort(compare);
+      files.sort(compare);
+    
+      return folders.concat(files);
+    },
+    handleSortChange(field, order) {
+      if (field) this.sortField = field;
+      if (order) this.sortOrder = order;
+    
+      const comboKey = `${this.sortField}_${this.sortOrder}`;
+      this.sortOption = comboKey;
+      localStorage.setItem('sortOption', comboKey);
+     },
     handleVideoClick(event) {
         const videoElement = event.target;
         if (videoElement.requestFullscreen) {
