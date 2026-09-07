@@ -1260,23 +1260,64 @@ methods: {
     sort(command) {
         this.sortOption = command;
     },
-    sortData(data) {
-        // 文件夹始终在前
-        const folders = data.filter(file => file.isFolder);
-        const files = data.filter(file => !file.isFolder);
+   sortData(data) {
+  if (!Array.isArray(data)) return [];
 
-        if (this.sortOption === 'dateDesc') {
-            // 按时间降序
-            folders.sort((a, b) => new Date(b.metadata?.TimeStamp) - new Date(a.metadata?.TimeStamp));
-            files.sort((a, b) => new Date(b.metadata?.TimeStamp) - new Date(a.metadata?.TimeStamp));
-        } else {
-            // 按文件名升序
-            folders.sort((a, b) => a.name.localeCompare(b.name));
-            files.sort((a, b) => a.name.localeCompare(b.name));
-        }
+  // 文件夹始终在前
+  const folders = data.filter(file => file.isFolder);
+  const files = data.filter(file => !file.isFolder);
+
+  // 安全取值
+  const getValue = (item) => {
+    switch (this.sortField) {
+      case 'size':
+        return item.metadata?.FileSizeBytes || item.size || 0;
+      case 'rawName':
+        return item.metadata?.RawName || item.name || '';
+      case 'fileName':
+        return item.metadata?.FileName || item.name || '';
+      case 'time':
+      default:
+        return item.metadata?.TimeStamp ? new Date(item.metadata.TimeStamp).getTime() : 0;
+    }
+  };
+
+  const compare = (a, b) => {
+    const valA = getValue(a);
+    const valB = getValue(b);
+
+    let result = 0;
+    if (typeof valA === 'string') {
+      result = valA.localeCompare(valB);
+    } else {
+      result = valA - valB;
+    }
+
+    return this.sortOrder === 'desc' ? -result : result;
+  };
+
+  folders.sort(compare);
+  files.sort(compare);
+
+  return folders.concat(files);
+},
+handleSortChange(field, order) {
+  if (field) this.sortField = field;
+  if (order) this.sortOrder = order;
+
+  const comboKey = `${this.sortField}_${this.sortOrder}`;
+  this.sortOption = comboKey;
+  localStorage.setItem('sortOption', comboKey);
+}
 
         return folders.concat(files);
     },
+
+
+
+
+
+    
     handleVideoClick(event) {
         const videoElement = event.target;
         if (videoElement.requestFullscreen) {
