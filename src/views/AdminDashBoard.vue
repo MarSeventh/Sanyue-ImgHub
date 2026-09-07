@@ -2846,4 +2846,50 @@ beforeUnmount() {
     border-radius: 2px;
 }
 
+
+/* Dropwdown CSS*/
+    .sort-dropdown-menu {
+    padding: 8px 0;
+    min-width: 140px;
+}
+
+.sort-order-wrapper {
+    padding: 0 12px;
+    text-align: center;
+}
+
+.sort-divider {
+    margin: 8px 0 !important;
+}
+
+.sort-field-list {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+}
+
+.sort-radio-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.sort-radio-item:hover {
+    background-color: #f5f7fa;
+}
+
+.sort-radio-item input[type="radio"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.sort-radio-item label {
+    cursor: pointer;
+    font-size: 14px;
+    color: #606266;
+    user-select: none;
+}
+
 </style>
