@@ -1316,8 +1316,8 @@ methods: {
       return folders.concat(files);
     },
     handleSortChange(field, order) {
-      if (field) this.sortField = field;
-      if (order) this.sortOrder = order;
+        if (field) this.setSortField(field);
+        if (order) this.setSortOrder(order);
      },
     handleVideoClick(event) {
         const videoElement = event.target;
