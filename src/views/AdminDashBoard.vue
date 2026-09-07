@@ -99,6 +99,7 @@
                           </el-radio-group>
                         </el-dropdown-menu>
                     </template>
+                </el-dropdown>
                 <!-- 移动端目录按钮 -->
                 <div class="mobile-directory-trigger" @click="showMobileDirectoryDrawer = true">
                     <font-awesome-icon icon="folder-open" class="mobile-directory-icon"/>
