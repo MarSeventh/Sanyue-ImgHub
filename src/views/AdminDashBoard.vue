@@ -2807,8 +2807,8 @@ beforeUnmount() {
 }
 
 
-/* Dropwdown CSS*/
-    .sort-dropdown-menu {
+/* Dropwdown CSS */
+.sort-dropdown-menu {
     padding: 8px 0;
     min-width: 140px;
 }
@@ -2822,34 +2822,40 @@ beforeUnmount() {
     margin: 8px 0 !important;
 }
 
+/* 將 el-radio-group 設為垂直排列 */
 .sort-field-list {
     display: flex;
     flex-direction: column;
     padding: 4px 0;
 }
 
+/* 調整 Element Plus Radio 的滿寬點擊區域與樣式 */
 .sort-radio-item {
     display: flex;
     align-items: center;
-    padding: 6px 16px;
+    height: 36px;
+    margin-right: 0 !important;
+    padding: 0 16px;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
 .sort-radio-item:hover {
-    background-color: #f5f7fa;
+    background-color: var(--el-fill-color-light, #f5f7fa);
 }
 
-.sort-radio-item input[type="radio"] {
-    margin-right: 8px;
-    cursor: pointer;
-}
-
-.sort-radio-item label {
-    cursor: pointer;
+/* 確保 el-radio 內部的 label 文字佔滿賸餘空間並吃滿點擊 */
+.sort-radio-item :deep(.el-radio__label) {
     font-size: 14px;
-    color: #606266;
+    color: var(--el-text-color-regular, #606266);
     user-select: none;
+    flex: 1;
 }
+
+/* 若有使用 Scoped CSS，使用 :deep 覆寫內部元件點擊體驗 */
+.sort-radio-item :deep(.el-radio__input) {
+    cursor: pointer;
+}
+/* end Dropwdown CSS */
 
 </style>
