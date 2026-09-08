@@ -2827,7 +2827,7 @@ beforeUnmount() {
     display: flex;
     flex-direction: column;
     padding: 4px 0;
-    width:150px;
+    width:205px;
 }
 
 /* 調整 Element Plus Radio 的滿寬點擊區域與樣式 */
