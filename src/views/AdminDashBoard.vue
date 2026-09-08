@@ -2827,12 +2827,13 @@ beforeUnmount() {
     display: flex;
     flex-direction: column;
     padding: 4px 0;
+    width:150px;
 }
 
 /* 調整 Element Plus Radio 的滿寬點擊區域與樣式 */
 .sort-radio-item {
     display: flex;
-    align-items: center;
+    align-items: left;
     height: 36px;
     margin-right: 0 !important;
     padding: 0 16px;
