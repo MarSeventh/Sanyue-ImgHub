@@ -68,7 +68,7 @@
                 </div>
                 <el-dropdown
                     trigger="click"
-                    @command="sort"
+
                     class="breadcrumb-sort-dropdown"
                 >
                     <button
@@ -79,9 +79,24 @@
                         <font-awesome-icon :icon="sortIcon" class="breadcrumb-sort-icon"></font-awesome-icon>
                     </button>
                     <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item command="dateDesc">{{ $t('dashboard.sortByDateDesc') }}</el-dropdown-item>
-                            <el-dropdown-item command="nameAsc">{{ $t('dashboard.sortByNameAsc') }}</el-dropdown-item>
+                        <el-dropdown-menu class="sort-dropdown-menu">
+                            <!-- 1. 上方 Segmented Button（升序 / 降序） -->
+                            <div class="sort-order-wrapper">
+                                <el-radio-group v-model="sortOrder" size="small" @change="setSortOrder">
+                                    <el-radio-button label="asc">{{ $t('dashboard.sortAsc') }}</el-radio-button>
+                                    <el-radio-button label="desc">{{ $t('dashboard.sortDesc') }}</el-radio-button>
+                                </el-radio-group>
+                            </div>
+
+                            <el-divider class="sort-divider" />
+
+                            <!-- 2. 下方 Radio 單選清單 -->
+                          <el-radio-group v-model="sortField" class="sort-field-list" @change="setSortField">
+                                <el-radio label="time" class="sort-radio-item">{{ $t('dashboard.sortByTime') }}</el-radio>
+                                <el-radio label="size" class="sort-radio-item">{{ $t('dashboard.sortBySize') }}</el-radio>
+                                <el-radio label="rawName" class="sort-radio-item">{{ $t('dashboard.sortByRawName') }}</el-radio>
+                                <el-radio label="fileName" class="sort-radio-item">{{ $t('dashboard.sortByFileName') }}</el-radio>
+                          </el-radio-group>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
@@ -439,7 +454,8 @@ data() {
         currentPage: 1,
         pageSize: 15,
         selectedFiles: [],
-        sortOption: 'dateDesc',
+        sortField: localStorage.getItem('sortField') || 'time',
+        sortOrder: localStorage.getItem('sortOrder') || 'desc',
         isUploading: false,
         showdetailDialog: false,
         detailFile: null,
@@ -1257,26 +1273,66 @@ methods: {
             this.Number += num;
         }
     },
-    sort(command) {
-        this.sortOption = command;
+    // 欄位切換（點選：時間/大小/原檔名/文件名）
+    setSortField(field) {
+      const validFields = ['time', 'size', 'rawName', 'fileName'];
+      if (validFields.includes(field)) {
+        this.sortField = field;
+        localStorage.setItem('sortField', field);
+      }
+    },
+    // 方向切換（點選：升序/降序 Segmented Button）
+    setSortOrder(order) {
+        if (['asc', 'desc'].includes(order)) {
+            this.sortOrder = order;
+            localStorage.setItem('sortOrder', order);
+        }
     },
     sortData(data) {
-        // 文件夹始终在前
-        const folders = data.filter(file => file.isFolder);
-        const files = data.filter(file => !file.isFolder);
-
-        if (this.sortOption === 'dateDesc') {
-            // 按时间降序
-            folders.sort((a, b) => new Date(b.metadata?.TimeStamp) - new Date(a.metadata?.TimeStamp));
-            files.sort((a, b) => new Date(b.metadata?.TimeStamp) - new Date(a.metadata?.TimeStamp));
-        } else {
-            // 按文件名升序
-            folders.sort((a, b) => a.name.localeCompare(b.name));
-            files.sort((a, b) => a.name.localeCompare(b.name));
+      if (!Array.isArray(data)) return [];
+    
+      // 文件夹始终在前
+      const folders = data.filter(file => file.isFolder);
+      const files = data.filter(file => !file.isFolder);
+    
+      // 安全取值
+      const getValue = (item) => {
+        switch (this.sortField) {
+          case 'size':
+            return item.metadata?.FileSizeBytes || item.size || 0;
+          case 'rawName':
+            return item.metadata?.RawName || item.name || '';
+          case 'fileName':
+            return item.metadata?.FileName || item.name || '';
+          case 'time':
+          default:
+            return item.metadata?.TimeStamp ? new Date(item.metadata.TimeStamp).getTime() : 0;
         }
-
-        return folders.concat(files);
+      };
+    
+      const compare = (a, b) => {
+        const valA = getValue(a);
+        const valB = getValue(b);
+    
+        let result = 0;
+        if (typeof valA === 'string' || typeof valB === 'string') {
+          result = String(valA || '').localeCompare(String(valB || ''));
+        } else {
+          result = valA - valB;
+        }
+    
+        return this.sortOrder === 'desc' ? -result : result;
+      };
+    
+      folders.sort(compare);
+      files.sort(compare);
+    
+      return folders.concat(files);
     },
+    handleSortChange(field, order) {
+        if (field) this.setSortField(field);
+        if (order) this.setSortOrder(order);
+     },
     handleVideoClick(event) {
         const videoElement = event.target;
         if (videoElement.requestFullscreen) {
@@ -2749,5 +2805,68 @@ beforeUnmount() {
     z-index: 9999;
     border-radius: 2px;
 }
+
+
+/* Dropwdown CSS */
+.sort-dropdown-menu {
+    padding: 8px 0;
+    min-width: 140px;
+}
+
+.sort-order-wrapper {
+    padding: 0 12px;
+    text-align: center;
+}
+
+.sort-divider {
+    margin: 8px 0 !important;
+}
+
+/* 1. 容器：強制垂直排列與靠左對齊 ,將 el-radio-group 設為垂直排列 */
+/* 提高 CSS 權重以覆蓋 Element Plus 的 .el-radio-group 預設樣式 */
+.el-radio-group.sort-field-list,
+.sort-field-list {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important; /* 強制靠左，覆蓋原生的 align-items: center */
+    padding: 4px 0;
+    width: 205px;
+}
+
+/* 2. 子項目：確保每個 Radio 寬度吃滿 205px 且內容靠左 */
+/* 調整 Element Plus Radio 的滿寬點擊區域與樣式 */
+/* 確保裡面的 Radio 選項長度吃滿且垂直居中 */
+.el-radio-group.sort-field-list .sort-radio-item{
+    display: flex !important;
+    align-items: center !important; /* 修正：Flex 垂直居中（CSS 沒有 align-items: left） */
+    justify-content: flex-start !important; /* 水平靠左 */
+    width: 100% !important; /* 讓 hover 背景色吃滿整行 205px */
+    height: 36px;
+    margin-right: 0 !important;
+    padding: 0 16px; /* 統一在這裡留 16px 的左右內邊距 */
+    box-sizing: border-box; /* 確保 padding 不會拉撐 100% 寬度 */
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* 3. Hover 效果與文字靠左 */
+.el-radio-group.sort-field-list .sort-radio-item:hover {
+    background-color: var(--el-fill-color-light, #f5f7fa);
+}
+
+/* 4. 確保 el-radio 內部的 label 文字佔滿賸餘空間並吃滿點擊 */
+.el-radio-group.sort-field-list .sort-radio-item :deep(.el-radio__label) {
+    font-size: 14px;
+    color: var(--el-text-color-regular, #606266);
+    user-select: none;
+    flex: 1;
+    text-align: left; /* 強制文字靠左 */
+}
+
+/* 若有使用 Scoped CSS，使用 :deep 覆寫內部元件點擊體驗 */
+.sort-radio-item :deep(.el-radio__input) {
+    cursor: pointer;
+}
+/* end Dropwdown CSS */
 
 </style>
