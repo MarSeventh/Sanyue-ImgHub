@@ -2823,20 +2823,23 @@ beforeUnmount() {
 }
 
 /* 將 el-radio-group 設為垂直排列 */
+/* 提高 CSS 權重以覆蓋 Element Plus 的 .el-radio-group 預設樣式 */
+.el-radio-group.sort-field-list,
 .sort-field-list {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* 關鍵：讓子元素靠左對齊 */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important; /* 強制靠左，覆蓋原生的 align-items: center */
     padding: 4px 0;
     width: 205px;
 }
 
 /* 調整 Element Plus Radio 的滿寬點擊區域與樣式 */
+/* 確保裡面的 Radio 選項長度吃滿且垂直居中 */
 .sort-radio-item {
-    display: flex;
-    align-items: center; /* 修正：Flex 垂直居中（CSS 沒有 align-items: left） */
-    justify-content: flex-start; /* 水平靠左 */
-    width: 100%; /* 讓 hover 背景色吃滿整行 205px */
+    display: flex !important;
+    align-items: center !important; /* 修正：Flex 垂直居中（CSS 沒有 align-items: left） */
+    justify-content: flex-start !important; /* 水平靠左 */
+    width: 100% !important; /* 讓 hover 背景色吃滿整行 205px */
     height: 36px;
     margin-right: 0 !important;
     padding: 0 16px; /* 統一在這裡留 16px 的左右內邊距 */
