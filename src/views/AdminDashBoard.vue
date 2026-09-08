@@ -2826,17 +2826,21 @@ beforeUnmount() {
 .sort-field-list {
     display: flex;
     flex-direction: column;
+    align-items: flex-start; /* 關鍵：讓子元素靠左對齊 */
     padding: 4px 0;
-    width:205px;
+    width: 205px;
 }
 
 /* 調整 Element Plus Radio 的滿寬點擊區域與樣式 */
 .sort-radio-item {
     display: flex;
-    align-items: left;
+    align-items: center; /* 修正：Flex 垂直居中（CSS 沒有 align-items: left） */
+    justify-content: flex-start; /* 水平靠左 */
+    width: 100%; /* 讓 hover 背景色吃滿整行 205px */
     height: 36px;
     margin-right: 0 !important;
-    padding: 0 16px;
+    padding: 0 16px; /* 統一在這裡留 16px 的左右內邊距 */
+    box-sizing: border-box; /* 確保 padding 不會拉撐 100% 寬度 */
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -2851,6 +2855,7 @@ beforeUnmount() {
     color: var(--el-text-color-regular, #606266);
     user-select: none;
     flex: 1;
+    text-align: left; /* 強制文字靠左 */
 }
 
 /* 若有使用 Scoped CSS，使用 :deep 覆寫內部元件點擊體驗 */
