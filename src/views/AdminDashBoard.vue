@@ -2822,7 +2822,7 @@ beforeUnmount() {
     margin: 8px 0 !important;
 }
 
-/* 將 el-radio-group 設為垂直排列 */
+/* 1. 容器：強制垂直排列與靠左對齊 ,將 el-radio-group 設為垂直排列 */
 /* 提高 CSS 權重以覆蓋 Element Plus 的 .el-radio-group 預設樣式 */
 .el-radio-group.sort-field-list,
 .sort-field-list {
@@ -2833,9 +2833,10 @@ beforeUnmount() {
     width: 205px;
 }
 
+/* 2. 子項目：確保每個 Radio 寬度吃滿 205px 且內容靠左 */
 /* 調整 Element Plus Radio 的滿寬點擊區域與樣式 */
 /* 確保裡面的 Radio 選項長度吃滿且垂直居中 */
-.sort-radio-item {
+.el-radio-group.sort-field-list .sort-radio-item{
     display: flex !important;
     align-items: center !important; /* 修正：Flex 垂直居中（CSS 沒有 align-items: left） */
     justify-content: flex-start !important; /* 水平靠左 */
@@ -2848,12 +2849,13 @@ beforeUnmount() {
     transition: background-color 0.2s;
 }
 
-.sort-radio-item:hover {
+/* 3. Hover 效果與文字靠左 */
+.el-radio-group.sort-field-list .sort-radio-item:hover {
     background-color: var(--el-fill-color-light, #f5f7fa);
 }
 
-/* 確保 el-radio 內部的 label 文字佔滿賸餘空間並吃滿點擊 */
-.sort-radio-item :deep(.el-radio__label) {
+/* 4. 確保 el-radio 內部的 label 文字佔滿賸餘空間並吃滿點擊 */
+.el-radio-group.sort-field-list .sort-radio-item :deep(.el-radio__label) {
     font-size: 14px;
     color: var(--el-text-color-regular, #606266);
     user-select: none;
