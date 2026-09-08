@@ -68,19 +68,42 @@
                 </div>
                 <el-dropdown
                     trigger="click"
-
                     class="breadcrumb-sort-dropdown"
+                    @command="setSortField"
                 >
                     <button
                         class="breadcrumb-sort-button"
                         type="button"
                         :title="sortLabel"
                     >
-                        <font-awesome-icon :icon="sortIcon" class="breadcrumb-sort-icon"></font-awesome-icon>
+                        <svg class="breadcrumb-sort-icon" viewBox="0 0 30 18" aria-hidden="true">
+                            <g v-if="sortField === 'time'" class="sort-field-glyph">
+                                <circle cx="7.5" cy="9" r="5.5" />
+                                <path d="M7.5 5.5V9L10 10.5" />
+                            </g>
+                            <g v-else-if="sortField === 'size'" class="sort-field-glyph">
+                                <path d="M2 4H13M2 9H10M2 14H7" />
+                            </g>
+                            <g v-else-if="sortField === 'rawName'" class="sort-field-glyph">
+                                <path d="M5.5 3L4 15M11 3L9.5 15M2.5 7H13M2 11H12.5" />
+                            </g>
+                            <g v-else class="sort-field-glyph">
+                                <path d="M2.5 14L7.5 3L12.5 14M4.3 10H10.7" />
+                            </g>
+                            <path
+                                v-if="sortOrder === 'asc'"
+                                class="sort-order-glyph"
+                                d="M23 13.5V4.5M19 8.5L23 4.5L27 8.5"
+                            />
+                            <path
+                                v-else
+                                class="sort-order-glyph"
+                                d="M23 4.5V13.5M19 9.5L23 13.5L27 9.5"
+                            />
+                        </svg>
                     </button>
                     <template #dropdown>
                         <el-dropdown-menu class="sort-dropdown-menu">
-                            <!-- 1. 上方 Segmented Button（升序 / 降序） -->
                             <div class="sort-order-wrapper">
                                 <el-radio-group v-model="sortOrder" size="small" @change="setSortOrder">
                                     <el-radio-button label="asc">{{ $t('dashboard.sortAsc') }}</el-radio-button>
@@ -90,13 +113,22 @@
 
                             <el-divider class="sort-divider" />
 
-                            <!-- 2. 下方 Radio 單選清單 -->
-                          <el-radio-group v-model="sortField" class="sort-field-list" @change="setSortField">
-                                <el-radio label="time" class="sort-radio-item">{{ $t('dashboard.sortByTime') }}</el-radio>
-                                <el-radio label="size" class="sort-radio-item">{{ $t('dashboard.sortBySize') }}</el-radio>
-                                <el-radio label="rawName" class="sort-radio-item">{{ $t('dashboard.sortByRawName') }}</el-radio>
-                                <el-radio label="fileName" class="sort-radio-item">{{ $t('dashboard.sortByFileName') }}</el-radio>
-                          </el-radio-group>
+                            <el-dropdown-item command="time" :class="{ 'is-selected': sortField === 'time' }">
+                                <span>{{ $t('dashboard.sortByTime') }}</span>
+                                <font-awesome-icon v-if="sortField === 'time'" icon="check" class="sort-field-check" />
+                            </el-dropdown-item>
+                            <el-dropdown-item command="size" :class="{ 'is-selected': sortField === 'size' }">
+                                <span>{{ $t('dashboard.sortBySize') }}</span>
+                                <font-awesome-icon v-if="sortField === 'size'" icon="check" class="sort-field-check" />
+                            </el-dropdown-item>
+                            <el-dropdown-item command="rawName" :class="{ 'is-selected': sortField === 'rawName' }">
+                                <span>{{ $t('dashboard.sortByRawName') }}</span>
+                                <font-awesome-icon v-if="sortField === 'rawName'" icon="check" class="sort-field-check" />
+                            </el-dropdown-item>
+                            <el-dropdown-item command="fileName" :class="{ 'is-selected': sortField === 'fileName' }">
+                                <span>{{ $t('dashboard.sortByFileName') }}</span>
+                                <font-awesome-icon v-if="sortField === 'fileName'" icon="check" class="sort-field-check" />
+                            </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
@@ -435,6 +467,18 @@ import backgroundManager from '@/mixins/backgroundManager';
 import { ref } from 'vue';
 import { useDragSelect } from '@/utils/dashboard/useDragSelect.js';
 
+const SORT_FIELDS = ['time', 'size', 'rawName', 'fileName'];
+const SORT_ORDERS = ['asc', 'desc'];
+
+function getStoredSortValue(key, validValues, fallback) {
+    try {
+        const value = localStorage.getItem(key);
+        return validValues.includes(value) ? value : fallback;
+    } catch {
+        return fallback;
+    }
+}
+
 export default {
 name: 'AdminDashBoard',
 mixins: [backgroundManager],
@@ -454,8 +498,8 @@ data() {
         currentPage: 1,
         pageSize: 15,
         selectedFiles: [],
-        sortField: localStorage.getItem('sortField') || 'time',
-        sortOrder: localStorage.getItem('sortOrder') || 'desc',
+        sortField: getStoredSortValue('sortField', SORT_FIELDS, 'time'),
+        sortOrder: getStoredSortValue('sortOrder', SORT_ORDERS, 'desc'),
         isUploading: false,
         showdetailDialog: false,
         detailFile: null,
@@ -596,11 +640,16 @@ computed: {
         });
         return data;
     },
-    sortIcon() {
-        return this.sortOption === 'dateDesc' ? 'sort-amount-down' : 'sort-alpha-up';
-    },
     sortLabel() {
-        return this.sortOption === 'dateDesc' ? this.$t('dashboard.sortByDateDesc') : this.$t('dashboard.sortByNameAsc');
+        const labelKeys = {
+            time: 'dashboard.sortByTime',
+            size: 'dashboard.sortBySize',
+            rawName: 'dashboard.sortByRawName',
+            fileName: 'dashboard.sortByFileName'
+        };
+        const fieldLabel = this.$t(labelKeys[this.sortField] || labelKeys.time);
+        const orderLabel = this.$t(this.sortOrder === 'desc' ? 'dashboard.sortDesc' : 'dashboard.sortAsc');
+        return `${fieldLabel} · ${orderLabel}`;
     },
     dialogWidth() {
         return window.innerWidth > 768 ? '50%' : '90%';
@@ -703,9 +752,6 @@ watch: {
             this.selectedFiles = this.selectedFiles.filter(file => newData.includes(file));
         },
         deep: true
-    },
-    sortOption(newOption) {
-        localStorage.setItem('sortOption', newOption);
     },
     defaultUrlFormat(newFormat) {
         localStorage.setItem('defaultUrlFormat', newFormat);
@@ -1273,66 +1319,72 @@ methods: {
             this.Number += num;
         }
     },
-    // 欄位切換（點選：時間/大小/原檔名/文件名）
     setSortField(field) {
-      const validFields = ['time', 'size', 'rawName', 'fileName'];
-      if (validFields.includes(field)) {
+        if (!SORT_FIELDS.includes(field)) return;
         this.sortField = field;
+        this.currentPage = 1;
         localStorage.setItem('sortField', field);
-      }
     },
-    // 方向切換（點選：升序/降序 Segmented Button）
     setSortOrder(order) {
-        if (['asc', 'desc'].includes(order)) {
-            this.sortOrder = order;
-            localStorage.setItem('sortOrder', order);
-        }
+        if (!SORT_ORDERS.includes(order)) return;
+        this.sortOrder = order;
+        this.currentPage = 1;
+        localStorage.setItem('sortOrder', order);
     },
     sortData(data) {
-      if (!Array.isArray(data)) return [];
-    
-      // 文件夹始终在前
-      const folders = data.filter(file => file.isFolder);
-      const files = data.filter(file => !file.isFolder);
-    
-      // 安全取值
-      const getValue = (item) => {
-        switch (this.sortField) {
-          case 'size':
-            return item.metadata?.FileSizeBytes || item.size || 0;
-          case 'rawName':
-            return item.metadata?.RawName || item.name || '';
-          case 'fileName':
-            return item.metadata?.FileName || item.name || '';
-          case 'time':
-          default:
-            return item.metadata?.TimeStamp ? new Date(item.metadata.TimeStamp).getTime() : 0;
-        }
-      };
-    
-      const compare = (a, b) => {
-        const valA = getValue(a);
-        const valB = getValue(b);
-    
-        let result = 0;
-        if (typeof valA === 'string' || typeof valB === 'string') {
-          result = String(valA || '').localeCompare(String(valB || ''));
-        } else {
-          result = valA - valB;
-        }
-    
-        return this.sortOrder === 'desc' ? -result : result;
-      };
-    
-      folders.sort(compare);
-      files.sort(compare);
-    
-      return folders.concat(files);
+        if (!Array.isArray(data)) return [];
+
+        const folders = data.filter(file => file.isFolder);
+        const files = data.filter(file => !file.isFolder);
+
+        const getSizeInBytes = (item) => {
+            const parseSize = (value) => {
+                if (value === null || value === undefined || value === '') return null;
+                const parsedValue = Number(value);
+                return Number.isFinite(parsedValue) ? parsedValue : null;
+            };
+            const sizeInBytes = parseSize(item.metadata?.FileSizeBytes);
+            if (sizeInBytes !== null) return sizeInBytes;
+
+            const sizeInMegabytes = parseSize(item.metadata?.FileSize);
+            if (sizeInMegabytes !== null) return sizeInMegabytes * 1024 * 1024;
+
+            return parseSize(item.size) ?? 0;
+        };
+
+        const getValue = (item) => {
+            switch (this.sortField) {
+                case 'size':
+                    return getSizeInBytes(item);
+                case 'rawName':
+                    return item.metadata?.RawName || item.name || '';
+                case 'fileName':
+                    return item.metadata?.FileName || item.name || '';
+                case 'time':
+                default:
+                    return item.metadata?.TimeStamp ? new Date(item.metadata.TimeStamp).getTime() : 0;
+            }
+        };
+
+        const compare = (a, b) => {
+            const valA = getValue(a);
+            const valB = getValue(b);
+
+            let result = 0;
+            if (typeof valA === 'string' || typeof valB === 'string') {
+                result = String(valA || '').localeCompare(String(valB || ''));
+            } else {
+                result = valA - valB;
+            }
+
+            return this.sortOrder === 'desc' ? -result : result;
+        };
+
+        folders.sort(compare);
+        files.sort(compare);
+
+        return folders.concat(files);
     },
-    handleSortChange(field, order) {
-        if (field) this.setSortField(field);
-        if (order) this.setSortOrder(order);
-     },
     handleVideoClick(event) {
         const videoElement = event.target;
         if (videoElement.requestFullscreen) {
@@ -2277,7 +2329,7 @@ beforeUnmount() {
 }
 
 .breadcrumb-sort-button {
-    width: 32px;
+    width: 44px;
     height: 32px;
     box-sizing: border-box;
     display: inline-flex;
@@ -2304,8 +2356,22 @@ beforeUnmount() {
 }
 
 .breadcrumb-sort-icon {
-    width: 14px;
-    height: 14px;
+    width: 30px;
+    height: 18px;
+    overflow: visible;
+}
+
+.sort-field-glyph,
+.sort-order-glyph {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.sort-order-glyph {
+    stroke-width: 1.9;
 }
 
 @media (max-width: 768px) {
@@ -2340,13 +2406,13 @@ beforeUnmount() {
         height: 12px;
     }
     .breadcrumb-sort-button {
-        width: 28px;
+        width: 40px;
         height: 28px;
         border-radius: 8px;
     }
     .breadcrumb-sort-icon {
-        width: 12px;
-        height: 12px;
+        width: 27px;
+        height: 16px;
     }
 }
 
@@ -2807,10 +2873,8 @@ beforeUnmount() {
 }
 
 
-/* Dropwdown CSS */
 .sort-dropdown-menu {
-    padding: 8px 0;
-    min-width: 140px;
+    min-width: 205px;
 }
 
 .sort-order-wrapper {
@@ -2822,51 +2886,17 @@ beforeUnmount() {
     margin: 8px 0 !important;
 }
 
-/* 1. 容器：強制垂直排列與靠左對齊 ,將 el-radio-group 設為垂直排列 */
-/* 提高 CSS 權重以覆蓋 Element Plus 的 .el-radio-group 預設樣式 */
-.el-radio-group.sort-field-list,
-.sort-field-list {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important; /* 強制靠左，覆蓋原生的 align-items: center */
-    padding: 4px 0;
-    width: 205px;
+.sort-dropdown-menu :deep(.el-dropdown-menu__item) {
+    justify-content: space-between;
 }
 
-/* 2. 子項目：確保每個 Radio 寬度吃滿 205px 且內容靠左 */
-/* 調整 Element Plus Radio 的滿寬點擊區域與樣式 */
-/* 確保裡面的 Radio 選項長度吃滿且垂直居中 */
-.el-radio-group.sort-field-list .sort-radio-item{
-    display: flex !important;
-    align-items: center !important; /* 修正：Flex 垂直居中（CSS 沒有 align-items: left） */
-    justify-content: flex-start !important; /* 水平靠左 */
-    width: 100% !important; /* 讓 hover 背景色吃滿整行 205px */
-    height: 36px;
-    margin-right: 0 !important;
-    padding: 0 16px; /* 統一在這裡留 16px 的左右內邊距 */
-    box-sizing: border-box; /* 確保 padding 不會拉撐 100% 寬度 */
-    cursor: pointer;
-    transition: background-color 0.2s;
+.sort-dropdown-menu :deep(.el-dropdown-menu__item.is-selected) {
+    color: var(--primary-color-accent);
 }
 
-/* 3. Hover 效果與文字靠左 */
-.el-radio-group.sort-field-list .sort-radio-item:hover {
-    background-color: var(--el-fill-color-light, #f5f7fa);
+.sort-field-check {
+    width: 12px;
+    margin-left: 16px;
 }
-
-/* 4. 確保 el-radio 內部的 label 文字佔滿賸餘空間並吃滿點擊 */
-.el-radio-group.sort-field-list .sort-radio-item :deep(.el-radio__label) {
-    font-size: 14px;
-    color: var(--el-text-color-regular, #606266);
-    user-select: none;
-    flex: 1;
-    text-align: left; /* 強制文字靠左 */
-}
-
-/* 若有使用 Scoped CSS，使用 :deep 覆寫內部元件點擊體驗 */
-.sort-radio-item :deep(.el-radio__input) {
-    cursor: pointer;
-}
-/* end Dropwdown CSS */
 
 </style>

@@ -141,7 +141,7 @@
     "sortDesc": "Descending",
     "sortByTime": "Time",
     "sortBySize": "Size",
-    "sortByRawName": "Raw Name",
+    "sortByRawName": "File ID",
     "sortByFileName": "File Name",
     "selectedItems": "selected",
     "clearSelection": "Clear selection",

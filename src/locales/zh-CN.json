@@ -143,7 +143,7 @@
     "sortDesc": "降序",
     "sortByTime": "时间",
     "sortBySize": "大小",
-    "sortByRawName": "实档名",
+    "sortByRawName": "文件 ID",
     "sortByFileName": "文件名",
     "selectedItems": "项已选",
     "clearSelection": "清除选择",
