@@ -794,15 +794,60 @@ html.dark .el-button--primary.is-plain:focus {
 .dark .el-select__wrapper.is-focused {
     box-shadow: 0 0 0 1px var(--el-color-primary-light-5) inset !important;
 }
-html.dark .el-select-dropdown__item.is-hovering,
+
+.el-select__popper.el-popper {
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background-color: var(--popper-bg-color);
+    box-shadow: var(--popper-shadow);
+}
+
+.el-select__popper .el-select-dropdown__list {
+    box-sizing: border-box;
+    padding: 4px;
+}
+
+.el-select__popper .el-select-dropdown__item {
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--el-text-color-regular);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.el-select__popper .el-select-dropdown__item.is-selected {
+    background-color: transparent;
+    color: var(--primary-color-accent);
+}
+
+.el-select__popper .el-select-dropdown__item.is-hovering,
+.el-select__popper .el-select-dropdown__item:hover {
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
+    color: var(--el-text-color-primary);
+}
+
+.el-select__popper .el-select-dropdown__item.is-selected.is-hovering:not(:hover) {
+    background-color: transparent;
+    color: var(--primary-color-accent);
+}
+
+html.dark .el-select__popper .el-select-dropdown__item.is-selected,
+html.dark .el-cascader__dropdown__item.is-active {
+    background-color: transparent !important;
+    color: var(--primary-color-accent) !important;
+}
+
+html.dark .el-select__popper .el-select-dropdown__item.is-hovering,
+html.dark .el-select__popper .el-select-dropdown__item:hover,
 html.dark .el-cascader__dropdown__item.hover {
     background-color: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent) !important;
     color: var(--el-text-color-primary) !important;
 }
-html.dark .el-select-dropdown__item.is-selected,
-html.dark .el-cascader__dropdown__item.is-active {
-    background-color: color-mix(in srgb, var(--primary-color) 38%, transparent) !important;
-    color: var(--el-color-white) !important;
+
+html.dark .el-select__popper .el-select-dropdown__item.is-selected.is-hovering:not(:hover) {
+    background-color: transparent !important;
+    color: var(--primary-color-accent) !important;
 }
 .dark .el-tabs__item.is-active {
     color: var(--el-text-color-primary);

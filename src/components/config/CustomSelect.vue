@@ -156,52 +156,45 @@ html.dark .custom-select-trigger:hover {
     top: calc(100% + 4px);
     left: 0;
     width: 100%;
-    background: color-mix(in srgb, var(--el-fill-color-blank) 88%, transparent);
+    box-sizing: border-box;
+    padding: 4px;
+    background: var(--popper-bg-color);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
-    box-shadow: none;
+    box-shadow: var(--popper-shadow);
     z-index: 2000;
     max-height: 280px;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
 }
-html.dark .custom-select-dropdown {
-    background: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
-}
 
 .custom-select-option {
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 34px;
+    min-height: 34px;
     padding: 0 12px;
+    border-radius: 6px;
+    background: transparent;
     font-size: 14px;
     color: var(--el-text-color-regular);
     cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.custom-select-option:hover {
-    background: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
-}
-html.dark .custom-select-option:hover {
-    background: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent);
-    color: var(--el-text-color-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .custom-select-option.is-selected {
-    color: var(--el-color-primary);
-    font-weight: 500;
-}
-html.dark .custom-select-option.is-selected {
-    background: color-mix(in srgb, var(--primary-color) 38%, transparent);
-    color: #fff;
+    color: var(--primary-color-accent);
     font-weight: 600;
 }
-html.dark .custom-select-option.is-selected:hover {
-    background: color-mix(in srgb, var(--primary-color-accent) 48%, transparent);
-    color: #fff;
+
+.custom-select-option:hover {
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
+    color: var(--el-text-color-primary);
+}
+html.dark .custom-select-option:hover {
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent);
+    color: var(--el-text-color-primary);
 }
 
 .option-icon {
