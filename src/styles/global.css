@@ -823,13 +823,8 @@ html.dark .el-button--primary.is-plain:focus {
 
 .el-select__popper .el-select-dropdown__item.is-hovering,
 .el-select__popper .el-select-dropdown__item:hover {
-    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 6%, transparent);
     color: var(--el-text-color-primary);
-}
-
-.el-select__popper .el-select-dropdown__item.is-selected.is-hovering:not(:hover) {
-    background-color: transparent;
-    color: var(--primary-color-accent);
 }
 
 html.dark .el-select__popper .el-select-dropdown__item.is-selected,
@@ -845,10 +840,6 @@ html.dark .el-cascader__dropdown__item.hover {
     color: var(--el-text-color-primary) !important;
 }
 
-html.dark .el-select__popper .el-select-dropdown__item.is-selected.is-hovering:not(:hover) {
-    background-color: transparent !important;
-    color: var(--primary-color-accent) !important;
-}
 .dark .el-tabs__item.is-active {
     color: var(--el-text-color-primary);
 }
@@ -922,7 +913,7 @@ html.dark .el-dropdown__popper.el-popper {
 
 .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover,
 .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus {
-    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 6%, transparent);
     color: var(--el-text-color-primary);
 }
 

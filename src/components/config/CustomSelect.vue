@@ -189,7 +189,7 @@ html.dark .custom-select-trigger:hover {
 }
 
 .custom-select-option:hover {
-    background-color: color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 6%, transparent);
     color: var(--el-text-color-primary);
 }
 html.dark .custom-select-option:hover {
