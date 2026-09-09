@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createHead } from '@vueuse/head'; // 导入 createHead
-import ElementPlus from 'element-plus'
+import ElementPlus, { messageConfig } from 'element-plus'
 import 'element-plus/es/components/message/style/css'
 import 'element-plus/es/components/message-box/style/css'
 
@@ -22,6 +22,9 @@ import 'overlayscrollbars/overlayscrollbars.css'
 
 
 library.add(...fontAwesomeIcons);
+
+// 保留首条消息的顶部间距，同时允许 Element Plus 动态计算后续消息的位置。
+messageConfig.offset = 30;
 
 const app = createApp(App);
 const head = createHead(); // 创建 head 对象

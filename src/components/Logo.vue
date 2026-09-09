@@ -96,7 +96,9 @@ export default {
 }
 
 .logo {
-  transition: all 0.3s ease;
+  --logo-brightness: 1;
+  --logo-hover-brightness: 1.08;
+  transition: transform 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
   border-radius: 8px;
 }
 
@@ -142,7 +144,7 @@ export default {
 /* 悬停动画 */
 .logo--hover-enabled:hover {
   transform: scale(1.1) rotate(5deg);
-  filter: drop-shadow(0 0 10px var(--logo-glow-color));
+  filter: brightness(var(--logo-hover-brightness)) drop-shadow(0 0 10px var(--logo-glow-color));
 }
 
 /* 响应式设计 */
@@ -171,14 +173,14 @@ export default {
 
 /* 主题适配 */
 .logo {
-  filter: var(--logo-filter, none);
+  filter: var(--logo-filter, brightness(var(--logo-brightness)) drop-shadow(0 0 0 var(--logo-glow-color)));
   opacity: var(--logo-opacity, 1);
 }
 
-/* 暗色模式下的样式调整 */
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: var(--logo-dark-filter, brightness(0.9));
-  }
+/* 暗色模式下的 Logo 样式 */
+:global(html.dark) .logo {
+  --logo-brightness: 0.9;
+  --logo-hover-brightness: 1;
+  filter: var(--logo-dark-filter, brightness(var(--logo-brightness)) drop-shadow(0 0 0 var(--logo-glow-color)));
 }
 </style>

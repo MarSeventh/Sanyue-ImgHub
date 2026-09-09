@@ -632,7 +632,6 @@ html.dark {
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
     min-width: unset !important;
-    top: 30px !important;
 }
 
 .el-message .el-message__icon {
