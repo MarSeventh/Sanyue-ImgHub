@@ -1347,6 +1347,27 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
     }
 }
 
+/* 可用高度较小的桌面视口：减少标题占用和上传区上方留白。 */
+@media (min-width: 769px) and (max-height: 1050px) {
+    .header {
+        padding: 8px 15px;
+        margin-top: 3vh;
+        top: -2vh;
+    }
+
+    .title {
+        margin: 0.45em 0;
+        padding-bottom: 5px;
+        font-size: 1.875rem;
+        line-height: 1.2;
+        letter-spacing: 2px;
+    }
+
+    .upload {
+        top: -2.5vh;
+    }
+}
+
 .footer {
     height: 6vh;
 }

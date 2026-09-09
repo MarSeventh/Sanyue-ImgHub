@@ -2603,4 +2603,35 @@ html.dark .el-upload__text :deep(em) {
     }
 }
 
+/* 可用高度较小的桌面视口：让收缩列表与内部工具栏保持舒适留白。 */
+@media (min-width: 769px) and (max-height: 1050px) {
+    .upload-list-dashboard {
+        padding: 0 12px;
+    }
+
+    .modern-action-group,
+    .upload-list-dashboard-title {
+        height: 34px;
+    }
+
+    .modern-action-group {
+        gap: 3px;
+        padding: 3px;
+        border-radius: 10px;
+    }
+
+    .modern-action-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .upload-list-dashboard-title {
+        padding: 0 10px;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+}
+
 </style>
