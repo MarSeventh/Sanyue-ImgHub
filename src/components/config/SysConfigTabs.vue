@@ -220,7 +220,7 @@ html.dark .toggle-button {
 }
 
 .toggle-button:hover {
-    background: color-mix(in srgb, var(--el-text-color-primary) 6%, transparent);
+    background: color-mix(in srgb, var(--el-text-color-primary) 10%, transparent);
 }
 
 html.dark .toggle-button:hover {

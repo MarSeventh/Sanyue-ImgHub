@@ -28,8 +28,8 @@
                 <div class="page-option-list" @mouseleave="clearHoveredPageOption">
                     <span
                         class="page-option-highlight"
-                        :class="{ 'is-visible': hoveredPageOptionIndex !== null }"
-                        :style="{ '--hovered-option-index': hoveredPageOptionIndex === null ? 0 : hoveredPageOptionIndex }"
+                        :class="{ 'is-visible': isPageOptionHighlightVisible }"
+                        :style="{ '--hovered-option-index': hoveredPageOptionIndex }"
                         aria-hidden="true"
                     ></span>
                     <button
@@ -71,7 +71,8 @@ export default {
     data() {
         return {
             isPageMenuOpen: false,
-            hoveredPageOptionIndex: null
+            hoveredPageOptionIndex: 0,
+            isPageOptionHighlightVisible: false
         }
     },
     computed: {
@@ -138,9 +139,10 @@ export default {
         },
         setHoveredPageOption(index) {
             this.hoveredPageOptionIndex = index;
+            this.isPageOptionHighlightVisible = true;
         },
         clearHoveredPageOption() {
-            this.hoveredPageOptionIndex = null;
+            this.isPageOptionHighlightVisible = false;
         },
         openPageMenu() {
             this.isPageMenuOpen = true;
@@ -205,7 +207,7 @@ export default {
     left: 0;
     right: 0;
     z-index: 0;
-    height: 156px;
+    height: 160px;
     border: 1px solid var(--tabs-switcher-border-color);
     border-radius: 14px;
     background: var(--tabs-dropdown-popper-bg-color);
@@ -265,7 +267,7 @@ export default {
 
 .page-option-list {
     position: absolute;
-    top: 41px;
+    top: 45px;
     left: 5px;
     right: 5px;
     display: flex;
@@ -367,7 +369,7 @@ export default {
     }
 
     .page-switcher-sheet::before {
-        height: 136px;
+        height: 140px;
         transform: translateY(-3px) scaleY(0.72);
     }
 
@@ -385,7 +387,7 @@ export default {
     }
 
     .page-option-list {
-        top: 36px;
+        top: 40px;
         transform: translateY(-8px) scaleY(0.86);
     }
 

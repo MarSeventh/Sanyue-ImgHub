@@ -59,7 +59,7 @@ body {
     /* 上传拖拽区背景 */
     --el-upload-dragger-border: 2px dashed #C9CDD4;
     /* 上传拖拽区边框 */
-    --el-upload-dragger-hover-box-shadow: none;
+    --el-upload-dragger-hover-box-shadow: 0 8px 24px rgba(31, 35, 41, 0.12);
     /* 上传拖拽区 hover 阴影 */
     --el-upload-dragger-uniform-color: #2563EB;
     /* 上传拖拽区图标与强调色 */
@@ -203,7 +203,7 @@ body {
     /* 页面切换器展开菜单背景 */
     --tabs-dropdown-popper-shadow: none;
     /* 页面切换器展开菜单阴影 */
-    --tabs-switcher-hover-bg: #F2F3F5;
+    --tabs-switcher-hover-bg: color-mix(in srgb, var(--el-text-color-primary) 10%, transparent);
     --tabs-switcher-border-color: #E5E6EB;
     --tabs-switcher-accent-color: var(--primary-color);
     --tabs-switcher-current-color: var(--primary-color);
@@ -277,12 +277,12 @@ body {
 
     /* 半透明玻璃表面：卡片、弹窗、顶栏与工具控件共用 */
     --glass-bg: rgba(255, 255, 255, 0.45);
-    --glass-border: #D9DCE2;
-    --glass-border-hover: #BFC4CC;
+    --glass-border: #C9CDD4;
+    --glass-border-hover: #AEB4BE;
     --glass-shadow: none;
     --glass-backdrop-blur: 20px;
     --glass-header-bg: rgba(247, 248, 250, 0.45);
-    --glass-header-border: #D9DCE2;
+    --glass-header-border: #C9CDD4;
 
     /* ===== Element Plus 浅色主题覆盖 ===== */
     /* 主文字：接近黑色，保证长文本对比度 */
@@ -355,7 +355,7 @@ body {
     /* 上传拖拽区背景 */
     --el-upload-dragger-border: 2px dashed #3A3A3F;
     /* 上传拖拽区边框 */
-    --el-upload-dragger-hover-box-shadow: none;
+    --el-upload-dragger-hover-box-shadow: 0 8px 24px rgba(255, 255, 255, 0.07);
     /* 上传拖拽区 hover 阴影 */
     --el-upload-dragger-uniform-color: #60A5FA;
     /* 上传拖拽区图标与强调色 */
@@ -501,7 +501,7 @@ body {
     /* 页面切换器展开菜单背景 */
     --tabs-dropdown-popper-shadow: none;
     /* 页面切换器展开菜单阴影 */
-    --tabs-switcher-hover-bg: #1F1F22;
+    --tabs-switcher-hover-bg: color-mix(in srgb, var(--el-text-color-primary) 14%, transparent);
     --tabs-switcher-border-color: #2A2A2E;
     --tabs-switcher-accent-color: var(--primary-color-accent);
     --tabs-switcher-current-color: var(--primary-color-accent);
@@ -823,7 +823,7 @@ html.dark .el-button--primary.is-plain:focus {
 
 .el-select__popper .el-select-dropdown__item.is-hovering,
 .el-select__popper .el-select-dropdown__item:hover {
-    background-color: color-mix(in srgb, var(--el-text-color-primary) 6%, transparent);
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 10%, transparent);
     color: var(--el-text-color-primary);
 }
 
@@ -913,7 +913,7 @@ html.dark .el-dropdown__popper.el-popper {
 
 .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover,
 .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus {
-    background-color: color-mix(in srgb, var(--el-text-color-primary) 6%, transparent);
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 10%, transparent);
     color: var(--el-text-color-primary);
 }
 

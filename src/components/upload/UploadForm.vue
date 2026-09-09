@@ -1883,7 +1883,7 @@ beforeDestroy() {
     align-items: center;
     height: var(--upload-card-height);
     border-radius: 15px;
-    border: 1px solid var(--glass-border);
+    border: var(--el-upload-dragger-border);
     opacity: 0.7;
     background-color: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(1.4);
@@ -1891,16 +1891,19 @@ beforeDestroy() {
     box-shadow: var(--glass-shadow);
     transition: height 0.3s ease, opacity 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
 }
-:deep(.el-upload:focus .el-upload-dragger) {
+:deep(.el-upload:focus .el-upload-dragger),
+:deep(.el-upload:focus-within .el-upload-dragger) {
     border-color: var(--glass-border-hover);
 }
 :deep(.el-upload-dragger:hover) {
-    opacity: 0.7;
-    box-shadow: var(--glass-shadow);
+    opacity: 0.8;
+    border-color: var(--glass-border-hover);
+    box-shadow: var(--el-upload-dragger-hover-box-shadow);
 }
 :deep(.el-upload-dragger.is-dragover) {
-    opacity: 0.7;
-    box-shadow: var(--glass-shadow);
+    opacity: 0.8;
+    border-color: var(--glass-border-hover);
+    box-shadow: var(--el-upload-dragger-hover-box-shadow);
 }
 .is-uploading :deep(.el-upload-dragger) {
     border-color: transparent !important;

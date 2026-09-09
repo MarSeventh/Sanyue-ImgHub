@@ -312,12 +312,16 @@ export default {
     margin-right: 0;
     height: 26px;
     padding: 0 6px;
-    border-radius: 4px;
+    border-radius: 6px;
     transition: all 0.2s ease;
 }
 
 .filter-options :deep(.el-checkbox:hover) {
-    background: var(--el-fill-color-light);
+    background: color-mix(in srgb, var(--el-text-color-primary) 10%, transparent);
+}
+
+html.dark .filter-options :deep(.el-checkbox:hover) {
+    background: color-mix(in srgb, var(--el-text-color-primary) 14%, transparent);
 }
 
 .filter-options :deep(.el-checkbox__label) {
