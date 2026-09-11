@@ -241,24 +241,25 @@ export default {
     background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255, 255, 255, 0.15) 8px, rgba(255, 255, 255, 0.15) 16px);
     animation: progressStripes 1s linear infinite;
 }
-.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner) {
+.upload-list-item-progress :deep(.el-progress.is-success .el-progress-bar__inner) {
     background: #16A34A !important;
     background-size: 200% 100%;
     box-shadow: none;
     animation: none;
 }
-.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner::before),
-.upload-list-item-progress :deep(.el-progress--success .el-progress-bar__inner::after) {
+.upload-list-item-progress :deep(.el-progress.is-success .el-progress-bar__inner::before),
+.upload-list-item-progress :deep(.el-progress.is-success .el-progress-bar__inner::after) {
     animation: none;
     background: none;
 }
-.upload-list-item-progress :deep(.el-progress--exception .el-progress-bar__inner) {
+.upload-list-item-progress :deep(.el-progress.is-exception .el-progress-bar__inner) {
     background: #DC2626 !important;
     background-size: 200% 100%;
     box-shadow: none;
-    animation: progressPulse 1s ease-in-out infinite;
+    animation: none;
 }
-.upload-list-item-progress :deep(.el-progress--exception .el-progress-bar__inner::before) {
+.upload-list-item-progress :deep(.el-progress.is-exception .el-progress-bar__inner::before),
+.upload-list-item-progress :deep(.el-progress.is-exception .el-progress-bar__inner::after) {
     animation: none;
     background: none;
 }
@@ -266,11 +267,6 @@ export default {
     0% { transform: translateX(0); }
     100% { transform: translateX(22.627px); }
 }
-@keyframes progressPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
 /* URL Input Styles */
 .upload-list-item-url :deep(.el-input) {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

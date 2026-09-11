@@ -1329,8 +1329,9 @@ methods: {
     },
     retryError() {
         if (this.exceptionList.length > 0) {
-            this.retryFailedFiles(this.exceptionList);
+            const filesToRetry = [...this.exceptionList]
             this.exceptionList = []
+            this.retryFailedFiles(filesToRetry, true)
         } else {
             this.$message({
                 type: 'info',
@@ -1349,11 +1350,18 @@ methods: {
             this.scheduleAutoRetry();
         }
     },
-    retryFailedFiles(files) {
+    retryFailedFiles(files, isManualRetry = false) {
         files.forEach(file => {
-            const retryCount = file.retryCount || 0;
-            if (retryCount < this.maxRetryCount) {
-                file.retryCount = retryCount + 1;
+            const fileItem = this.fileList.find(item => item.uid === file.file.uid)
+            if (!fileItem) return
+
+            // 手动重试开启一轮新的尝试，不受上一轮自动重试次数限制
+            if (isManualRetry) fileItem.retryCount = 0
+
+            const retryCount = fileItem.retryCount || 0;
+            if (isManualRetry || retryCount < this.maxRetryCount) {
+                if (!isManualRetry) fileItem.retryCount = retryCount + 1
+                fileItem.progreess = 0
                 this.uploadFile({ 
                     file: file.file, 
                     onProgress: (evt) => this.handleProgress(evt), 
@@ -1361,6 +1369,9 @@ methods: {
                     onError: (error, file) => this.handleError(error, file) 
                 });
             } else {
+                // 达到自动重试上限后保留失败请求，供用户手动重试
+                fileItem.status = 'exception'
+                this.exceptionList.push(file)
                 this.$message({
                     type: 'warning',
                     message: this.$t('uploadForm.maxRetryReached', { name: file.name, max: this.maxRetryCount })
