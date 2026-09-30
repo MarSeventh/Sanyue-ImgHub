@@ -324,6 +324,7 @@
   },
   "batchTag": {
     "title": "批量标签管理",
+    "selectedFiles": "已选 {count} 个文件",
     "addTab": "添加",
     "removeTab": "移除",
     "clearTab": "清空",
@@ -919,7 +920,7 @@
     "selection": "已选 {count} 个"
   },
   "adminAuthWarning": {
-    "title": "登录设置提示",
+    "title": "安全提示",
     "message": "当前未设置管理端用户名和密码，请尽快前往设置！",
     "configure": "前往安全设置",
     "close": "我知道了"

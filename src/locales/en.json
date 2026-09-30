@@ -320,6 +320,7 @@
   },
   "batchTag": {
     "title": "Batch Tag Management",
+    "selectedFiles": "{count} files selected",
     "addTab": "Add",
     "removeTab": "Remove",
     "clearTab": "Clear",
@@ -911,7 +912,7 @@
     "selection": "{count} selected"
   },
   "adminAuthWarning": {
-    "title": "Login Settings",
+    "title": "Security Notice",
     "message": "The admin username and password have not been configured. Please set them as soon as possible!",
     "configure": "Open Security Settings",
     "close": "Dismiss"

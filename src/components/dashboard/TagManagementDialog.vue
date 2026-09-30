@@ -6,88 +6,62 @@
         :before-close="beforeClose"
         @close="handleClose"
     >
-        <div class="tag-management-container">
-            <!-- 输入区域 -->
-            <div class="input-section">
-                <el-input
-                    v-model="inputTag"
-                    :disabled="aiBusy || loading"
-                    :placeholder="$t('tagManagement.inputPlaceholder')"
-                    @keyup.enter="handleAddTag"
-                    @input="handleInputChange"
-                    clearable
-                >
-                    <template #append>
-                        <el-button @click="handleAddTag" type="primary" :disabled="aiBusy || loading">
-                            <font-awesome-icon icon="plus"/>
+        <div class="tag-dialog-content tag-management-container">
+            <section class="tag-section">
+                <div class="tag-section-header">
+                    <span class="tag-section-icon"><font-awesome-icon icon="tags" /></span>
+                    <h4>{{ $t('tagManagement.currentTags') }}</h4>
+                    <span class="tag-count">{{ currentTags.length }}</span>
+                </div>
+                <div class="input-section">
+                    <div class="tag-input-row">
+                        <el-input
+                            v-model="inputTag"
+                            :disabled="aiBusy || loading"
+                            :placeholder="$t('tagManagement.inputPlaceholder')"
+                            @keyup.enter="handleAddTag"
+                            @input="handleInputChange"
+                            clearable
+                        >
+                            <template #prefix><font-awesome-icon icon="hashtag" /></template>
+                        </el-input>
+                        <el-button class="tag-add-button" type="primary" :disabled="aiBusy || loading || !inputTag.trim()" :aria-label="$t('batchTag.addTab')" @click="handleAddTag">
+                            <font-awesome-icon icon="plus" />
                         </el-button>
-                    </template>
-                </el-input>
-
-                <!-- 自动完成建议 -->
-                <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-panel">
-                    <div
-                        v-for="tag in suggestions"
-                        :key="tag"
-                        class="suggestion-item"
-                        @click="selectSuggestion(tag)"
-                    >
-                        {{ tag }}
+                    </div>
+                    <div v-if="showSuggestions && suggestions.length" class="suggestions-panel">
+                        <button v-for="tag in suggestions" :key="tag" type="button" class="suggestion-item" :disabled="aiBusy || loading" @click="selectSuggestion(tag)">
+                            <font-awesome-icon icon="hashtag" /><span>{{ tag }}</span>
+                        </button>
                     </div>
                 </div>
-            </div>
-
-            <!-- 当前标签 -->
-            <div class="current-tags-section">
-                <h4>{{ $t('tagManagement.currentTags') }}</h4>
-                <div v-if="currentTags.length > 0" class="tags-container">
-                    <el-tag
-                        v-for="tag in currentTags"
-                        :key="tag"
-                        :closable="!aiBusy && !loading"
-                        @close="handleRemoveTag(tag)"
-                        class="tag-item"
-                    >
+                <div v-if="currentTags.length" class="tags-container">
+                    <el-tag v-for="tag in currentTags" :key="tag" :closable="!aiBusy && !loading" @close="handleRemoveTag(tag)" class="tag-chip" round>
                         {{ tag }}
                     </el-tag>
                 </div>
-                <div v-else class="empty-message">
-                    {{ $t('tagManagement.noTags') }}
+                <div v-else class="empty-message"><font-awesome-icon icon="tag" /><span>{{ $t('tagManagement.noTags') }}</span></div>
+            </section>
+            <section class="tag-section">
+                <div class="tag-section-header">
+                    <span class="tag-section-icon muted"><font-awesome-icon icon="hashtag" /></span>
+                    <h4>{{ $t('tagManagement.popularTags') }}</h4>
                 </div>
-            </div>
-
-            <!-- 常用标签 -->
-            <div class="popular-tags-section">
-                <h4>{{ $t('tagManagement.popularTags') }}</h4>
-                <div v-if="popularTags.length > 0" class="tags-container">
-                    <el-tag
-                        v-for="tag in popularTags"
-                        :key="tag"
-                        @click="handleAddPopularTag(tag)"
-                        class="tag-item clickable"
-                        type="info"
-                    >
+                <div v-if="popularTags.length" class="tags-container">
+                    <el-tag v-for="tag in popularTags" :key="tag" type="info" round class="tag-chip tag-choice" role="button" :tabindex="aiBusy || loading ? -1 : 0" :aria-disabled="aiBusy || loading" @click="handleAddPopularTag(tag)" @keydown.enter.prevent="handleAddPopularTag(tag)" @keydown.space.prevent="handleAddPopularTag(tag)">
                         {{ tag }}
                     </el-tag>
                 </div>
-                <div v-else-if="loadingPopularTags" class="empty-message">
-                    <el-icon class="is-loading"><Loading /></el-icon>
-                    {{ $t('tagManagement.loading') }}
-                </div>
-                <div v-else class="empty-message">
-                    {{ $t('tagManagement.noPopularTags') }}
-                </div>
-            </div>
+                <div v-else-if="loadingPopularTags" class="empty-message"><el-icon class="is-loading"><Loading /></el-icon><span>{{ $t('tagManagement.loading') }}</span></div>
+                <div v-else class="empty-message"><font-awesome-icon icon="tag" /><span>{{ $t('tagManagement.noPopularTags') }}</span></div>
+            </section>
             <el-alert v-if="indexPending" :title="$t('tagManagement.indexPending')" type="warning" show-icon :closable="false">
                 <el-button size="small" :loading="loading" :disabled="aiBusy" @click="repairIndex"><font-awesome-icon icon="redo" /> {{ $t('aiTags.retry') }}</el-button>
             </el-alert>
             <AITagPanel v-if="visible" class="single-ai-panel" :files="aiFiles" :disabled="loading" @busy="aiBusy = $event" @applied="handleAIResults" />
         </div>
-
         <template #footer>
-            <span class="dialog-footer">
-                <el-button :disabled="aiBusy || loading" @click="handleClose">{{ $t('tagManagement.close') }}</el-button>
-            </span>
+            <div class="dialog-footer"><el-button :disabled="aiBusy || loading" @click="handleClose">{{ $t('tagManagement.close') }}</el-button></div>
         </template>
     </el-dialog>
 </template>
@@ -354,81 +328,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.tag-management-container {
-    padding: 10px 0 0;
-}
-
-.tag-management-container .single-ai-panel {
-    margin-bottom: 0;
-}
-
-.input-section {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.suggestions-panel {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--admin-dashboard-tag-suggestion-bg-color);
-    border: 1px solid var(--admin-dashboard-tag-suggestion-border-color);
-    border-radius: 4px;
-    box-shadow: var(--admin-dashboard-tag-suggestion-box-shadow);
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    margin-top: 4px;
-}
-
-.suggestion-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.suggestion-item:hover {
-    background-color: var(--admin-dashboard-tag-suggestion-item-hover-bg-color);
-}
-
-.current-tags-section,
-.popular-tags-section {
-    margin-bottom: 20px;
-}
-
-.current-tags-section h4,
-.popular-tags-section h4 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-}
-
-.tags-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-height: 40px;
-}
-
-.tag-item {
-    cursor: default;
-}
-
-.tag-item.clickable {
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.empty-message {
-    color: var(--el-text-color-secondary);
-    font-size: 13px;
-    padding: 10px 0;
-}
-
-.dialog-footer {
-    display: flex;
-    justify-content: flex-end;
-}
-</style>
+<style scoped src="@/styles/tag-dialog.css"></style>

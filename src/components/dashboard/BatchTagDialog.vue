@@ -6,131 +6,76 @@
         :before-close="beforeClose"
         @close="handleClose"
     >
-        <div class="batch-tag-container">
+        <div class="tag-dialog-content batch-tag-container">
+            <div class="tag-file-summary"><font-awesome-icon icon="images" /><span>{{ $t('batchTag.selectedFiles', { count: fileCount }) }}</span></div>
             <el-alert v-if="pendingIndexIds.length" :title="$t('tagManagement.indexPending')" type="warning" show-icon :closable="false">
                 <el-button size="small" :loading="loading" :disabled="aiBusy" @click="repairIndex"><font-awesome-icon icon="redo" /> {{ $t('aiTags.retry') }}</el-button>
             </el-alert>
-            <el-tabs v-model="activeTab" type="border-card" :before-leave="beforeTabChange">
-                <!-- 添加标签 -->
-                <el-tab-pane :label="$t('batchTag.addTab')" name="add">
-                    <div class="tab-content">
-                        <p class="tab-description">{{ $t('batchTag.addDescription', { count: fileCount }) }}</p>
-
-                        <div class="input-section">
-                            <el-input
-                                v-model="inputTag"
-                                :disabled="loading || aiBusy"
-                                :placeholder="$t('batchTag.inputPlaceholder')"
-                                @keyup.enter="handleAddInputTag"
-                                @input="handleInputChange"
-                                clearable
-                            >
-                                <template #append>
-                                    <el-button @click="handleAddInputTag" type="primary" :disabled="loading || aiBusy">
-                                        <font-awesome-icon icon="plus"/>
-                                    </el-button>
-                                </template>
-                            </el-input>
-
-                            <!-- 自动完成建议 -->
-                            <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-panel">
-                                <div
-                                    v-for="tag in suggestions"
-                                    :key="tag"
-                                    class="suggestion-item"
-                                    @click="selectSuggestion(tag)"
-                                >
-                                    {{ tag }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="tags-to-add-section">
+            <el-tabs v-model="activeTab" class="tag-operation-tabs" :before-leave="beforeTabChange">
+                <el-tab-pane name="add">
+                    <template #label><span class="tag-tab-label"><font-awesome-icon icon="plus" /><span>{{ $t('batchTag.addTab') }}</span></span></template>
+                    <section class="tag-section">
+                        <div class="tag-section-header">
+                            <span class="tag-section-icon"><font-awesome-icon icon="tags" /></span>
                             <h4>{{ $t('batchTag.pendingTags') }}</h4>
-                            <div v-if="tagsToAdd.length > 0" class="tags-container">
-                                <el-tag
-                                    v-for="tag in tagsToAdd"
-                                    :key="tag"
-                                    :closable="!loading && !aiBusy"
-                                    @close="removeFromToAdd(tag)"
-                                    class="tag-item"
-                                >
-                                    {{ tag }}
-                                </el-tag>
-                            </div>
-                            <div v-else class="empty-message">
-                                {{ $t('batchTag.noPendingTags') }}
+                            <div class="tag-section-actions">
+                                <span class="tag-count">{{ tagsToAdd.length }}</span>
+                                <el-tooltip :content="$t('batchTag.addDescription', { count: fileCount })" placement="top">
+                                    <button type="button" class="tag-help-button" :aria-label="$t('batchTag.addDescription', { count: fileCount })"><font-awesome-icon icon="question-circle" /></button>
+                                </el-tooltip>
                             </div>
                         </div>
-
-                        <div class="action-buttons">
-                            <el-button
-                                type="primary"
-                                @click="executeAddTags"
-                                :loading="loading"
-                                :disabled="tagsToAdd.length === 0"
-                            >
-                                {{ $t('batchTag.addToAllFiles') }}
-                            </el-button>
+                        <div class="input-section">
+                            <div class="tag-input-row">
+                                <el-input v-model="inputTag" :disabled="loading || aiBusy" :placeholder="$t('batchTag.inputPlaceholder')" @keyup.enter="handleAddInputTag" @input="handleInputChange" clearable>
+                                    <template #prefix><font-awesome-icon icon="hashtag" /></template>
+                                </el-input>
+                                <el-button class="tag-add-button" type="primary" :disabled="loading || aiBusy || !inputTag.trim()" :aria-label="$t('batchTag.addTab')" @click="handleAddInputTag"><font-awesome-icon icon="plus" /></el-button>
+                            </div>
+                            <div v-if="showSuggestions && suggestions.length" class="suggestions-panel">
+                                <button v-for="tag in suggestions" :key="tag" type="button" class="suggestion-item" :disabled="loading || aiBusy" @click="selectSuggestion(tag)"><font-awesome-icon icon="hashtag" /><span>{{ tag }}</span></button>
+                            </div>
                         </div>
-                    </div>
+                        <div v-if="tagsToAdd.length" class="tags-container">
+                            <el-tag v-for="tag in tagsToAdd" :key="tag" :closable="!loading && !aiBusy" @close="removeFromToAdd(tag)" class="tag-chip" round>{{ tag }}</el-tag>
+                        </div>
+                        <div v-else class="empty-message"><font-awesome-icon icon="tag" /><span>{{ $t('batchTag.noPendingTags') }}</span></div>
+                        <div class="action-buttons"><el-button type="primary" @click="executeAddTags" :loading="loading" :disabled="!tagsToAdd.length || !fileCount"><font-awesome-icon v-if="!loading" icon="plus" />{{ $t('batchTag.addToAllFiles') }}</el-button></div>
+                    </section>
                 </el-tab-pane>
-
-                <!-- 移除标签 -->
-                <el-tab-pane :label="$t('batchTag.removeTab')" name="remove">
-                    <div class="tab-content">
-                        <p class="tab-description">{{ $t('batchTag.removeDescription') }}</p>
-
-                        <div v-if="commonTags.length > 0" class="common-tags-section">
+                <el-tab-pane name="remove">
+                    <template #label><span class="tag-tab-label"><font-awesome-icon icon="minus" /><span>{{ $t('batchTag.removeTab') }}</span></span></template>
+                    <section class="tag-section">
+                        <div class="tag-section-header">
+                            <span class="tag-section-icon muted"><font-awesome-icon icon="tags" /></span>
                             <h4>{{ $t('batchTag.commonTags') }}</h4>
-                            <div class="tags-container">
-                                <el-tag
-                                    v-for="tag in commonTags"
-                                    :key="tag"
-                                    :closable="!loading && !aiBusy"
-                                    @close="handleRemoveCommonTag(tag)"
-                                    class="tag-item"
-                                    type="warning"
-                                >
-                                    {{ tag }}
-                                </el-tag>
+                            <div class="tag-section-actions">
+                                <span class="tag-count">{{ commonTags.length }}</span>
+                                <el-tooltip :content="$t('batchTag.removeDescription')" placement="top">
+                                    <button type="button" class="tag-help-button" :aria-label="$t('batchTag.removeDescription')"><font-awesome-icon icon="question-circle" /></button>
+                                </el-tooltip>
                             </div>
                         </div>
-                        <div v-else class="empty-message">
-                            {{ $t('batchTag.noCommonTags') }}
+                        <div v-if="commonTags.length" class="tags-container">
+                            <el-tag v-for="tag in commonTags" :key="tag" :closable="!loading && !aiBusy" @close="handleRemoveCommonTag(tag)" class="tag-chip" type="warning" round>{{ tag }}</el-tag>
                         </div>
-                    </div>
+                        <div v-else class="empty-message"><font-awesome-icon icon="tag" /><span>{{ $t('batchTag.noCommonTags') }}</span></div>
+                    </section>
                 </el-tab-pane>
-
-                <!-- 清空标签 -->
-                <el-tab-pane :label="$t('batchTag.clearTab')" name="clear">
-                    <div class="tab-content">
-                        <p class="tab-description">{{ $t('batchTag.clearDescription', { count: fileCount }) }}</p>
-
-                        <el-alert
-                            :title="$t('batchTag.clearWarningTitle')"
-                            type="warning"
-                            :description="$t('batchTag.clearWarningDesc')"
-                            :closable="false"
-                            style="margin-bottom: 20px;"
-                            center
-                        />
-
-                        <div class="action-buttons">
-                            <el-button
-                                type="danger"
-                                @click="handleClearAllTags"
-                                :loading="loading"
-                            >
-                                {{ $t('batchTag.confirmClearAll') }}
-                            </el-button>
+                <el-tab-pane name="clear">
+                    <template #label><span class="tag-tab-label"><font-awesome-icon icon="trash-alt" /><span>{{ $t('batchTag.clearTab') }}</span></span></template>
+                    <section class="tag-section tag-danger-section">
+                        <div class="tag-section-header">
+                            <span class="tag-section-icon danger"><font-awesome-icon icon="trash-alt" /></span>
+                            <h4>{{ $t('batchTag.clearTab') }}</h4>
                         </div>
-                    </div>
+                        <el-alert :title="$t('batchTag.clearWarningDesc')" type="warning" :closable="false" show-icon />
+                        <div class="action-buttons"><el-button type="danger" @click="handleClearAllTags" :loading="loading" :disabled="!fileCount"><font-awesome-icon v-if="!loading" icon="trash-alt" />{{ $t('batchTag.confirmClearAll') }}</el-button></div>
+                    </section>
                 </el-tab-pane>
-                <el-tab-pane :label="$t('aiTags.tab')" name="ai" lazy>
-                    <div class="tab-content ai-tab-content">
-                        <AITagPanel v-if="visible" :files="selectedFilesOnly" :disabled="loading" @busy="aiBusy = $event" @applied="handleAIResults" />
-                    </div>
+                <el-tab-pane name="ai" lazy>
+                    <template #label><span class="tag-tab-label"><font-awesome-icon icon="robot" /><span>{{ $t('aiTags.tab') }}</span></span></template>
+                    <AITagPanel v-if="visible" :files="selectedFilesOnly" :disabled="loading" @busy="aiBusy = $event" @applied="handleAIResults" />
                 </el-tab-pane>
             </el-tabs>
         </div>
@@ -451,85 +396,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.batch-tag-container {
-    padding: 0;
-}
-
-.tab-content {
-    padding: 20px;
-}
-
-.ai-tab-content { padding: 0; }
-
-.tab-description {
-    margin: 0 0 15px 0;
-    color: var(--el-text-color-regular);
-    font-size: 14px;
-}
-
-.input-section {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.suggestions-panel {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--admin-dashboard-tag-suggestion-bg-color);
-    border: 1px solid var(--admin-dashboard-tag-suggestion-border-color);
-    border-radius: 4px;
-    box-shadow: var(--admin-dashboard-tag-suggestion-box-shadow);
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    margin-top: 4px;
-}
-
-.suggestion-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.suggestion-item:hover {
-    background-color: var(--admin-dashboard-tag-suggestion-item-hover-bg-color);
-}
-
-.tags-to-add-section,
-.common-tags-section {
-    margin-bottom: 20px;
-}
-
-.tags-to-add-section h4,
-.common-tags-section h4 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-}
-
-.tags-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-height: 40px;
-}
-
-.tag-item {
-    cursor: default;
-}
-
-.empty-message {
-    color: var(--el-text-color-secondary);
-    font-size: 13px;
-    padding: 10px 0;
-}
-
-.action-buttons {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-}
-</style>
+<style scoped src="@/styles/tag-dialog.css"></style>
