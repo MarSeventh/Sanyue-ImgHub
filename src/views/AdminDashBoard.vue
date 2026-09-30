@@ -408,6 +408,7 @@
         <TagManagementDialog
             v-model="showTagDialog"
             :fileId="currentTagFile"
+            :fileMetadata="tagFileMetadata"
             @tagsUpdated="handleTagsUpdated"
         />
 
@@ -585,6 +586,7 @@ setup() {
     };
 },
 computed: {
+    tagFileMetadata() { return this.tableData.find(file => file.name === this.currentTagFile)?.metadata || {}; },
     ...mapGetters(['adminUrlSettings', 'userConfig']),
     filteredTableData() {
         return this.tableData;
@@ -2034,28 +2036,22 @@ methods: {
         }
         this.showBatchTagDialog = true;
     },
-    async handleTagsUpdated(tags) {
-        // 更新本地文件数据中的标签
-        const fileIndex = this.tableData.findIndex(file => file.name === this.currentTagFile);
-        if (fileIndex !== -1) {
-            // 更新 tableData 中的标签
-            if (!this.tableData[fileIndex].metadata) {
-                this.tableData[fileIndex].metadata = {};
-            }
-            this.tableData[fileIndex].metadata.Tags = tags;
-            
-            // 如果详情对话框正在显示这个文件，也更新详情数据
-            if (this.showdetailDialog && this.detailFile?.name === this.currentTagFile) {
-                if (!this.detailFile.metadata) {
-                    this.detailFile.metadata = {};
-                }
-                this.detailFile.metadata.Tags = tags;
-            }
-        }
+    handleTagsUpdated(tags) {
+        this.handleBatchTagsUpdated([{ fileId: this.currentTagFile, tags, saved: true }]);
     },
-    async handleBatchTagsUpdated() {
-        // 刷新文件列表以显示更新后的标签
-        await this.refreshLocalFileList();
+    handleBatchTagsUpdated(results) {
+        const updates = new Map(results.filter(result => result.saved).map(result => [result.fileId, result.tags]));
+        for (const file of this.tableData) {
+            if (updates.has(file.name)) file.metadata = { ...file.metadata, Tags: updates.get(file.name) };
+        }
+        if (this.detailFile && updates.has(this.detailFile.name)) {
+            this.detailFile.metadata = { ...this.detailFile.metadata, Tags: updates.get(this.detailFile.name) };
+        }
+        const cached = fileManager.getLocalFileList();
+        for (const file of cached.files || []) {
+            if (updates.has(file.name)) file.metadata = { ...file.metadata, Tags: updates.get(file.name) };
+        }
+        fileManager.updateFileListCache(cached);
     },
     handleMetadataUpdated(fileId, updatedMetadata) {
         // 更新 tableData 中对应文件的 metadata

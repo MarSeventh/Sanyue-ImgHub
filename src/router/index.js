@@ -13,12 +13,14 @@ const adminAuthGuard = (to, from, next) => {
 
     // 不需要管理端认证，直接放行
     if (!data.adminRequired) {
+      store.commit('beginAdminAccess', { required: false, fresh: !['dashboard', 'systemConfig', 'customerConfig'].includes(from.name) })
       store.commit('setAdminLoggedIn', true)
       return next()
     }
 
     // 需要认证，检查是否有有效的 admin session
     if (data.valid && data.authType === 'admin') {
+      store.commit('beginAdminAccess', { required: true, fresh: false })
       store.commit('setAdminLoggedIn', true)
       return next()
     }

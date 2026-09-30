@@ -64,7 +64,7 @@
 
     
         <!-- 悬浮保存按钮 -->
-        <FloatingSaveButton :show="!loading" @click="saveSettings" />
+        <FloatingSaveButton :show="!loading" :loading="saving" :dirty="hasUnsavedChanges" @click="saveSettings" />
     </div>
 </template>
 
@@ -72,8 +72,10 @@
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import axios from '@/utils/axios';
 import FloatingSaveButton from '@/components/FloatingSaveButton.vue';
+import unsavedSettings from '@/mixins/unsavedSettings';
 
 export default {
+mixins: [unsavedSettings],
 components: {
     FloatingSaveButton
 },
@@ -84,6 +86,7 @@ data() {
         },
         // 加载状态
         loading: true,
+        saving: false,
         // 即使公告内容未变化，也在本次保存时刷新公告已读状态
         refreshAnnouncement: false,
         // 公告文本域手动拖拽后的高度
@@ -94,6 +97,12 @@ data() {
     };
 },
 computed: {
+    editableSettings() {
+        return {
+            config: this.settings.config.map(({ id, value }) => ({ id, value })),
+            refreshAnnouncement: this.refreshAnnouncement
+        };
+    },
     isEn() {
         return this.$i18n.locale === 'en';
     },
@@ -126,7 +135,7 @@ computed: {
 watch: {
     // 监听上传渠道变化，清空渠道名称（如果不在新列表中）
     currentUploadChannel(newVal, oldVal) {
-        if (newVal !== oldVal) {
+        if (!this.loading && newVal !== oldVal) {
             const channelNameSetting = this.settings.config?.find(s => s.id === 'defaultChannelName');
             if (channelNameSetting) {
                 const newChannelList = this.availableChannels[newVal] || [];
@@ -180,21 +189,30 @@ methods: {
         };
         window.addEventListener('mouseup', this.announcementResizeMouseUpHandler, { once: true });
     },
-    saveSettings() {
-        fetchWithAuth('/api/manage/sysConfig/page', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ...this.settings,
-                refreshAnnouncement: this.refreshAnnouncement
-            })
-        })
-        .then(() => {
-            this.refreshAnnouncement = false;
+    async saveSettings() {
+        if (this.saving) return;
+        const submitted = JSON.parse(JSON.stringify({ ...this.settings, refreshAnnouncement: this.refreshAnnouncement }));
+        this.saving = true;
+        try {
+            const response = await fetchWithAuth('/api/manage/sysConfig/page', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(submitted)
+            });
+            if (!response.ok) throw new Error(this.$t('floatingSave.failed'));
+            if (this.refreshAnnouncement === submitted.refreshAnnouncement) this.refreshAnnouncement = false;
+            this.markSettingsSaved({
+                config: submitted.config.map(({ id, value }) => ({ id, value })),
+                refreshAnnouncement: false
+            });
             this.$message.success(this.$t('sysPage.settingsSaved'));
-        });
+        } catch {
+            this.$message.error(this.$t('floatingSave.failed'));
+        } finally {
+            this.saving = false;
+        }
     },
     // 获取可用渠道列表
     async fetchAvailableChannels() {
@@ -220,7 +238,7 @@ mounted() {
     // 获取上传设置
     fetchWithAuth('/api/manage/sysConfig/page')
     .then((response) => response.json())
-    .then((data) => {
+    .then(async (data) => {
         this.settings = data;
         // 初始化配置项默认值，并规范化布尔类型
         if (this.settings.config) {
@@ -237,6 +255,8 @@ mounted() {
                 }
             });
         }
+        await this.$nextTick();
+        this.markSettingsSaved();
     })
     .finally(() => {
         this.loading = false;

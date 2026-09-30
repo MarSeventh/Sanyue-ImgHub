@@ -26,6 +26,7 @@ import SysCogUpload from '@/components/config/SysCogUpload.vue';
 import SysCogSecurity from '@/components/config/SysCogSecurity.vue';
 import SysCogPage from '@/components/config/SysCogPage.vue';
 import SysCogOthers from '@/components/config/SysCogOthers.vue';
+import SysCogAI from '@/components/config/SysCogAI.vue';
 import backgroundManager from '@/mixins/backgroundManager';
 
 export default {
@@ -59,7 +60,8 @@ export default {
         SysCogUpload,
         SysCogSecurity,
         SysCogPage,
-        SysCogOthers
+        SysCogOthers,
+        SysCogAI
     },
     computed: {
         disableTooltip() {
@@ -79,6 +81,8 @@ export default {
                     return SysCogPage;
                 case 'others':
                     return SysCogOthers;
+                case 'ai':
+                    return SysCogAI;
                 default:
                     return SysCogStatus;
             }

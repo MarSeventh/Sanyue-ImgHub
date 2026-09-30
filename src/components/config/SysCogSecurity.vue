@@ -7,6 +7,7 @@
             <h4 class="second-title">{{ $t('sysSecurity.userAuth') }}</h4>
             <el-form 
                 :model="authSettings.user" 
+                :disabled="saving"
                 :rules = "userPassRules"
                 ref = "userPassForm"
                 label-width="120px"
@@ -28,6 +29,7 @@
             <h4 class="second-title">{{ $t('sysSecurity.adminAuth') }}</h4>
             <el-form 
                 :model="authSettings.admin"
+                :disabled="saving"
                 :rules = "adminPassRules"
                 ref = "adminPassForm"
                 label-width="120px"
@@ -130,7 +132,7 @@
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h4>         
-            <el-form :model="uploadSettings.moderate" label-width="120px">
+            <el-form :model="uploadSettings.moderate" label-width="120px" :disabled="saving">
                 <el-form-item :label="$t('sysSecurity.enableReview')">
                     <el-switch v-model="uploadSettings.moderate.enabled"/>
                 </el-form-item>
@@ -153,7 +155,7 @@
                     <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                 </el-tooltip>
             </h4>
-            <el-form :model="uploadSettings.ipQuery" label-width="120px">
+            <el-form :model="uploadSettings.ipQuery" label-width="120px" :disabled="saving">
                 <el-form-item :label="$t('sysSecurity.enableIpQuery')">
                     <el-switch v-model="uploadSettings.ipQuery.enabled"/>
                 </el-form-item>
@@ -256,7 +258,7 @@
         <div class="first-settings">
             <h3 class="first-title">{{ $t('sysSecurity.accessManagement') }}</h3>
             <h4 class="second-title">{{ $t('sysSecurity.domainFilter') }}</h4>
-            <el-form :model="accessSettings" label-width="120px">
+            <el-form :model="accessSettings" label-width="120px" :disabled="saving">
                 <el-form-item>
                     <template #label>
                         {{ $t('sysSecurity.allowedDomains') }}
@@ -268,7 +270,7 @@
                 </el-form-item>
             </el-form>
             <h4 class="second-title">{{ $t('sysSecurity.whiteListMode') }}</h4>
-            <el-form :model="accessSettings" :rules="accessRules" ref="accessForm" label-width="120px">
+            <el-form :model="accessSettings" :rules="accessRules" ref="accessForm" label-width="120px" :disabled="saving">
                 <el-form-item>
                     <template #label>
                         {{ $t('sysSecurity.enableWhiteList') }}
@@ -280,7 +282,7 @@
                 </el-form-item>
             </el-form>
             <h4 class="second-title">{{ $t('sysSecurity.imageTransform') }}</h4>
-            <el-form :model="accessSettings" :rules="accessRules" ref="imageTransformForm" label-width="120px">
+            <el-form :model="accessSettings" :rules="accessRules" ref="imageTransformForm" label-width="120px" :disabled="saving">
                 <el-form-item>
                     <template #label>
                         {{ $t('sysSecurity.enableImageTransform') }}
@@ -307,7 +309,7 @@
                 </el-form-item>
             </el-form>
             <h4 class="second-title">{{ $t('sysSecurity.sessionSecurityPolicy') }}</h4>
-            <el-form :model="accessSettings" label-width="120px">
+            <el-form :model="accessSettings" label-width="120px" :disabled="saving">
                 <el-form-item>
                     <template #label>
                         {{ $t('sysSecurity.secureMode') }}
@@ -343,7 +345,7 @@
         </div>
 
         <!-- 悬浮保存按钮 -->
-        <FloatingSaveButton :show="!loading" @click="saveSettings" />
+        <FloatingSaveButton :show="!loading" :loading="saving" :dirty="hasUnsavedChanges" @click="saveSettings" />
 
         <!-- 创建Token对话框 -->
         <el-dialog v-model="showCreateTokenDialog" :title="$t('sysSecurity.createTokenTitle')" :width="dialogWidth">
@@ -452,8 +454,10 @@
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import FloatingSaveButton from '@/components/FloatingSaveButton.vue';
 import { computeExpiresAt, getTokenStatus } from '@/utils/tokenExpiration';
+import unsavedSettings from '@/mixins/unsavedSettings';
 
 export default {
+mixins: [unsavedSettings],
 components: {
     FloatingSaveButton
 },
@@ -479,6 +483,7 @@ data() {
         apiTokens: [], // API Token列表
         // 加载状态
         loading: true,
+        saving: false,
         tokenLoading: false,
 
         // 修改密码相关
@@ -529,6 +534,18 @@ data() {
     };
 },
 computed: {
+    editableSettings() {
+        return {
+            auth: {
+                user: { authCode: this.authSettings.user.authCode },
+                admin: { adminUsername: this.authSettings.admin.adminUsername, adminPassword: this.authSettings.admin.adminPassword }
+            },
+            upload: this.uploadSettings,
+            access: this.accessSettings,
+            clearUserPassword: this.clearUserPassword,
+            clearAdminPassword: this.clearAdminPassword
+        };
+    },
     dialogWidth() {
         return window.innerWidth > 768 ? '50%' : '90%';
     },
@@ -913,6 +930,8 @@ methods: {
     },
     
     saveSettings() {
+        if (this.saving) return;
+        this.saving = true;
         // 所有表单的Promise数组
         let validationPromises = [];
 
@@ -944,7 +963,7 @@ methods: {
         }));
 
         // 等待所有验证完成
-        Promise.all(validationPromises).then((results) => {
+        return Promise.all(validationPromises).then((results) => {
             const isValid = results.every(valid => valid);
 
             if (!isValid) {
@@ -962,11 +981,11 @@ methods: {
                 return;
             }
 
-            const settings = {
+            const settings = JSON.parse(JSON.stringify({
                 auth: this.authSettings,
                 upload: this.uploadSettings,
                 access: this.accessSettings
-            };
+            }));
             // 不保存确认密码相关字段
             delete settings.auth.user.confirmNewUserPassword;
             delete settings.auth.admin.confirmNewAdminPassword;
@@ -981,15 +1000,19 @@ methods: {
                 settings.auth.admin.adminPassword = '';
             }
 
-            fetchWithAuth('/api/manage/sysConfig/security', {
+            return fetchWithAuth('/api/manage/sysConfig/security', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(settings)
-            }).then(res => res.json()).then((data) => {
+            }).then(res => {
+                if (!res.ok) throw new Error(this.$t('floatingSave.failed'));
+                return res.json();
+            }).then((data) => {
                 // 管理端密码变更后，当前会话已被清除，需要重新登录
                 if (data.adminPasswordChanged) {
+                    this.markSettingsSaved();
                     const msg = this.$t('sysSecurity.adminPasswordChangedRelogin');
                     this.$message.warning(msg);
                     setTimeout(() => {
@@ -1003,6 +1026,8 @@ methods: {
                 // 保存成功后重置密码字段为空（后端已处理）
                 this.authSettings.user.authCode = '';
                 this.authSettings.admin.adminPassword = '';
+                this.authSettings.user.confirmNewUserPassword = '';
+                this.authSettings.admin.confirmNewAdminPassword = '';
                 this.oriUserPassword = '';
                 this.oriAdminPassword = '';
                 // 标记已有密码（如果用户刚设置了密码，且不是清除操作）
@@ -1020,9 +1045,12 @@ methods: {
                 this.showAdminPassConfirm = false;
                 this.clearUserPassword = false;
                 this.clearAdminPassword = false;
-            }).catch(() => {
-                // 如果请求过程中 session 已失效导致 fetchWithAuth 跳转，忽略后续错误
+                this.markSettingsSaved();
             });
+        }).catch(() => {
+            this.$message.error(this.$t('floatingSave.failed'));
+        }).finally(() => {
+            this.saving = false;
         });
     }
 },
@@ -1031,7 +1059,7 @@ mounted() {
     // 获取上传设置
     fetchWithAuth('/api/manage/sysConfig/security')
     .then((response) => response.json())
-    .then((data) => {
+    .then(async (data) => {
         this.authSettings = data.auth;
         this.uploadSettings = this.normalizeIpQuerySettings(data.upload);
         this.accessSettings = {
@@ -1045,6 +1073,8 @@ mounted() {
         this.oriAdminPassword = '';
         this.authSettings.user.confirmNewUserPassword = '';
         this.authSettings.admin.confirmNewAdminPassword = '';
+        await this.$nextTick();
+        this.markSettingsSaved();
         
         // 加载API Token列表
         this.loadApiTokens();

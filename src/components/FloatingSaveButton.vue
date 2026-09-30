@@ -6,6 +6,7 @@
             :class="{ 'is-loading': loading }"
             @click="handleClick"
         >
+            <span v-if="dirty" class="unsaved-dot" role="img" :aria-label="$t('floatingSave.unsaved')" />
             <font-awesome-icon v-if="loading" icon="spinner" spin />
             <font-awesome-icon v-else icon="save" />
             <span class="save-text">{{ loading ? $t('floatingSave.saving') : $t('floatingSave.save') }}</span>
@@ -18,6 +19,10 @@ export default {
     name: 'FloatingSaveButton',
     emits: ['click'],
     props: {
+        dirty: {
+            type: Boolean,
+            default: false
+        },
         loading: {
             type: Boolean,
             default: false
@@ -29,16 +34,18 @@ export default {
     },
     data() {
         return {
-            visible: false
+            visible: false,
+            visibilityTimer: null
         };
     },
     watch: {
         show: {
             immediate: true,
             handler(val) {
+                clearTimeout(this.visibilityTimer);
                 if (val) {
                     // 延迟显示，等待 Element Plus 加载遮罩淡出动画完成
-                    setTimeout(() => {
+                    this.visibilityTimer = setTimeout(() => {
                         this.visible = true;
                     }, 600);
                 } else {
@@ -46,6 +53,9 @@ export default {
                 }
             }
         }
+    },
+    beforeUnmount() {
+        clearTimeout(this.visibilityTimer);
     },
     methods: {
         handleClick() {
@@ -80,6 +90,19 @@ export default {
 
 .floating-save-btn:hover {
     box-shadow: var(--floating-btn-shadow-hover);
+}
+
+.unsaved-dot {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    width: 10px;
+    height: 10px;
+    box-sizing: content-box;
+    border: 2px solid var(--el-bg-color);
+    border-radius: 50%;
+    background: var(--el-color-danger);
+    pointer-events: none;
 }
 
 .floating-save-btn:active {

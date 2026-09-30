@@ -3,6 +3,7 @@
         :title="$t('tagManagement.title')"
         v-model="visible"
         :width="dialogWidth"
+        :before-close="beforeClose"
         @close="handleClose"
     >
         <div class="tag-management-container">
@@ -10,13 +11,14 @@
             <div class="input-section">
                 <el-input
                     v-model="inputTag"
+                    :disabled="aiBusy || loading"
                     :placeholder="$t('tagManagement.inputPlaceholder')"
                     @keyup.enter="handleAddTag"
                     @input="handleInputChange"
                     clearable
                 >
                     <template #append>
-                        <el-button @click="handleAddTag" type="primary">
+                        <el-button @click="handleAddTag" type="primary" :disabled="aiBusy || loading">
                             <font-awesome-icon icon="plus"/>
                         </el-button>
                     </template>
@@ -42,7 +44,7 @@
                     <el-tag
                         v-for="tag in currentTags"
                         :key="tag"
-                        closable
+                        :closable="!aiBusy && !loading"
                         @close="handleRemoveTag(tag)"
                         class="tag-item"
                     >
@@ -76,11 +78,15 @@
                     {{ $t('tagManagement.noPopularTags') }}
                 </div>
             </div>
+            <el-alert v-if="indexPending" :title="$t('tagManagement.indexPending')" type="warning" show-icon :closable="false">
+                <el-button size="small" :loading="loading" :disabled="aiBusy" @click="repairIndex"><font-awesome-icon icon="redo" /> {{ $t('aiTags.retry') }}</el-button>
+            </el-alert>
+            <AITagPanel v-if="visible" class="single-ai-panel" :files="aiFiles" :disabled="loading" @busy="aiBusy = $event" @applied="handleAIResults" />
         </div>
 
         <template #footer>
             <span class="dialog-footer">
-                <el-button @click="handleClose">{{ $t('tagManagement.close') }}</el-button>
+                <el-button :disabled="aiBusy || loading" @click="handleClose">{{ $t('tagManagement.close') }}</el-button>
             </span>
         </template>
     </el-dialog>
@@ -90,11 +96,14 @@
 import { ElMessage } from 'element-plus';
 import { Loading } from '@element-plus/icons-vue';
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import AITagPanel from './AITagPanel.vue';
+import { apiJSON, aiErrorText } from '@/utils/aiTags';
 
 export default {
     name: 'TagManagementDialog',
     components: {
-        Loading
+        Loading,
+        AITagPanel
     },
     props: {
         modelValue: {
@@ -104,6 +113,10 @@ export default {
         fileId: {
             type: String,
             required: true
+        },
+        fileMetadata: {
+            type: Object,
+            default: () => ({})
         }
     },
     emits: ['update:modelValue', 'tagsUpdated'],
@@ -115,11 +128,14 @@ export default {
             popularTags: [],
             showSuggestions: false,
             loading: false,
+            indexPending: false,
+            aiBusy: false,
             loadingPopularTags: false,
             debounceTimer: null
         };
     },
     computed: {
+        aiFiles() { return this.fileId ? [{ name: this.fileId, metadata: this.fileMetadata }] : []; },
         visible: {
             get() {
                 return this.modelValue;
@@ -129,7 +145,7 @@ export default {
             }
         },
         dialogWidth() {
-            return window.innerWidth < 768 ? '90%' : '500px';
+            return 'min(500px, 90vw)';
         }
     },
     watch: {
@@ -140,8 +156,29 @@ export default {
             }
         }
     },
+    beforeUnmount() { clearTimeout(this.debounceTimer); },
     methods: {
+        beforeClose(done) { if (!this.aiBusy && !this.loading) done(); },
+        handleAIResults(results) {
+            const result = results.find(item => item.fileId === this.fileId);
+            if (result) { this.currentTags = result.tags; this.$emit('tagsUpdated', result.tags); }
+        },
+        async repairIndex() {
+            if (this.aiBusy || this.loading) return;
+            this.loading = true;
+            try {
+                const data = await apiJSON(`/api/manage/tags/${encodeURIComponent(this.fileId)}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'add', tags: [], repairIndex: true })
+                });
+                this.currentTags = data.tags;
+                this.indexPending = !!data.indexPending;
+                this.$emit('tagsUpdated', this.currentTags);
+            } catch (error) { ElMessage.error(aiErrorText(error, this.$t, this.$te)); }
+            finally { this.loading = false; }
+        },
         async loadFileTags() {
+            this.loading = true;
             try {
                 const response = await fetchWithAuth(`/api/manage/tags/${encodeURIComponent(this.fileId)}`, {
                     method: 'GET'
@@ -156,7 +193,7 @@ export default {
             } catch (error) {
                 console.error('Error loading file tags:', error);
                 ElMessage.error(this.$t('tagManagement.loadFailed'));
-            }
+            } finally { this.loading = false; }
         },
 
         async loadPopularTags() {
@@ -215,6 +252,7 @@ export default {
         },
 
         async handleAddTag() {
+            if (this.aiBusy || this.loading) return;
             const tag = this.inputTag.trim();
 
             if (!tag) {
@@ -228,6 +266,7 @@ export default {
                 return;
             }
 
+            this.loading = true;
             try {
                 const response = await fetchWithAuth(`/api/manage/tags/${encodeURIComponent(this.fileId)}`, {
                     method: 'POST',
@@ -236,6 +275,7 @@ export default {
                     },
                     body: JSON.stringify({
                         action: 'add',
+                        repairIndex: this.indexPending,
                         tags: [tag]
                     })
                 });
@@ -243,24 +283,27 @@ export default {
                 if (response.ok) {
                     const data = await response.json();
                     this.currentTags = data.tags || [];
+                    this.indexPending = !!data.indexPending;
                     this.inputTag = '';
                     this.showSuggestions = false;
-                    ElMessage.success(this.$t('tagManagement.addSuccess'));
+                    if (!data.indexPending) ElMessage.success(this.$t('tagManagement.addSuccess'));
                     this.$emit('tagsUpdated', this.currentTags);
 
                     // 重新加载常用标签
                     this.loadPopularTags();
                 } else {
                     const error = await response.json();
-                    throw new Error(error.message || this.$t('tagManagement.addFailed'));
+                    ElMessage.error(aiErrorText(error.error || { code: 'INTERNAL_ERROR' }, this.$t, this.$te));
                 }
             } catch (error) {
                 console.error('Error adding tag:', error);
-                ElMessage.error(error.message || this.$t('tagManagement.addFailed'));
-            }
+                ElMessage.error(this.$t('tagManagement.addFailed'));
+            } finally { this.loading = false; }
         },
 
         async handleRemoveTag(tag) {
+            if (this.aiBusy || this.loading) return;
+            this.loading = true;
             try {
                 const response = await fetchWithAuth(`/api/manage/tags/${encodeURIComponent(this.fileId)}`, {
                     method: 'POST',
@@ -269,6 +312,7 @@ export default {
                     },
                     body: JSON.stringify({
                         action: 'remove',
+                        repairIndex: this.indexPending,
                         tags: [tag]
                     })
                 });
@@ -276,7 +320,8 @@ export default {
                 if (response.ok) {
                     const data = await response.json();
                     this.currentTags = data.tags || [];
-                    ElMessage.success(this.$t('tagManagement.removeSuccess'));
+                    this.indexPending = !!data.indexPending;
+                    if (!data.indexPending) ElMessage.success(this.$t('tagManagement.removeSuccess'));
                     this.$emit('tagsUpdated', this.currentTags);
 
                     // 重新加载常用标签
@@ -287,19 +332,22 @@ export default {
             } catch (error) {
                 console.error('Error removing tag:', error);
                 ElMessage.error(this.$t('tagManagement.removeFailed'));
-            }
+            } finally { this.loading = false; }
         },
 
         handleAddPopularTag(tag) {
+            if (this.aiBusy || this.loading) return;
             this.inputTag = tag;
             this.handleAddTag();
         },
 
         handleClose() {
+            if (this.aiBusy || this.loading) return;
             this.visible = false;
             this.inputTag = '';
             this.showSuggestions = false;
             this.currentTags = [];
+            this.indexPending = false;
             this.popularTags = [];
         }
     }
@@ -308,7 +356,11 @@ export default {
 
 <style scoped>
 .tag-management-container {
-    padding: 10px 0;
+    padding: 10px 0 0;
+}
+
+.tag-management-container .single-ai-panel {
+    margin-bottom: 0;
 }
 
 .input-section {

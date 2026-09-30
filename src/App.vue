@@ -1,6 +1,25 @@
 <template>
   <el-config-provider :locale="elementLocale">
     <router-view/>
+    <el-dialog
+      v-model="adminAuthWarningVisible"
+      :title="$t('adminAuthWarning.title')"
+      :width="'min(480px, 90vw)'"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+    >
+      <el-alert
+        :title="$t('adminAuthWarning.message')"
+        type="warning"
+        show-icon
+        :closable="false"
+        class="admin-auth-warning-message"
+      />
+      <template #footer>
+        <el-button @click="openSecuritySettings">{{ $t('adminAuthWarning.configure') }}</el-button>
+        <el-button type="primary" @click="$store.commit('dismissAdminAuthWarning')">{{ $t('adminAuthWarning.close') }}</el-button>
+      </template>
+    </el-dialog>
   </el-config-provider>
 </template>
 
@@ -18,6 +37,10 @@ export default {
     }
   },
   computed: {
+    adminAuthWarningVisible: {
+      get() { return this.$store.state.adminAuthWarningVisible },
+      set(value) { if (!value) this.$store.commit('dismissAdminAuthWarning') }
+    },
     ...mapGetters(['userConfig', 'useDarkMode']),
     elementLocale() {
       return this.$i18n.locale === 'zh-CN' ? zhCnLocale : enLocale
@@ -39,6 +62,10 @@ export default {
   watch: {
   },
   methods: {
+    openSecuritySettings() {
+      this.$store.commit('dismissAdminAuthWarning')
+      this.$router.push('/systemConfig#security')
+    },
     initOverlayScrollbars() {
       try {
         // 检查是否已经初始化
@@ -93,3 +120,17 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.admin-auth-warning-message {
+  text-align: left;
+  border: 1px solid var(--el-color-warning-light-5);
+  background-color: var(--el-color-warning-light-9);
+  padding: 16px;
+}
+.admin-auth-warning-message :deep(.el-alert__title) {
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.7;
+}
+</style>

@@ -110,15 +110,17 @@
 
     
         <!-- 悬浮保存按钮 -->
-        <FloatingSaveButton :show="!loading" @click="saveSettings" />
+        <FloatingSaveButton :show="!loading" :loading="saving" :dirty="hasUnsavedChanges" @click="saveSettings" />
     </div>
 </template>
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import FloatingSaveButton from '@/components/FloatingSaveButton.vue';
+import unsavedSettings from '@/mixins/unsavedSettings';
 
 export default {
+mixins: [unsavedSettings],
 components: {
     FloatingSaveButton
 },
@@ -133,10 +135,12 @@ data() {
         },
         availableChannels: {}, // 可用渠道列表
         // 加载状态
-        loading: true
+        loading: true,
+        saving: false
     };
 },
 computed: {
+    editableSettings() { return this.settings; },
     // WebDAV 当前渠道类型对应的渠道列表
     webdavChannelList() {
         const channelType = this.settings.webDAV?.uploadChannel;
@@ -146,21 +150,32 @@ computed: {
 watch: {
     'settings.webDAV.uploadChannel'() {
         // 切换渠道类型时清空指定的渠道名称
-        if (this.settings.webDAV) {
+        if (!this.loading && this.settings.webDAV) {
             this.settings.webDAV.channelName = '';
         }
     }
 },
 methods: {
-    saveSettings() {
-        fetchWithAuth('/api/manage/sysConfig/others', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(this.settings)
-        })
-        .then(() => this.$message.success(this.$t('sysOthers.settingsSaved')));
+    async saveSettings() {
+        if (this.saving) return;
+        const submitted = JSON.parse(JSON.stringify(this.settings));
+        this.saving = true;
+        try {
+            const response = await fetchWithAuth('/api/manage/sysConfig/others', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(submitted)
+            });
+            if (!response.ok) throw new Error(this.$t('floatingSave.failed'));
+            this.markSettingsSaved(submitted);
+            this.$message.success(this.$t('sysOthers.settingsSaved'));
+        } catch {
+            this.$message.error(this.$t('floatingSave.failed'));
+        } finally {
+            this.saving = false;
+        }
     },
     async fetchAvailableChannels() {
         try {
@@ -178,8 +193,10 @@ mounted() {
     // 获取上传设置
     fetchWithAuth('/api/manage/sysConfig/others')
     .then((response) => response.json())
-    .then((data) => {
+    .then(async (data) => {
         this.settings = data;
+        await this.$nextTick();
+        this.markSettingsSaved();
     })
     .finally(() => {
         this.loading = false;

@@ -40,6 +40,7 @@ data() {
             { index: 'upload', icon: 'cloud-upload', titleKey: 'sysConfigTabs.uploadSettings' },
             { index: 'security', icon: 'shield', titleKey: 'sysConfigTabs.securitySettings' },
             { index: 'page', icon: 'pager', titleKey: 'sysConfigTabs.pageSettings' },
+            { index: 'ai', icon: 'comments', titleKey: 'sysAI.title' },
             { index: 'others', icon: 'cog', titleKey: 'sysConfigTabs.otherSettings' }
         ]
     };
