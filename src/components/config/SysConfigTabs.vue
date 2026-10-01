@@ -8,8 +8,10 @@
             :class="{ 'is-active': activeIndex === item.index }"
             @click="handleSelect(item.index)"
         >
-            <AIIcon v-if="item.index === 'ai'" class="menu-icon" />
-            <font-awesome-icon v-else :icon="item.icon" class="menu-icon" />
+            <span class="menu-icon">
+                <AIIcon v-if="item.index === 'ai'" class="menu-glyph" />
+                <font-awesome-icon v-else :icon="item.icon" class="menu-glyph" />
+            </span>
             <span class="menu-text">{{ $t(item.titleKey) }}</span>
         </div>
     </div>
@@ -159,7 +161,7 @@ html.dark .sidebar-container:hover {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding: 12px 12px 12px 0;
+    padding: 0 12px 0 0;
     height: 42px;
     box-sizing: border-box;
     border-radius: 10px;
@@ -189,24 +191,33 @@ html.dark .menu-item.is-active {
 }
 
 .menu-icon {
+    display: grid;
+    place-items: center;
     width: 40px;
     min-width: 40px;
+    height: 20px;
     font-size: 16px;
     flex-shrink: 0;
-    text-align: center;
+    line-height: 1;
+}
+
+.menu-icon > .menu-glyph {
+    display: block;
+    width: 16px;
+    height: 16px;
 }
 
 .menu-text {
+    display: flex;
+    align-items: center;
+    height: 20px;
+    line-height: 20px;
     font-size: 14px;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     opacity: 1;
     transition: opacity 0.2s ease 0.05s, max-width 0.25s ease;
-}
-
-.menu-icon.ai-icon {
-    height: 20px;
 }
 
 .sidebar-container.is-collapsed .menu-text {
