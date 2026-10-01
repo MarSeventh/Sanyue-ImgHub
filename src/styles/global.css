@@ -721,27 +721,6 @@ html.dark {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior-y: contain;
-    scrollbar-gutter: stable;
-    scrollbar-width: thin !important;
-    scrollbar-color: color-mix(in srgb, var(--el-text-color-secondary) 55%, transparent) transparent;
-}
-
-/* 覆盖全局隐藏原生滚动条的规则，弹窗内容区保留可拖动的滑块。 */
-.el-dialog > .el-dialog__body::-webkit-scrollbar {
-    display: block !important;
-    width: 8px !important;
-    height: 8px !important;
-}
-
-.el-dialog > .el-dialog__body::-webkit-scrollbar-thumb {
-    border: 2px solid transparent;
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--el-text-color-secondary) 55%, transparent);
-    background-clip: padding-box;
-}
-
-.el-dialog > .el-dialog__body::-webkit-scrollbar-thumb:hover {
-    background-color: var(--el-text-color-secondary);
 }
 
 /* 弹窗头部样式 */
