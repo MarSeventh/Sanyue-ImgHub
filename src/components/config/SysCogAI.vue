@@ -11,7 +11,7 @@
                 </el-form>
                 <div class="resource-group">
                     <div class="group-header">
-                        <h4><font-awesome-icon icon="server" />{{ $t('sysAI.providers') }}<el-tag size="small" type="info">{{ settings.providers.length }}</el-tag></h4>
+                        <h4><span class="resource-title-icon"><font-awesome-icon icon="server" /></span><span class="resource-title-text">{{ $t('sysAI.providers') }}</span><el-tag size="small" type="info">{{ settings.providers.length }}</el-tag></h4>
                         <el-button type="primary" size="small" :disabled="saving || !!testing || settings.providers.length >= 8" @click="openProvider()"><font-awesome-icon icon="plus" />{{ $t('sysAI.addProvider') }}</el-button>
                     </div>
                     <div v-if="!settings.providers.length" class="empty-card">
@@ -38,7 +38,7 @@
                 </div>
                 <div class="resource-group">
                     <div class="group-header">
-                        <h4><font-awesome-icon icon="robot" />{{ $t('sysAI.models') }}<el-tag size="small" type="info">{{ settings.models.length }}</el-tag></h4>
+                        <h4><span class="resource-title-icon"><font-awesome-icon icon="robot" /></span><span class="resource-title-text">{{ $t('sysAI.models') }}</span><el-tag size="small" type="info">{{ settings.models.length }}</el-tag></h4>
                         <el-button type="primary" size="small" :disabled="saving || !!testing || !settings.providers.length || settings.models.length >= 16" @click="openModel()"><font-awesome-icon icon="plus" />{{ $t('sysAI.addModel') }}</el-button>
                     </div>
                     <div v-if="!settings.models.length" class="empty-card">
@@ -311,8 +311,10 @@ export default {
 .empty-card :deep(.el-button > span) { display: inline-flex; align-items: center; gap: 8px; }
 .resource-group { margin-bottom: 20px; border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden; background: var(--glass-bg); box-shadow: var(--glass-shadow); text-align: left; }
 .group-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; background: var(--glass-header-bg); border-bottom: 1px solid var(--glass-header-border); }
-.group-header h4 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 15px; }
-.group-header h4 > svg { color: var(--el-color-primary); }
+.group-header h4 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; line-height: 20px; }
+.resource-title-icon { display: grid; place-items: center; width: 20px; height: 20px; flex-shrink: 0; color: var(--el-color-primary); line-height: 1; }
+.resource-title-icon > svg { display: block; width: 16px; height: 16px; }
+.resource-title-text { display: inline-flex; align-items: center; min-height: 20px; }
 .resource-group .empty-card { margin: 0; border: 0; box-shadow: none; border-radius: 0; background: transparent; }
 .resource-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 16px; padding: 20px; }
 .resource-card { display: flex; flex-direction: column; border: 1px solid var(--glass-border); border-radius: 10px; background: var(--glass-bg); overflow: hidden; min-width: 0; }

@@ -74,7 +74,7 @@
                     </section>
                 </el-tab-pane>
                 <el-tab-pane name="ai" lazy>
-                    <template #label><span class="tag-tab-label"><font-awesome-icon icon="robot" /><span>{{ $t('aiTags.tab') }}</span></span></template>
+                    <template #label><span class="tag-tab-label"><AIIcon /><span>{{ $t('aiTags.tab') }}</span></span></template>
                     <AITagPanel v-if="visible" :files="selectedFilesOnly" :disabled="loading" @busy="aiBusy = $event" @applied="handleAIResults" />
                 </el-tab-pane>
             </el-tabs>
@@ -86,10 +86,11 @@
 import { ElMessage, ElMessageBox } from 'element-plus';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import AITagPanel from './AITagPanel.vue';
+import AIIcon from '@/components/icons/AIIcon.vue';
 
 export default {
     name: 'BatchTagDialog',
-    components: { AITagPanel },
+    components: { AITagPanel, AIIcon },
     props: {
         modelValue: {
             type: Boolean,

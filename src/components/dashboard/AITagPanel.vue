@@ -2,13 +2,13 @@
     <section class="ai-tags" v-loading="loadingConfig">
         <div class="ai-toolbar">
             <div class="ai-heading">
-                <span class="ai-heading-icon"><font-awesome-icon icon="robot" /></span>
+                <span class="ai-heading-icon"><AIIcon /></span>
                 <h4>{{ $t('aiTags.tab') }}</h4>
                 <el-tooltip :content="$t('aiTags.hint')" placement="top">
-                    <font-awesome-icon icon="question-circle" class="help-icon" />
+                    <span class="ai-heading-help"><font-awesome-icon icon="question-circle" class="help-icon" /></span>
                 </el-tooltip>
             </div>
-            <el-button v-if="available" type="primary" :loading="generating" :disabled="disabled || saving || !files.length" @click="generate(false)">
+            <el-button v-if="available" class="ai-generate-button" type="primary" :loading="generating" :disabled="disabled || saving || !files.length" @click="generate(false)">
                 <font-awesome-icon v-if="!generating" icon="tags" />{{ $t('aiTags.generate') }}
             </el-button>
         </div>
@@ -59,10 +59,12 @@
 </template>
 
 <script>
+import AIIcon from '@/components/icons/AIIcon.vue';
 import { apiJSON, aiErrorText, generateTagSuggestions, applyTagSuggestions } from '@/utils/aiTags';
 
 export default {
     name: 'AITagPanel',
+    components: { AIIcon },
     props: { files: { type: Array, required: true }, disabled: { type: Boolean, default: false } },
     emits: ['applied', 'busy'],
     data() {
@@ -159,12 +161,16 @@ export default {
     display: flex; align-items: center; gap: 10px;
 }
 .ai-toolbar, .ai-progress-label, .ai-footer { justify-content: space-between; }
-.ai-toolbar { flex-wrap: wrap; }
-.ai-heading h4 { margin: 0; color: var(--el-text-color-primary); font-size: 15px; }
+.ai-toolbar { flex-wrap: wrap; column-gap: 12px; row-gap: 10px; }
+.ai-heading { min-width: 0; min-height: 32px; gap: 8px; }
+.ai-heading h4 { display: flex; align-items: center; margin: 0; min-height: 20px; color: var(--el-text-color-primary); font-size: 15px; line-height: 20px; }
+.ai-heading-help { display: grid; place-items: center; width: 16px; height: 20px; flex-shrink: 0; }
+.ai-heading-help > svg { display: block; width: 14px; height: 14px; }
+.ai-toolbar .ai-generate-button { align-self: center; flex-shrink: 0; height: 32px; margin: 0 0 0 auto; padding: 8px 12px; }
 .ai-heading-icon, .ai-empty-icon {
     display: grid; place-items: center; color: var(--el-color-primary); background: var(--el-color-primary-light-9); border-radius: 12px;
 }
-.ai-heading-icon { width: 34px; height: 34px; font-size: 16px; }
+.ai-heading-icon { width: 28px; height: 28px; flex-shrink: 0; font-size: 16px; border-radius: 9px; }
 .help-icon { color: var(--el-text-color-secondary); cursor: pointer; }
 .ai-tags .el-button { gap: 7px; }
 .ai-tags :deep(.el-button > span) { display: inline-flex; align-items: center; gap: 7px; }

@@ -8,7 +8,8 @@
             :class="{ 'is-active': activeIndex === item.index }"
             @click="handleSelect(item.index)"
         >
-            <font-awesome-icon :icon="item.icon" class="menu-icon" />
+            <AIIcon v-if="item.index === 'ai'" class="menu-icon" />
+            <font-awesome-icon v-else :icon="item.icon" class="menu-icon" />
             <span class="menu-text">{{ $t(item.titleKey) }}</span>
         </div>
     </div>
@@ -20,8 +21,11 @@
 </template>
 
 <script>
+import AIIcon from '@/components/icons/AIIcon.vue';
+
 export default {
 name: 'SysConfigTabs',
+components: { AIIcon },
 props: {
     activeIndex: {
         type: String,
@@ -40,7 +44,7 @@ data() {
             { index: 'upload', icon: 'cloud-upload', titleKey: 'sysConfigTabs.uploadSettings' },
             { index: 'security', icon: 'shield', titleKey: 'sysConfigTabs.securitySettings' },
             { index: 'page', icon: 'pager', titleKey: 'sysConfigTabs.pageSettings' },
-            { index: 'ai', icon: 'comments', titleKey: 'sysAI.title' },
+            { index: 'ai', titleKey: 'sysAI.title' },
             { index: 'others', icon: 'cog', titleKey: 'sysConfigTabs.otherSettings' }
         ]
     };
@@ -199,6 +203,10 @@ html.dark .menu-item.is-active {
     overflow: hidden;
     opacity: 1;
     transition: opacity 0.2s ease 0.05s, max-width 0.25s ease;
+}
+
+.menu-icon.ai-icon {
+    height: 20px;
 }
 
 .sidebar-container.is-collapsed .menu-text {
