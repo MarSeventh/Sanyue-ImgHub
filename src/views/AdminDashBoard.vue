@@ -2224,6 +2224,11 @@ beforeUnmount() {
 }
 
 @media (max-width: 768px) {
+    .pagination-container :deep(.btn-prev),
+    .pagination-container :deep(.btn-next) {
+        display: none !important;
+    }
+
     .search-card :deep(.el-input__inner) {
         height: 28px;
         font-size: 0.85em;

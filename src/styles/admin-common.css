@@ -267,7 +267,6 @@
 
     .pagination-container :deep(.btn-prev),
     .pagination-container :deep(.btn-next) {
-        display: none !important;
         position: static !important;
         min-width: 30px !important;
         width: 30px !important;
