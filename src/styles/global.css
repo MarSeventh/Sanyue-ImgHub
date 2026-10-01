@@ -721,6 +721,9 @@ html.dark {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior-y: contain;
+    /* 直接柔化现有滚动裁切边缘，不增加遮罩层；渐变范围留在内容留白内。 */
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20px, #000 calc(100% - 20px), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 20px, #000 calc(100% - 20px), transparent);
 }
 
 /* 弹窗头部样式 */
