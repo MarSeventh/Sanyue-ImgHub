@@ -41,19 +41,19 @@
                     </el-tag>
                 </div>
                 <div v-else class="empty-message"><font-awesome-icon icon="tag" /><span>{{ $t('tagManagement.noTags') }}</span></div>
-            </section>
-            <section class="tag-section">
-                <div class="tag-section-header">
-                    <span class="tag-section-icon muted"><font-awesome-icon icon="hashtag" /></span>
-                    <h4>{{ $t('tagManagement.popularTags') }}</h4>
+                <div class="popular-tags-section">
+                    <div class="tag-section-header">
+                        <span class="tag-section-icon muted"><font-awesome-icon icon="hashtag" /></span>
+                        <h4>{{ $t('tagManagement.popularTags') }}</h4>
+                    </div>
+                    <div v-if="popularTags.length" class="tags-container">
+                        <el-tag v-for="tag in popularTags" :key="tag" type="info" round class="tag-chip tag-choice" role="button" :tabindex="aiBusy || loading ? -1 : 0" :aria-disabled="aiBusy || loading" @click="handleAddPopularTag(tag)" @keydown.enter.prevent="handleAddPopularTag(tag)" @keydown.space.prevent="handleAddPopularTag(tag)">
+                            {{ tag }}
+                        </el-tag>
+                    </div>
+                    <div v-else-if="loadingPopularTags" class="empty-message"><el-icon class="is-loading"><Loading /></el-icon><span>{{ $t('tagManagement.loading') }}</span></div>
+                    <div v-else class="empty-message"><font-awesome-icon icon="tag" /><span>{{ $t('tagManagement.noPopularTags') }}</span></div>
                 </div>
-                <div v-if="popularTags.length" class="tags-container">
-                    <el-tag v-for="tag in popularTags" :key="tag" type="info" round class="tag-chip tag-choice" role="button" :tabindex="aiBusy || loading ? -1 : 0" :aria-disabled="aiBusy || loading" @click="handleAddPopularTag(tag)" @keydown.enter.prevent="handleAddPopularTag(tag)" @keydown.space.prevent="handleAddPopularTag(tag)">
-                        {{ tag }}
-                    </el-tag>
-                </div>
-                <div v-else-if="loadingPopularTags" class="empty-message"><el-icon class="is-loading"><Loading /></el-icon><span>{{ $t('tagManagement.loading') }}</span></div>
-                <div v-else class="empty-message"><font-awesome-icon icon="tag" /><span>{{ $t('tagManagement.noPopularTags') }}</span></div>
             </section>
             <el-alert v-if="indexPending" :title="$t('tagManagement.indexPending')" type="warning" show-icon :closable="false">
                 <el-button size="small" :loading="loading" :disabled="aiBusy" @click="repairIndex"><font-awesome-icon icon="redo" /> {{ $t('aiTags.retry') }}</el-button>
@@ -329,3 +329,10 @@ export default {
 </script>
 
 <style scoped src="@/styles/tag-dialog.css"></style>
+<style scoped>
+.popular-tags-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--el-border-color-lighter);
+}
+</style>

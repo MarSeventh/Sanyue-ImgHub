@@ -912,7 +912,7 @@
     "retry": "重试",
     "settings": "前往智能设置",
     "progress": "已处理 {done} / {total} 张",
-    "saved": "已保存",
+    "noPending": "暂无待添加标签",
     "noTags": "未生成标签",
     "apply": "保存",
     "indexPending": "标签已保存，索引同步失败。再次保存可重试同步。",

@@ -904,7 +904,7 @@
     "retry": "Retry",
     "settings": "Open AI Settings",
     "progress": "Processed {done} / {total} images",
-    "saved": "Saved",
+    "noPending": "No tags left to add",
     "noTags": "No tags suggested",
     "apply": "Save",
     "indexPending": "Tags saved, but index synchronization failed. Save again to retry synchronization.",

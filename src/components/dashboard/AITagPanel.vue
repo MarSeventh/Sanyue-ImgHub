@@ -23,6 +23,7 @@
             <span class="ai-empty-icon"><font-awesome-icon icon="tags" /></span>
             <span class="ai-empty-title">{{ $t('aiTags.ready') }}</span>
         </div>
+        <p v-else-if="available && rows.length && !visibleRows.length && !generating && !saving" class="ai-empty-title ai-complete">{{ $t('aiTags.noPending') }}</p>
         <div v-if="generating" class="ai-progress">
             <div class="ai-progress-label">
                 <span>{{ $t('aiTags.progress', { done: completed, total: workTotal }) }}</span>
@@ -30,25 +31,21 @@
             </div>
             <el-progress :percentage="workTotal ? Math.round(completed / workTotal * 100) : 0" :show-text="false" :stroke-width="6" />
         </div>
-        <div v-if="rows.length" class="ai-results">
-            <div v-for="row in rows" :key="row.fileId" class="ai-result">
+        <div v-if="visibleRows.length" class="ai-results">
+            <div v-for="row in visibleRows" :key="row.fileId" class="ai-result">
                 <div class="ai-result-heading">
                     <font-awesome-icon icon="image" class="ai-file-icon" />
                     <span class="ai-file">{{ fileName(row.fileId) }}</span>
-                    <el-tag v-if="row.applied" size="small" type="success" effect="light"><font-awesome-icon icon="check" /> {{ $t('aiTags.saved') }}</el-tag>
                 </div>
                 <el-alert v-if="row.error" :title="errorText(row.error)" type="error" show-icon :closable="false" />
                 <div v-else class="ai-tag-list">
-                    <template v-if="row.applied"><el-tag v-for="tag in row.selected" :key="tag" type="success" effect="light">{{ tag }}</el-tag></template>
-                    <template v-else>
-                        <el-check-tag v-for="tag in row.tags" :key="tag" :checked="row.selected.includes(tag)" :aria-disabled="disabled || saving || generating" @change="toggleTag(row, tag)">{{ tag }}</el-check-tag>
-                        <span v-if="!row.tags.length" class="ai-empty-title">{{ $t('aiTags.noTags') }}</span>
-                    </template>
+                    <el-check-tag v-for="tag in row.tags" :key="tag" :checked="row.selected.includes(tag)" :aria-disabled="disabled || saving || generating" @change="toggleTag(row, tag)">{{ tag }}</el-check-tag>
+                    <span v-if="!row.tags.length && !row.indexPending" class="ai-empty-title">{{ $t('aiTags.noTags') }}</span>
                 </div>
                 <el-alert v-if="row.saveError" :title="row.saveError" type="warning" show-icon :closable="false" class="ai-save-error" />
             </div>
         </div>
-        <div v-if="rows.length && !generating" class="ai-footer">
+        <div v-if="visibleRows.length && !generating" class="ai-footer">
             <span class="ai-selection">{{ $t('aiTags.selection', { count: selectedCount }) }}</span>
             <div class="ai-footer-actions">
                 <el-button v-if="retryFiles.length" :disabled="disabled || saving" @click="generate(true)"><font-awesome-icon icon="redo" />{{ $t('aiTags.retry') }}</el-button>
@@ -72,9 +69,10 @@ export default {
     },
     computed: {
         fileSignature() { return JSON.stringify(this.files.map(file => file.name)); },
+        visibleRows() { return this.rows.filter(row => !row.applied); },
         selectedCount() { return this.pending.reduce((count, row) => count + row.selected.length, 0); },
         retryFiles() { return this.files.filter(file => this.rows.some(row => row.fileId === file.name && row.error)); },
-        pending() { return this.rows.filter(row => !row.error && !row.applied && row.selected.length); }
+        pending() { return this.visibleRows.filter(row => !row.error && (row.selected.length || row.indexPending)); }
     },
     watch: {
         fileSignature() { this.cancel(); this.rows = []; }
@@ -140,10 +138,15 @@ export default {
                 await applyTagSuggestions(this.pending.map(row => ({ fileId: row.fileId, tags: row.selected, sourceIdentity: row.sourceIdentity, repairIndex: !!row.indexPending })), result => {
                     const row = this.rows.find(item => item.fileId === result.fileId);
                     if (!row) return;
-                    row.indexPending = !!result.indexPending;
-                    row.applied = result.saved && !result.indexPending;
-                    row.saveError = result.indexPending ? this.$t('aiTags.indexPending') : result.error ? this.errorText(result.error) : '';
-                    if (result.saved) this.$emit('applied', [result]);
+                    if (result.saved) {
+                        const savedTags = new Set(result.tags.map(tag => tag.trim().toLowerCase()));
+                        row.tags = row.tags.filter(tag => !savedTags.has(tag.trim().toLowerCase()));
+                        row.selected = row.selected.filter(tag => row.tags.includes(tag));
+                        row.indexPending = !!result.indexPending;
+                        row.applied = !row.tags.length && !row.indexPending;
+                        this.$emit('applied', [result]);
+                    }
+                    row.saveError = result.error ? this.errorText(result.error) : row.indexPending ? this.$t('aiTags.indexPending') : '';
                 });
             } catch (error) { this.$message.error(this.errorText(error)); }
             finally { this.saving = false; this.$emit('busy', false); }
@@ -179,6 +182,7 @@ export default {
 .ai-empty-title, .ai-selection { color: var(--el-text-color-secondary); font-size: 13px; overflow-wrap: anywhere; }
 .ai-result :deep(.el-alert__title) { overflow-wrap: anywhere; }
 .ai-ready { padding-bottom: 20px; }
+.ai-complete { margin: 18px 0 0; line-height: 1.5; }
 .ai-progress { margin-top: 18px; }
 .ai-progress-label { color: var(--el-text-color-secondary); margin-bottom: 10px; font-size: 13px; }
 .ai-results { display: grid; gap: 12px; margin-top: 18px; }
@@ -186,7 +190,6 @@ export default {
 .ai-result-heading { margin-bottom: 12px; }
 .ai-file-icon { color: var(--el-text-color-secondary); flex-shrink: 0; }
 .ai-file { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; line-height: 1.5; }
-.ai-result-heading > .el-tag { flex-shrink: 0; }
 .ai-tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .ai-tag-list .el-check-tag, .ai-tag-list .el-tag { max-width: 100%; height: auto; white-space: normal; overflow-wrap: anywhere; }
 .ai-tag-list [aria-disabled="true"] { cursor: default; opacity: .65; }
