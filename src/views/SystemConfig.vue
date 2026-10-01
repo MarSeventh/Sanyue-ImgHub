@@ -35,7 +35,6 @@ export default {
             immediate: true,
             handler(newHash) {
                 this.activeIndex = newHash.replace('#', '');
-                window.scrollTo(0, 0); // 滚动到页面顶部
             }
         },
         activeIndex(newIndex) {
@@ -95,7 +94,6 @@ export default {
     },
 }
 </script>
-<style scoped src="@/styles/admin-common.css"></style>
 <style scoped>
 .container {
     background: var(--admin-container-bg-color);
@@ -108,10 +106,15 @@ export default {
 }
 
 .main-container {
+  padding: 20px;
   margin-top: 60px;
   transition: margin-left 0.3s ease, width 0.3s ease; /* 添加过渡效果 */
   width: calc(100% - 280px); /* 默认宽度（侧边栏展开时） */
   margin-left: 170px; /* 默认左边距（侧边栏展开时） */
+}
+
+.main-container :deep(.first-title) {
+  margin-top: 0;
 }
 
 .main-container.collapsed {
@@ -127,6 +130,7 @@ export default {
     margin-left: 65px;
     margin-right: 15px;
     margin-top: 0;
+    padding: 12px;
     min-height: calc(100vh - 76px);
     box-sizing: border-box;
   }

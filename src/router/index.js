@@ -3,6 +3,7 @@ import { ElMessage } from 'element-plus'
 import store from '../store'
 import axios from '@/utils/axios'
 import i18n from '@/locales'
+import { OverlayScrollbars } from 'overlayscrollbars'
 
 // 通用的管理员认证守卫
 const adminAuthGuard = (to, from, next) => {
@@ -155,7 +156,19 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (!['dashboard', 'customerConfig', 'systemConfig'].includes(to.name)) return false
+    if (to.path === from.path && (to.name !== 'systemConfig' || to.hash === from.hash)) return false
+
+    const position = { ...(savedPosition || { left: 0, top: 0 }), behavior: 'instant' }
+    const scroller = OverlayScrollbars(document.body)?.elements().scrollOffsetElement
+    if (scroller && scroller !== document.scrollingElement) {
+      scroller.scrollTo(position)
+      return false
+    }
+    return position
+  }
 })
 
 export default router

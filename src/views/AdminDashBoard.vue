@@ -2205,20 +2205,6 @@ beforeUnmount() {
     .pagination-container :deep(.btn-next) {
         display: none !important;
     }
-
-    .search-card :deep(.el-input__inner) {
-        height: 28px;
-        font-size: 0.85em;
-        width: 50vw;
-    }
-    
-    .search-card :deep(.el-input__wrapper) {
-        padding: 0 12px;
-    }
-    
-    .search-card :deep(.el-input__inner:focus) {
-        width: 65vw;
-    }
 }
 
 
@@ -2438,8 +2424,6 @@ beforeUnmount() {
 
 /* 搜索区域样式（包含搜索框和筛选按钮） */
 .search-area {
-    margin-left: auto;
-    margin-right: 0;
     min-width: 0;
     display: flex;
     align-items: center;
@@ -2447,11 +2431,7 @@ beforeUnmount() {
 }
 @media (max-width: 768px) {
     .search-area {
-        margin-right: 0;
-        margin-left: 0;
         width: 100%;
-        margin-top: 0;
-        flex: 1;
         gap: 6px;
     }
 }

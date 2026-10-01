@@ -1088,7 +1088,6 @@ mounted() {
 
 <style scoped>
 .security-settings {
-    padding: 20px;
     min-height: 500px;
 }
 
@@ -1317,11 +1316,6 @@ html.dark .token-table :deep(.el-table__row:hover td) {
 
 /* 响应式布局 */
 @media (max-width: 768px) {
-    .security-settings {
-        padding: 15px;
-        padding-bottom: 80px; /* 为悬浮按钮留出空间 */
-    }
-    
     .first-settings :deep(.el-form) {
         padding: 12px 15px;
     }

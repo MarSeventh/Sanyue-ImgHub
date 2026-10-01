@@ -267,7 +267,6 @@ mounted() {
 
 <style scoped>
 .page-settings {
-    padding: 20px;
     min-height: 500px;
 }
 
@@ -368,11 +367,6 @@ mounted() {
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-    .page-settings {
-        padding: 15px;
-        padding-bottom: 80px; /* 为悬浮按钮留出空间 */
-    }
-    
     .first-settings :deep(.el-form) {
         padding: 12px 15px;
     }

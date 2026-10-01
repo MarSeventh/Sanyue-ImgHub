@@ -108,7 +108,7 @@ mounted() {
     this.$nextTick(() => this.measureWidth());
     window.addEventListener('resize', this.checkMobile);
 },
-beforeDestroy() {
+beforeUnmount() {
     window.removeEventListener('resize', this.checkMobile);
 }
 };
@@ -137,20 +137,6 @@ beforeDestroy() {
 
 .sidebar-container.is-collapsed {
     width: 56px;
-}
-
-/* 深色模式 */
-html.dark .sidebar-container {
-    background: var(--glass-bg);
-    box-shadow: none;
-}
-
-.sidebar-container:hover {
-    box-shadow: none;
-}
-
-html.dark .sidebar-container:hover {
-    box-shadow: none;
 }
 
 .menu-list {

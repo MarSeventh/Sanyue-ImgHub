@@ -1331,7 +1331,6 @@ export default {
 <style scoped>
 .status-panel {
   --status-section-gap: 30px;
-  padding: 20px;
   background: transparent;
   min-height: 100vh;
 }
@@ -1346,7 +1345,7 @@ export default {
   align-items: center;
   gap: 42px;
   margin-bottom: 8px;
-  padding: 28px 12px 34px;
+  padding: 0 12px 34px;
   color: var(--admin-container-color);
 }
 
@@ -1606,12 +1605,6 @@ export default {
   row-gap: var(--status-section-gap);
   margin-bottom: var(--status-section-gap);
   overflow: visible;
-}
-
-@media (max-width: 768px) {
-  .charts-section {
-    grid-template-columns: 1fr;
-  }
 }
 
 .chart-card {
@@ -1934,10 +1927,6 @@ html.dark .legend-item:hover {
 }
 
 /* 操作区域 */
-.actions-section {
-  margin-bottom: 0;
-}
-
 .action-card {
   background: var(--glass-bg);
   border-radius: 16px;
@@ -2245,14 +2234,10 @@ html.dark .legend-item:hover {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .status-panel {
-    padding: 0 15px 32px;
-  }
-
   .status-hero {
     grid-template-columns: 1fr;
     gap: 18px;
-    padding: 12px 8px 30px;
+    padding: 0 8px 30px;
   }
 
   .status-hero-time-card {
@@ -2274,7 +2259,6 @@ html.dark .legend-item:hover {
   
   .charts-section {
     grid-template-columns: 1fr;
-    column-gap: 15px;
   }
 
   .trend-chart-header {
@@ -2341,7 +2325,7 @@ html.dark .legend-item:hover {
 
 @media (max-width: 480px) {
   .status-hero {
-    padding: 12px 4px 28px;
+    padding: 0 4px 28px;
   }
 
   .status-hero-title {

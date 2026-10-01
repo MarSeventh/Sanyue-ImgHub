@@ -90,17 +90,6 @@ export default {
             }
             this.closePageMenu();
         },
-        refreshDashboard() {
-            location.reload();
-        },
-        handleTabClick(tab) {
-            this.closePageMenu();
-            if (tab === this.activeTab) {
-                this.refreshDashboard();
-                return;
-            }
-            this.$router.push(`/${tab}`);
-        },
         isTouchViewport() {
             return window.matchMedia('(hover: none), (pointer: coarse)').matches;
         },
@@ -117,7 +106,8 @@ export default {
                 }
                 return;
             }
-            this.handleTabClick(tab);
+            this.closePageMenu();
+            this.$router.push(`/${tab}`);
         },
         handlePageSwitcherEnter() {
             if (!this.isTouchViewport()) {
@@ -167,7 +157,6 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
 }
 
 .page-switcher {
@@ -358,7 +347,6 @@ export default {
         --page-option-font-size: var(--admin-header-option-font-size, 12px);
         --page-current-height: var(--admin-header-current-height, 32px);
         --page-current-font-size: var(--admin-header-current-font-size, 14px);
-        gap: 6px;
     }
 
     .page-switcher-title {
@@ -404,7 +392,6 @@ export default {
     .page-option.is-current > .page-switcher-arrow {
         margin-left: 4px;
     }
-
 }
 
 @media (max-width: 360px) {

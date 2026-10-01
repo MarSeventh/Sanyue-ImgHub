@@ -1252,7 +1252,6 @@ mounted() {
 
 <style scoped>
 .upload-settings {
-    padding: 20px;
     min-height: 500px;
     overflow-x: hidden;
 }
@@ -1641,10 +1640,6 @@ mounted() {
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-    .upload-settings {
-        padding: 12px;
-    }
-
     .page-header {
         flex-direction: column;
         align-items: flex-start;

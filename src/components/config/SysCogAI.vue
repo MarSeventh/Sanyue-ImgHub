@@ -271,7 +271,7 @@ export default {
 </script>
 
 <style scoped>
-.ai-settings { padding: 20px; min-height: 500px; }
+.ai-settings { min-height: 500px; }
 .first-settings { margin-bottom: 40px; }
 .first-title {
     display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
@@ -340,7 +340,6 @@ export default {
     .resource-cards { padding: 12px; }
 }
 @media (max-width: 768px) {
-    .ai-settings { padding: 15px; padding-bottom: 80px; }
     .first-settings :deep(.el-form) { padding: 12px 15px; }
     .first-settings :deep(.el-form-item__content) { max-width: 100%; }
 }
