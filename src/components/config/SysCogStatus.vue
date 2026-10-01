@@ -1330,6 +1330,7 @@ export default {
 
 <style scoped>
 .status-panel {
+  --status-section-gap: 30px;
   padding: 20px;
   background: transparent;
   min-height: 100vh;
@@ -1525,7 +1526,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
-  margin-bottom: 30px;
+  margin-bottom: var(--status-section-gap);
 }
 
 .overview-card {
@@ -1602,7 +1603,8 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
-  margin-bottom: 30px;
+  row-gap: var(--status-section-gap);
+  margin-bottom: var(--status-section-gap);
   overflow: visible;
 }
 
@@ -1933,7 +1935,7 @@ html.dark .legend-item:hover {
 
 /* 操作区域 */
 .actions-section {
-  margin-bottom: 30px;
+  margin-bottom: 0;
 }
 
 .action-card {
@@ -2105,6 +2107,7 @@ html.dark .legend-item:hover {
 
 /* 文件信息区域 */
 .file-info-section {
+  margin-top: var(--status-section-gap);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
@@ -2243,13 +2246,13 @@ html.dark .legend-item:hover {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .status-panel {
-    padding: 15px;
+    padding: 0 15px 32px;
   }
 
   .status-hero {
     grid-template-columns: 1fr;
     gap: 18px;
-    padding: 24px 8px 30px;
+    padding: 12px 8px 30px;
   }
 
   .status-hero-time-card {
@@ -2271,7 +2274,7 @@ html.dark .legend-item:hover {
   
   .charts-section {
     grid-template-columns: 1fr;
-    gap: 15px;
+    column-gap: 15px;
   }
 
   .trend-chart-header {
@@ -2338,7 +2341,7 @@ html.dark .legend-item:hover {
 
 @media (max-width: 480px) {
   .status-hero {
-    padding: 21px 4px 28px;
+    padding: 12px 4px 28px;
   }
 
   .status-hero-title {

@@ -1,15 +1,6 @@
 <template>
     <div class="container">
-        <el-header>
-            <div class="header-content admin-header-content" :class="{ 'is-compact': isHeaderCompact }">
-                <DashboardTabs activeTab="customerConfig"></DashboardTabs>
-                <div class="header-action">
-                    <el-tooltip :disabled="disableTooltip" :content="$t('sysConfig.logout')" placement="bottom">
-                        <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
-                    </el-tooltip>
-                </div>
-            </div>
-        </el-header>
+        <AdminHeader active-tab="customerConfig" />
         <div class="main-container">
             <el-table :data="paginatedData" :default-sort="{ prop: 'count', order: 'descending' }" row-key="ip" class="main-table" table-layout="fixed" v-loading="loading" @expand-change="handleExpandChange">
                 <el-table-column type="expand" width="48">
@@ -79,13 +70,12 @@
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth';
-import DashboardTabs from '@/components/DashboardTabs.vue';
+import AdminHeader from '@/components/dashboard/AdminHeader.vue';
 import backgroundManager from '@/mixins/backgroundManager';
-import adminHeaderScroll from '@/mixins/adminHeaderScroll';
 
 export default {
     name: 'CustomerConfig',
-    mixins: [backgroundManager, adminHeaderScroll],
+    mixins: [backgroundManager],
     data() {
         return {
             tableData: [],
@@ -101,14 +91,11 @@ export default {
         }
     },
     components: {
-        DashboardTabs
+        AdminHeader
     },
     computed: {
         isMobile() {
             return this.viewportWidth < 768;
-        },
-        disableTooltip() {
-            return this.isMobile;
         },
         pagerCount() {
             return this.isMobile ? 3 : 7;
@@ -127,18 +114,6 @@ export default {
         }
     },
     methods: {
-        handleLogout() {
-            const url = process.env.NODE_ENV === 'production' ? '/api/auth/logout' : '/api/api/auth/logout';
-            fetch(url, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ authType: 'admin' })
-            }).finally(() => {
-                this.$store.commit('setAdminLoggedIn', false);
-                this.$router.push('/adminLogin');
-            });
-        },
         formatTimeStamp(timeStamp) {
             return new Date(timeStamp).toLocaleString();
         },
@@ -333,7 +308,7 @@ export default {
 
 @media (max-width: 768px) {
     .main-container {
-        margin-top: 60px;
+        margin-top: 12px;
     }
 
     .allow-upload-switch :deep(.el-switch__label) {

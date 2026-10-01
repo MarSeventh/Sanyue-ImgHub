@@ -1,36 +1,24 @@
 <template>
     <div class="container">
-        <el-container>
-            <el-header>
-            <div class="header-content admin-header-content" :class="{ 'is-compact': isHeaderCompact }">
-                <DashboardTabs activeTab="dashboard"></DashboardTabs>
-                <div class="search-area">
-                    <div class="search-card">
-                        <el-input v-model="tempSearch" size="small" :placeholder="$t('dashboard.searchPlaceholder')" @keyup.enter="handleSearch">
-                            <template #suffix>
-                                <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
-                            </template>
-                        </el-input>
+        <el-container direction="vertical">
+            <AdminHeader active-tab="dashboard" show-link-format @link-format="showUrlDialog = true">
+                <template #search>
+                    <div class="search-area">
+                        <div class="search-card">
+                            <el-input v-model="tempSearch" size="small" :placeholder="$t('dashboard.searchPlaceholder')" @keyup.enter="handleSearch">
+                                <template #suffix>
+                                    <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
+                                </template>
+                            </el-input>
+                        </div>
+                        <FilterDropdown
+                            v-model:filters="filters"
+                            :channelNameOptions="channelNameOptions"
+                            @change="handleFilterChange"
+                        />
                     </div>
-                    <!-- 筛选下拉菜单 -->
-                    <FilterDropdown
-                        v-model:filters="filters"
-                        :channelNameOptions="channelNameOptions"
-                        @change="handleFilterChange"
-                    />
-                </div>
-                <div class="actions">
-                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.linkFormat')" placement="bottom" :show-after="1000">
-                    <span class="el-dropdown-link">
-                        <font-awesome-icon icon="link" class="header-icon" @click="showUrlDialog = true"></font-awesome-icon>
-                    </span>
-                </el-tooltip>
-                <el-tooltip :disabled="disableTooltip" :content="$t('dashboard.logout')" placement="bottom" :show-after="1000">
-                    <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
-                </el-tooltip>
-                </div>
-            </div>
-            </el-header>
+                </template>
+            </AdminHeader>
             <el-main class="main-container" :class="{ 'has-batch-toolbar': selectedFiles.length > 0 }">
             <!-- 目录导航 -->
             <div class="breadcrumb-container">
@@ -446,7 +434,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import JSZip from 'jszip';
-import DashboardTabs from '@/components/DashboardTabs.vue';
+import AdminHeader from '@/components/dashboard/AdminHeader.vue';
 import TagManagementDialog from '@/components/dashboard/TagManagementDialog.vue';
 import BatchTagDialog from '@/components/dashboard/BatchTagDialog.vue';
 import SkeletonLoader from '@/components/dashboard/SkeletonLoader.vue';
@@ -465,7 +453,6 @@ import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFolderPath } from '@/utils/pathValidator';
 import backgroundManager from '@/mixins/backgroundManager';
-import adminHeaderScroll from '@/mixins/adminHeaderScroll';
 import { ref } from 'vue';
 import { useDragSelect } from '@/utils/dashboard/useDragSelect.js';
 
@@ -483,7 +470,7 @@ function getStoredSortValue(key, validValues, fallback) {
 
 export default {
 name: 'AdminDashBoard',
-mixins: [backgroundManager, adminHeaderScroll],
+mixins: [backgroundManager],
 data() {
     return {
         Number: 0,
@@ -546,7 +533,7 @@ data() {
     }
 },
 components: {
-    DashboardTabs,
+    AdminHeader,
     TagManagementDialog,
     BatchTagDialog,
     SkeletonLoader,
@@ -1403,18 +1390,7 @@ methods: {
             videoElement.msRequestFullscreen();
         }
     },
-    handleLogout() {
-        const url = process.env.NODE_ENV === 'production' ? '/api/auth/logout' : '/api/api/auth/logout';
-        fetch(url, {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ authType: 'admin' })
-        }).finally(() => {
-            this.$store.commit('setAdminLoggedIn', false);
-            this.$router.push('/adminLogin');
-        });
-    },
+
     handleSelectPage() {
         if (this.selectPage) {
             this.paginatedTableData.forEach(file => file.selected = false);
@@ -2463,7 +2439,8 @@ beforeUnmount() {
 /* 搜索区域样式（包含搜索框和筛选按钮） */
 .search-area {
     margin-left: auto;
-    margin-right: 20px;
+    margin-right: 0;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -2472,7 +2449,9 @@ beforeUnmount() {
     .search-area {
         margin-right: 0;
         margin-left: 0;
-        margin-top: 10px;
+        width: 100%;
+        margin-top: 0;
+        flex: 1;
         gap: 6px;
     }
 }
@@ -2526,8 +2505,13 @@ beforeUnmount() {
         padding: 0 var(--admin-header-search-padding, 12px);
     }
 
+    .search-card {
+        flex: 1;
+        min-width: 0;
+    }
+
     .search-card :deep(.el-input__inner) {
-        width: var(--admin-header-search-width, 45vw);
+        width: 100%;
         height: var(--admin-header-search-height, 32px);
         font-size: var(--admin-header-search-font-size, 1em);
     }
@@ -2537,7 +2521,7 @@ beforeUnmount() {
 }
 @media (max-width: 768px) {
     .search-card :deep(.el-input__inner:focus) {
-        width: var(--admin-header-search-focus-width, 55vw);
+        width: 100%;
     }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2586,8 +2570,8 @@ beforeUnmount() {
 
 @media (max-width: 768px) {
     .main-container {
-        margin-top: 12vh;
-        padding: 16px 10px;
+        margin-top: 0;
+        padding: 8px 10px 16px;
     }
     .main-container.has-batch-toolbar {
         padding-bottom: 86px;

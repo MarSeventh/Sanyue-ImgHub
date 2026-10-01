@@ -254,14 +254,13 @@ export default {
 .header-icon {
     font-size: 1.5em;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: color 0.3s ease;
     color: var(--admin-container-color);
     outline: none;
 }
 
 .header-icon:hover {
     color: var(--primary-color-accent);
-    transform: scale(1.2);
 }
 
 .filter-badge :deep(.el-badge__content) {

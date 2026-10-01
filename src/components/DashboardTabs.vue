@@ -48,15 +48,10 @@
                 </div>
             </div>
         </div>
-        <AdminToggleDark/>
-        <LanguageSwitcher class="tabs-language-switcher"/>
     </div>
 </template>
 
 <script>
-import AdminToggleDark from './dashboard/AdminToggleDark.vue';
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
-
 export default {
     name: 'DashboardTabs',
     props: {
@@ -64,10 +59,6 @@ export default {
             type: String,
             default: 'dashboard'
         }
-    },
-    components: {
-        AdminToggleDark,
-        LanguageSwitcher
     },
     data() {
         return {
@@ -366,12 +357,12 @@ export default {
         --page-option-height: var(--admin-header-option-height, 32px);
         --page-option-font-size: var(--admin-header-option-font-size, 12px);
         --page-current-height: var(--admin-header-current-height, 32px);
-        --page-current-font-size: var(--admin-header-current-font-size, 1em);
+        --page-current-font-size: var(--admin-header-current-font-size, 14px);
         gap: 6px;
     }
 
     .page-switcher-title {
-        max-width: 6em;
+        max-width: 4.8em;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -414,27 +405,12 @@ export default {
         margin-left: 4px;
     }
 
-    .tabs-language-switcher {
-        --lang-icon-size: 1.1em;
-        padding: 3px;
+}
+
+@media (max-width: 360px) {
+    .page-switcher-title {
+        max-width: 4em;
     }
-}
-
-.tabs-language-switcher {
-    --lang-icon-size: 1.3em;
-    --lang-icon-color: var(--admin-theme-toggle-color);
-    transition: color 0.3s ease;
-    padding: 5px;
-}
-
-/* 导航栏内主题/语言切换按钮:移除有色背景与毛玻璃,仅保留图标 */
-.tabs :deep(#themeToggle),
-.tabs :deep(#themeToggle:hover),
-.tabs :deep(.language-switcher),
-.tabs :deep(.language-switcher:hover) {
-    background-color: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

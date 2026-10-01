@@ -1,15 +1,6 @@
 <template>
     <div class="container">
-        <el-header>
-            <div class="header-content admin-header-content" :class="{ 'is-compact': isHeaderCompact }">
-                <DashboardTabs activeTab="systemConfig"></DashboardTabs>
-                <div class="header-action">
-                    <el-tooltip :disabled="disableTooltip" :content="$t('sysConfig.logout')" placement="bottom">
-                        <font-awesome-icon icon="sign-out-alt" class="header-icon" @click="handleLogout"></font-awesome-icon>
-                    </el-tooltip>
-                </div>
-            </div>
-        </el-header>
+        <AdminHeader active-tab="systemConfig" />
         <SysConfigTabs
             v-model:activeIndex="activeIndex"
             v-model:isCollapse="isSidebarCollapse"
@@ -19,7 +10,7 @@
     </div>
 </template>
 <script>
-import DashboardTabs from '@/components/DashboardTabs.vue';
+import AdminHeader from '@/components/dashboard/AdminHeader.vue';
 import SysConfigTabs from '@/components/config/SysConfigTabs.vue';
 import SysCogStatus from '@/components/config/SysCogStatus.vue';
 import SysCogUpload from '@/components/config/SysCogUpload.vue';
@@ -28,11 +19,10 @@ import SysCogPage from '@/components/config/SysCogPage.vue';
 import SysCogOthers from '@/components/config/SysCogOthers.vue';
 import SysCogAI from '@/components/config/SysCogAI.vue';
 import backgroundManager from '@/mixins/backgroundManager';
-import adminHeaderScroll from '@/mixins/adminHeaderScroll';
 
 export default {
     name: 'SystemConfig',
-    mixins: [backgroundManager, adminHeaderScroll],
+    mixins: [backgroundManager],
     data() {
         return {
             activeIndex: 'status',
@@ -55,7 +45,7 @@ export default {
         }
     },
     components: {
-        DashboardTabs,
+        AdminHeader,
         SysConfigTabs,
         SysCogStatus,
         SysCogUpload,
@@ -65,9 +55,6 @@ export default {
         SysCogAI
     },
     computed: {
-        disableTooltip() {
-            return window.innerWidth < 768;
-        },
         // 根据锚点动态返回对应的组件
         currentComponent() {
             const hash = this.$route.hash.replace('#', '');
@@ -90,18 +77,6 @@ export default {
         }
     },
     methods: {
-        handleLogout() {
-            const url = process.env.NODE_ENV === 'production' ? '/api/auth/logout' : '/api/api/auth/logout';
-            fetch(url, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ authType: 'admin' })
-            }).finally(() => {
-                this.$store.commit('setAdminLoggedIn', false);
-                this.$router.push('/adminLogin');
-            });
-        },
         // 设置默认锚点
         setDefaultHash() {
             const defaultHash = '#status'; // 默认锚点
@@ -151,8 +126,8 @@ export default {
     width: auto;
     margin-left: 65px;
     margin-right: 15px;
-    padding: 0;
-    min-height: calc(100vh - 60px);
+    margin-top: 0;
+    min-height: calc(100vh - 76px);
     box-sizing: border-box;
   }
 }
