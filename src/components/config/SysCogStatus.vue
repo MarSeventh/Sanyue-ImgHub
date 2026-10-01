@@ -1686,13 +1686,11 @@ export default {
 }
 
 .trend-date-dialog {
-  overflow: visible;
   max-width: calc(100vw - 32px);
   box-sizing: border-box;
 }
 
 .trend-date-dialog :deep(.el-dialog__body) {
-  overflow: visible;
   padding: 16px 24px 24px;
 }
 
