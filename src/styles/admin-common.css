@@ -18,7 +18,30 @@
     backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
     -webkit-backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
     transform: translateX(-50%);
-    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease,
+        padding 0.25s ease, min-height 0.25s ease, width 0.25s ease, top 0.25s ease,
+        border-radius 0.25s ease, font-size 0.25s ease;
+}
+
+.admin-header-content.is-compact {
+    --admin-header-switcher-height: 36px;
+    --admin-header-current-height: 30px;
+    --admin-header-current-font-size: 14px;
+    --admin-header-option-height: 30px;
+    --admin-header-option-font-size: 13px;
+    --admin-header-sheet-padding: 2px;
+    --admin-header-search-width: 240px;
+    --admin-header-search-focus-width: 300px;
+    --admin-header-search-height: 30px;
+    --admin-header-search-font-size: 14px;
+    --admin-header-search-placeholder-size: 12px;
+    --admin-header-search-padding: 10px;
+    min-height: 36px;
+    padding: 4px 18px;
+    top: 6px;
+    width: calc(95% - 48px);
+    border-radius: 12px;
+    font-size: 14px;
 }
 
 .admin-header-content:hover {
@@ -88,6 +111,35 @@
     .header-content .actions {
         gap: 10px;
         margin-top: 10px;
+    }
+
+    .admin-header-content.is-compact {
+        --admin-header-switcher-height: 34px;
+        --admin-header-current-height: 28px;
+        --admin-header-current-font-size: 13px;
+        --admin-header-option-height: 28px;
+        --admin-header-option-font-size: 11px;
+        --admin-header-search-width: 40vw;
+        --admin-header-search-focus-width: 50vw;
+        --admin-header-search-height: 26px;
+        --admin-header-search-font-size: 12px;
+        --admin-header-search-placeholder-size: 11px;
+        --admin-header-search-padding: 8px;
+        top: 4px;
+        width: calc(100% - 40px);
+        padding: 4px 10px;
+        gap: 2px;
+    }
+
+    .admin-header-content.is-compact .actions,
+    .admin-header-content.is-compact :deep(.search-area) {
+        margin-top: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-header-content {
+        transition: none;
     }
 }
 

@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <el-header>
-            <div class="header-content admin-header-content">
+            <div class="header-content admin-header-content" :class="{ 'is-compact': isHeaderCompact }">
                 <DashboardTabs activeTab="customerConfig"></DashboardTabs>
                 <div class="header-action">
                     <el-tooltip :disabled="disableTooltip" :content="$t('sysConfig.logout')" placement="bottom">
@@ -81,10 +81,11 @@
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import DashboardTabs from '@/components/DashboardTabs.vue';
 import backgroundManager from '@/mixins/backgroundManager';
+import adminHeaderScroll from '@/mixins/adminHeaderScroll';
 
 export default {
     name: 'CustomerConfig',
-    mixins: [backgroundManager],
+    mixins: [backgroundManager, adminHeaderScroll],
     data() {
         return {
             tableData: [],

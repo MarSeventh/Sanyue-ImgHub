@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <el-header>
-            <div class="header-content admin-header-content">
+            <div class="header-content admin-header-content" :class="{ 'is-compact': isHeaderCompact }">
                 <DashboardTabs activeTab="systemConfig"></DashboardTabs>
                 <div class="header-action">
                     <el-tooltip :disabled="disableTooltip" :content="$t('sysConfig.logout')" placement="bottom">
@@ -28,10 +28,11 @@ import SysCogPage from '@/components/config/SysCogPage.vue';
 import SysCogOthers from '@/components/config/SysCogOthers.vue';
 import SysCogAI from '@/components/config/SysCogAI.vue';
 import backgroundManager from '@/mixins/backgroundManager';
+import adminHeaderScroll from '@/mixins/adminHeaderScroll';
 
 export default {
     name: 'SystemConfig',
-    mixins: [backgroundManager],
+    mixins: [backgroundManager, adminHeaderScroll],
     data() {
         return {
             activeIndex: 'status',

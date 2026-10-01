@@ -2,7 +2,7 @@
     <div class="container">
         <el-container>
             <el-header>
-            <div class="header-content admin-header-content">
+            <div class="header-content admin-header-content" :class="{ 'is-compact': isHeaderCompact }">
                 <DashboardTabs activeTab="dashboard"></DashboardTabs>
                 <div class="search-area">
                     <div class="search-card">
@@ -465,6 +465,7 @@ import { fileManager } from '@/utils/fileManager';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFolderPath } from '@/utils/pathValidator';
 import backgroundManager from '@/mixins/backgroundManager';
+import adminHeaderScroll from '@/mixins/adminHeaderScroll';
 import { ref } from 'vue';
 import { useDragSelect } from '@/utils/dashboard/useDragSelect.js';
 
@@ -482,7 +483,7 @@ function getStoredSortValue(key, validValues, fallback) {
 
 export default {
 name: 'AdminDashBoard',
-mixins: [backgroundManager],
+mixins: [backgroundManager, adminHeaderScroll],
 data() {
     return {
         Number: 0,
@@ -2487,21 +2488,22 @@ beforeUnmount() {
     box-shadow: none !important;
 }
 .search-card :deep(.el-input__wrapper) {
-    padding: 0 14px;
+    padding: 0 var(--admin-header-search-padding, 14px);
     border-radius: 20px;
     background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
+    transition: padding 0.25s ease;
 }
 
 .search-card :deep(.el-input__inner) {
-    width: 280px;
-    height: 40px;
-    font-size: 1.2em;
+    width: var(--admin-header-search-width, 280px);
+    height: var(--admin-header-search-height, 40px);
+    font-size: var(--admin-header-search-font-size, 1.2em);
     border: none;
-    transition: width 0.3s;
+    transition: width 0.25s ease, height 0.25s ease, font-size 0.25s ease;
     background: none;
 }
 
@@ -2509,7 +2511,7 @@ beforeUnmount() {
     color: var(--el-text-color-placeholder);
     font-style: italic;
     font-weight: 400;
-    font-size: 14px;
+    font-size: var(--admin-header-search-placeholder-size, 14px);
     opacity: 0.6;
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
@@ -2521,21 +2523,28 @@ beforeUnmount() {
 }
 @media (max-width: 768px) {
     .search-card :deep(.el-input__wrapper) {
-        padding: 0 12px;
+        padding: 0 var(--admin-header-search-padding, 12px);
     }
 
     .search-card :deep(.el-input__inner) {
-        width: 45vw;
-        height: 32px;
-        font-size: 1em;
+        width: var(--admin-header-search-width, 45vw);
+        height: var(--admin-header-search-height, 32px);
+        font-size: var(--admin-header-search-font-size, 1em);
     }
 }
 .search-card :deep(.el-input__inner:focus) {
-    width: 350px;
+    width: var(--admin-header-search-focus-width, 350px);
 }
 @media (max-width: 768px) {
     .search-card :deep(.el-input__inner:focus) {
-        width: 55vw;
+        width: var(--admin-header-search-focus-width, 55vw);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .search-card :deep(.el-input__wrapper),
+    .search-card :deep(.el-input__inner),
+    .search-card :deep(.el-input__inner::placeholder) {
+        transition: none;
     }
 }
 .search-icon {

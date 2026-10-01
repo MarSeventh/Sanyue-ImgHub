@@ -3,6 +3,7 @@
         <div
             class="page-switcher"
             :class="{ 'is-open': isPageMenuOpen }"
+            :style="{ '--page-menu-count': inactivePageOptions.length }"
             role="navigation"
             @click.stop
             @pointerdown.stop
@@ -166,6 +167,12 @@ export default {
 
 <style scoped>
 .tabs {
+    --page-option-height: var(--admin-header-option-height, 37px);
+    --page-option-font-size: var(--admin-header-option-font-size, 15px);
+    --page-current-height: var(--admin-header-current-height, 37px);
+    --page-current-font-size: var(--admin-header-current-font-size, 1.1em);
+    --page-sheet-padding: var(--admin-header-sheet-padding, 4px);
+    --page-menu-top: calc(var(--page-current-height) + var(--page-sheet-padding) * 2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -174,10 +181,11 @@ export default {
 
 .page-switcher {
     position: relative;
-    display: grid;
-    align-items: start;
-    height: 44px;
+    display: flex;
+    align-items: center;
+    height: var(--admin-header-switcher-height, 44px);
     overflow: visible;
+    transition: height 0.25s ease;
 }
 
 .page-switcher.is-open {
@@ -191,13 +199,13 @@ export default {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    padding: 4px;
+    padding: var(--page-sheet-padding);
     border: 1px solid transparent;
     border-radius: 14px;
     box-sizing: border-box;
     background-color: transparent;
     overflow: visible;
-    transition: none;
+    transition: padding 0.25s ease;
 }
 
 .page-switcher-sheet::before {
@@ -207,7 +215,7 @@ export default {
     left: 0;
     right: 0;
     z-index: 0;
-    height: 160px;
+    height: calc(var(--page-menu-top) + var(--page-menu-count) * var(--page-option-height) + var(--page-sheet-padding));
     border: 1px solid var(--tabs-switcher-border-color);
     border-radius: 14px;
     background: var(--tabs-dropdown-popper-bg-color);
@@ -216,7 +224,7 @@ export default {
     transform: translateY(-4px) scaleY(0.72);
     transform-origin: top center;
     pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), height 0.25s ease;
     will-change: opacity, transform;
 }
 
@@ -251,25 +259,25 @@ export default {
     gap: 7px;
     width: 100%;
     min-width: 148px;
-    height: 37px;
+    height: var(--page-option-height);
     padding: 0 12px;
     border: none;
     border-radius: 10px;
     color: var(--admin-container-color);
     background: transparent;
-    font-size: 15px;
+    font-size: var(--page-option-font-size);
     font-weight: 600;
     font-family: inherit;
     white-space: nowrap;
     cursor: pointer;
-    transition: none;
+    transition: height 0.25s ease, font-size 0.25s ease;
 }
 
 .page-option-list {
     position: absolute;
-    top: 45px;
-    left: 5px;
-    right: 5px;
+    top: var(--page-menu-top);
+    left: calc(var(--page-sheet-padding) + 1px);
+    right: calc(var(--page-sheet-padding) + 1px);
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -277,7 +285,8 @@ export default {
     pointer-events: none;
     transform: translateY(-9px) scaleY(0.86);
     transform-origin: top center;
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        top 0.25s ease, left 0.25s ease, right 0.25s ease;
 }
 
 .page-option-list .page-option {
@@ -292,13 +301,13 @@ export default {
     left: 0;
     right: 0;
     z-index: 0;
-    height: 37px;
+    height: var(--page-option-height);
     border-radius: 10px;
     background: var(--tabs-switcher-hover-bg);
     opacity: 0;
     pointer-events: none;
-    transform: translateY(calc(var(--hovered-option-index) * 37px));
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateY(calc(var(--hovered-option-index) * var(--page-option-height)));
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), height 0.25s ease;
 }
 
 .page-option-highlight.is-visible {
@@ -312,16 +321,17 @@ export default {
 }
 
 .page-option.is-current {
-    height: 37px;
+    height: var(--page-current-height);
     gap: 8px;
     padding: 0 14px;
     color: var(--tabs-switcher-current-color);
     background: var(--tabs-switcher-current-bg);
     border: 1px solid var(--tabs-switcher-current-border-color);
     box-shadow: none;
-    font-size: 1.1em;
+    font-size: var(--page-current-font-size);
     font-weight: bold;
     line-height: 1.15;
+    transition: height 0.25s ease, font-size 0.25s ease;
 }
 
 .page-option.is-current > .page-option-icon {
@@ -353,6 +363,10 @@ export default {
 /* 移动端适配 */
 @media (max-width: 768px) {
     .tabs {
+        --page-option-height: var(--admin-header-option-height, 32px);
+        --page-option-font-size: var(--admin-header-option-font-size, 12px);
+        --page-current-height: var(--admin-header-current-height, 32px);
+        --page-current-font-size: var(--admin-header-current-font-size, 1em);
         gap: 6px;
     }
 
@@ -369,16 +383,13 @@ export default {
     }
 
     .page-switcher-sheet::before {
-        height: 140px;
         transform: translateY(-3px) scaleY(0.72);
     }
 
     .page-option {
         justify-content: flex-start;
         min-width: 0;
-        height: 32px;
         padding: 0 10px;
-        font-size: 12px;
         gap: 6px;
     }
 
@@ -387,20 +398,12 @@ export default {
     }
 
     .page-option-list {
-        top: 40px;
         transform: translateY(-8px) scaleY(0.86);
     }
 
-    .page-option-highlight {
-        height: 32px;
-        transform: translateY(calc(var(--hovered-option-index) * 32px));
-    }
-
     .page-option.is-current {
-        height: 32px;
         gap: 5px;
         padding: 0 10px;
-        font-size: 1em;
     }
 
     .page-option.is-current > .page-option-icon {
@@ -432,5 +435,17 @@ export default {
     background-color: transparent !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-switcher,
+    .page-switcher-sheet,
+    .page-switcher-sheet::before,
+    .page-option,
+    .page-option.is-current,
+    .page-option-list,
+    .page-option-highlight {
+        transition: none;
+    }
 }
 </style>
