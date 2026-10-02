@@ -119,9 +119,29 @@
                         <div class="upload-list-dashboard-action">
                             <div class="modern-action-group">
                                 <el-tooltip :disabled="disableTooltip" :content="$t('upload.copyAll')" placement="top" :show-after="1000">
-                                    <button class="modern-action-btn modern-action-btn-copy" @click="copyAll">
-                                        <font-awesome-icon icon="copy" />
-                                    </button>
+                                    <el-dropdown trigger="hover" @command="copyAll">
+                                        <button
+                                            type="button"
+                                            class="modern-action-btn modern-action-btn-copy"
+                                            :aria-label="`${$t('upload.copyAll')} (${defaultCopyFormat.label})`"
+                                            @click="copyAll()"
+                                        >
+                                            <font-awesome-icon icon="copy" />
+                                            <span class="copy-format-badge" aria-hidden="true">{{ defaultCopyFormat.initial }}</span>
+                                        </button>
+                                        <template #dropdown>
+                                            <el-dropdown-menu class="modern-dropdown-menu">
+                                                <el-dropdown-item
+                                                    v-for="format in alternativeCopyFormats"
+                                                    :key="format.value"
+                                                    :command="format.value"
+                                                >
+                                                    <font-awesome-icon :icon="format.icon" class="copy-format-icon" aria-hidden="true" />
+                                                    {{ format.label }}
+                                                </el-dropdown-item>
+                                            </el-dropdown-menu>
+                                        </template>
+                                    </el-dropdown>
                                 </el-tooltip>
                                 <el-tooltip :disabled="disableTooltip" :content="$t('upload.retryFailed')" placement="top" :show-after="1000">
                                     <el-dropdown>
@@ -183,6 +203,13 @@ import {
     joinUploadFolder
 } from '@/utils/upload/directoryTraversal'
 import UploadFileItem from '@/components/upload/UploadFileItem.vue'
+
+const COPY_FORMATS = [
+    { value: 'url', label: 'URL', initial: 'U', icon: 'link' },
+    { value: 'md', label: 'Markdown', initial: 'M', icon: 'code' },
+    { value: 'html', label: 'HTML', initial: 'H', icon: 'code-branch' },
+    { value: 'ubb', label: 'BBCode', initial: 'B', icon: 'quote-right' }
+]
 
 export default {
 name: 'UploadForm',
@@ -330,6 +357,12 @@ computed: {
     ...mapGetters([
         'storeAutoReUpload'
     ]),
+    defaultCopyFormat() {
+        return COPY_FORMATS.find(format => format.value === this.selectedUrlForm) || COPY_FORMATS[0]
+    },
+    alternativeCopyFormats() {
+        return COPY_FORMATS.filter(format => format.value !== this.defaultCopyFormat.value)
+    },
     uploadSuccessCount() {
         return this.fileList.filter(item => item.status === 'done' || item.status === 'success').length
     },
@@ -1056,10 +1089,10 @@ methods: {
             fileItem.progreess = event.percent
         }
     },
-    copyAll() {
+    copyAll(format = this.selectedUrlForm) {
         const urls = this.fileList
             .filter(item => item.status === 'done' || item.status === 'success')
-            .map(item => getUrlByFormat(item, this.selectedUrlForm))
+            .map(item => getUrlByFormat(item, format))
             .join('\n')
         navigator.clipboard.writeText(urls)
         this.$message({ type: 'success', message: this.$t('uploadForm.copyAllSuccess') })
@@ -2513,6 +2546,16 @@ html.dark .el-upload__text :deep(em) {
     color: var(--upload-action-copy-color);
 }
 
+.copy-format-badge {
+    position: absolute;
+    right: 3px;
+    bottom: 2px;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 10px;
+    pointer-events: none;
+}
+
 .modern-action-btn-retry {
     color: var(--upload-action-retry-color);
 }
@@ -2528,6 +2571,12 @@ html.dark .el-upload__text :deep(em) {
 }
 
 /* Dropdown Menu Styles */
+.copy-format-icon {
+    width: 16px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
 .modern-dropdown-item-content {
     display: flex;
     align-items: center;
