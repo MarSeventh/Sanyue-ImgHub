@@ -620,6 +620,19 @@ html.dark {
     --el-bg-color-overlay: #1F1F22;
 }
 
+/* 深色主题主色标签与设置页文字按钮共用文字强调色。 */
+html.dark .el-tag--primary:not(.el-tag--dark) {
+    --el-tag-text-color: var(--primary-color-accent);
+}
+
+html.dark .upload-settings .el-button--primary.is-text:not(.is-disabled),
+html.dark .upload-settings .el-button--primary.is-link:not(.is-disabled),
+html.dark .ai-settings .el-button--primary.is-text:not(.is-disabled),
+html.dark .ai-settings .el-button--primary.is-link:not(.is-disabled) {
+    --el-button-text-color: var(--primary-color-accent);
+    --el-button-hover-link-text-color: var(--primary-color-accent);
+}
+
 /* ==============================
    Element Plus 全局消息提示
    ============================== */

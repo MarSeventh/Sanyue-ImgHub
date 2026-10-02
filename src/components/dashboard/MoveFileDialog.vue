@@ -352,6 +352,10 @@ export default {
     font-weight: 500;
 }
 
+html.dark .tree-node.is-current .node-label {
+    color: var(--primary-color-accent);
+}
+
 .folder-icon {
     color: var(--el-color-warning);
     font-size: 16px;

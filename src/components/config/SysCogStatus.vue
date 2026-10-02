@@ -1680,6 +1680,10 @@ export default {
   box-shadow: none;
 }
 
+html.dark .trend-calendar-btn:hover {
+  color: var(--primary-color-accent);
+}
+
 .trend-date-dialog {
   max-width: calc(100vw - 32px);
   box-sizing: border-box;

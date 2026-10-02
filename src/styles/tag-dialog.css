@@ -60,6 +60,7 @@
 .tag-chip :deep(.el-tag__close) { flex-shrink: 0; margin-left: 7px; }
 .tag-choice { cursor: pointer; transition: color .2s, border-color .2s, background-color .2s; }
 .tag-choice:hover, .tag-choice:focus-visible { background: var(--el-color-primary-light-9); border-color: var(--el-color-primary-light-5); color: var(--el-color-primary); }
+html.dark .tag-choice:hover, html.dark .tag-choice:focus-visible { color: var(--primary-color-accent); }
 .tag-choice[aria-disabled="true"] { opacity: .6; cursor: default; pointer-events: none; }
 .tag-choice:focus-visible, .suggestion-item:focus-visible { outline: 2px solid var(--el-color-primary); outline-offset: 2px; }
 .empty-message { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 20px 12px; border: 1px dashed var(--el-border-color-lighter); border-radius: 9px; color: var(--el-text-color-secondary); font-size: 13px; line-height: 1.6; }
@@ -69,6 +70,7 @@
 .suggestion-item > svg { flex-shrink: 0; color: var(--el-text-color-secondary); font-size: 11px; }
 .suggestion-item > span { min-width: 0; overflow-wrap: anywhere; }
 .suggestion-item:hover, .suggestion-item:focus-visible { background: var(--el-fill-color-light); color: var(--el-color-primary); }
+html.dark .suggestion-item:hover, html.dark .suggestion-item:focus-visible { color: var(--primary-color-accent); }
 .suggestion-item:disabled { opacity: .6; cursor: default; }
 .action-buttons { display: flex; justify-content: flex-end; padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--el-border-color-lighter); }
 .action-buttons .el-button, .dialog-footer .el-button { border-radius: 9px; }
@@ -89,6 +91,8 @@
 .tag-operation-tabs :deep(.el-tabs__item:last-child) { flex: 1.8; }
 .tag-operation-tabs :deep(.el-tabs__item.is-active) { background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
 .tag-operation-tabs :deep(.el-tabs__item:hover) { color: var(--el-color-primary); }
+html.dark .tag-operation-tabs :deep(.el-tabs__item.is-active),
+html.dark .tag-operation-tabs :deep(.el-tabs__item:hover) { color: var(--primary-color-accent); }
 .tag-tab-label { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; line-height: 1.3; }
 .tag-tab-label > svg { flex-shrink: 0; }
 .tag-tab-label > span { white-space: normal; }

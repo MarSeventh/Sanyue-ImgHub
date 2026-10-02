@@ -317,6 +317,9 @@ export default {
 .upload-list-item-url :deep(.el-input__inner::selection) {
     background-color: var(--el-color-primary-light-7);
 }
+html.dark .upload-list-item-url :deep(.el-input-group__prepend) {
+    color: var(--primary-color-accent);
+}
 .upload-list-item-url :deep(.el-input-group__prepend) {
     background: var(--el-color-primary-light-9);
     color: var(--el-color-primary);

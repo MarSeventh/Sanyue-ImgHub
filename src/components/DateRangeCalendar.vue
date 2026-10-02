@@ -409,6 +409,14 @@ html.dark .calendar-day.is-muted {
   color: var(--el-text-color-placeholder);
 }
 
+html.dark .calendar-nav:hover,
+html.dark .calendar-nav:focus,
+html.dark .calendar-day:not(.is-range-start):not(.is-range-end):hover,
+html.dark .calendar-day:not(.is-range-start):not(.is-range-end):focus,
+html.dark .calendar-day.is-in-range {
+  color: var(--primary-color-accent);
+}
+
 @media (max-width: 768px) {
   .date-range-calendar {
     --calendar-day-size: clamp(30px, 8.5vw, 38px);

@@ -192,6 +192,8 @@ export default {
 .ai-file { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; line-height: 1.5; }
 .ai-tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .ai-tag-list .el-check-tag { max-width: 100%; height: auto; white-space: normal; overflow-wrap: anywhere; }
+html.dark .ai-tag-list .el-check-tag.is-checked,
+html.dark .ai-tag-list .el-check-tag.is-checked:hover { color: var(--primary-color-accent); }
 .ai-tag-list [aria-disabled="true"] { cursor: default; opacity: .65; }
 .ai-save-error { margin-top: 12px; }
 .ai-footer { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--el-border-color-lighter); flex-wrap: wrap; }

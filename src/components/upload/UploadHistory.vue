@@ -590,6 +590,10 @@ export default {
     color: var(--el-color-primary);
 }
 
+html.dark .action-btn-view:hover {
+    color: var(--primary-color-accent);
+}
+
 .history-group {
     position: relative;
     padding-left: 30px;
