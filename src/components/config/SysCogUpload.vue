@@ -197,6 +197,15 @@
                         </template>
                         <el-input v-model="newChannel.cdnDomain" :placeholder="$t('sysUpload.cdnDomainPlaceholder')"/>
                     </el-form-item>
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.userAgent') }}
+                            <el-tooltip :content="$t('sysUpload.userAgentTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
+                        <el-input v-model="newChannel.userAgent" :placeholder="$t('sysUpload.userAgentPlaceholder')"/>
+                    </el-form-item>
                     <el-form-item :label="$t('sysUpload.bucketName')" prop="bucketName">
                         <el-input v-model="newChannel.bucketName" :placeholder="$t('sysUpload.bucketNamePlaceholder')"/>
                     </el-form-item>
@@ -324,7 +333,7 @@
 
         <!-- 详情弹窗 -->
         <el-dialog v-model="showDetailDialog" :title="$t('sysUpload.detailDialogTitle', { name: currentChannel?.name || '' })" class="channel-dialog" @closed="resetDetailData">
-            <el-descriptions :column="1" border>
+            <el-descriptions :column="1" border class="channel-details">
                 <el-descriptions-item :label="$t('sysUpload.channelNameDetail')">{{ currentChannel?.name }}</el-descriptions-item>
                 <el-descriptions-item :label="$t('sysUpload.channelTypeDetail')">{{ getChannelTypeLabel(currentChannelType) }}</el-descriptions-item>
                 <el-descriptions-item :label="$t('sysUpload.statusLabel')">
@@ -354,6 +363,7 @@
                     </el-descriptions-item>
                     <el-descriptions-item :label="$t('sysUpload.bucketName')">{{ currentChannel?.bucketName }}</el-descriptions-item>
                     <el-descriptions-item :label="$t('sysUpload.bucketRegion')">{{ currentChannel?.region }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('sysUpload.userAgent')">{{ currentChannel?.userAgent || $t('sysUpload.notSet') }}</el-descriptions-item>
                     <el-descriptions-item :label="$t('sysUpload.pathStyle')">{{ currentChannel?.pathStyle ? $t('sysUpload.isPathStyle') : $t('sysUpload.isNotPathStyle') }}</el-descriptions-item>
                 </template>
                 <template v-else-if="currentChannelType === 'discord'">
@@ -468,6 +478,15 @@
                             </el-tooltip>
                         </template>
                         <el-input v-model="editChannel.cdnDomain" :placeholder="$t('sysUpload.cdnDomainPlaceholder')"/>
+                    </el-form-item>
+                    <el-form-item>
+                        <template #label>
+                            {{ $t('sysUpload.userAgent') }}
+                            <el-tooltip :content="$t('sysUpload.userAgentTip')" placement="top">
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </template>
+                        <el-input v-model="editChannel.userAgent" :placeholder="$t('sysUpload.userAgentPlaceholder')"/>
                     </el-form-item>
                     <el-form-item :label="$t('sysUpload.bucketName')" prop="bucketName">
                         <el-input v-model="editChannel.bucketName" :disabled="editChannel.fixed"/>
@@ -655,6 +674,7 @@ data() {
         // S3
         endpoint: '',
         cdnDomain: '',
+        userAgent: '',
         bucketName: '',
         region: 'auto',
         accessKeyId: '',
@@ -837,6 +857,7 @@ methods: {
         this.currentChannelIndex = index;
         const channel = this.getChannelList(type)[index];
         this.editChannel = JSON.parse(JSON.stringify(channel));
+        if (type === 's3') this.editChannel.userAgent = channel.userAgent || '';
         if (type === 'webdav') {
             this.editChannel.headersText = this.headersToText(this.editChannel.headers);
             this.editChannel.createDirectory = this.editChannel.createDirectory !== false;
@@ -858,7 +879,7 @@ methods: {
             type: '', name: '', enabled: true,
             botToken: '', chatId: '', proxyUrl: '',
             endpoint: '', bucketName: '', region: 'auto',
-            accessKeyId: '', secretAccessKey: '', pathStyle: false,
+            accessKeyId: '', secretAccessKey: '', pathStyle: false, userAgent: '',
             quota: { enabled: false, limitGB: 10, threshold: 95 },
             channelId: '', isNitro: false,
             repo: '', token: '', isPrivate: false,
@@ -887,6 +908,7 @@ methods: {
             proxyUrl: '',
             endpoint: '',
             cdnDomain: '',
+            userAgent: '',
             bucketName: '',
             region: 'auto',
             accessKeyId: '',
@@ -948,6 +970,7 @@ methods: {
                 Object.assign(newChannelData, {
                     endpoint: this.newChannel.endpoint,
                     cdnDomain: this.newChannel.cdnDomain,
+                    userAgent: (this.newChannel.userAgent || '').trim(),
                     bucketName: this.newChannel.bucketName,
                     region: this.newChannel.region,
                     accessKeyId: this.newChannel.accessKeyId,
@@ -1001,6 +1024,7 @@ methods: {
             const originalName = settings.channels[currentIndex]?.name || this.editChannel.name;
 
             const editedChannel = { ...this.editChannel, name: originalName };
+            if (this.currentChannelType === 's3') editedChannel.userAgent = (editedChannel.userAgent || '').trim();
             if (this.currentChannelType === 'webdav') {
                 const headers = this.parseHeadersText(editedChannel.headersText);
                 if (headers === null) {
@@ -1658,6 +1682,20 @@ mounted() {
 }
 
 /* 弹窗响应式宽度 */
+:deep(.channel-details .el-descriptions__table) {
+    table-layout: fixed;
+    width: 100%;
+}
+
+:deep(.channel-details .el-descriptions__label) {
+    width: 34%;
+}
+
+:deep(.channel-details .el-descriptions__cell) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
 :deep(.channel-dialog) {
     width: 600px !important;
     max-width: 90vw !important;
