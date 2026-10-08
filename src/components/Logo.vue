@@ -2,7 +2,8 @@
     <a 
         :href="logoHref" 
         :target="target"
-        :class="logo-link"
+        class="logo-link"
+        rel="noopener noreferrer"
     >
     <img 
         :class="logoClasses"
@@ -166,7 +167,7 @@ export default {
 }
 
 /* 辅助功能支持 */
-.logo:focus {
+.logo-link:focus-visible {
   outline: 2px solid var(--el-color-primary);
   outline-offset: 2px;
 }

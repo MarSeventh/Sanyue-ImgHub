@@ -68,6 +68,7 @@ export default {
 
 <style scoped>
 .img-card {
+    box-sizing: border-box;
     width: 100%;
     height: 22vh;
     content-visibility: auto;

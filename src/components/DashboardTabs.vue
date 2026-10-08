@@ -148,11 +148,11 @@ export default {
 
 <style scoped>
 .tabs {
-    --page-option-height: var(--admin-header-option-height, 37px);
-    --page-option-font-size: var(--admin-header-option-font-size, 15px);
-    --page-current-height: var(--admin-header-current-height, 37px);
-    --page-current-font-size: var(--admin-header-current-font-size, 1.1em);
-    --page-sheet-padding: var(--admin-header-sheet-padding, 4px);
+    --page-option-height: 37px;
+    --page-option-font-size: 15px;
+    --page-current-height: 37px;
+    --page-current-font-size: 1.1em;
+    --page-sheet-padding: 4px;
     --page-menu-top: calc(var(--page-current-height) + var(--page-sheet-padding) * 2);
     display: flex;
     align-items: center;
@@ -163,9 +163,8 @@ export default {
     position: relative;
     display: flex;
     align-items: center;
-    height: var(--admin-header-switcher-height, 44px);
+    height: 44px;
     overflow: visible;
-    transition: height 0.25s ease;
 }
 
 .page-switcher.is-open {
@@ -185,7 +184,6 @@ export default {
     box-sizing: border-box;
     background-color: transparent;
     overflow: visible;
-    transition: padding 0.25s ease;
 }
 
 .page-switcher-sheet::before {
@@ -204,7 +202,7 @@ export default {
     transform: translateY(-4px) scaleY(0.72);
     transform-origin: top center;
     pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), height 0.25s ease;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: opacity, transform;
 }
 
@@ -250,7 +248,6 @@ export default {
     font-family: inherit;
     white-space: nowrap;
     cursor: pointer;
-    transition: height 0.25s ease, font-size 0.25s ease;
 }
 
 .page-option-list {
@@ -265,8 +262,7 @@ export default {
     pointer-events: none;
     transform: translateY(-9px) scaleY(0.86);
     transform-origin: top center;
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-        top 0.25s ease, left 0.25s ease, right 0.25s ease;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .page-option-list .page-option {
@@ -287,7 +283,7 @@ export default {
     opacity: 0;
     pointer-events: none;
     transform: translateY(calc(var(--hovered-option-index) * var(--page-option-height)));
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), height 0.25s ease;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .page-option-highlight.is-visible {
@@ -311,7 +307,6 @@ export default {
     font-size: var(--page-current-font-size);
     font-weight: bold;
     line-height: 1.15;
-    transition: height 0.25s ease, font-size 0.25s ease;
 }
 
 .page-option.is-current > .page-option-icon {
@@ -343,10 +338,10 @@ export default {
 /* 移动端适配 */
 @media (max-width: 768px) {
     .tabs {
-        --page-option-height: var(--admin-header-option-height, 32px);
-        --page-option-font-size: var(--admin-header-option-font-size, 12px);
-        --page-current-height: var(--admin-header-current-height, 32px);
-        --page-current-font-size: var(--admin-header-current-font-size, 14px);
+        --page-option-height: 32px;
+        --page-option-font-size: 12px;
+        --page-current-height: 32px;
+        --page-current-font-size: 14px;
     }
 
     .page-switcher-title {
@@ -401,11 +396,7 @@ export default {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .page-switcher,
-    .page-switcher-sheet,
     .page-switcher-sheet::before,
-    .page-option,
-    .page-option.is-current,
     .page-option-list,
     .page-option-highlight {
         transition: none;

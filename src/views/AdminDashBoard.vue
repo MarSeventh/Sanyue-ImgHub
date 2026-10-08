@@ -2614,6 +2614,7 @@ beforeUnmount() {
 .search-card {
     display: flex;
     align-items: center;
+    min-width: 0;
 }
 .search-card :deep(.el-input) {
     background: transparent !important;
@@ -2621,22 +2622,23 @@ beforeUnmount() {
     box-shadow: none !important;
 }
 .search-card :deep(.el-input__wrapper) {
-    padding: 0 var(--admin-header-search-padding, 14px);
+    min-width: 0;
+    padding: 0 14px;
     border-radius: 20px;
     background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(1.4);
     -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
-    transition: padding 0.25s ease;
 }
 
 .search-card :deep(.el-input__inner) {
-    width: var(--admin-header-search-width, 280px);
-    height: var(--admin-header-search-height, 40px);
-    font-size: var(--admin-header-search-font-size, 1.2em);
+    width: 280px;
+    height: 40px;
+    font-size: 1.2em;
+    min-width: 0;
     border: none;
-    transition: width 0.25s ease, height 0.25s ease, font-size 0.25s ease;
+    transition: width 0.25s ease;
     background: none;
 }
 
@@ -2644,7 +2646,7 @@ beforeUnmount() {
     color: var(--el-text-color-placeholder);
     font-style: italic;
     font-weight: 400;
-    font-size: var(--admin-header-search-placeholder-size, 14px);
+    font-size: 14px;
     opacity: 0.6;
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
@@ -2656,23 +2658,22 @@ beforeUnmount() {
 }
 @media (max-width: 768px) {
     .search-card :deep(.el-input__wrapper) {
-        padding: 0 var(--admin-header-search-padding, 12px);
+        padding: 0 12px;
     }
 
     .search-card {
         flex: 1;
-        min-width: 0;
     }
 
     .search-card :deep(.el-input__inner) {
         width: 100%;
-        height: var(--admin-header-search-height, 32px);
-        font-size: var(--admin-header-search-font-size, 1em);
+        height: 32px;
+        font-size: 1em;
     }
 }
 .search-card:focus-within :deep(.el-input__inner),
 .search-card.is-settings-open :deep(.el-input__inner) {
-    width: var(--admin-header-search-focus-width, 350px);
+    width: 350px;
 }
 @media (max-width: 768px) {
     .search-card:focus-within :deep(.el-input__inner),
@@ -2681,7 +2682,6 @@ beforeUnmount() {
     }
 }
 @media (prefers-reduced-motion: reduce) {
-    .search-card :deep(.el-input__wrapper),
     .search-card :deep(.el-input__inner),
     .search-card :deep(.el-input__inner::placeholder) {
         transition: none;

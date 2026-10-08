@@ -35,8 +35,7 @@ export default {
     display: flex;
     align-items: center;
     flex: 0 0 auto;
-    gap: var(--admin-header-action-gap, 6px);
-    margin-left: auto;
+    gap: var(--admin-header-action-gap, 8px);
 }
 
 .admin-header-control,
@@ -57,7 +56,7 @@ export default {
     -webkit-backdrop-filter: none !important;
     font-size: var(--admin-header-action-font-size, 20px);
     cursor: pointer;
-    transition: width 0.25s ease, height 0.25s ease, font-size 0.25s ease, color 0.2s ease;
+    transition: color 0.2s ease;
     --lang-icon-size: 1em;
     --lang-icon-color: currentColor;
 }
