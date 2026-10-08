@@ -352,8 +352,6 @@ html.dark .tree-node.is-current .node-label {
 <style>
 .directory-tree-popover {
     padding: 0 !important;
-    border-radius: 12px !important;
-    box-shadow: var(--el-box-shadow-light) !important;
 }
 
 /* 加速 popover 动画 */

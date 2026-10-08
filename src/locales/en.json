@@ -137,6 +137,9 @@
   },
   "dashboard": {
     "searchPlaceholder": "Search: #tag -#exclude",
+    "searchResultDisplay": "Search result display",
+    "searchResultFolders": "Show folders",
+    "searchResultExpanded": "Expand all",
     "sortAsc": "Ascending",
     "sortDesc": "Descending",
     "sortByTime": "Time",

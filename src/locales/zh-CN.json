@@ -139,6 +139,9 @@
   },
   "dashboard": {
     "searchPlaceholder": "搜索：#标签 -#排除标签",
+    "searchResultDisplay": "搜索结果展示",
+    "searchResultFolders": "展示文件夹",
+    "searchResultExpanded": "全部展开",
     "sortAsc": "升序",
     "sortDesc": "降序",
     "sortByTime": "时间",

@@ -208,10 +208,11 @@ class FileManager {
     }
 
     // 更新文件列表
-    async refreshFileList(dir, search = '', includeTags = '', excludeTags = '', filters = {}) {
+    async refreshFileList(dir, search = '', includeTags = '', excludeTags = '', filters = {}, recursive = false) {
         search = search.trim();
         try {
             let url = `/api/manage/list?count=60&dir=${dir}&search=${encodeURIComponent(search)}`;
+            if (recursive) url += '&recursive=true';
             if (includeTags) {
                 url += `&includeTags=${encodeURIComponent(includeTags)}`;
             }
@@ -237,13 +238,14 @@ class FileManager {
     }
 
     // 读取更多数据
-    async loadMoreFiles(dir, search = '', includeTags = '', excludeTags = '', count = 60, filters = {}) {
+    async loadMoreFiles(dir, search = '', includeTags = '', excludeTags = '', count = 60, filters = {}, recursive = false) {
         search = search.trim();
         try {
             const fileList = this.getMutableFileList();
             const start = fileList.files.length;
 
             let url = `/api/manage/list?dir=${dir}&start=${start}&count=${count}&search=${encodeURIComponent(search)}`;
+            if (recursive) url += '&recursive=true';
             if (includeTags) {
                 url += `&includeTags=${encodeURIComponent(includeTags)}`;
             }

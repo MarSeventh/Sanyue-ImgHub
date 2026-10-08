@@ -4,10 +4,57 @@
             <AdminHeader active-tab="dashboard" show-link-format @link-format="showUrlDialog = true">
                 <template #search>
                     <div class="search-area">
-                        <div class="search-card">
-                            <el-input v-model="tempSearch" size="small" :placeholder="$t('dashboard.searchPlaceholder')" @keyup.enter="handleSearch">
+                        <div class="search-card" :class="{ 'is-settings-open': searchSettingsOpen }">
+                            <el-input ref="searchInput" v-model="tempSearch" size="small" :placeholder="$t('dashboard.searchPlaceholder')" @keyup.enter="handleSearch">
                                 <template #suffix>
-                                    <font-awesome-icon icon="search" class="search-icon" @click="handleSearch"/>
+                                    <el-tooltip
+                                        ref="searchSettingsPopup"
+                                        :trigger="isMobileViewport() ? [] : 'hover'"
+                                        placement="bottom-start"
+                                        effect="light"
+                                        popper-class="el-dropdown__popper search-settings-popper"
+                                        :popper-style="{ padding: '0' }"
+                                        :focus-on-target="false"
+                                        :focus-on-show="false"
+                                        persistent
+                                        :show-after="150"
+                                        :hide-after="150"
+                                        @before-show="searchSettingsOpen = true"
+                                        @hide="searchSettingsOpen = false"
+                                    >
+                                        <template #default>
+                                            <button
+                                                type="button"
+                                                class="search-icon-trigger"
+                                                :aria-label="$t('dashboard.searchPlaceholder')"
+                                                @mousedown.prevent
+                                                @pointerdown="handleSearchIconPointerDown"
+                                                @pointermove="handleSearchIconPointerMove"
+                                                @pointerup="cancelSearchIconPress"
+                                                @pointercancel="cancelSearchIconPress"
+                                                @pointerleave="cancelSearchIconPress"
+                                                @contextmenu.prevent
+                                                @click="handleSearchIconClick"
+                                            >
+                                                <font-awesome-icon icon="search" class="search-icon" />
+                                            </button>
+                                        </template>
+                                        <template #content>
+                                            <div class="el-dropdown-menu modern-dropdown-menu search-result-menu" role="group" :aria-label="$t('dashboard.searchResultDisplay')" @mousedown.prevent>
+                                                <div class="search-result-settings-title">{{ $t('dashboard.searchResultDisplay') }}</div>
+                                                <button type="button" class="el-dropdown-menu__item search-result-option" :aria-pressed="searchResultDisplay === 'folders'" @click="selectSearchResultDisplay('folders')">
+                                                    <font-awesome-icon icon="folder-open" class="search-result-option-icon" />
+                                                    <span>{{ $t('dashboard.searchResultFolders') }}</span>
+                                                    <font-awesome-icon v-if="searchResultDisplay === 'folders'" icon="check" class="search-result-option-check" />
+                                                </button>
+                                                <button type="button" class="el-dropdown-menu__item search-result-option" :aria-pressed="searchResultDisplay === 'expanded'" @click="selectSearchResultDisplay('expanded')">
+                                                    <font-awesome-icon icon="list" class="search-result-option-icon" />
+                                                    <span>{{ $t('dashboard.searchResultExpanded') }}</span>
+                                                    <font-awesome-icon v-if="searchResultDisplay === 'expanded'" icon="check" class="search-result-option-check" />
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </el-tooltip>
                                 </template>
                             </el-input>
                         </div>
@@ -165,7 +212,7 @@
                     <p class="empty-hint">{{ hasSearchOrFilter ? $t('dashboard.adjustSearchHint') : $t('dashboard.uploadHint') }}</p>
                 </div>
                 <!-- 文件夹和文件列表 -->
-                <template v-else v-for="(item, index) in paginatedTableData" :key="index">
+                <template v-else v-for="(item, index) in paginatedTableData" :key="`${item.isFolder ? 'folder' : 'file'}:${item.name}`">
                     <!-- 文件夹卡片 -->
                     <FolderCard 
                         v-if="isFolder(item)"
@@ -241,7 +288,7 @@
                 <template v-else>
                     <FileListItem
                         v-for="(item, index) in paginatedTableData"
-                        :key="index"
+                        :key="`${item.isFolder ? 'folder' : 'file'}:${item.name}`"
                         :item="item"
                         v-model:selected="item.selected"
                         :fileLink="getFileLink(item.name)"
@@ -458,8 +505,9 @@ import { useDragSelect } from '@/utils/dashboard/useDragSelect.js';
 
 const SORT_FIELDS = ['time', 'size', 'rawName', 'fileName'];
 const SORT_ORDERS = ['asc', 'desc'];
+const SEARCH_RESULT_DISPLAYS = ['folders', 'expanded'];
 
-function getStoredSortValue(key, validValues, fallback) {
+function getStoredOption(key, validValues, fallback) {
     try {
         const value = localStorage.getItem(key);
         return validValues.includes(value) ? value : fallback;
@@ -484,11 +532,16 @@ data() {
         searchIncludeTags: '', // 包含的标签，逗号分隔
         searchExcludeTags: '', // 排除的标签，逗号分隔
         isSearchMode: false,
+        searchResultDisplay: getStoredOption('searchResultDisplay', SEARCH_RESULT_DISPLAYS, 'expanded'),
+        searchSettingsOpen: false,
+        searchIconPressTimer: null,
+        searchIconPressStart: null,
+        searchIconLongPressed: false,
         currentPage: 1,
         pageSize: 15,
         selectedFiles: [],
-        sortField: getStoredSortValue('sortField', SORT_FIELDS, 'time'),
-        sortOrder: getStoredSortValue('sortOrder', SORT_ORDERS, 'desc'),
+        sortField: getStoredOption('sortField', SORT_FIELDS, 'time'),
+        sortOrder: getStoredOption('sortOrder', SORT_ORDERS, 'desc'),
         isUploading: false,
         showdetailDialog: false,
         detailFile: null,
@@ -582,9 +635,9 @@ computed: {
     totalPages() {
         return Math.ceil(this.filteredTableData.length / this.pageSize) || 1;
     },
-    // 基于当前文件夹直接子文件和子文件夹数量计算的真实总页数
+    // 展开结果按递归文件总数分页，目录模式按直接子项分页。
     realTotalPages() {
-        const total = this.directFolderCount + this.directFileCount;
+        const total = this.recursiveSearchResults ? this.Number : this.directFolderCount + this.directFileCount;
         return Math.ceil(total / this.pageSize) || 1;
     },
     // 计算当前激活的筛选条件数量（数组形式）
@@ -594,6 +647,9 @@ computed: {
     // 判断是否处于搜索或筛选模式
     hasSearchOrFilter() {
         return this.isSearchMode || this.activeFilterCount > 0;
+    },
+    recursiveSearchResults() {
+        return this.hasSearchOrFilter && this.searchResultDisplay === 'expanded';
     },
     paginatedTableData() {
         const sortedData = this.sortData(this.filteredTableData);
@@ -876,6 +932,54 @@ methods: {
             i++;
         }
         return bytes.toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+    },
+    handleSearchIconPointerDown(event) {
+        this.cancelSearchIconPress();
+        this.searchIconLongPressed = false;
+        if (!['touch', 'pen'].includes(event.pointerType) || event.isPrimary === false) return;
+        this.searchIconPressStart = { x: event.clientX, y: event.clientY };
+        this.searchIconPressTimer = setTimeout(() => {
+            this.searchIconPressTimer = null;
+            this.searchIconLongPressed = true;
+            this.$refs.searchSettingsPopup.onOpen(event, 0);
+        }, 500);
+    },
+    handleSearchIconPointerMove(event) {
+        const start = this.searchIconPressStart;
+        if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) {
+            this.searchIconLongPressed = true;
+            this.cancelSearchIconPress();
+        }
+    },
+    cancelSearchIconPress() {
+        clearTimeout(this.searchIconPressTimer);
+        this.searchIconPressTimer = null;
+        this.searchIconPressStart = null;
+    },
+    handleSearchIconClick(event) {
+        if (this.searchIconLongPressed) {
+            event.preventDefault();
+            return;
+        }
+        return this.handleSearch();
+    },
+    selectSearchResultDisplay(mode) {
+        this.$refs.searchInput.focus();
+        this.$refs.searchSettingsPopup.hide();
+        return this.setSearchResultDisplay(mode);
+    },
+    setSearchResultDisplay(mode) {
+        if (!SEARCH_RESULT_DISPLAYS.includes(mode) || mode === this.searchResultDisplay) return;
+        this.searchResultDisplay = mode;
+        try {
+            localStorage.setItem('searchResultDisplay', mode);
+        } catch (error) {
+            console.warn('Could not save search result display preference:', error);
+        }
+        if (this.hasSearchOrFilter) {
+            this.currentPage = 1;
+            return this.refreshFileList();
+        }
     },
     handleSearch() {
         this.search = this.tempSearch;
@@ -1292,10 +1396,11 @@ methods: {
                 this.searchIncludeTags,
                 this.searchExcludeTags,
                 60,
-                this.filters
+                this.filters,
+                this.recursiveSearchResults
             );
             // 获取新的文件列表后
-            await this.fetchFileList();
+            await this.fetchFileList({ preserveSelection: true });
         } catch (error) {
             this.$message.error(this.$t('dashboard.loadMoreFailed'));
         } finally {
@@ -1777,9 +1882,10 @@ methods: {
                     this.searchIncludeTags,
                     this.searchExcludeTags,
                     neededFileCount,
-                    this.filters
+                    this.filters,
+                    this.recursiveSearchResults
                 );
-                await this.fetchFileList();
+                await this.fetchFileList({ preserveSelection: true });
             }
 
             this.currentPage = Math.min(targetPage, this.totalPages);
@@ -1791,9 +1897,9 @@ methods: {
     },
     // 判断是否为文件夹
     isFolder(item) {
-        // 如果是已经标记为文件夹的项目，直接返回true
-        if (item.isFolder) {
-            return true;
+        // 尊重文件列表的类型，避免把递归结果中的文件误判为文件夹。
+        if (typeof item.isFolder === 'boolean') {
+            return item.isFolder;
         }
         
         // 获取真实的文件路径（去除URL前缀）
@@ -1915,21 +2021,27 @@ methods: {
     },
     
     // 获取文件列表
-    async fetchFileList() {
+    async fetchFileList({ preserveSelection = false } = {}) {
         this.loading = true;
         try {
             // 从本地存储获取数据
             const data = fileManager.getLocalFileList();
+
+            // 追加分页数据时保留当前选择，用类型和路径区分文件与文件夹。
+            const selectedKeys = new Set(preserveSelection
+                ? this.tableData.filter(item => item.selected)
+                    .map(item => `${item.isFolder ? 'folder' : 'file'}:${item.name}`)
+                : []);
             
             // 解析返回的数据
-            const folders = new Set(data.directories || []);
+            const folders = new Set(this.recursiveSearchResults ? [] : data.directories || []);
             const files = data.files || [];
 
             // 处理文件夹数据
             const folderItems = Array.from(folders).map(folder => ({
                 name: folder,
                 isFolder: true,
-                selected: false,
+                selected: selectedKeys.has(`folder:${folder}`),
                 metadata: { FileName: folder.split('/').pop() }
             }));
 
@@ -1937,7 +2049,7 @@ methods: {
             const fileItems = files.map(file => ({
                 name: file.name,
                 isFolder: false,
-                selected: false,
+                selected: selectedKeys.has(`file:${file.name}`),
                 metadata: file.metadata
             }));
 
@@ -1969,7 +2081,8 @@ methods: {
                 this.searchKeywords,
                 this.searchIncludeTags,
                 this.searchExcludeTags,
-                this.filters
+                this.filters,
+                this.recursiveSearchResults
             );
             if (success) {
                 await this.fetchFileList();
@@ -2166,6 +2279,7 @@ mounted() {
     }
 },
 beforeUnmount() {
+    this.cancelSearchIconPress();
     window.removeEventListener('resize', this.updateResponsivePageSize);
 }
 
@@ -2437,6 +2551,66 @@ beforeUnmount() {
 }
 
 /* 搜索卡片样式 */
+.search-icon-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-touch-callout: none;
+    outline: none;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.search-icon-trigger:focus-visible {
+    outline: 2px solid var(--primary-color-accent);
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+.search-card:focus-within .search-icon-trigger,
+.search-card.is-settings-open .search-icon-trigger {
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.search-result-menu {
+    min-width: 200px;
+}
+
+.search-result-option {
+    width: 100%;
+    font-family: inherit;
+    text-align: left;
+}
+
+.search-result-settings-title {
+    padding: 6px 12px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--el-text-color-secondary);
+}
+
+.search-result-option-icon {
+    width: 16px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.search-result-option-check {
+    margin-left: auto;
+    padding-left: 12px;
+    color: var(--primary-color-accent);
+}
+
 .search-card {
     display: flex;
     align-items: center;
@@ -2496,11 +2670,13 @@ beforeUnmount() {
         font-size: var(--admin-header-search-font-size, 1em);
     }
 }
-.search-card :deep(.el-input__inner:focus) {
+.search-card:focus-within :deep(.el-input__inner),
+.search-card.is-settings-open :deep(.el-input__inner) {
     width: var(--admin-header-search-focus-width, 350px);
 }
 @media (max-width: 768px) {
-    .search-card :deep(.el-input__inner:focus) {
+    .search-card:focus-within :deep(.el-input__inner),
+    .search-card.is-settings-open :deep(.el-input__inner) {
         width: 100%;
     }
 }
@@ -2520,12 +2696,13 @@ beforeUnmount() {
     transform: scale(0.8);
     pointer-events: none;
 }
-.search-card:focus-within .search-icon {
+.search-card:focus-within .search-icon,
+.search-card.is-settings-open .search-icon {
     opacity: 1;
     transform: scale(1);
     pointer-events: auto;
 }
-.search-card:focus-within .search-icon:hover {
+.search-icon-trigger:hover .search-icon {
     color: var(--primary-color-accent);
     transform: scale(1.2);
 }

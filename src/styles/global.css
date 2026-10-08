@@ -842,13 +842,6 @@ html.dark .el-button--primary.is-plain:focus {
     box-shadow: 0 0 0 1px var(--el-color-primary-light-5) inset !important;
 }
 
-.el-select__popper.el-popper {
-    border-radius: 8px;
-    border: 1px solid var(--glass-border);
-    background-color: var(--popper-bg-color);
-    box-shadow: var(--popper-shadow);
-}
-
 .el-select__popper .el-select-dropdown__list {
     box-sizing: border-box;
     padding: 4px;
@@ -928,17 +921,22 @@ html.dark .el-switch__label:not(.is-active) {
 }
 
 /* ==============================
-   Element Plus 下拉菜单
+   Element Plus 下拉菜单和 Popover 浮层
    ============================== */
-.el-dropdown__popper.el-popper {
+.el-select__popper.el-popper,
+.el-dropdown__popper.el-popper,
+.el-popover.el-popper.is-light,
+.el-popover.el-popper.is-dark {
     border-radius: 8px;
     border: 1px solid var(--glass-border);
     background-color: var(--popper-bg-color);
     box-shadow: var(--popper-shadow);
 }
 
-html.dark .el-dropdown__popper.el-popper {
-    border-color: var(--glass-border);
+.el-popover.el-popper {
+    --el-popover-border-radius: 8px;
+    --el-popover-border-color: var(--glass-border);
+    --el-popover-bg-color: var(--glass-bg);
 }
 
 .el-dropdown__popper.el-popper .el-dropdown-menu {
@@ -1035,7 +1033,9 @@ html.dark .os-theme-dark,
 
 /* Element Plus 卡片和下拉浮层统一使用玻璃表面 */
 .el-card,
-.el-dropdown__popper.el-popper {
+.el-select__popper.el-popper,
+.el-dropdown__popper.el-popper,
+.el-popover.el-popper {
     background-color: var(--glass-bg) !important;
     backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
     -webkit-backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
