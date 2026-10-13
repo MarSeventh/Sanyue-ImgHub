@@ -1205,8 +1205,7 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
     padding-bottom: 8px;
     cursor: pointer;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease;
-    /* 入场时轻轻浮动一轮，静置页面不再持续触发 GPU 合成。 */
-    animation: float 4s ease-in-out;
+    animation: float 4s ease-in-out infinite;
     letter-spacing: 3px;
 }
 .title:hover {

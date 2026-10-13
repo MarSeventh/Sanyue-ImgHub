@@ -125,8 +125,13 @@ export default createStore({
     }
   },
   actions: {
-    async fetchUserConfig({ commit }) {
+    async fetchUserConfig({ commit }, configReady) {
       try {
+        const earlyConfig = await configReady;
+        if (earlyConfig) {
+          commit('setUserConfig', earlyConfig);
+          return;
+        }
         const response = await axios.get('/api/userConfig');
         commit('setUserConfig', response.data);
       } catch (error) {

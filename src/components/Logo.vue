@@ -180,7 +180,7 @@ export default {
 }
 
 /* 暗色模式下的 Logo 样式 */
-:global(html.dark) .logo {
+html.dark .logo {
   --logo-brightness: 0.9;
   --logo-hover-brightness: 1;
   filter: var(--logo-dark-filter, brightness(var(--logo-brightness)) drop-shadow(0 0 0 var(--logo-glow-color)));

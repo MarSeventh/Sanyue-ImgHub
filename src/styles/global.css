@@ -704,6 +704,68 @@ html.dark .ai-settings .el-button--primary.is-link:not(.is-disabled) {
     -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur)) saturate(1.2);
 }
 
+/* 遮罩以背景色渐变，定位容器保持不透明，玻璃表面单独位移和渐显。 */
+.el-modal-dialog.dialog-fade-enter-active,
+.el-modal-dialog.dialog-fade-leave-active,
+.is-message-box.fade-in-linear-enter-active,
+.is-message-box.fade-in-linear-leave-active {
+    opacity: 1;
+    animation: none;
+    transition: background-color var(--el-transition-duration, 0.3s) ease;
+}
+
+.el-modal-dialog.dialog-fade-enter-from,
+.el-modal-dialog.dialog-fade-leave-to,
+.is-message-box.fade-in-linear-enter-from,
+.is-message-box.fade-in-linear-leave-to {
+    opacity: 1;
+    background-color: transparent;
+}
+
+.el-modal-dialog.dialog-fade-enter-active > .el-overlay-dialog,
+.el-modal-dialog.dialog-fade-leave-active > .el-overlay-dialog,
+.is-message-box.fade-in-linear-enter-active > .el-overlay-message-box,
+.is-message-box.fade-in-linear-leave-active > .el-overlay-message-box {
+    animation: none;
+}
+
+.el-modal-dialog.dialog-fade-enter-active > .el-overlay-dialog > .el-dialog,
+.is-message-box.fade-in-linear-enter-active > .el-overlay-message-box > .el-message-box {
+    animation: glass-popup-enter var(--el-transition-duration, 0.3s) ease both;
+}
+
+.el-modal-dialog.dialog-fade-leave-active > .el-overlay-dialog > .el-dialog,
+.is-message-box.fade-in-linear-leave-active > .el-overlay-message-box > .el-message-box {
+    animation: glass-popup-enter var(--el-transition-duration, 0.3s) ease reverse both;
+}
+
+@keyframes glass-popup-enter {
+    from { opacity: 0; translate: 0 -20px; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .el-modal-dialog.dialog-fade-enter-active,
+    .el-modal-dialog.dialog-fade-leave-active,
+    .is-message-box.fade-in-linear-enter-active,
+    .is-message-box.fade-in-linear-leave-active {
+        transition-duration: 0.12s;
+    }
+
+    .el-modal-dialog.dialog-fade-enter-active > .el-overlay-dialog > .el-dialog,
+    .el-modal-dialog.dialog-fade-leave-active > .el-overlay-dialog > .el-dialog,
+    .is-message-box.fade-in-linear-enter-active > .el-overlay-message-box > .el-message-box,
+    .is-message-box.fade-in-linear-leave-active > .el-overlay-message-box > .el-message-box {
+        animation-name: glass-popup-fade;
+        animation-duration: 0.12s;
+    }
+}
+
+@keyframes glass-popup-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 /* 根据弹窗顶部留白限制高度，仅让内容区滚动。 */
 .el-dialog {
     display: flex;

@@ -104,7 +104,7 @@ const presetSiteIcon = (isDarkMode, userConfig) => {
     document.head.appendChild(maskIconLink);
 };
 
-store.dispatch('fetchUserConfig').then(() => {
+store.dispatch('fetchUserConfig', window.__siteEntryBootstrap?.configReady).then(() => {
     // 优先恢复用户选择；没有持久化选择时使用网页默认语言
     initializeLocale(store.getters.userConfig?.defaultLanguage);
 

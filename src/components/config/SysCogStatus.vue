@@ -21,7 +21,11 @@
 
       <div class="status-hero-time-card">
         <span class="status-hero-time-caption">{{ $t('sysStatus.localTime') }}</span>
-        <time class="status-hero-time" :datetime="currentTime.toISOString()">{{ currentTimeLabel }}</time>
+        <time
+          class="status-hero-time"
+          :class="{ 'is-visible': clockVisible, 'is-font-ready': clockFontReady }"
+          :datetime="currentTime.toISOString()"
+        >{{ currentTimeLabel }}</time>
         <span class="status-hero-timezone">{{ timeZoneLabel }}</span>
       </div>
     </section>
@@ -453,6 +457,9 @@ export default {
       indexInfoError: false,
       currentTime: new Date(),
       clockTimer: null,
+      clockVisible: false,
+      clockFontReady: false,
+      cancelClockFontWait: null,
       version: packageInfo.version, // 从package.json获取版本号
       loadErrors: {
         newest: false,
@@ -809,17 +816,43 @@ export default {
   },
   mounted() {
     this.fetchIndexInfo()
+    this.prepareClockFont()
     this.clockTimer = window.setInterval(() => {
       this.currentTime = new Date()
     }, 1000)
   },
   beforeUnmount() {
+    this.cancelClockFontWait?.()
     if (this.clockTimer) {
       window.clearInterval(this.clockTimer)
       this.clockTimer = null
     }
   },
   methods: {
+    prepareClockFont() {
+      if (!document.fonts?.load) {
+        this.clockVisible = true
+        return
+      }
+
+      let settled = false
+      // 字体等待独立于状态请求与入场；超时或失败时使用 Arial。
+      const timeout = window.setTimeout(() => reveal(false), 5000)
+      const reveal = ready => {
+        if (settled) return
+        settled = true
+        window.clearTimeout(timeout)
+        this.clockFontReady = ready
+        this.clockVisible = true
+      }
+      this.cancelClockFontWait = () => {
+        settled = true
+        window.clearTimeout(timeout)
+      }
+      document.fonts.load('400 36px "UnidreamLED"', '0123456789:')
+        .then(fonts => reveal(fonts.length > 0))
+        .catch(() => reveal(false))
+    },
     // 获取渠道图表颜色
     getChartColor(index) {
       return this.channelColors[index % this.channelColors.length]
@@ -1494,12 +1527,29 @@ export default {
   margin-top: 7px;
   color: var(--admin-container-color);
   font-size: clamp(28px, 3vw, 36px);
-  font-family: 'UnidreamLED', monospace;
+  font-family: Arial, sans-serif;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  min-height: 1em;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+
+.status-hero-time.is-visible {
+  opacity: 1;
+}
+
+.status-hero-time.is-font-ready {
+  font-family: 'UnidreamLED', Arial, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-hero-time {
+    transition: none;
+  }
 }
 
 .status-hero-timezone {

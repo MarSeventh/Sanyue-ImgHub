@@ -1,6 +1,7 @@
 {
   "login": {
     "title": "登录到 {owner} 图床",
+    "customTitle": "登录到 {owner}",
     "adminTitle": "管理端登录",
     "password": "密码",
     "username": "用户名",

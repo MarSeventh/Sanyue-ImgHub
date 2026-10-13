@@ -24,11 +24,16 @@ export default {
     },
     computed: {
         ...mapGetters(['userConfig']),
-        ownerName() {
-            return this.userConfig?.ownerName || 'Sanyue'
+        customOwnerName() {
+            const name = this.userConfig?.ownerName
+            return typeof name === 'string' || (typeof name === 'number' && Number.isFinite(name))
+                ? String(name).trim()
+                : ''
         },
         loginTitle() {
-            return this.$t('login.title', { owner: this.ownerName })
+            return this.$t(this.customOwnerName ? 'login.customTitle' : 'login.title', {
+                owner: this.customOwnerName || 'Sanyue'
+            })
         }
     },
     components: {

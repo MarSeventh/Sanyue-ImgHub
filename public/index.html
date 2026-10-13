@@ -5,6 +5,29 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+  <script data-cfasync="false">
+    (() => {
+      const root = document.documentElement;
+      let cached = {};
+      try { cached = JSON.parse(localStorage.getItem('vuex') || '{}') || {}; } catch {}
+      const hour = new Date().getHours();
+      const dark = cached.cusDarkMode && typeof cached.useDarkMode === 'boolean'
+        ? cached.useDarkMode
+        : matchMedia('(prefers-color-scheme: dark)').matches || hour >= 22 || hour < 6;
+      root.classList.add('entry-loading');
+      root.classList.toggle('dark', dark);
+      // 配置请求与应用资源并行，标题不必等主应用启动后才出现。
+      const configReady = fetch('<%= htmlWebpackPlugin.options.entryConfigUrl %>', { credentials: 'same-origin' })
+        .then(response => response.ok ? response.json() : null)
+        .catch(() => null);
+      window.__siteEntryBootstrap = { config: cached.userConfig, configReady };
+    })();
+  </script>
+  <style>
+    html.entry-loading { background: #f5f5f7; }
+    html.entry-loading.dark { background: #0f0f0f; color-scheme: dark; }
+  </style>
+  <link rel="preload" href="<%= BASE_URL %>entry-loader.js" as="script">
   <link rel="icon" href="<%= BASE_URL %>static/media/logo.png">
   <link rel="apple-touch-icon" href="<%= BASE_URL %>static/media/logo.png">
   <link rel="mask-icon" href="<%= BASE_URL %>static/media/logo.png" color="#f4b400">
@@ -14,6 +37,12 @@
   <meta name="author" content="SanyueQi">
   <title>Sanyue ImgHub</title>
   <link rel="stylesheet" href="<%= BASE_URL %>entry-loader.css">
+  <% for (const css of htmlWebpackPlugin.files.css) { %>
+    <link rel="stylesheet" href="<%= css %>">
+  <% } %>
+  <% for (const js of htmlWebpackPlugin.files.js) { %>
+    <script data-cfasync="false" defer src="<%= js %>"></script>
+  <% } %>
 </head>
 
 <body>
@@ -50,14 +79,14 @@
               <path d="M5 46H12M22 47H34M44 46H51"/>
             </svg>
           </div>
+          <div class="entry-loader-bar"></div>
         </div>
-        <div class="entry-loader-track"><div class="entry-loader-bar"></div></div>
+        <div class="entry-loader-track"></div>
       </div>
     </div>
   </div>
   <div id="app" inert></div>
-  <script src="<%= BASE_URL %>entry-loader.js"></script>
-  <!-- built files will be auto injected -->
+  <script data-cfasync="false" src="<%= BASE_URL %>entry-loader.js"></script>
 </body>
 
 </html>
