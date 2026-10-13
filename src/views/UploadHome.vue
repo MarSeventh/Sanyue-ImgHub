@@ -2,8 +2,8 @@
     <div class="container">
     <div class="upload-home">
         <!-- 桌面端按钮 -->
-        <ToggleDark class="toggle-dark-button desktop-only"/>
-        <el-dropdown class="more-dropdown desktop-only" trigger="click" @command="handleDesktopMenuCommand">
+        <ToggleDark class="toggle-dark-button desktop-only" data-entry="down" data-entry-group="upload-tools"/>
+        <el-dropdown class="more-dropdown desktop-only" data-entry="down" data-entry-group="upload-tools" trigger="click" @command="handleDesktopMenuCommand">
             <el-button class="more-button">
                 <font-awesome-icon icon="ellipsis-v" size="lg"/>
             </el-button>
@@ -28,7 +28,7 @@
                 </el-dropdown-menu>
             </template>
         </el-dropdown>
-        <div class="upload-folder-container" :class="{ 'no-announcement': !announcementAvailable }">
+        <div class="upload-folder-container" data-entry="down" data-entry-group="upload-tools" :class="{ 'no-announcement': !announcementAvailable }">
             <div class="upload-folder" :class="{ 'active': isFolderInputActive }">
                 <DirectorySuggestionInput
                     v-if="showDirectorySuggestions"
@@ -62,14 +62,14 @@
             </DirectoryTreePicker>
         </div>
         <el-tooltip :content="$t('upload.switchUploadMethod')" placement="bottom" :disabled="disableTooltip" :show-after="1000">
-            <el-button class="upload-method-button desktop-only" @click="handleChangeUploadMethod">
+            <el-button class="upload-method-button desktop-only" data-entry="down" data-entry-group="upload-tools" @click="handleChangeUploadMethod">
                 <font-awesome-icon v-if="uploadMethod === 'default'"  icon="folder-open" class="upload-method-icon" size="lg"/>
                 <font-awesome-icon v-else-if="uploadMethod === 'paste'" icon="paste" class="upload-method-icon" size="lg"/>
             </el-button>
         </el-tooltip>
 
         <!-- 移动端更多按钮 -->
-        <el-dropdown class="mobile-more-dropdown mobile-only" trigger="click" @command="handleMobileMenuCommand">
+        <el-dropdown class="mobile-more-dropdown mobile-only" data-entry="down" data-entry-group="upload-tools" trigger="click" @command="handleMobileMenuCommand">
             <el-button class="mobile-more-button">
                 <font-awesome-icon icon="ellipsis-v" size="lg"/>
             </el-button>
@@ -104,6 +104,7 @@
         </el-dropdown>
         <div
             class="quick-toolbar"
+            data-entry="right"
             :class="{ 'is-expanded': isQuickToolbarOpen }"
             @mouseleave="handleQuickToolbarLeave"
         >
@@ -142,11 +143,11 @@
             </el-button>
         </div>
         <Logo :useConfigLink="true" />
-        <div class="header">
+        <div class="header" data-entry="down">
             <h1 class="title">
-                <span class="title-crayon-text" aria-hidden="true">{{ ownerName }} ImgHub</span>
+                <span class="title-crayon-text" aria-hidden="true">{{ headerTitle }}</span>
                 <span class="title-base-text">
-                    <a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a> ImgHub
+                    <a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a><template v-if="!configuredOwnerName"> ImgHub</template>
                 </span>
             </h1>
         </div>
@@ -167,6 +168,7 @@
             :uploadFolder="uploadFolder"
             :convertToWebp="convertToWebp"
             class="upload"
+            data-entry="up"
         />
         <el-dialog :title="$t('settings.linkFormatTitle')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog settings-dialog-scope">
             <div class="dialog-section">
@@ -368,8 +370,17 @@ export default {
     },
     computed: {
         ...mapGetters(['userConfig', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeChannelName', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder']),
+        configuredOwnerName() {
+            const name = this.userConfig?.ownerName
+            return typeof name === 'string' || (typeof name === 'number' && Number.isFinite(name))
+                ? String(name).trim()
+                : ''
+        },
         ownerName() {
-            return this.userConfig?.ownerName || 'Sanyue'
+            return this.configuredOwnerName || 'Sanyue'
+        },
+        headerTitle() {
+            return this.configuredOwnerName || 'Sanyue ImgHub'
         },
         dialogWidth() {
             return window.innerWidth > 768 ? '50%' : '90%'
@@ -1194,7 +1205,8 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
     padding-bottom: 8px;
     cursor: pointer;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease;
-    animation: float 4s ease-in-out infinite;
+    /* 入场时轻轻浮动一轮，静置页面不再持续触发 GPU 合成。 */
+    animation: float 4s ease-in-out;
     letter-spacing: 3px;
 }
 .title:hover {
@@ -1273,6 +1285,12 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
 
 
 /* 漂浮动画 */
+@media (prefers-reduced-motion: reduce) {
+    .title {
+        animation: none;
+    }
+}
+
 @keyframes float {
     0%, 100% {
         transform: translateY(0);

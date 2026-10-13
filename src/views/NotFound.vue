@@ -5,7 +5,7 @@
     
     <div class="not-found-content">
       <!-- 返回首页按钮 -->
-      <div class="back-button-wrapper">
+      <div class="back-button-wrapper" data-entry="left">
         <el-button 
           class="back-button" 
           @click="goHome"
@@ -17,7 +17,7 @@
       </div>
 
       <!-- 404动画图标 -->
-      <div class="error-animation">
+      <div class="error-animation" data-entry="down">
         <div class="error-number">
           <span class="four">4</span>
           <span class="zero">0</span>
@@ -29,7 +29,7 @@
       </div>
       
       <!-- 错误信息 -->
-      <div class="error-info">
+      <div class="error-info" data-entry="up">
         <h1 class="error-title">页面走丢了</h1>
         <p class="error-description">
           抱歉，您访问的页面可能已被删除、更名或暂时不可用

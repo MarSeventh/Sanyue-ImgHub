@@ -2,11 +2,12 @@
     <div class="container">
         <AdminHeader active-tab="systemConfig" />
         <SysConfigTabs
+            data-entry="left"
             v-model:activeIndex="activeIndex"
             v-model:isCollapse="isSidebarCollapse"
         />
         <!-- 根据锚点动态渲染子页面 -->
-        <component :is="currentComponent" :class="['main-container', { 'collapsed': isSidebarCollapse }]" />
+        <component :is="currentComponent" data-entry-children="up" :class="['main-container', { 'collapsed': isSidebarCollapse }]" />
     </div>
 </template>
 <script>

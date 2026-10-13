@@ -1,7 +1,7 @@
 <template>
   <div class="public-browse">
     <!-- 顶部导航栏 -->
-    <header class="header">
+    <header class="header" data-entry="down">
       <div class="header-left">
         <a class="logo" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank" rel="noopener">{{ siteName }}</a>
       </div>
@@ -45,13 +45,13 @@
     </header>
 
     <!-- 加载状态 -->
-    <div v-if="loading && files.length === 0" class="loading-container">
+    <div v-if="loading && files.length === 0" class="loading-container" data-entry="up">
       <div class="loading-spinner"></div>
       <p>{{ $t('publicBrowse.loading') }}</p>
     </div>
 
     <!-- 错误提示 -->
-    <div v-else-if="error" class="error-container">
+    <div v-else-if="error" class="error-container" data-entry="up">
       <p>{{ error }}</p>
       <button v-if="canRetry" @click="loadFiles" class="retry-btn">{{ $t('publicBrowse.retry') }}</button>
       <div class="error-credit">
@@ -70,7 +70,7 @@
     </div>
 
     <!-- 瀑布流容器 -->
-    <div v-else class="gallery-container" ref="galleryContainer">
+    <div v-else class="gallery-container" data-entry="up" ref="galleryContainer">
       <!-- 文件夹区域 -->
       <div v-if="folders.length > 0" class="folders-section">
         <div class="folders-grid">

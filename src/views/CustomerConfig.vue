@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <AdminHeader active-tab="customerConfig" />
-        <div class="main-container">
+        <div class="main-container" data-entry="up">
             <el-table :data="paginatedData" :default-sort="{ prop: 'count', order: 'descending' }" row-key="ip" class="main-table" table-layout="fixed" v-loading="loading" @expand-change="handleExpandChange">
                 <el-table-column type="expand" width="48">
                     <template v-slot="props">

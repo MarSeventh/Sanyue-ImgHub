@@ -1,6 +1,6 @@
 <template>
     <header class="admin-header-spacer" :class="{ 'has-search': !!$slots.search }" :style="{ '--admin-header-reserved-space': reservedSpace }">
-        <div ref="headerContent" class="admin-header-content" :style="{ '--admin-header-scroll-progress': headerScrollProgress }">
+        <div ref="headerContent" class="admin-header-content" data-entry="down" :style="{ '--admin-header-scroll-progress': headerScrollProgress }">
             <DashboardTabs :active-tab="activeTab" />
             <div class="admin-header-tools">
                 <div v-if="$slots.search" class="admin-header-search">

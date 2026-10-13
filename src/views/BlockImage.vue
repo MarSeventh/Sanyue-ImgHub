@@ -5,7 +5,7 @@
     
     <div class="blocked-content">
       <!-- 返回首页按钮 -->
-      <div class="back-button-wrapper">
+      <div class="back-button-wrapper" data-entry="left">
         <el-button 
           class="back-button" 
           @click="goHome"
@@ -17,7 +17,7 @@
       </div>
 
       <!-- 禁止访问图标和动画 -->
-      <div class="status-animation">
+      <div class="status-animation" data-entry="down">
         <div class="status-icon">
           <font-awesome-icon icon="ban" class="ban-icon" />
           <div class="status-badge">
@@ -27,7 +27,7 @@
       </div>
       
       <!-- 提示信息 -->
-      <div class="status-info">
+      <div class="status-info" data-entry="up">
         <h1 class="status-title">图片访问被禁止</h1>
         <p class="status-description">
           抱歉，当前图片已被禁止访问。

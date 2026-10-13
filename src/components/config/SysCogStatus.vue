@@ -1329,6 +1329,15 @@ export default {
 </script>
 
 <style scoped>
+/* 时钟字体仅在系统状态页按需加载。 */
+@font-face {
+  font-family: 'UnidreamLED';
+  src: url('@/assets/fonts/UnidreamLED.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 .status-panel {
   --status-section-gap: 30px;
   background: transparent;
@@ -1485,10 +1494,11 @@ export default {
   margin-top: 7px;
   color: var(--admin-container-color);
   font-size: clamp(28px, 3vw, 36px);
-  font-weight: 750;
+  font-family: 'UnidreamLED', monospace;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 

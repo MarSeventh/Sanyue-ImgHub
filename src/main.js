@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, nextTick } from 'vue'
 import { createHead } from '@vueuse/head'; // 导入 createHead
 import ElementPlus, { messageConfig } from 'element-plus'
 import 'element-plus/es/components/message/style/css'
@@ -131,10 +131,26 @@ store.dispatch('fetchUserConfig').then(() => {
             presetSiteIcon(store.state.useDarkMode, store.getters.userConfig);
         }
     });
-
-    app.use(store).use(router).use(ElementPlus).use(i18n).mount('#app');
 }).catch(error => {
     console.error('Failed to load user configuration:', error);
     initializeLocale();
-    app.use(store).use(router).use(ElementPlus).use(i18n).use(head).mount('#app');
+}).finally(async () => {
+    window.__siteEntry?.updateConfig(store.getters.userConfig, i18n.global.locale, true);
+    app.use(store).use(router).use(ElementPlus).use(i18n).use(head);
+    // 等待初始鉴权重定向、路由组件与其样式，再挂载和启动入场过渡。
+    try {
+        await router.isReady();
+    } catch (error) {
+        console.error('Failed to initialize the first route:', error);
+    }
+    app.mount('#app');
+    await nextTick();
+    if (window.__siteEntry) {
+        await window.__siteEntry.finish();
+    } else {
+        // 独立动画资源加载失败时，也保证页面正常显示和交互。
+        document.documentElement.classList.remove('entry-loading');
+        document.getElementById('app').removeAttribute('inert');
+        document.getElementById('entry-loader')?.remove();
+    }
 })

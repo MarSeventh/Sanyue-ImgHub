@@ -66,7 +66,7 @@
                     </div>
                 </template>
             </AdminHeader>
-            <el-main class="main-container" :class="{ 'has-batch-toolbar': selectedFiles.length > 0 }">
+            <el-main class="main-container" data-entry="up" :class="{ 'has-batch-toolbar': selectedFiles.length > 0 }">
             <!-- 目录导航 -->
             <div class="breadcrumb-container">
                 <DashboardCheckbox

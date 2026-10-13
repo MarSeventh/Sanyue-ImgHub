@@ -6,6 +6,7 @@
         rel="noopener noreferrer"
     >
     <img 
+        data-entry="left"
         :class="logoClasses"
         :alt="alt" 
         :src="logoUrl"

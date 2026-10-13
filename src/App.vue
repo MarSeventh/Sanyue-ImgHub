@@ -49,7 +49,12 @@ export default {
   mounted() {
     // 初始化 OverlayScrollbars 悬浮滚动条
     this.$nextTick(() => {
-      this.initOverlayScrollbars()
+      const initScrollbars = () => this.initOverlayScrollbars()
+      if (window.__siteEntry) {
+        window.__siteEntry.preserveAnimations(initScrollbars)
+      } else {
+        initScrollbars()
+      }
       this.setupImageViewerObserver()
     })
   },

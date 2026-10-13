@@ -2415,7 +2415,7 @@ html.dark .el-upload__text :deep(em) {
 :deep(.el-upload-dragger::before) {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -200px;
     pointer-events: none;
     background-image:
         radial-gradient(2px 2px at 10% 10%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
@@ -2429,6 +2429,7 @@ html.dark .el-upload__text :deep(em) {
         radial-gradient(2px 2px at 90% 10%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
         radial-gradient(2px 2px at 15% 70%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0);
     background-size: 200px 200px;
+    --star-travel: 200px;
     opacity: 0;
     z-index: 0;
     transition: opacity 0.6s ease;
@@ -2438,7 +2439,7 @@ html.dark .el-upload__text :deep(em) {
 :deep(.el-upload-dragger::after) {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -150px;
     pointer-events: none;
     background-image:
         radial-gradient(3px 3px at 15% 15%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
@@ -2447,6 +2448,7 @@ html.dark .el-upload__text :deep(em) {
         radial-gradient(2.5px 2.5px at 35% 65%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0),
         radial-gradient(2.5px 2.5px at 65% 35%, var(--upload-card-effect-color, #2563EB) 50%, transparent 0);
     background-size: 150px 150px;
+    --star-travel: 150px;
     opacity: 0;
     z-index: 0;
     transition: opacity 0.6s ease;
@@ -2454,22 +2456,30 @@ html.dark .el-upload__text :deep(em) {
 
 .upload-card:hover :deep(.el-upload-dragger::before) {
     opacity: 0.3;
-    animation: starScroll 60s linear infinite;
+    animation: starScroll 120s linear infinite;
 }
 
 .upload-card:hover :deep(.el-upload-dragger::after) {
     opacity: 0.6;
-    animation: starScroll 40s linear infinite, starPulse 4s ease-in-out infinite;
+    animation: starScroll 60s linear infinite, starPulse 4s ease-in-out infinite;
 }
 
 @keyframes starScroll {
-    from { background-position: 0 0; }
-    to { background-position: 100px 100px; }
+    /* 使用合成位移代替逐帧重绘背景，移动完整纹理周期以衔接循环。 */
+    from { transform: translate(0, 0); }
+    to { transform: translate(var(--star-travel), var(--star-travel)); }
 }
 
 @keyframes starPulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upload-card:hover :deep(.el-upload-dragger::before),
+    .upload-card:hover :deep(.el-upload-dragger::after) {
+        animation: none;
+    }
 }
 
 /* ============================================

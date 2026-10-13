@@ -1,9 +1,9 @@
 <template>
     <div class="login" :style="viewportStyle">
-        <ToggleDark class="toggle-dark"/>
-        <LanguageSwitcher class="language-switcher"/>
+        <ToggleDark class="toggle-dark" data-entry="down" data-entry-group="login-tools"/>
+        <LanguageSwitcher class="language-switcher" data-entry="down" data-entry-group="login-tools"/>
         <Logo />
-        <div class="login-container">
+        <div class="login-container" data-entry="up">
             <h1 class="login-title" tabindex="0">{{ title }}</h1>
             
             <!-- 动态渲染输入字段 -->
