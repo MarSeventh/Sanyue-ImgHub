@@ -144,7 +144,7 @@
         </div>
         <Logo :useConfigLink="true" />
         <div class="header" data-entry="down">
-            <h1 class="title">
+            <h1 class="title" data-entry-idle>
                 <span class="title-crayon-text" aria-hidden="true">{{ headerTitle }}</span>
                 <span class="title-base-text">
                     <a class="main-title" href="https://github.com/MarSeventh/CloudFlare-ImgBed" target="_blank">{{ ownerName }}</a><template v-if="!configuredOwnerName"> ImgHub</template>
@@ -1198,6 +1198,8 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
     font-size: 2.25rem;
     font-weight: 400;
     font-family: 'Pacifico', 'Noto Sans SC', sans-serif;
+    /* 固定行高使字体加载前后的布局一致。 */
+    line-height: 1.75;
     color: var(--upload-title-text-color);
     text-shadow: var(--upload-title-text-shadow);
     position: relative;
@@ -1206,11 +1208,19 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
     cursor: pointer;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease;
     animation: float 4s ease-in-out infinite;
+    /* 持续浮动使用同一合成层，使小于一像素的位移连续呈现。 */
+    will-change: transform;
+    backface-visibility: hidden;
     letter-spacing: 3px;
 }
 .title:hover {
     transform: scale(1.08);
     filter: drop-shadow(0 0 20px var(--upload-title-hover-glow));
+}
+
+/* 加载期间保持浮动起点，飞入完成后开始循环。 */
+html.entry-loading .title {
+    animation-play-state: paused;
 }
 .title::after {
     content: '';
@@ -1287,15 +1297,16 @@ html.dark .upload-folder:hover :deep(.el-input__wrapper) {
 @media (prefers-reduced-motion: reduce) {
     .title {
         animation: none;
+        will-change: auto;
     }
 }
 
 @keyframes float {
     0%, 100% {
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0);
     }
     50% {
-        transform: translateY(-5px);
+        transform: translate3d(0, -5px, 0);
     }
 }
 
