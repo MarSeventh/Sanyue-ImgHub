@@ -237,11 +237,7 @@ export default {
   animation: tick 1s ease-in-out infinite;
 }
 
-/* 状态信息 */
-.status-info {
-  animation: fadeInUp 1s ease-out 0.5s both;
-}
-
+/* 状态信息的入场位移与渐显由入口控制器统一处理。 */
 .status-title {
   font-size: 2rem;
   font-weight: 700;
@@ -306,7 +302,6 @@ export default {
 
 /* 帮助信息 */
 .help-info {
-  animation: fadeInUp 1s ease-out 1s both;
   margin-bottom: 1.5rem;
 }
 
@@ -347,7 +342,6 @@ export default {
 
 /* 项目信息 */
 .powered-by {
-  animation: fadeInUp 1s ease-out 1.2s both;
   padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   opacity: 0.8;
@@ -461,17 +455,6 @@ export default {
   50% {
     transform: translateY(-25px) rotate(180deg);
     opacity: 0.3;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
