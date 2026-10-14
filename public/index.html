@@ -27,7 +27,7 @@
     html.entry-loading { background: #f5f5f7; }
     html.entry-loading.dark { background: #0f0f0f; color-scheme: dark; }
   </style>
-  <link rel="preload" href="<%= BASE_URL %>entry-loader.js" as="script">
+  <link rel="preload" href="<%= require('../src/entry/entry-loader.js') %>" as="script">
   <link rel="icon" href="<%= BASE_URL %>static/media/logo.png">
   <link rel="apple-touch-icon" href="<%= BASE_URL %>static/media/logo.png">
   <link rel="mask-icon" href="<%= BASE_URL %>static/media/logo.png" color="#f4b400">
@@ -36,7 +36,7 @@
   <meta name="keywords" content="Sanyue, ImgHub, file hosting, image hosting, cloud storage">
   <meta name="author" content="SanyueQi">
   <title>Sanyue ImgHub</title>
-  <link rel="stylesheet" href="<%= BASE_URL %>entry-loader.css">
+  <link rel="stylesheet" href="<%= require('../src/entry/entry-loader.css') %>">
   <% for (const css of htmlWebpackPlugin.files.css) { %>
     <link rel="stylesheet" href="<%= css %>">
   <% } %>
@@ -86,7 +86,7 @@
     </div>
   </div>
   <div id="app" inert></div>
-  <script data-cfasync="false" src="<%= BASE_URL %>entry-loader.js"></script>
+  <script data-cfasync="false" src="<%= require('../src/entry/entry-loader.js') %>"></script>
 </body>
 
 </html>
