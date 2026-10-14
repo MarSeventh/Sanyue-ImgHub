@@ -64,7 +64,9 @@
 
   // 主题已在 head 中初始化；缓存与最新配置都独立于背景图和应用脚本。
   const bootstrap = window.__siteEntryBootstrap;
-  updateConfig(bootstrap?.config);
+  // 已缓存的配置即使未设置名称，也立即显示默认名称。
+  const configCached = bootstrap?.config && typeof bootstrap.config === 'object' && !Array.isArray(bootstrap.config);
+  updateConfig(bootstrap?.config, undefined, Boolean(configCached));
   bootstrap?.configReady.then(config => updateConfig(config || bootstrap.config, undefined, true));
 
   const sleep = duration => new Promise(resolve => setTimeout(resolve, duration));
