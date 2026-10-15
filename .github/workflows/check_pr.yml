@@ -1,45 +1,44 @@
-name: NodeJS Build Check on PR
+name: Frontend regression tests
 
-# 仅在有PR请求到master分支时触发
 on:
   pull_request:
-    branches:
-      - master
+    branches: [dev, master]
+  push:
+    branches: [dev, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  regression:
+    name: Frontend checks (Node 22)
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [22.x]  # 可以根据项目需要设置Node版本
-
+    timeout-minutes: 15
     steps:
-    # 检出仓库代码
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
-    # 设置Node.js版本
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
 
-    # 安装依赖
-    - name: Install dependencies
-      run: |
-        npm install
+      - name: Install dependencies
+        run: npm ci
 
-    # 运行构建
-    - name: Build project
-      run: |
-        npm run build
+      - name: Run regression tests
+        run: npm test
 
-    # 验证构建是否成功
-    - name: Verify build
-      run: |
-        if [ ! -d "dist" ]; then
-          echo "Build failed: dist folder not found."
-          exit 1
-        else
-          echo "Build succeeded."
-        fi
+      - name: Build frontend
+        run: npm run build
+
+      - name: Verify build output
+        run: test -s dist/index.html
