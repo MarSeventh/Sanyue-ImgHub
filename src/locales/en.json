@@ -46,6 +46,10 @@
     "clearUploaded": "Clear Uploaded"
   },
   "uploadForm": {
+    "fileInformation": "File name and details, scroll horizontally to view",
+    "fileSizeLabel": "File size: {size}",
+    "webpConversionSuccess": "Successfully converted to WebP",
+    "localSizeReduction": "Compression complete: {before} → {after}, {percent}% smaller",
     "deleted": "{name} deleted",
     "uploadSuccess": "{name} uploaded successfully",
     "uploadFailed": "{name} upload failed",

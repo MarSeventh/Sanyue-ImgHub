@@ -197,7 +197,7 @@ import { mapGetters } from 'vuex'
 import { buildFileUrls, updateFileListUrls, getUrlByFormat } from '@/utils/upload/urlBuilder'
 import { computeSha256 } from '@/utils/upload/sha256'
 import { isAnimatedImage } from '@/utils/upload/animatedImage'
-import { ensureFileType, getFileExtension, getFileTypeCategory, resolveFileType } from '@/utils/mimeTypes'
+import { ensureFileType, getFileExtension, getFileTypeCategory, normalizeMimeType, resolveFileType } from '@/utils/mimeTypes'
 import {
     collectFilesFromDataTransferItems,
     filesToUploadEntries,
@@ -1004,8 +1004,10 @@ methods: {
     },
     beforeUpload(file) {
         file = ensureFileType(file)
+        const originalSize = file.size
         return new Promise(async (resolve, reject) => {
             let processedFile = file
+            let convertedToWebp = false
             const preserveAnimation = await isAnimatedImage(file)
             
             // WebP 转换：在压缩之前进行
@@ -1021,6 +1023,7 @@ methods: {
                     const convertedFile = await this.convertImageToWebp(file)
                     if (convertedFile) {
                         processedFile = convertedFile
+                        convertedToWebp = normalizeMimeType(convertedFile.type) === 'image/webp'
                         console.log(`WebP转换成功: ${file.name} -> ${convertedFile.name}, 大小: ${(file.size/1024).toFixed(1)}KB -> ${(convertedFile.size/1024).toFixed(1)}KB`)
                     }
                 } catch (err) {
@@ -1039,6 +1042,9 @@ methods: {
                     uid: file.uid,
                     name: file.uploadRelativePath || file.name,
                     type: file.type,
+                    size: file.size,
+                    originalSize,
+                    convertedToWebp: convertedToWebp && normalizeMimeType(file.type) === 'image/webp',
                     url: fileUrl,
                     finalURL: '',
                     mdURL: '',

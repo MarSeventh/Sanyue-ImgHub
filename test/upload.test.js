@@ -3,6 +3,7 @@ vi.mock('image-conversion', () => ({ compressAccurately: vi.fn() }));
 vi.mock('@/components/upload/UploadFileItem.vue', () => ({ default: {} }));
 import * as imageConversion from 'image-conversion';
 import UploadForm from '@/components/upload/UploadForm.vue';
+const { default: UploadFileItem } = await vi.importActual('@/components/upload/UploadFileItem.vue');
 import {
     collectFilesFromDataTransferItems, filesToUploadEntries, getRelativeDirectory, joinUploadFolder,
 } from '@/utils/upload/directoryTraversal';
@@ -33,7 +34,7 @@ describe('upload component preprocessing', () => {
         expect(imageConversion.compressAccurately).toHaveBeenCalledWith(expect.objectContaining({ type: 'image/jpeg', uid: 'file-1' }), 4096);
         expect(uploaded.type).toBe('image/jpeg');
         expect(uploaded.uploadFolder).toBe('/uploads/album');
-        expect(form.fileList[0]).toMatchObject({ uid: 'file-1', name: 'album/photo.JPG', type: 'image/jpeg', uploadFolder: '/uploads/album', serverCompress: true });
+        expect(form.fileList[0]).toMatchObject({ uid: 'file-1', name: 'album/photo.JPG', type: 'image/jpeg', size: uploaded.size, originalSize: file.size, uploadFolder: '/uploads/album', serverCompress: true });
         localStorage.removeItem('uploadHistory');
         form.fileList[0].finalURL = '/file/photo.JPG';
         UploadForm.methods.saveToHistory.call(form, form.fileList[0]);
@@ -48,6 +49,7 @@ describe('upload component preprocessing', () => {
         expect(uploaded.type).toBe('application/octet-stream');
         expect(form.convertImageToWebp).not.toHaveBeenCalled();
         expect(imageConversion.compressAccurately).not.toHaveBeenCalled();
+        expect(form.fileList[0]).toMatchObject({ size: file.size, originalSize: file.size, convertedToWebp: false });
     });
 
     it('skips local conversion/compression and Telegram compression for an animated upload with missing MIME', async () => {
@@ -68,6 +70,97 @@ describe('upload component preprocessing', () => {
         expect(await UploadForm.methods.beforeUpload.call(form, file)).toBe(file);
         expect(form.convertImageToWebp).not.toHaveBeenCalled();
         expect(imageConversion.compressAccurately).not.toHaveBeenCalled();
+    });
+
+    it('records the original and final size when WebP conversion reduces a file without another compression pass', async () => {
+        vi.spyOn(console, 'log').mockImplementation(() => {});
+        const file = new File([Uint8Array.of(255, 216, 255, 217), payload], 'photo.jpg', { type: 'image/jpeg' });
+        const converted = new File([new Uint8Array(1024)], 'photo.webp', { type: 'image/webp' });
+        const form = context({ convertToWebp: true, convertImageToWebp: vi.fn().mockResolvedValue(converted) });
+        await UploadForm.methods.beforeUpload.call(form, file);
+        expect(imageConversion.compressAccurately).not.toHaveBeenCalled();
+        expect(form.fileList[0]).toMatchObject({ type: 'image/webp', size: 1024, originalSize: file.size, convertedToWebp: true });
+    });
+
+    it.each(['native WebP', 'skipped conversion', 'failed conversion'])('does not mark %s as a successful conversion', async scenario => {
+        vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const nativeWebp = scenario === 'native WebP';
+        const file = new File(['original'], nativeWebp ? 'photo.webp' : 'photo.jpg', { type: nativeWebp ? 'image/webp' : 'image/jpeg' });
+        const convertImageToWebp = scenario === 'failed conversion'
+            ? vi.fn().mockRejectedValue(new Error('conversion failed'))
+            : vi.fn().mockResolvedValue(null);
+        const form = context({ convertToWebp: true, convertImageToWebp });
+        expect(await UploadForm.methods.beforeUpload.call(form, file)).toBe(file);
+        expect(form.fileList[0].convertedToWebp).toBe(false);
+        if (nativeWebp) expect(convertImageToWebp).not.toHaveBeenCalled();
+    });
+
+    it('retains the conversion result after a subsequent compression pass', async () => {
+        vi.spyOn(console, 'log').mockImplementation(() => {});
+        const file = new File([payload], 'photo.jpg', { type: 'image/jpeg' });
+        const converted = new File([payload], 'photo.webp', { type: 'image/webp' });
+        imageConversion.compressAccurately.mockResolvedValue(new Blob(['compressed'], { type: 'image/webp' }));
+        const form = context({ convertToWebp: true, convertImageToWebp: vi.fn().mockResolvedValue(converted) });
+        await UploadForm.methods.beforeUpload.call(form, file);
+        expect(imageConversion.compressAccurately).toHaveBeenCalledOnce();
+        expect(form.fileList[0]).toMatchObject({ type: 'image/webp', size: 10, originalSize: file.size, convertedToWebp: true });
+    });
+});
+
+describe('upload file information', () => {
+    const display = file => {
+        const vm = { file, ...UploadFileItem.methods, $t: (key, params = {}) => `${key}:${JSON.stringify(params)}` };
+        for (const [key, getter] of Object.entries(UploadFileItem.computed)) {
+            Object.defineProperty(vm, key, { get: () => getter.call(vm) });
+        }
+        return vm;
+    };
+
+    it('uses actual MIME with parameters removed and formats the final file size', () => {
+        const vm = display({ name: 'photo.png', type: 'image/webp; name=Photo', size: 1536, originalSize: 2048 });
+        expect(vm.mimeType).toBe('image/webp');
+        expect(vm.formattedSize).toBe('1.5 KB');
+        expect(vm.savedPercent).toBe('25');
+        expect(vm.compressionLabel).toBe('25%');
+        expect(vm.compressionTitle).toContain('2 KB');
+    });
+
+    it('distinguishes a converted WebP from an original WebP and guards against stale conversion flags', () => {
+        expect(display({ type: 'image/webp' }).isWebpConverted).toBe(false);
+        const converted = display({ type: 'image/webp', convertedToWebp: true });
+        expect(converted.isWebpConverted).toBe(true);
+        expect(converted.mimeTitle).toContain('uploadForm.webpConversionSuccess');
+        expect(display({ type: 'image/png', convertedToWebp: true }).isWebpConverted).toBe(false);
+    });
+
+    it('does not claim savings for equal/larger files, missing sizes or a server-compression setting alone', () => {
+        for (const file of [
+            { size: 2048, originalSize: 2048 }, { size: 4096, originalSize: 2048 },
+            { size: 2048, serverCompress: true }, {}, { size: NaN, originalSize: 2048 },
+        ]) {
+            const vm = display({ name: 'photo.jpg', ...file });
+            expect(vm.savedPercent).toBeNull();
+            expect(vm.compressionLabel).toBe('');
+        }
+        expect(display({ name: 'external.jpg' }).formattedSize).toBe('');
+        expect(display({ size: 0 }).formattedSize).toBe('0 B');
+    });
+
+    it('shows small positive savings accurately and supports large file sizes', () => {
+        expect(display({ size: 99999, originalSize: 100000 }).savedPercent).toBe('<0.1');
+        expect(display({ size: 1024 ** 3 }).formattedSize).toBe('1 GB');
+    });
+
+    it('scrolls overflowing information without trapping wheel input at the edges', () => {
+        const element = { scrollWidth: 400, clientWidth: 120, scrollLeft: 0 };
+        const event = { currentTarget: element, deltaX: 0, deltaY: 80, preventDefault: vi.fn(), stopPropagation: vi.fn() };
+        UploadFileItem.methods.scrollHorizontally(event);
+        expect(element.scrollLeft).toBe(80);
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        element.scrollLeft = 280;
+        event.preventDefault.mockClear();
+        UploadFileItem.methods.scrollHorizontally(event);
+        expect(event.preventDefault).not.toHaveBeenCalled();
     });
 });
 

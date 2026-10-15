@@ -47,6 +47,10 @@
   }
 ,
   "uploadForm": {
+    "fileInformation": "文件名与文件信息，可横向滚动查看",
+    "fileSizeLabel": "文件大小：{size}",
+    "webpConversionSuccess": "已成功转换为 WebP",
+    "localSizeReduction": "已完成压缩：{before} → {after}，减小 {percent}%",
     "deleted": "{name}已删除",
     "uploadSuccess": "{name}上传成功",
     "uploadFailed": "{name}上传失败",
