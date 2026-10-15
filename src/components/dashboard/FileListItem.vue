@@ -111,6 +111,8 @@
 </template>
 
 <script>
+import { isImageFile, isVideoFile } from '@/utils/mimeTypes';
+
 export default {
     name: 'FileListItem',
     props: {
@@ -131,13 +133,10 @@ export default {
             return this.item.isFolder || this.item.name?.endsWith('/');
         },
         isVideo() {
-            const name = this.item.name?.toLowerCase() || '';
-            return name.endsWith('.mp4') || name.endsWith('.webm') || name.endsWith('.mov') || name.endsWith('.avi');
+            return isVideoFile(this.item);
         },
         isImage() {
-            const name = this.item.name?.toLowerCase() || '';
-            return name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || 
-                   name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.svg') || name.endsWith('.bmp');
+            return isImageFile(this.item);
         },
         displayName() {
             if (this.isFolder) {

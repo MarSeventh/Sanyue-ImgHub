@@ -93,7 +93,7 @@
     "namingOrigin": "仅原名",
     "namingShort": "短链接",
     "filePreprocess": "文件预处理",
-    "filePreprocessTooltip": "上传前在本地进行格式转换和压缩，仅对图片文件生效",
+    "filePreprocessTooltip": "上传前在本地进行格式转换和压缩，仅对图片文件生效。动态 GIF、动态 WebP 和 APNG 自动跳过，保留动画",
     "convertToWebp": "转换为WebP",
     "convertToWebpTooltip": "上传前将图片转换为WebP格式，可有效减小文件体积。转换失败时保持原格式上传",
     "fileCompress": "文件压缩",
@@ -102,7 +102,7 @@
     "expectedSize": "期望大小",
     "expectedSizeTooltip": "设置压缩后图片大小期望值，单位MB",
     "serverCompress": "服务端压缩",
-    "serverCompressTooltip": "1. 在 Telegram 端进行压缩，仅对上传渠道为 Telegram 的图片文件生效 <br> 2. 若图片大小（本地压缩后大小）大于10MB，本设置自动失效 <br> 3. 若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题",
+    "serverCompressTooltip": "1. 在 Telegram 端进行压缩，仅对上传渠道为 Telegram 的图片文件生效，动图自动跳过 <br> 2. 若图片大小（本地压缩后大小）大于10MB，本设置自动失效 <br> 3. 若上传分辨率过大、透明背景等图片，建议关闭服务端压缩，否则可能出现未知问题",
     "enableCompress": "开启压缩",
     "confirm": "确定"
   },

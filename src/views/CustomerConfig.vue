@@ -11,8 +11,8 @@
                                 <el-table-column prop="metadata.FileName" :label="$t('customerConfig.fileNameCol')"></el-table-column>
                                 <el-table-column :label="$t('customerConfig.filePreview')">
                                     <template v-slot="{ row }">
-                                        <el-image v-if="row.metadata?.FileType?.includes('image')" :src="'/file/' + row.id + '?from=admin'" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
-                                        <video v-else-if="row.metadata?.FileType?.includes('video')" :src="'/file/' + row.id + '?from=admin'" controls style="width: 100px; height: 100px;"></video>
+                                        <el-image v-if="isImageFile(row)" :src="'/file/' + row.id + '?from=admin'" fit="cover" lazy style="width: 100px; height: 100px;"></el-image>
+                                        <video v-else-if="isVideoFile(row)" :src="'/file/' + row.id + '?from=admin'" controls style="width: 100px; height: 100px;"></video>
                                         <div v-else style="width: 100px; height: 100px; display: flex; justify-content: center; align-items: center;">
                                             <font-awesome-icon icon="file" style="font-size: 2em;"></font-awesome-icon>
                                         </div>
@@ -72,6 +72,7 @@
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import AdminHeader from '@/components/dashboard/AdminHeader.vue';
 import backgroundManager from '@/mixins/backgroundManager';
+import { isImageFile, isVideoFile } from '@/utils/mimeTypes';
 
 export default {
     name: 'CustomerConfig',
@@ -114,6 +115,8 @@ export default {
         }
     },
     methods: {
+        isImageFile,
+        isVideoFile,
         formatTimeStamp(timeStamp) {
             return new Date(timeStamp).toLocaleString();
         },

@@ -1,4 +1,5 @@
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import { GENERIC_FILE_TYPES, getFileMimeType, normalizeMimeType } from '@/utils/mimeTypes';
 
 export const MAX_PREVIEW_BYTES = 256 * 1024;
 const MAX_ORIGINAL_BYTES = 20 * 1024 * 1024;
@@ -45,7 +46,9 @@ export async function apiJSON(url, options = {}) {
 
 export async function makeImagePreview(file, signal) {
     checkAbort(signal);
-    const type = file.metadata?.FileType?.toLowerCase();
+    const resolvedType = normalizeMimeType(getFileMimeType(file));
+    // Unknown historical names may still resolve to images when fetched/decoded.
+    const type = GENERIC_FILE_TYPES.has(resolvedType) ? '' : resolvedType;
     if (type && !['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'].includes(type)) throw new Error('UNSUPPORTED_IMAGE');
     if (Number(file.metadata?.FileSizeBytes) > MAX_ORIGINAL_BYTES) throw new Error('IMAGE_TOO_LARGE');
     const path = file.name.split('/').map(encodeURIComponent).join('/');

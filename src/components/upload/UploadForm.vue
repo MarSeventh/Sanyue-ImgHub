@@ -196,6 +196,8 @@ import * as imageConversion from 'image-conversion'
 import { mapGetters } from 'vuex'
 import { buildFileUrls, updateFileListUrls, getUrlByFormat } from '@/utils/upload/urlBuilder'
 import { computeSha256 } from '@/utils/upload/sha256'
+import { isAnimatedImage } from '@/utils/upload/animatedImage'
+import { ensureFileType, getFileExtension, getFileTypeCategory, resolveFileType } from '@/utils/mimeTypes'
 import {
     collectFilesFromDataTransferItems,
     filesToUploadEntries,
@@ -970,7 +972,7 @@ methods: {
                 name: fileItem.name,
                 url: fileItem.finalURL,
                 time: Date.now(),
-                type: fileItem.name.split('.').pop().toLowerCase()
+                type: fileItem.type || resolveFileType(fileItem.name)
             }
             history.push(newRecord)
             localStorage.setItem('uploadHistory', JSON.stringify(history))
@@ -1001,13 +1003,15 @@ methods: {
         this.$message({ type: 'success', message: this.$t('uploadForm.copySuccess') })
     },
     beforeUpload(file) {
+        file = ensureFileType(file)
         return new Promise(async (resolve, reject) => {
             let processedFile = file
+            const preserveAnimation = await isAnimatedImage(file)
             
             // WebP 转换：在压缩之前进行
             // 条件：1.开启WebP转换 2.文件类型为图片 3.不是WebP/GIF/SVG格式
-            const canConvertToWebp = this.convertToWebp && 
-                file.type.includes('image') && 
+            const canConvertToWebp = !preserveAnimation && this.convertToWebp &&
+                getFileTypeCategory(file.type) === 'image' &&
                 !file.type.includes('webp') && 
                 !file.type.includes('gif') && 
                 !file.type.includes('svg')
@@ -1025,8 +1029,8 @@ methods: {
                 }
             }
             
-            // 客户端压缩条件：1.文件类型为图片 2.开启客户端压缩，且文件大小大于压缩阈值
-            const needCustomCompress = processedFile.type.includes('image') && this.customerCompress && processedFile.size / 1024 / 1024 > this.compressBar
+            // 动图保留原文件；静态图片超过阈值时按设置压缩。
+            const needCustomCompress = !preserveAnimation && getFileTypeCategory(processedFile.type) === 'image' && this.customerCompress && processedFile.size / 1024 / 1024 > this.compressBar
             const isLtLim = processedFile.size / 1024 / 1024 <= 1024 || this.uploadChannel !== 'telegram'
 
             const pushFileToQueue = (file, serverCompress) => {
@@ -1034,6 +1038,7 @@ methods: {
                 this.fileList.push({
                     uid: file.uid,
                     name: file.uploadRelativePath || file.name,
+                    type: file.type,
                     url: fileUrl,
                     finalURL: '',
                     mdURL: '',
@@ -1064,7 +1069,7 @@ methods: {
                     this.copyUploadPath(processedFile, newFile)
 
                     //开启服务端压缩条件：1.开启服务端压缩 2.文件大小小于10MB 3.上传渠道为Telegram
-                    const needServerCompress = this.serverCompress && newFile.size / 1024 / 1024 < 10 && this.uploadChannel === 'telegram'
+                    const needServerCompress = !preserveAnimation && this.serverCompress && newFile.size / 1024 / 1024 < 10 && this.uploadChannel === 'telegram'
 
                     pushFileToQueue(newFile, needServerCompress)
                 }).catch((err) => {
@@ -1075,7 +1080,7 @@ methods: {
                 this.uploading = true
                 
                 // 开启服务端压缩条件：1.上传渠道为Telegram 2.开启服务端压缩 3.如果为图片，则文件大小小于10MB，否则不限制大小
-                const needServerCompress = this.uploadChannel === 'telegram' && this.serverCompress && (processedFile.type.includes('image') ? processedFile.size / 1024 / 1024 < 10 : true)
+                const needServerCompress = !preserveAnimation && this.uploadChannel === 'telegram' && this.serverCompress && (getFileTypeCategory(processedFile.type) === 'image' ? processedFile.size / 1024 / 1024 < 10 : true)
                 pushFileToQueue(processedFile, needServerCompress)
             } else {
                 this.$message.error(this.$t('uploadForm.fileTooLarge', { name: processedFile.name }))
@@ -1316,7 +1321,7 @@ methods: {
                                 if (fileName === '') {
                                     // 获取文件后缀
                                     const url = new URL(text);
-                                    let extension = url.pathname.split('.').pop();
+                                    let extension = getFileExtension(url.pathname);
                                     // 未能从URL提取有效后缀，使用bin作为默认后缀
                                     if (!extension || extension === '' || extension.length > 10) {
                                         extension = 'bin';

@@ -30,6 +30,19 @@ describe('AI requests and suggestions', () => {
         expect(fetchWithAuth).not.toHaveBeenCalled();
     });
 
+    it('uses shared MIME completion while retaining AI-specific format limits', async () => {
+        await expect(makeImagePreview({ name: 'a.svg', metadata: { FileType: 'application/octet-stream' } })).rejects.toThrow('UNSUPPORTED_IMAGE');
+        await expect(makeImagePreview({ name: 'a.png', metadata: { FileType: 'application/pdf' } })).rejects.toThrow('UNSUPPORTED_IMAGE');
+        await expect(makeImagePreview({ name: 'a.PNG', metadata: { FileType: 'application/octet-stream', FileSizeBytes: 21 * 1024 * 1024 } })).rejects.toThrow('IMAGE_TOO_LARGE');
+        expect(fetchWithAuth).not.toHaveBeenCalled();
+    });
+
+    it('still fetches extensionless historical records when no MIME can be inferred', async () => {
+        fetchWithAuth.mockResolvedValue(new Response('missing', { status: 404 }));
+        await expect(makeImagePreview({ name: 'opaque-id' })).rejects.toMatchObject({ code: 'IMAGE_FETCH_FAILED' });
+        expect(fetchWithAuth).toHaveBeenCalledWith('/file/opaque-id', { signal: undefined });
+    });
+
     it('does not send failed previews and reports both failed and successful files', async () => {
         const onResult = vi.fn();
         fetchWithAuth.mockResolvedValue(new Response(JSON.stringify({ results: [{ fileId: 'good.png', tags: ['nature'], sourceIdentity: 'a'.repeat(64) }] })));

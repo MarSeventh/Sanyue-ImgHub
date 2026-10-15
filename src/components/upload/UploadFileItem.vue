@@ -3,19 +3,19 @@
         <a :href="file.url" target="_blank" class="upload-list-item-preview">
             <!-- 视频 -->
             <video
-                v-if="isVideo(file.name)"
+                v-if="isVideo(file)"
+                :src="file.url"
                 style="width: 10vw; border-radius: 12px;"
                 autoplay
                 muted
                 playsinline
                 loop
             >
-                <source :src="file.url" type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
             <!-- 图片 -->
             <img
-                v-else-if="isImage(file.name)"
+                v-else-if="isImage(file)"
                 style="width: 10vw; border-radius: 12px;"
                 :src="file.url"
                 @error="$emit('preview-error', file)"
@@ -64,12 +64,7 @@
 
 <script>
 import { Link, Delete } from '@element-plus/icons-vue'
-
-const IMAGE_EXTENSIONS = [
-    'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico', 'avif', 'heic',
-    'jfif', 'pjpeg', 'pjp', 'raw', 'cr2', 'nef', 'dng', 'eps', 'ai', 'emf', 'wmf'
-]
-const VIDEO_EXTENSIONS = ['mp4', 'webm', 'ogg', 'mkv']
+import { isImageFile, isVideoFile } from '@/utils/mimeTypes'
 
 export default {
     name: 'UploadFileItem',
@@ -84,14 +79,8 @@ export default {
         }
     },
     methods: {
-        isImage(fileName) {
-            const ext = fileName.split('.').pop().toLowerCase()
-            return IMAGE_EXTENSIONS.includes(ext)
-        },
-        isVideo(fileName) {
-            const ext = fileName.split('.').pop().toLowerCase()
-            return VIDEO_EXTENSIONS.includes(ext)
-        },
+        isImage: isImageFile,
+        isVideo: isVideoFile,
         truncateFilename(filename, maxLength = 20) {
             if (!filename || filename.length <= maxLength) return filename
             const lastDotIndex = filename.lastIndexOf('.')

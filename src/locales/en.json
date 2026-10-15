@@ -92,7 +92,7 @@
     "namingOrigin": "Original Name",
     "namingShort": "Short Link",
     "filePreprocess": "File Preprocessing",
-    "filePreprocessTooltip": "Convert format and compress locally before upload, only applies to image files",
+    "filePreprocessTooltip": "Convert format and compress locally before upload, only applies to image files. Animated GIF, WebP and APNG files are automatically skipped to preserve animation",
     "convertToWebp": "Convert to WebP",
     "convertToWebpTooltip": "Convert images to WebP format before upload to reduce file size. Falls back to original format on failure",
     "fileCompress": "File Compression",
@@ -101,7 +101,7 @@
     "expectedSize": "Expected Size",
     "expectedSizeTooltip": "Set expected image size after compression (MB)",
     "serverCompress": "Server-side Compression",
-    "serverCompressTooltip": "1. Compress on Telegram side, only applies to image files uploaded via Telegram channel <br> 2. If image size (after local compression) exceeds 10MB, this setting is ignored <br> 3. For high-resolution, transparent background images, it's recommended to disable server compression to avoid issues",
+    "serverCompressTooltip": "1. Compress on Telegram side, only applies to image files uploaded via Telegram channel; animated images are automatically skipped <br> 2. If image size (after local compression) exceeds 10MB, this setting is ignored <br> 3. For high-resolution, transparent background images, it's recommended to disable server compression to avoid issues",
     "enableCompress": "Enable Compression",
     "confirm": "OK"
   },

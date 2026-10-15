@@ -33,8 +33,8 @@
                 <div v-if="viewMode === 'grid'" class="grid-view">
                     <div v-for="item in group.items" :key="item.time" class="grid-item">
                         <div class="grid-preview">
-                            <img v-if="isImage(item.name)" :src="item.url" loading="lazy" @error="handleImageError" />
-                            <video v-else-if="isVideo(item.name)" :src="item.url" muted></video>
+                            <img v-if="isImage(item)" :src="item.url" loading="lazy" @error="handleImageError" />
+                            <video v-else-if="isVideo(item)" :src="item.url" muted></video>
                             <div v-else class="file-icon-wrapper">
                                 <font-awesome-icon icon="file" class="file-icon" />
                             </div>
@@ -63,8 +63,8 @@
                 <div v-else class="list-view">
                     <div v-for="item in group.items" :key="item.time" class="list-item">
                         <div class="list-preview">
-                            <img v-if="isImage(item.name)" :src="item.url" loading="lazy" @error="handleImageError" />
-                            <video v-else-if="isVideo(item.name)" :src="item.url" muted></video>
+                            <img v-if="isImage(item)" :src="item.url" loading="lazy" @error="handleImageError" />
+                            <video v-else-if="isVideo(item)" :src="item.url" muted></video>
                             <div v-else class="file-icon-wrapper-small">
                                 <font-awesome-icon icon="file" />
                             </div>
@@ -110,6 +110,8 @@
 </template>
 
 <script>
+import { isImageFile, isVideoFile } from '@/utils/mimeTypes'
+
 export default {
     name: 'UploadHistory',
     props: {
@@ -249,19 +251,8 @@ export default {
                 }
             }).catch(() => {})
         },
-        isImage(fileName) {
-            const imageExtensions = [
-                'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico', 'avif', 'heic',
-                'jfif', 'pjpeg', 'pjp'
-            ];
-            const extension = fileName ? fileName.split('.').pop().toLowerCase() : '';
-            return imageExtensions.includes(extension);
-        },
-        isVideo(fileName) {
-            const videoExtensions = ['mp4', 'webm', 'ogg', 'mkv'];
-            const extension = fileName ? fileName.split('.').pop().toLowerCase() : '';
-            return videoExtensions.includes(extension);
-        },
+        isImage: isImageFile,
+        isVideo: isVideoFile,
         formatTime(timestamp) {
             const date = new Date(timestamp)
             const year = date.getFullYear()

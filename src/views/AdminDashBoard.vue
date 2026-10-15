@@ -502,6 +502,7 @@ import { validateFolderPath } from '@/utils/pathValidator';
 import backgroundManager from '@/mixins/backgroundManager';
 import { ref } from 'vue';
 import { useDragSelect } from '@/utils/dashboard/useDragSelect.js';
+import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
 
 const SORT_FIELDS = ['time', 'size', 'rawName', 'fileName'];
 const SORT_ORDERS = ['asc', 'desc'];
@@ -1739,38 +1740,9 @@ methods: {
                 link.click();
             });
     },
-    isVideo(file) {
-        // 排除音频文件
-        if (this.isAudio(file)) return false;
-        let flag = file.metadata?.FileType?.includes('video');
-        // 用文件名后缀判断是否为视频文件
-        if (!flag) {
-            const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'flv', 'wmv', 'mkv', 'rmvb', '3gp', 'mpg', 'mpeg', 'm4v', 'f4v', 'rm', 'asf', 'dat', 'ts', 'vob', 'swf', 'divx', 'xvid', 'm2ts', 'mts', 'm2v', '3g2', '3gp2', '3gpp', '3gpp2', 'mpe', 'm1v', 'mpv', 'mpv2', 'mp2v', 'm2t', 'm2ts', 'm2v', 'm4v'];
-            const extension = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
-            flag = videoExtensions.includes(extension);
-        }
-        return flag;
-    },
-    isAudio(file) {
-        let flag = file.metadata?.FileType?.includes('audio');
-        // 用文件名后缀判断是否为音频文件
-        if (!flag) {
-            const audioExtensions = ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a', 'ape', 'aiff', 'alac', 'opus', 'mid', 'midi', 'm4b', 'm4p', 'm4r', 'amr', 'au', 'ra', 'ram'];
-            const extension = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
-            flag = audioExtensions.includes(extension);
-        }
-        return flag;
-    },
-    isImage(file) {
-        let flag = file.metadata?.FileType?.includes('image');
-        // 用文件名后缀判断是否为图片文件
-        if (!flag) {
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif', 'psd', 'ai', 'eps', 'raw', 'cr2', 'nef', 'orf', 'sr2', 'dng', 'arw', 'rw2', 'raf', 'pef', 'x3f', 'srf', 'erf', 'mrw', 'nrw', 'kdc', 'dcr', 'mef', 'mos', 'crw', 'raf', 'rwl', 'srw', '3fr', 'fff', 'iiq', 'qtk', 'bay', 'k25', 'kdc', 'dcs', 'drf', 'dng', 'erf', 'kdc', 'mdc', 'mef', 'mos', 'mrw', 'nef', 'nrw', 'orf', 'pef', 'ptx', 'pxn', 'r3d', 'raf', 'raw', 'rwl', 'rw2', 'rwz', 'sr2', 'srf', 'x3f'];
-            const extension = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
-            flag = imageExtensions.includes(extension);
-        }
-        return flag;
-    },
+    isVideo: isVideoFile,
+    isAudio: isAudioFile,
+    isImage: isImageFile,
     getFileLink(filename) {
         const fileLink = process.env.NODE_ENV === 'production' ? `/file/${filename}?from=admin` : `/api/file/${filename}?from=admin`;
         return fileLink;

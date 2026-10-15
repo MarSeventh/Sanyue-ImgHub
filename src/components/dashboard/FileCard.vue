@@ -116,6 +116,8 @@
 </template>
 
 <script>
+import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
+
 export default {
     name: 'FileCard',
     props: {
@@ -138,30 +140,13 @@ export default {
             return this.item.channelTag || '';
         },
         isVideo() {
-            // 先通过 content-type 判断
-            const fileType = this.item.metadata?.FileType?.toLowerCase() || '';
-            if (fileType.includes('video')) return true;
-            // 再通过文件后缀判断
-            const name = this.item.name?.toLowerCase() || '';
-            return name.endsWith('.mp4') || name.endsWith('.webm') || name.endsWith('.mov') || name.endsWith('.avi');
+            return isVideoFile(this.item);
         },
         isAudio() {
-            // 先通过 content-type 判断
-            const fileType = this.item.metadata?.FileType?.toLowerCase() || '';
-            if (fileType.includes('audio')) return true;
-            // 再通过文件后缀判断
-            const name = this.item.name?.toLowerCase() || '';
-            return name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.ogg') || name.endsWith('.flac');
+            return isAudioFile(this.item);
         },
         isImage() {
-            // 先通过 content-type 判断
-            const fileType = this.item.metadata?.FileType?.toLowerCase() || '';
-            if (fileType.includes('image')) return true;
-            // 再通过文件后缀判断
-            const name = this.item.name?.toLowerCase() || '';
-            return name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || 
-                   name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.svg') || 
-                   name.endsWith('.bmp') || name.endsWith('.avif') || name.endsWith('.heic') || name.endsWith('.heif');
+            return isImageFile(this.item);
         },
         displayName() {
             const fileName = this.item.metadata?.FileName || this.item.name || '';

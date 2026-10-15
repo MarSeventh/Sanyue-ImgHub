@@ -419,6 +419,7 @@ import IndexRebuilder from '@/utils/indexRebuilder'
 import BackupGenerator from '@/utils/backupGenerator'
 import RestoreProcessor from '@/utils/restoreProcessor'
 import DateRangeCalendar from '@/components/DateRangeCalendar.vue'
+import { isImageFile, isVideoFile } from '@/utils/mimeTypes'
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler)
 
@@ -1217,8 +1218,7 @@ export default {
     // 检查是否应该显示预览图
     isValidPreview(type, file) {
       if (this.loadErrors[type]) return false
-      if (!file?.metadata?.FileType) return false
-      return file.metadata.FileType.includes('image') || file.metadata.FileType.includes('video')
+      return isImageFile(file) || isVideoFile(file)
     },
     
     // 打开发布页面
@@ -1226,29 +1226,8 @@ export default {
       window.open('https://github.com/MarSeventh/CloudFlare-ImgBed/releases', '_blank')
     },
     
-    // 判断是否为图片文件
-    isImageFile(file) {
-      if (!file) return false
-      // 优先通过 FileType 判断
-      if (file.metadata?.FileType?.includes('image')) return true
-      // 通过文件名后缀判断
-      const fileName = file.metadata?.FileName || file.id || ''
-      const extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase()
-      const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif', 'avif', 'heic', 'heif']
-      return imageExtensions.includes(extension)
-    },
-    
-    // 判断是否为视频文件
-    isVideoFile(file) {
-      if (!file) return false
-      // 优先通过 FileType 判断
-      if (file.metadata?.FileType?.includes('video')) return true
-      // 通过文件名后缀判断
-      const fileName = file.metadata?.FileName || file.id || ''
-      const extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase()
-      const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'flv', 'wmv', 'mkv', 'm4v', '3gp', 'mpeg', 'mpg']
-      return videoExtensions.includes(extension)
-    },
+    isImageFile,
+    isVideoFile,
     
     // 在新窗口打开文件
     openFileInNewTab(file) {

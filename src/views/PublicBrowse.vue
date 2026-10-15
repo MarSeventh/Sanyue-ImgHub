@@ -314,6 +314,7 @@ import { mapGetters } from 'vuex';
 import TransformMedia from '@/components/browse/TransformMedia.vue';
 import ToggleDark from '@/components/ToggleDark.vue';
 import { hardStopAll, installGlobalMediaGuards } from '@/utils/mediaManager';
+import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
 
 export default {
   name: 'PublicBrowse',
@@ -806,21 +807,9 @@ export default {
       return `${window.location.origin}/file/${encodeURI(name)}`;
     },
 
-    isImage(file) {
-      const ext = file.name.split('.').pop().toLowerCase();
-      return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'].includes(ext);
-    },
-
-    isVideo(file) {
-      const ext = file.name.split('.').pop().toLowerCase();
-      // 浏览器原生支持的视频格式 + 部分浏览器支持的格式
-      return ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'mkv', 'avi', '3gp', 'mpeg', 'mpg'].includes(ext);
-    },
-
-    isAudio(file) {
-      const ext = file.name.split('.').pop().toLowerCase();
-      return ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'ape', 'opus'].includes(ext);
-    },
+    isImage: isImageFile,
+    isVideo: isVideoFile,
+    isAudio: isAudioFile,
 
     getFileName(name) {
       return name.split('/').pop();

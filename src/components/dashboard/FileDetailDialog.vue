@@ -134,6 +134,7 @@
 import { ElMessage } from 'element-plus';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFileId } from '@/utils/fileIdValidator';
+import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
 
 export default {
     name: 'FileDetailDialog',
@@ -185,30 +186,13 @@ export default {
             return window.innerWidth < 768 ? 1 : 2;
         },
         isVideo() {
-            // 先通过 content-type 判断
-            const fileType = this.file?.metadata?.FileType?.toLowerCase() || '';
-            if (fileType.includes('video')) return true;
-            // 再通过文件后缀判断
-            const name = this.file?.name?.toLowerCase() || '';
-            return name.endsWith('.mp4') || name.endsWith('.webm') || name.endsWith('.mov') || name.endsWith('.avi');
+            return isVideoFile(this.file);
         },
         isAudio() {
-            // 先通过 content-type 判断
-            const fileType = this.file?.metadata?.FileType?.toLowerCase() || '';
-            if (fileType.includes('audio')) return true;
-            // 再通过文件后缀判断
-            const name = this.file?.name?.toLowerCase() || '';
-            return name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.ogg') || name.endsWith('.flac');
+            return isAudioFile(this.file);
         },
         isImage() {
-            // 先通过 content-type 判断
-            const fileType = this.file?.metadata?.FileType?.toLowerCase() || '';
-            if (fileType.includes('image')) return true;
-            // 再通过文件后缀判断
-            const name = this.file?.name?.toLowerCase() || '';
-            return name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || 
-                   name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.svg') || 
-                   name.endsWith('.bmp') || name.endsWith('.avif') || name.endsWith('.heic') || name.endsWith('.heif');
+            return isImageFile(this.file);
         },
         uploadTime() {
             if (this.file?.metadata?.TimeStamp) {
