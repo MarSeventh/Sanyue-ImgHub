@@ -131,6 +131,18 @@
   "settings": {
     "linkFormatTitle": "Link Format Settings",
     "defaultCopyLink": "Default Copy Format",
+    "copyFormatPreference": "Format Preference",
+    "contentPreference": "Content Preference",
+    "copyFormatTooltip": "1. Choose the default format for copying files, batches and folders.<br>2. Switch between four format tabs in file details. The preferred format opens by default.<br>3. TG File IDs are copied directly without link formatting.",
+    "contentPreferenceTooltip": "1. Choose link content separately for Telegram, S3 and WebDAV.<br>2. Other channels use the image host link; external files use their external URL.<br>3. Unavailable content falls back to the image host link.<br>4. Temporarily switch available content in file details to update all four formats.",
+    "customContentTooltip": "1. Custom prefixes only apply to image host links. Channel URLs, CDN URLs and external URLs are unaffected.<br>2. Links combine a <span class=\"custom-prefix-example\">custom prefix (enter yourself)</span> and a <span class=\"file-id-example\">file ID (provided automatically)</span>.<br>Example: <span class=\"custom-prefix-example\">https://your.domain/file/</span><span class=\"file-id-example\">album/photo.jpg</span><br>3. Include the protocol, domain, path and trailing slash in the custom prefix.<br>4. Please ensure the modified links are accessible.",
+    "linkContent": "Link Content",
+    "siteLink": "Image Host Link",
+    "externalLink": "External Link",
+    "tgFileId": "TG File ID",
+    "s3CdnLink": "S3 CDN Link",
+    "webdavPublicLink": "WebDAV Public Link",
+    "linkContentFallback": "The preferred link content is unavailable for this file. Using the image host link.",
     "rawLink": "Raw Link",
     "customLink": "Custom Link",
     "customLinkTooltip": "Default link is https://your.domain/file/xxx.jpg <br> If custom link format is enabled, only the xxx.jpg part is kept, please enter the rest manually",
@@ -245,6 +257,8 @@
     "fileUpload": "File Upload"
   },
   "fileDetail": {
+    "expandActions": "Show more actions (click to keep expanded)",
+    "collapseActions": "Collapse more actions",
     "title": "File Details",
     "download": "Download",
     "tags": "Tags",
