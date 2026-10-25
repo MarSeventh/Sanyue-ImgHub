@@ -44,8 +44,7 @@
     "clearList": "清空列表",
     "clearAll": "清空全部",
     "clearUploaded": "清空已上传"
-  }
-,
+  },
   "uploadForm": {
     "fileInformation": "文件名与文件信息，可横向滚动查看",
     "fileSizeLabel": "文件大小：{size}",
@@ -128,8 +127,7 @@
     "recordsCleared": "记录已清空",
     "deleteConfirmMessage": "确定要删除这条记录吗？",
     "recordDeleted": "记录已删除"
-  }
-,
+  },
   "settings": {
     "linkFormatTitle": "链接格式设置",
     "defaultCopyLink": "默认复制链接",
@@ -239,8 +237,7 @@
     "folderEmptyNoLinks": "文件夹为空，没有可复制的链接",
     "copiedFileLinks": "已复制 {count} 个文件链接",
     "copyFolderLinksFailed": "复制文件夹链接失败，请重试"
-  }
-,
+  },
   "dashboardTabs": {
     "fileManagement": "文件管理",
     "userManagement": "用户管理",
@@ -313,8 +310,7 @@
     "externalLink": "外链",
     "channelName": "渠道名称",
     "clearFilters": "清除筛选"
-  }
-,
+  },
   "moveFile": {
     "title": "移动文件",
     "batchTitle": "批量移动文件",
@@ -380,8 +376,7 @@
     "removeFailed": "删除标签失败",
     "loadFailed": "加载标签失败",
     "indexPending": "标签已保存，索引同步失败。"
-  }
-,
+  },
   "mobileAction": {
     "viewDetail": "查看详情",
     "copyLink": "复制链接",
@@ -507,9 +502,26 @@
     "hoursAgo": "{count}小时前",
     "minutesAgo": "{count}分钟前",
     "justNow": "刚刚",
-    "cancellingRebuild": "正在取消索引重建..."
-  }
-,
+    "cancellingRebuild": "正在取消索引重建...",
+    "dupScan": "重复内容扫描",
+    "dupScanScanning": "扫描中...",
+    "dupScanTooltip": "按内容分组列出重复文件(只读,不删除)",
+    "dupScanUnsupportedTooltip": "仅 Docker / Node.js 服务端部署支持,当前环境不可用",
+    "dupScanReportTitle": "重复内容扫描报告",
+    "dupScanSummary": "共扫描 {scanned} 个文件,重复分组 {groups} 个,冗余副本 {redundant} 个",
+    "dupScanReadErrors": ",读取失败 {count} 个",
+    "dupScanNotice": "。本扫描只读,不会删除文件;处理请自行判断。",
+    "dupScanServerOnly": "(仅 Docker / Node.js 服务端部署支持)",
+    "dupScanNone": "未发现重复内容",
+    "dupScanRole": "角色",
+    "dupScanKeep": "建议保留",
+    "dupScanDuplicate": "重复",
+    "dupScanFileId": "文件 ID",
+    "dupScanFileName": "文件名",
+    "dupScanChannel": "渠道",
+    "dupScanFailed": "重复内容扫描失败",
+    "dupScanUnsupported": "重复内容扫描仅支持 Docker / Node.js 服务端部署,Workers / Pages 暂不支持"
+  },
   "sysUpload": {
     "title": "上传渠道管理",
     "titleTooltip": "管理所有上传渠道的配置，点击卡片查看详情或编辑",
@@ -723,8 +735,7 @@
     "adminSessionMaxAge": "管理端会话有效期",
     "sessionMaxAgeUnit": "天",
     "sessionMaxAgeInvalid": "会话有效期必须为 1-3650 的正整数"
-  }
-,
+  },
   "sysPage": {
     "settingsSaved": "设置已保存",
     "refreshAnnouncement": "刷新公告已读状态",
@@ -800,8 +811,7 @@
     "sequentialPlay": "顺序播放",
     "loopSingle": "单曲循环",
     "more": "更多"
-  }
-,
+  },
   "directoryTree": {
     "selectDirectory": "选择目录",
     "retry": "重试",
