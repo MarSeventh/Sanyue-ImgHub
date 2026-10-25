@@ -69,10 +69,10 @@ describe('file detail content changes', () => {
     let host;
     afterEach(() => { app?.unmount(); host?.remove(); });
 
-    function mount(file = s3, preferences = { s3: 's3CdnFileUrl', telegram: 'tgId', webdav: 'webdavPublicUrl' }) {
+    function mount(file = s3, preferences = { s3: 's3CdnFileUrl', telegram: 'tgId', webdav: 'webdavPublicUrl' }, render = () => null) {
         const props = reactive({ file: { ...file, metadata: { ...file.metadata } }, modelValue: true, rootUrl: root, defaultFormat: 'mdUrl', contentPreferences: preferences });
         // Use the real component state, computed values and watchers without UI stubs.
-        const component = { ...FileDetailDialog, render: () => null };
+        const component = { ...FileDetailDialog, render };
         app = createApp({ render: () => h(component, { ...props, ref: 'detail' }) });
         app.config.globalProperties.$t = key => key;
         host = document.createElement('div');
@@ -224,5 +224,57 @@ describe('file detail content changes', () => {
         await nextTick();
         expect(vm.previewLayout).toBe('file');
         expect(vm.sideBySide).toBe(false);
+    });
+
+    it('preserves learned portrait dimensions when reopening the same cached image without another load event', async () => {
+        const { vm, props } = mount({ name: 'cached.jpg', metadata: { FileType: 'image/jpeg' } });
+        vm.handleMediaLoad({ target: { naturalWidth: 600, naturalHeight: 1000 } });
+        for (let attempt = 0; attempt < 3; attempt++) {
+            props.modelValue = false;
+            await nextTick();
+            document.dispatchEvent(new Event('visibilitychange'));
+            props.modelValue = true;
+            await nextTick();
+            await nextTick();
+            expect(vm.loadedMediaSize).toEqual({ Width: 600, Height: 1000 });
+            expect(vm.previewLayout).toBe('portrait');
+        }
+    });
+
+    it('resets only the detail body scroll on reopen and when switching files', async () => {
+        const { props } = mount(s3, {}, function () {
+            return h('div', { class: 'el-dialog__body' }, [h('div', { ref: 'detailStart' })]);
+        });
+        const body = host.querySelector('.el-dialog__body');
+        host.scrollTop = 90;
+        body.scrollTop = 240;
+        body.scrollLeft = 30;
+        props.modelValue = false;
+        await nextTick();
+        props.modelValue = true;
+        await nextTick();
+        await nextTick();
+        expect(body.scrollTop).toBe(0);
+        expect(body.scrollLeft).toBe(0);
+        expect(host.scrollTop).toBe(90);
+        body.scrollTop = 180;
+        props.file = webdav;
+        await nextTick();
+        await nextTick();
+        expect(body.scrollTop).toBe(0);
+    });
+
+    it('recovers dimensions from an existing image node and ignores detached media events', async () => {
+        const { vm } = mount({ name: 'cached.jpg', metadata: { FileType: 'image/jpeg' } }, {}, function () {
+            return h('div', { ref: 'previewContent' }, [h('div', { class: 'image-preview' }, [h('img')])]);
+        });
+        const image = host.querySelector('img');
+        Object.defineProperties(image, { naturalWidth: { value: 600 }, naturalHeight: { value: 1000 } });
+        await vm.resetDetailView();
+        expect(vm.previewLayout).toBe('portrait');
+        const oldImage = document.createElement('img');
+        Object.defineProperties(oldImage, { naturalWidth: { value: 1200 }, naturalHeight: { value: 800 } });
+        vm.handleMediaLoad({ target: oldImage });
+        expect(vm.previewLayout).toBe('portrait');
     });
 });

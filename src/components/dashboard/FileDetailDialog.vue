@@ -1,6 +1,6 @@
 <template>
-    <el-dialog :title="$t('fileDetail.title')" v-model="visible" :width="dialogWidth">
-        <div class="detail-actions">
+    <el-dialog :title="$t('fileDetail.title')" v-model="visible" :width="dialogWidth" class="file-detail-dialog" @open="resetDetailView" @opened="resetDetailView">
+        <div ref="detailStart" class="detail-actions">
             <div v-if="!isEditing" class="detail-toolbar" @mouseleave="actionsHovered = false">
                 <div
                     id="file-detail-extra-actions"
@@ -73,7 +73,7 @@
         <div class="detail-body-layout" :class="[`preview-layout-${previewLayout}`, { 'is-side-by-side': sideBySide }]">
             <!-- 竖向媒体在大屏与信息并排，其余内容使用适合各自类型的紧凑布局。 -->
             <div class="preview-section">
-                <div class="preview-content">
+                <div ref="previewContent" class="preview-content">
                     <video v-if="isVideo && !previewFailed" :key="`video:${fileLink}`" :src="fileLink" autoplay muted loop playsinline class="video-preview" @loadedmetadata="handleMediaLoad" @error="previewFailed = true" @click="openImageLink"></video>
                     <audio v-else-if="isAudio && !previewFailed" :key="`audio:${fileLink}`" :src="fileLink" controls autoplay class="audio-preview" @error="previewFailed = true"></audio>
                     <el-image
@@ -192,7 +192,9 @@ export default {
             this.actionsPinned = false;
             if (val) {
                 this.activeFormat = this.defaultFormat;
-                this.resetPreview();
+                // 同一媒体重开时保留已知尺寸；缓存图片不会保证再次触发 load。
+                this.previewFailed = false;
+                this.resetDetailView();
             }
             if (!val) {
                 // 关闭弹窗时退出编辑状态
@@ -206,6 +208,7 @@ export default {
             this.actionsHovered = false;
             this.actionsPinned = false;
             this.activeFormat = this.defaultFormat;
+            if (this.visible) this.resetDetailView();
         },
         fileLink() { this.resetPreview(); },
         defaultFormat(format) { this.activeFormat = format; },
@@ -359,12 +362,27 @@ export default {
         }
     },
     methods: {
+        resetDetailView() {
+            return this.$nextTick(() => {
+                // 仅复位当前详情内容区，避免影响文件列表及嵌套弹窗的滚动。
+                const body = this.$refs.detailStart?.closest('.el-dialog__body');
+                if (body) {
+                    body.scrollTop = 0;
+                    body.scrollLeft = 0;
+                }
+                // 打开过渡结束后也读取现有节点，恢复缓存图片或视频的真实方向。
+                const media = this.$refs.previewContent?.querySelector('.image-preview img, .video-preview');
+                if (media) this.handleMediaLoad({ target: media });
+            });
+        },
         resetPreview() {
             this.previewFailed = false;
             this.loadedMediaSize = null;
         },
         handleMediaLoad(event) {
             const media = event.target;
+            // 切换文件后，忽略已移出当前预览容器的旧媒体回调。
+            if (this.$refs.previewContent && !this.$refs.previewContent.contains(media)) return;
             const Width = media.naturalWidth || media.videoWidth;
             const Height = media.naturalHeight || media.videoHeight;
             if (Width > 0 && Height > 0) this.loadedMediaSize = { Width, Height };
@@ -581,6 +599,7 @@ export default {
     margin-left: 0 !important;
 }
 .detail-body-layout {
+    --detail-content-radius: 12px;
     display: grid;
     gap: 16px;
     align-items: start;
@@ -596,27 +615,28 @@ export default {
 .video-preview {
     width: 100%;
     max-height: min(380px, 45vh);
-    border-radius: 8px;
+    border-radius: var(--detail-content-radius);
     cursor: pointer;
     object-fit: contain;
 }
 .audio-preview {
     width: 100%;
     min-width: 0;
-    border-radius: 8px;
+    border-radius: var(--detail-content-radius);
 }
 .image-preview {
     width: auto;
     height: auto;
     max-width: 100%;
     max-height: min(380px, 45vh);
-    border-radius: 8px;
+    border-radius: var(--detail-content-radius);
     cursor: pointer;
 }
 .image-preview :deep(img) {
     max-width: 100%;
     max-height: min(380px, 45vh);
     object-fit: contain;
+    border-radius: inherit;
 }
 .file-icon-detail {
     flex-shrink: 0;
@@ -628,8 +648,8 @@ export default {
     justify-content: center;
     padding: 12px;
     background: var(--el-fill-color-light);
-    border: 1px solid var(--glass-border);
-    border-radius: 8px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: var(--detail-content-radius);
     min-height: 0;
 }
 .preview-content {
@@ -687,7 +707,7 @@ export default {
 }
 .file-detail-metadata {
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 12px;
+    border-radius: var(--detail-content-radius);
     overflow: hidden;
     background: var(--el-bg-color);
     box-shadow: 0 2px 10px rgb(0 0 0 / 4%);
@@ -743,6 +763,9 @@ export default {
     white-space: nowrap;
 }
 @media (max-width: 768px) {
+    .detail-body-layout {
+        --detail-content-radius: 10px;
+    }
     .image-preview,
     .image-preview :deep(img),
     .video-preview {
@@ -782,9 +805,6 @@ export default {
     }
     .detail-actions {
         justify-content: center;
-    }
-    .file-detail-metadata {
-        border-radius: 10px;
     }
     .file-detail-metadata :deep(.el-descriptions__body .el-descriptions__table.is-bordered .el-descriptions__cell) {
         padding: 10px 12px;
