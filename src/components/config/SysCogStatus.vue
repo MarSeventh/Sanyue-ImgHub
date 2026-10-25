@@ -436,7 +436,7 @@
           {{ $t('sysStatus.dupScanSummary', { scanned: dupScanReport.scanned, groups: dupScanReport.duplicateGroups.length, redundant: dupScanReport.redundantCopies }) }}<span v-if="dupScanReport.readErrors.length">{{ $t('sysStatus.dupScanReadErrors', { count: dupScanReport.readErrors.length }) }}</span>{{ $t('sysStatus.dupScanNotice') }}
           <em style="color:#909399;">{{ $t('sysStatus.dupScanServerOnly') }}</em>
         </p>
-        <p v-if="dupScanReport.complete === false" style="margin: 0 0 12px; color:#e6a23c;">
+        <p v-if="dupScanReport.complete === false || dupScanReport.recordErrors.length || dupScanReport.skippedOversized.length" style="margin: 0 0 12px; color:#e6a23c;">
           {{ $t('sysStatus.dupScanIncomplete', {
             chunks: dupScanReport.chunkErrors.length,
             records: dupScanReport.recordErrors.length,
@@ -446,7 +446,7 @@
         <el-empty v-if="dupScanReport.duplicateGroups.length === 0" :description="$t('sysStatus.dupScanNone')"/>
         <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" style="margin-bottom: 16px;">
           <div style="font-size: 12px; color: #909399; margin-bottom: 4px;">sha256: {{ group.sha256 }} {{ $t('sysStatus.dupScanCount', { count: group.count }) }}</div>
-          <el-table :data="[group.keep, ...group.duplicates]" size="small" border>
+          <el-table :data="[group.keep, ...(group.duplicates || [])]" size="small" border>
             <el-table-column :label="$t('sysStatus.dupScanRole')" width="80">
               <template #default="scope">
                 <el-tag v-if="scope.$index === 0" type="success" size="small">{{ $t('sysStatus.dupScanKeep') }}</el-tag>
@@ -2131,7 +2131,8 @@ html.dark .legend-item:hover {
 }
 
 @media (max-width: 768px) {
-  .action-btn {
+  .action-btn,
+  .action-buttons > .dup-scan-trigger {
     flex: 1;
     width: auto;
     min-width: 0;
@@ -2227,6 +2228,7 @@ html.dark .legend-item:hover {
 
 @media (max-width: 768px) {
   .action-buttons > .el-tooltip,
+  .action-buttons > .dup-scan-trigger,
   .action-buttons > .restore-section,
   .restore-section {
     flex: 1;
