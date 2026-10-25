@@ -462,7 +462,7 @@
           共扫描 <b>{{ dupScanReport.scanned }}</b> 个文件,
           重复分组 <b>{{ dupScanReport.duplicateGroups.length }}</b> 个,
           冗余副本 <b>{{ dupScanReport.redundantCopies }}</b> 个
-          <span v-if="dupScanReport.readErrors">,读取失败 {{ dupScanReport.readErrors }} 个</span>。
+          <span v-if="dupScanReport.readErrors.length">,读取失败 {{ dupScanReport.readErrors.length }} 个</span>。
           本扫描只读,不会删除文件;处理请自行判断。
           <em style="color:#909399;">(仅 Docker / Node.js 服务端部署支持)</em>
         </p>
