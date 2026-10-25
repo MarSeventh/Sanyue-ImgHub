@@ -453,7 +453,7 @@
     <!-- 重复内容扫描报告(只读) -->
     <el-dialog
       title="重复内容扫描报告"
-      :visible.sync="dupScanVisible"
+      v-model="dupScanVisible"
       width="70%"
       append-to-body
     >
@@ -469,11 +469,11 @@
         <el-empty v-if="dupScanReport.duplicateGroups.length === 0" description="未发现重复内容"/>
         <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" style="margin-bottom: 16px;">
           <div style="font-size: 12px; color: #909399; margin-bottom: 4px;">sha256: {{ group.sha256 }} ({{ group.count }} 份)</div>
-          <el-table :data="[group.keep, ...group.duplicates]" size="mini" border>
+          <el-table :data="[group.keep, ...group.duplicates]" size="small" border>
             <el-table-column label="角色" width="80">
               <template #default="scope">
-                <el-tag v-if="scope.$index === 0" type="success" size="mini">建议保留</el-tag>
-                <el-tag v-else type="danger" size="mini">重复</el-tag>
+                <el-tag v-if="scope.$index === 0" type="success" size="small">建议保留</el-tag>
+                <el-tag v-else type="danger" size="small">重复</el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="id" label="文件 ID"/>
