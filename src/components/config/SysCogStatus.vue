@@ -219,42 +219,7 @@
                 {{ processingProgress.current.toLocaleString() }}
                 <template v-if="processingProgress.total > 0">
                   / {{ processingProgress.total.toLocaleString() }}
-                
-    <!-- 重复内容扫描报告(只读) -->
-    <el-dialog
-            title="重复内容扫描报告"
-            :visible.sync="dupScanVisible"
-            width="70%"
-            append-to-body
-    >
-      <div v-if="dupScanReport">
-        <p style="margin: 0 0 12px;">
-          共扫描 <b>{{ dupScanReport.scanned }}</b> 个文件,
-          重复分组 <b>{{ dupScanReport.duplicateGroups.length }}</b> 个,
-          冗余副本 <b>{{ dupScanReport.redundantCopies }}</b> 个
-          <span v-if="dupScanReport.readErrors">,读取失败 {{ dupScanReport.readErrors }} 个</span>。
-          本扫描只读,不会删除文件;处理请自行判断。
-          <em style="color:#909399;">(仅 Docker / Node.js 服务端部署支持)</em>
-        </p>
-        <el-empty v-if="dupScanReport.duplicateGroups.length === 0" description="未发现重复内容"/>
-        <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" style="margin-bottom: 16px;">
-          <div style="font-size: 12px; color: #909399; margin-bottom: 4px;">sha256: {{ group.sha256 }} ({{ group.count }} 份)</div>
-          <el-table :data="[group.keep, ...group.duplicates]" size="mini" border>
-            <el-table-column label="角色" width="80">
-              <template #default="scope">
-                <el-tag v-if="scope.$index === 0" type="success" size="mini">建议保留</el-tag>
-                <el-tag v-else type="danger" size="mini">重复</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="id" label="文件 ID"/>
-            <el-table-column prop="name" label="文件名" width="220"/>
-            <el-table-column prop="channel" label="渠道" width="120"/>
-          </el-table>
-        </div>
-      </div>
-    </el-dialog>
-
-</template>
+                </template>
                 {{ $t('sysStatus.records') }}
               </span>
               <!-- 预计剩余时间 -->
@@ -484,6 +449,40 @@
         </div>
       </div>
     </div>
+
+    <!-- 重复内容扫描报告(只读) -->
+    <el-dialog
+      title="重复内容扫描报告"
+      :visible.sync="dupScanVisible"
+      width="70%"
+      append-to-body
+    >
+      <div v-if="dupScanReport">
+        <p style="margin: 0 0 12px;">
+          共扫描 <b>{{ dupScanReport.scanned }}</b> 个文件,
+          重复分组 <b>{{ dupScanReport.duplicateGroups.length }}</b> 个,
+          冗余副本 <b>{{ dupScanReport.redundantCopies }}</b> 个
+          <span v-if="dupScanReport.readErrors">,读取失败 {{ dupScanReport.readErrors }} 个</span>。
+          本扫描只读,不会删除文件;处理请自行判断。
+          <em style="color:#909399;">(仅 Docker / Node.js 服务端部署支持)</em>
+        </p>
+        <el-empty v-if="dupScanReport.duplicateGroups.length === 0" description="未发现重复内容"/>
+        <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" style="margin-bottom: 16px;">
+          <div style="font-size: 12px; color: #909399; margin-bottom: 4px;">sha256: {{ group.sha256 }} ({{ group.count }} 份)</div>
+          <el-table :data="[group.keep, ...group.duplicates]" size="mini" border>
+            <el-table-column label="角色" width="80">
+              <template #default="scope">
+                <el-tag v-if="scope.$index === 0" type="success" size="mini">建议保留</el-tag>
+                <el-tag v-else type="danger" size="mini">重复</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="id" label="文件 ID"/>
+            <el-table-column prop="name" label="文件名" width="220"/>
+            <el-table-column prop="channel" label="渠道" width="120"/>
+          </el-table>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
