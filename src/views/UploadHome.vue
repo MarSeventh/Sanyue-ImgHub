@@ -167,6 +167,8 @@
             :uploadMethod="uploadMethod"
             :uploadFolder="uploadFolder"
             :convertToWebp="convertToWebp"
+            :expire="uploadExpire"
+            :expiryHint="expiryHint"
             class="upload"
             data-entry="up"
         />
@@ -234,6 +236,8 @@
             v-model:compressBar="compressBar"
             v-model:compressQuality="compressQuality"
             v-model:serverCompress="serverCompress"
+            v-model:expire="expire"
+            :fileExpiry="fileExpiry"
         />
     </div>
     <Footer class="footer"/>
@@ -257,6 +261,7 @@ import Logo from '@/components/Logo.vue'
 import { setLocale } from '@/locales'
 import UploadHistory from '@/components/upload/UploadHistory.vue'
 import UploadSettingsDialog from '@/components/upload/UploadSettingsDialog.vue'
+import { EXPIRE_FOREVER, effectiveUploadExpire, formatExpireOption, resolveUploadExpire } from '@/utils/fileExpiry'
 import DirectoryTreePicker from '@/components/DirectoryTreePicker.vue'
 import DirectorySuggestionInput from '@/components/DirectorySuggestionInput.vue'
 import backgroundManager from '@/mixins/backgroundManager'
@@ -285,6 +290,7 @@ export default {
             customUrlPrefix: '', //自定义链接前缀
             useCustomUrl: 'false', //是否启用自定义链接格式
             autoRetry: true, //失败自动切换
+            expire: '', // 文件有效期选项
             useDefaultWallPaper: false,
             uploadMethod: 'default', //上传方式
             uploadFolder: '', // 上传文件夹
@@ -352,6 +358,9 @@ export default {
         autoRetry(val) {
             this.$store.commit('setStoreAutoRetry', val)
         },
+        expire(val) {
+            this.$store.commit('setStoreExpire', val)
+        },
         uploadFolder(val) {
             // 实时输入时用非 strict 模式，不检查末尾的单独 . 以允许继续输入如 .123
             if (this.validateUploadFolder(val, false)) {
@@ -369,7 +378,19 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['userConfig', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeChannelName', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder']),
+        ...mapGetters(['userConfig', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeChannelName', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder', 'storeExpire']),
+        // 文件有效期（未开启时为 undefined）
+        fileExpiry() {
+            return this.userConfig?.fileExpiry
+        },
+        // 实际发送的 expire 参数：不允许自选时不发送，选择失效时退回默认值
+        uploadExpire() {
+            return resolveUploadExpire(this.fileExpiry, this.expire)
+        },
+        expiryHint() {
+            const option = effectiveUploadExpire(this.fileExpiry, this.uploadExpire)
+            return option === EXPIRE_FOREVER ? '' : this.$t('fileExpiry.uploadHint', { duration: formatExpireOption(option, this.$t) })
+        },
         configuredOwnerName() {
             const name = this.userConfig?.ownerName
             return typeof name === 'string' || (typeof name === 'number' && Number.isFinite(name))
@@ -420,6 +441,8 @@ export default {
         this.uploadChannel = this.storeUploadChannel || this.userConfig?.defaultUploadChannel || 'telegram'
         // 用户定义的失败自动切换
         this.autoRetry = this.storeAutoRetry
+        // 上次选择的文件有效期
+        this.expire = this.storeExpire || ''
         // 读取用户选择的上传文件命名方式
         this.uploadNameType = this.storeUploadNameType || this.userConfig?.defaultUploadNameType || 'default'
         // 读取用户自定义链接格式

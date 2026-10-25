@@ -56,6 +56,29 @@
             </div>
         </div>
         
+        <!-- 文件有效期：仅在管理员允许自选时显示 -->
+        <div class="dialog-section" v-if="fileExpiry && fileExpiry.allowCustom">
+            <div class="section-header">
+                <span class="section-title">{{ $t('fileExpiry.title') }}</span>
+                <el-tooltip :content="$t('fileExpiry.uploadTooltip')" placement="top">
+                    <font-awesome-icon icon="question-circle" class="section-help-icon"/>
+                </el-tooltip>
+            </div>
+            <div class="section-content">
+                <div class="setting-item">
+                    <span class="setting-label">{{ $t('fileExpiry.label') }}</span>
+                    <el-select :model-value="selectedExpire" @update:model-value="$emit('update:expire', $event)" class="setting-input">
+                        <el-option
+                            v-for="option in fileExpiry.options"
+                            :key="option"
+                            :label="formatExpire(option)"
+                            :value="option"
+                        />
+                    </el-select>
+                </div>
+            </div>
+        </div>
+
         <!-- 文件命名方式 -->
         <div class="dialog-section">
             <div class="section-header">
@@ -162,6 +185,7 @@
 
 <script>
 import ChannelIcon from '@/components/icons/ChannelIcon.vue';
+import { formatExpireOption, resolveUploadExpire } from '@/utils/fileExpiry';
 
 const CHANNEL_OPTIONS = [
     { value: 'telegram', label: 'TG' },
@@ -204,6 +228,9 @@ export default {
                 this.$emit('update:uploadChannel', firstConfiguredChannel.value)
             }
         },
+        formatExpire(option) {
+            return formatExpireOption(option, this.$t)
+        },
         handleUploadFolderInput(val) {
             // 自动补全前导 /
             if (val && !val.startsWith('/')) {
@@ -225,7 +252,9 @@ export default {
         customerCompress: { type: Boolean, default: true },
         compressBar: { type: Number, default: 5 },
         compressQuality: { type: Number, default: 4 },
-        serverCompress: { type: Boolean, default: true }
+        serverCompress: { type: Boolean, default: true },
+        expire: { type: String, default: '' },
+        fileExpiry: { type: Object, default: undefined }
     },
     emits: [
         'update:modelValue',
@@ -234,6 +263,7 @@ export default {
         'update:uploadFolder',
         'update:autoRetry',
         'update:uploadNameType',
+        'update:expire',
         'update:convertToWebp',
         'update:customerCompress',
         'update:compressBar',
@@ -249,6 +279,10 @@ export default {
         }
     },
     computed: {
+        // 保存的选择已不在可选项中时显示默认值
+        selectedExpire() {
+            return resolveUploadExpire(this.fileExpiry, this.expire)
+        },
         visible: {
             get() { return this.modelValue },
             set(val) { this.$emit('update:modelValue', val) }

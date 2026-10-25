@@ -2080,14 +2080,20 @@ methods: {
         fileManager.updateFileListCache(cached);
     },
     handleMetadataUpdated(fileId, updatedMetadata) {
+        // 合并更新后的 metadata；有效期改为永久时服务端不再返回 ExpiresAt，需要同步移除
+        const merge = (metadata) => {
+            const merged = { ...metadata, ...updatedMetadata };
+            if (!('ExpiresAt' in updatedMetadata)) delete merged.ExpiresAt;
+            return merged;
+        };
         // 更新 tableData 中对应文件的 metadata
         const fileIndex = this.tableData.findIndex(f => f.name === fileId);
         if (fileIndex !== -1) {
-            this.tableData[fileIndex].metadata = { ...this.tableData[fileIndex].metadata, ...updatedMetadata };
+            this.tableData[fileIndex].metadata = merge(this.tableData[fileIndex].metadata);
         }
         // 如果 detailFile 正在显示该文件，同步更新 detailFile
         if (this.detailFile && this.detailFile.name === fileId) {
-            this.detailFile.metadata = { ...this.detailFile.metadata, ...updatedMetadata };
+            this.detailFile.metadata = merge(this.detailFile.metadata);
         }
     },
     handleFileRenamed(oldFileId, newFileId, updatedMetadata) {

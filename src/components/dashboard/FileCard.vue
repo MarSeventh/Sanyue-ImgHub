@@ -10,6 +10,9 @@
             <div v-if="item.metadata?.ListType === 'White'" class="success-tag">{{ channelTag }}</div>
             <div v-else-if="item.metadata?.ListType === 'Block' || item.metadata?.Label === 'adult'" class="fail-tag">{{ channelTag }}</div>
             <div v-else class="success-tag">{{ channelTag }}</div>
+            <div v-if="expiresAt !== null" class="expiry-tag" :title="expiryTitle">
+                <font-awesome-icon icon="clock"></font-awesome-icon>
+            </div>
             <div v-if="item.metadata?.Tags && item.metadata?.Tags.length > 0" class="primary-tag">
                 <font-awesome-icon icon="tag" style="margin-right: 3px; font-size: 12px;"></font-awesome-icon>
                 {{ item.metadata.Tags[0] }}
@@ -117,6 +120,7 @@
 
 <script>
 import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
+import { formatExpiresAt, getExpiresAt } from '@/utils/fileExpiry';
 
 export default {
     name: 'FileCard',
@@ -136,6 +140,12 @@ export default {
         }
     },
     computed: {
+        expiresAt() {
+            return getExpiresAt(this.item?.metadata);
+        },
+        expiryTitle() {
+            return this.expiresAt === null ? '' : this.$t('fileExpiry.badge', { time: formatExpiresAt(this.expiresAt, this.$i18n?.locale) });
+        },
         channelTag() {
             return this.item.channelTag || '';
         },
@@ -314,6 +324,16 @@ export default {
     font-size: 11px;
     font-weight: 500;
     height: auto;
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.expiry-tag {
+    background-color: rgba(230, 162, 60, 0.7);
+    color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(230, 162, 60, 0.8);
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-size: 11px;
     line-height: 1.2;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }

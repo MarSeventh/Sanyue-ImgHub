@@ -120,6 +120,26 @@
                     <span v-else style="color: var(--el-text-color-secondary);">{{ $t('fileDetail.noDimensions') }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.uploadTimeLabel')">{{ uploadTime }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('fileExpiry.expiresAt')">
+                    <div class="expiry-field">
+                        <el-date-picker
+                            v-if="expiryEditing"
+                            v-model="expiryDraft"
+                            type="datetime"
+                            size="small"
+                            value-format="x"
+                            :placeholder="$t('fileExpiry.pickTime')"
+                            :disabled-date="isPastDate"
+                            :clearable="false"
+                            class="expiry-picker"
+                            @change="saveExpiry"
+                        />
+                        <span v-else :class="{ 'expiry-never': !fileExpiresAt }">{{ expiresAtDisplay }}</span>
+                        <el-button v-if="!expiryEditing" link type="primary" size="small" :disabled="expirySaving" @click="startExpiryEdit">{{ $t('fileExpiry.change') }}</el-button>
+                        <el-button v-else link size="small" @click="expiryEditing = false">{{ $t('fileDetail.cancel') }}</el-button>
+                        <el-button v-if="fileExpiresAt && !expiryEditing" link type="primary" size="small" :disabled="expirySaving" @click="saveExpiry(null)">{{ $t('fileExpiry.setForever') }}</el-button>
+                    </div>
+                </el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.channelTypeAndName')">
                     <el-tag disable-transitions size="small" type="info" style="margin-right: 6px;">{{ file?.metadata?.Channel || $t('fileDetail.unknown') }}</el-tag>
                     <span>{{ file?.metadata?.ChannelName || '-' }}</span>
@@ -172,6 +192,7 @@ import { validateFileId } from '@/utils/fileIdValidator';
 import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
 import { LINK_FORMATS, LINK_CONTENT_LABELS, getAvailableLinkContents, getLinkContentGroup, getPreferredLinkContent, buildManagementFileLinks } from '@/utils/dashboard/fileLinks';
 import { createDetailPreviewMotion } from '@/utils/dashboard/detailPreviewMotion';
+import { formatExpiresAt, getExpiresAt } from '@/utils/fileExpiry';
 
 export default {
     name: 'FileDetailDialog',
@@ -209,6 +230,7 @@ export default {
                 // 关闭弹窗时退出编辑状态
                 this.isEditing = false;
                 this.editSaving = false;
+                this.expiryEditing = false;
             }
         },
         'file.name'() {
@@ -248,6 +270,9 @@ export default {
                 FileType: ''
             },
             editSaving: false,
+            expiryEditing: false,
+            expiryDraft: null,
+            expirySaving: false,
             showRenameDialog: false,
             renameForm: {
                 newFileId: ''
@@ -328,6 +353,14 @@ export default {
         },
         isImage() {
             return isImageFile(this.file);
+        },
+        fileExpiresAt() {
+            return getExpiresAt(this.file?.metadata);
+        },
+        expiresAtDisplay() {
+            return this.fileExpiresAt === null
+                ? this.$t('fileExpiry.never')
+                : formatExpiresAt(this.fileExpiresAt, this.$i18n?.locale);
         },
         uploadTime() {
             if (this.file?.metadata?.TimeStamp) {
@@ -491,6 +524,44 @@ export default {
                 ElMessage.error(error.message || this.$t('fileDetail.metadataSaveFailed'));
             } finally {
                 this.editSaving = false;
+            }
+        },
+        isPastDate(date) {
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+            return date.getTime() < startOfToday.getTime();
+        },
+        startExpiryEdit() {
+            this.expiryDraft = this.fileExpiresAt;
+            this.expiryEditing = true;
+        },
+        // value 为毫秒时间戳，null 表示改为永久
+        async saveExpiry(value) {
+            const expiresAt = value === null ? null : Number(value);
+            if (expiresAt !== null && !(expiresAt > Date.now())) {
+                ElMessage.error(this.$t('fileExpiry.mustBeFuture'));
+                return;
+            }
+            this.expirySaving = true;
+            try {
+                const fileId = this.file.name;
+                const response = await fetchWithAuth(`/api/manage/metadata/${fileId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ExpiresAt: expiresAt })
+                });
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || this.$t('fileExpiry.updateFailed'));
+                }
+                const data = await response.json();
+                ElMessage.success(this.$t('fileExpiry.updated'));
+                this.expiryEditing = false;
+                this.$emit('metadataUpdated', fileId, data.metadata);
+            } catch (error) {
+                ElMessage.error(error.message || this.$t('fileExpiry.updateFailed'));
+            } finally {
+                this.expirySaving = false;
             }
         },
         openRenameDialog() {
@@ -860,6 +931,18 @@ export default {
 .file-detail-metadata :deep(.el-tag__content) {
     white-space: normal;
     overflow-wrap: anywhere;
+}
+.expiry-field {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.expiry-field .expiry-never {
+    color: var(--el-text-color-secondary);
+}
+.expiry-field .expiry-picker {
+    width: 200px;
 }
 .image-dimensions {
     display: flex;

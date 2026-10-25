@@ -34,6 +34,7 @@
                 <span class="filename-start">{{ fileNameStart }}</span>
                 <span class="filename-end">{{ fileNameEnd }}</span>
             </span>
+            <font-awesome-icon v-if="!isFolder && expiresAt !== null" icon="clock" class="list-expiry-icon" :title="expiryTitle"/>
         </div>
         <!-- 标签 -->
         <div class="list-col list-col-tags">
@@ -112,6 +113,7 @@
 
 <script>
 import { isImageFile, isVideoFile } from '@/utils/mimeTypes';
+import { formatExpiresAt, getExpiresAt } from '@/utils/fileExpiry';
 
 export default {
     name: 'FileListItem',
@@ -128,6 +130,12 @@ export default {
         }
     },
     computed: {
+        expiresAt() {
+            return getExpiresAt(this.item?.metadata);
+        },
+        expiryTitle() {
+            return this.expiresAt === null ? '' : this.$t('fileExpiry.badge', { time: formatExpiresAt(this.expiresAt, this.$i18n?.locale) });
+        },
         isFolder() {
             // 检查 isFolder 属性或名称以 / 结尾
             return this.item.isFolder || this.item.name?.endsWith('/');
@@ -253,6 +261,12 @@ export default {
 }
 .list-col-name:hover {
     color: var(--primary-color-accent);
+}
+.list-expiry-icon {
+    flex-shrink: 0;
+    margin-left: 6px;
+    font-size: 12px;
+    color: var(--el-color-warning);
 }
 .filename-ellipsis {
     display: flex;
