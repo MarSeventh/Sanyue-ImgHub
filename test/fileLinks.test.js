@@ -158,7 +158,7 @@ describe('file detail content changes', () => {
             window.innerWidth = 1024;
             window.dispatchEvent(new Event('resize'));
             await nextTick();
-            expect(vm.dialogWidth).toBe('min(900px, 94vw)');
+            expect(vm.dialogWidth).toBe('min(1080px, 94vw)');
             expect(vm.descColumn).toBe(2);
         } finally {
             window.innerWidth = originalWidth;
@@ -193,25 +193,36 @@ describe('file detail content changes', () => {
 
     it('detects orientation from loaded media and clears dimensions and errors when switching files', async () => {
         const { vm, props } = mount({ name: 'unknown.jpg', metadata: { FileType: 'image/jpeg' } });
+        expect(vm.previewLoading).toBe(true);
         expect(vm.previewLayout).toBe('landscape');
         vm.handleMediaLoad({ target: { naturalWidth: 600, naturalHeight: 1000 } });
+        expect(vm.previewLoading).toBe(false);
         expect(vm.previewLayout).toBe('portrait');
         vm.previewFailed = true;
         expect(vm.previewLayout).toBe('file');
         props.file = { name: 'clip.mp4', metadata: { FileType: 'video/mp4' } };
         await nextTick();
         expect(vm.previewFailed).toBe(false);
+        expect(vm.previewLoading).toBe(true);
         expect(vm.previewLayout).toBe('landscape');
         vm.handleMediaLoad({ target: { videoWidth: 360, videoHeight: 640 } });
         expect(vm.previewLayout).toBe('portrait');
+        // Metadata establishes orientation, but cannot yet display a video frame.
+        expect(vm.previewLoading).toBe(true);
+        vm.handleMediaReady({ target: { readyState: 2 } });
+        expect(vm.previewLoading).toBe(false);
         props.fileLink = '/another-video.mp4';
         await nextTick();
         expect(vm.loadedMediaSize).toBeNull();
+        expect(vm.previewLoading).toBe(true);
     });
 
     it('uses compact layouts for audio and ordinary files and retries failed previews on reopen', async () => {
         const { vm, props } = mount({ name: 'track.mp3', metadata: { FileType: 'audio/mpeg', Width: 600, Height: 1000 } });
         expect(vm.previewLayout).toBe('audio');
+        expect(vm.previewLoading).toBe(true);
+        vm.handleMediaReady({ target: { readyState: 2 } });
+        expect(vm.previewLoading).toBe(false);
         expect(vm.sideBySide).toBe(false);
         vm.previewFailed = true;
         expect(vm.previewLayout).toBe('file');
@@ -224,6 +235,7 @@ describe('file detail content changes', () => {
         await nextTick();
         expect(vm.previewLayout).toBe('file');
         expect(vm.sideBySide).toBe(false);
+        expect(vm.previewLoading).toBe(false);
     });
 
     it('preserves learned portrait dimensions when reopening the same cached image without another load event', async () => {
@@ -238,6 +250,7 @@ describe('file detail content changes', () => {
             await nextTick();
             expect(vm.loadedMediaSize).toEqual({ Width: 600, Height: 1000 });
             expect(vm.previewLayout).toBe('portrait');
+            expect(vm.previewLoading).toBe(false);
         }
     });
 
@@ -276,5 +289,13 @@ describe('file detail content changes', () => {
         Object.defineProperties(oldImage, { naturalWidth: { value: 1200 }, naturalHeight: { value: 800 } });
         vm.handleMediaLoad({ target: oldImage });
         expect(vm.previewLayout).toBe('portrait');
+        vm.resetPreview();
+        vm.handleMediaReady({ target: oldImage });
+        vm.handleMediaError({ target: oldImage });
+        expect(vm.mediaReady).toBe(false);
+        expect(vm.previewFailed).toBe(false);
+        vm.handleMediaError({ target: image });
+        expect(vm.previewFailed).toBe(true);
+        expect(vm.previewLoading).toBe(false);
     });
 });

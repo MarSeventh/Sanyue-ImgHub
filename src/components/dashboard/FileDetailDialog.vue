@@ -1,5 +1,5 @@
 <template>
-    <el-dialog :title="$t('fileDetail.title')" v-model="visible" :width="dialogWidth" class="file-detail-dialog" @open="resetDetailView" @opened="resetDetailView">
+    <el-dialog :title="$t('fileDetail.title')" v-model="visible" :width="dialogWidth" class="file-detail-dialog" @open="resetDetailView" @opened="handleDetailOpened">
         <div ref="detailStart" class="detail-actions">
             <div v-if="!isEditing" class="detail-toolbar" @mouseleave="actionsHovered = false">
                 <div
@@ -70,12 +70,15 @@
             </div>
             <p v-if="contentFallback" class="link-content-hint">{{ $t('settings.linkContentFallback') }}</p>
         </div>
-        <div class="detail-body-layout" :class="[`preview-layout-${previewLayout}`, { 'is-side-by-side': sideBySide }]">
+        <div ref="detailLayout" class="detail-body-layout" :class="[`preview-layout-${previewLayout}`, { 'is-side-by-side': sideBySide }]">
             <!-- 竖向媒体在大屏与信息并排，其余内容使用适合各自类型的紧凑布局。 -->
             <div class="preview-section">
-                <div ref="previewContent" class="preview-content">
-                    <video v-if="isVideo && !previewFailed" :key="`video:${fileLink}`" :src="fileLink" autoplay muted loop playsinline class="video-preview" @loadedmetadata="handleMediaLoad" @error="previewFailed = true" @click="openImageLink"></video>
-                    <audio v-else-if="isAudio && !previewFailed" :key="`audio:${fileLink}`" :src="fileLink" controls autoplay class="audio-preview" @error="previewFailed = true"></audio>
+                <div ref="previewContent" class="preview-content" :class="{ 'is-loading': previewLoading, 'is-ready': mediaReady }" :aria-busy="previewLoading">
+                    <Transition name="preview-loading">
+                        <div v-if="previewLoading && visible" class="preview-skeleton" aria-hidden="true"></div>
+                    </Transition>
+                    <video v-if="isVideo && !previewFailed" :key="`video:${fileLink}`" :src="fileLink" autoplay muted loop playsinline class="video-preview" @loadedmetadata="handleMediaLoad" @loadeddata="handleMediaReady" @error="handleMediaError" @click="openImageLink"></video>
+                    <audio v-else-if="isAudio && !previewFailed" :key="`audio:${fileLink}`" :src="fileLink" controls autoplay class="audio-preview" @loadeddata="handleMediaReady" @error="handleMediaError"></audio>
                     <el-image
                         v-else-if="isImage && !previewFailed"
                         :key="`image:${fileLink}`"
@@ -83,11 +86,12 @@
                         :preview-src-list="[fileLink]"
                         :preview-teleported="true"
                         fit="contain"
-                        lazy
                         class="image-preview"
                         @load="handleMediaLoad"
-                        @error="previewFailed = true"
-                    ></el-image>
+                        @error="handleMediaError"
+                    >
+                        <template #placeholder><span></span></template>
+                    </el-image>
                     <template v-else>
                         <font-awesome-icon icon="file" class="file-icon-detail"></font-awesome-icon>
                         <div class="file-preview-summary">
@@ -167,6 +171,7 @@ import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFileId } from '@/utils/fileIdValidator';
 import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
 import { LINK_FORMATS, LINK_CONTENT_LABELS, getAvailableLinkContents, getLinkContentGroup, getPreferredLinkContent, buildManagementFileLinks } from '@/utils/dashboard/fileLinks';
+import { createDetailPreviewMotion } from '@/utils/dashboard/detailPreviewMotion';
 
 export default {
     name: 'FileDetailDialog',
@@ -174,7 +179,8 @@ export default {
         const { width: viewportWidth } = useWindowSize();
         const secondaryContent = ref(null);
         const { width: secondaryWidth } = useElementSize(secondaryContent);
-        return { viewportWidth, secondaryContent, secondaryWidth };
+        const detailMotion = createDetailPreviewMotion();
+        return { viewportWidth, secondaryContent, secondaryWidth, detailMotion };
     },
     props: {
         modelValue: { type: Boolean, default: false },
@@ -187,12 +193,15 @@ export default {
     emits: ['update:modelValue', 'download', 'tagManagement', 'block', 'white', 'delete', 'metadataUpdated', 'fileRenamed'],
     watch: {
         visible(val) {
+            this.dialogOpened = false;
+            this.detailMotion.cancel();
             this.contentOverride = null;
             this.actionsHovered = false;
             this.actionsPinned = false;
             if (val) {
                 this.activeFormat = this.defaultFormat;
                 // 同一媒体重开时保留已知尺寸；缓存图片不会保证再次触发 load。
+                if (this.previewFailed) this.mediaReady = false;
                 this.previewFailed = false;
                 this.resetDetailView();
             }
@@ -211,6 +220,12 @@ export default {
             if (this.visible) this.resetDetailView();
         },
         fileLink() { this.resetPreview(); },
+        layoutState() {
+            const layout = this.$refs.detailLayout;
+            if (!this.visible || !this.dialogOpened || !layout) return;
+            const snapshot = this.detailMotion.capture(layout);
+            this.$nextTick(() => { if (this.visible) this.detailMotion.play(layout, snapshot); });
+        },
         defaultFormat(format) { this.activeFormat = format; },
         contentPreferences: {
             handler() { this.contentOverride = null; },
@@ -221,6 +236,8 @@ export default {
         return {
             contentOverride: null,
             previewFailed: false,
+            mediaReady: false,
+            dialogOpened: false,
             loadedMediaSize: null,
             actionsHovered: false,
             actionsPinned: false,
@@ -281,7 +298,7 @@ export default {
         },
         dialogWidth() {
             if (this.viewportWidth <= 768) return '95%';
-            return this.sideBySide ? 'min(1080px, 94vw)' : 'min(900px, 94vw)';
+            return this.viewportWidth >= 1024 && (this.isImage || this.isVideo) ? 'min(1080px, 94vw)' : 'min(900px, 94vw)';
         },
         descColumn() {
             return this.viewportWidth <= 768 || this.sideBySide ? 1 : 2;
@@ -296,6 +313,12 @@ export default {
         },
         sideBySide() {
             return this.viewportWidth >= 1024 && this.previewLayout === 'portrait';
+        },
+        previewLoading() {
+            return !this.previewFailed && !this.mediaReady && (this.isImage || this.isVideo || this.isAudio);
+        },
+        layoutState() {
+            return `${this.sideBySide}:${this.previewLayout}:${this.previewLoading}`;
         },
         isVideo() {
             return isVideoFile(this.file);
@@ -361,7 +384,14 @@ export default {
             return this.$t('fileDetail.unknown');
         }
     },
+    beforeUnmount() {
+        this.detailMotion.cancel();
+    },
     methods: {
+        handleDetailOpened() {
+            this.dialogOpened = true;
+            return this.resetDetailView();
+        },
         resetDetailView() {
             return this.$nextTick(() => {
                 // 仅复位当前详情内容区，避免影响文件列表及嵌套弹窗的滚动。
@@ -371,12 +401,14 @@ export default {
                     body.scrollLeft = 0;
                 }
                 // 打开过渡结束后也读取现有节点，恢复缓存图片或视频的真实方向。
-                const media = this.$refs.previewContent?.querySelector('.image-preview img, .video-preview');
+                const media = this.$refs.previewContent?.querySelector('.image-preview img, .video-preview, .audio-preview');
                 if (media) this.handleMediaLoad({ target: media });
             });
         },
         resetPreview() {
+            this.detailMotion.cancel();
             this.previewFailed = false;
+            this.mediaReady = false;
             this.loadedMediaSize = null;
         },
         handleMediaLoad(event) {
@@ -386,6 +418,16 @@ export default {
             const Width = media.naturalWidth || media.videoWidth;
             const Height = media.naturalHeight || media.videoHeight;
             if (Width > 0 && Height > 0) this.loadedMediaSize = { Width, Height };
+            if (media.naturalWidth > 0 || media.readyState >= 2) this.mediaReady = true;
+        },
+        handleMediaReady(event) {
+            if (this.$refs.previewContent && !this.$refs.previewContent.contains(event.target)) return;
+            this.mediaReady = true;
+        },
+        handleMediaError(event) {
+            if (this.$refs.previewContent && !this.$refs.previewContent.contains(event.target)) return;
+            this.mediaReady = false;
+            this.previewFailed = true;
         },
         toggleActions() {
             this.actionsPinned = !this.actionsPinned;
@@ -600,13 +642,21 @@ export default {
 }
 .detail-body-layout {
     --detail-content-radius: 12px;
+    position: relative;
     display: grid;
     gap: 16px;
     align-items: start;
+    align-content: start;
     min-width: 0;
+    overflow-anchor: none;
 }
 .detail-body-layout > * {
     min-width: 0;
+    box-sizing: border-box;
+}
+.is-layout-animating > * {
+    overflow: hidden;
+    will-change: transform, width, height;
 }
 .detail-body-layout.is-side-by-side {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr);
@@ -653,10 +703,68 @@ export default {
     min-height: 0;
 }
 .preview-content {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
+    min-width: 0;
+}
+/* Reserve space while media loads; keep the media mounted beneath the skeleton. */
+.preview-content.is-loading {
+    min-height: min(280px, 36vh);
+}
+.is-side-by-side .preview-content.is-loading {
+    min-height: min(480px, 55vh);
+}
+.preview-layout-audio .preview-content.is-loading {
+    min-height: 54px;
+}
+.preview-content.is-loading > .image-preview,
+.preview-content.is-loading > .video-preview,
+.preview-content.is-loading > .audio-preview {
+    /* Decoding must not change the skeleton's size before the layout is captured. */
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.preview-skeleton {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: var(--detail-content-radius);
+    background: var(--el-fill-color);
+    pointer-events: none;
+}
+.preview-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 15%, var(--el-fill-color-extra-light) 50%, transparent 85%);
+    transform: translateX(-100%);
+    animation: preview-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes preview-shimmer {
+    to { transform: translateX(100%); }
+}
+.preview-content > .image-preview,
+.preview-content > .video-preview,
+.preview-content > .audio-preview {
+    opacity: 0;
+    transition: opacity 180ms ease;
+}
+.preview-content.is-ready > .image-preview,
+.preview-content.is-ready > .video-preview,
+.preview-content.is-ready > .audio-preview {
+    opacity: 1;
+}
+.preview-loading-leave-active {
+    transition: opacity 180ms ease;
+}
+.preview-loading-leave-to {
+    opacity: 0;
 }
 .is-side-by-side .preview-section {
     align-self: stretch;
@@ -812,8 +920,15 @@ export default {
 }
 @media (prefers-reduced-motion: reduce) {
     .detail-secondary-actions,
-    .detail-actions-toggle svg {
+    .detail-actions-toggle svg,
+    .preview-content > .image-preview,
+    .preview-content > .video-preview,
+    .preview-content > .audio-preview,
+    .preview-loading-leave-active {
         transition: none;
+    }
+    .preview-skeleton::after {
+        animation: none;
     }
 }
 </style>
