@@ -278,17 +278,19 @@
           <!-- 操作按钮 -->
           <div v-else class="action-buttons">
             <el-tooltip :content="dupScanSupported ? $t('sysStatus.dupScanTooltip') : $t('sysStatus.dupScanUnsupportedTooltip')" placement="top">
-              <el-button
-                type="warning"
-                plain
-                :loading="dupScanLoading"
-                :disabled="isProcessing || !dupScanSupported"
-                @click="scanDuplicates"
-                class="action-btn dedup-scan-btn"
-              >
-                <font-awesome-icon icon="clone" />
-                {{ dupScanLoading ? $t('sysStatus.dupScanScanning') : $t('sysStatus.dupScan') }}
-              </el-button>
+              <span class="dup-scan-trigger">
+                <el-button
+                  type="warning"
+                  plain
+                  :loading="dupScanLoading"
+                  :disabled="isProcessing || !dupScanSupported"
+                  @click="scanDuplicates"
+                  class="action-btn dedup-scan-btn"
+                >
+                  <font-awesome-icon icon="clone" />
+                  {{ dupScanLoading ? $t('sysStatus.dupScanScanning') : $t('sysStatus.dupScan') }}
+                </el-button>
+              </span>
             </el-tooltip>
 
             <el-tooltip :content="$t('sysStatus.rebuildTooltip')" placement="top">
@@ -434,9 +436,16 @@
           {{ $t('sysStatus.dupScanSummary', { scanned: dupScanReport.scanned, groups: dupScanReport.duplicateGroups.length, redundant: dupScanReport.redundantCopies }) }}<span v-if="dupScanReport.readErrors.length">{{ $t('sysStatus.dupScanReadErrors', { count: dupScanReport.readErrors.length }) }}</span>{{ $t('sysStatus.dupScanNotice') }}
           <em style="color:#909399;">{{ $t('sysStatus.dupScanServerOnly') }}</em>
         </p>
+        <p v-if="dupScanReport.complete === false" style="margin: 0 0 12px; color:#e6a23c;">
+          {{ $t('sysStatus.dupScanIncomplete', {
+            chunks: dupScanReport.chunkErrors.length,
+            records: dupScanReport.recordErrors.length,
+            skipped: dupScanReport.skippedOversized.length
+          }) }}<span v-if="dupScanReport.timedOut">{{ $t('sysStatus.dupScanTimedOut') }}</span>
+        </p>
         <el-empty v-if="dupScanReport.duplicateGroups.length === 0" :description="$t('sysStatus.dupScanNone')"/>
         <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" style="margin-bottom: 16px;">
-          <div style="font-size: 12px; color: #909399; margin-bottom: 4px;">sha256: {{ group.sha256 }} ({{ group.count }})</div>
+          <div style="font-size: 12px; color: #909399; margin-bottom: 4px;">sha256: {{ group.sha256 }} {{ $t('sysStatus.dupScanCount', { count: group.count }) }}</div>
           <el-table :data="[group.keep, ...group.duplicates]" size="small" border>
             <el-table-column :label="$t('sysStatus.dupScanRole')" width="80">
               <template #default="scope">
@@ -880,12 +889,17 @@ export default {
   },
   methods: {
     async checkScanCapability() {
-        // 与后端统一部署判定:GET 只探测能力,不触发扫描;不支持时禁用入口并提示原因
+        // 与后端统一部署判定:仅 501(或 supported:false)判定为不支持;
+        // 网络错/401/旧后端 404 等其余失败不锁定入口(POST 的 501 分支仍会兜底)
         try {
             const resp = await fetchWithAuth('/api/manage/dedup/scan', { method: 'GET' });
-            this.dupScanSupported = resp.ok;
+            if (resp.status === 501) {
+                this.dupScanSupported = false;
+            } else if (resp.ok) {
+                this.dupScanSupported = true;
+            }
         } catch (e) {
-            this.dupScanSupported = false;
+            // 探测失败不改状态,保留默认可用;真实扫描失败另有错误链
         }
     },
     async scanDuplicates() {
@@ -899,6 +913,12 @@ export default {
                 return;
             }
             if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+            // 归一化:缺字段的响应(版本错配/代理兜底)不至渲染崩溃
+            if (!Array.isArray(body.duplicateGroups)) throw new Error('unexpected scan response shape');
+            body.readErrors = Array.isArray(body.readErrors) ? body.readErrors : [];
+            body.recordErrors = Array.isArray(body.recordErrors) ? body.recordErrors : [];
+            body.chunkErrors = Array.isArray(body.chunkErrors) ? body.chunkErrors : [];
+            body.skippedOversized = Array.isArray(body.skippedOversized) ? body.skippedOversized : [];
             this.dupScanReport = body;
             this.dupScanVisible = true;
         } catch (e) {
@@ -2103,6 +2123,11 @@ html.dark .legend-item:hover {
   width: 150px;
   height: 48px;
   box-shadow: none;
+}
+
+/* 禁用按钮不派发鼠标事件,tooltip 需挂在外层 span 上才能在禁用态说明原因 */
+.dup-scan-trigger {
+  display: inline-flex;
 }
 
 @media (max-width: 768px) {
