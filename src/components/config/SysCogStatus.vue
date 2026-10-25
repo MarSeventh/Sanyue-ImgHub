@@ -312,6 +312,34 @@
           
           <!-- 操作按钮 -->
           <div v-else class="action-buttons">
+            <el-tooltip content="幽灵索引清理:以存储渠道真实对象为准清理索引残留" placement="top">
+              <el-button
+                type="danger"
+                plain
+                :loading="ghostPruneLoading"
+                :disabled="isProcessing"
+                @click="pruneGhosts"
+                class="action-btn"
+              >
+                <font-awesome-icon icon="broom" />
+                幽灵索引清理
+              </el-button>
+            </el-tooltip>
+
+            <el-tooltip content="存量内容去重:按内容分组清理重复副本,每组保留最早一份" placement="top">
+              <el-button
+                type="warning"
+                plain
+                :loading="dedupCleanLoading"
+                :disabled="isProcessing"
+                @click="dedupExisting"
+                class="action-btn"
+              >
+                <font-awesome-icon icon="compress" />
+                存量内容去重
+              </el-button>
+            </el-tooltip>
+
             <el-tooltip content="重复内容扫描:按内容分组列出重复文件(只读,不删除)。仅 Docker / Node.js 服务端部署支持" placement="top">
               <el-button
                 type="warning"
@@ -501,6 +529,8 @@ export default {
       loading: false,
       rebuilding: false,
       dupScanLoading: false,
+      ghostPruneLoading: false,
+      dedupCleanLoading: false,
       dupScanVisible: false,
       dupScanReport: null,
       backing: false,
@@ -882,6 +912,40 @@ export default {
     }
   },
   methods: {
+    showReport(title, data) {
+        this.$alert(`<pre style="max-height:420px;overflow:auto;font-size:12px;">${JSON.stringify(data, null, 2)}</pre>`, title, {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: '关闭',
+        }).catch(() => {});
+    },
+    async pruneGhosts() {
+        this.ghostPruneLoading = true;
+        try {
+            const resp = await fetchWithAuth('/api/manage/dedup/prune-ghosts', { method: 'POST' });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            this.showReport('幽灵索引清理报告', data);
+            this.$message.success(`清理完成:删除 ${data.deleted?.length ?? 0} 条幽灵记录,补录 ${data.addedMissing?.length ?? 0} 条`);
+        } catch (e) {
+            this.$message.error('幽灵索引清理失败: ' + (e.message || e));
+        } finally {
+            this.ghostPruneLoading = false;
+        }
+    },
+    async dedupExisting() {
+        this.dedupCleanLoading = true;
+        try {
+            const resp = await fetchWithAuth('/api/manage/dedup/cleanup', { method: 'POST' });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            this.showReport('存量内容去重报告', data);
+            this.$message.success(`去重完成:删除 ${data.deleted?.length ?? 0} 个重复副本`);
+        } catch (e) {
+            this.$message.error('存量内容去重失败: ' + (e.message || e));
+        } finally {
+            this.dedupCleanLoading = false;
+        }
+    },
     async scanDuplicates() {
         this.dupScanLoading = true;
         try {
