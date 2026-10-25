@@ -371,7 +371,9 @@
             v-model="showdetailDialog"
             :file="detailFile"
             :fileLink="getFileLink(detailFile?.name)"
-            :urls="allUrl"
+            :root-url="rootUrl"
+            :default-format="defaultUrlFormat"
+            :content-preferences="defaultUrlContents"
             @download="handleDownload(detailFile?.name)"
             @tagManagement="handleTagManagement(detailFile?.name)"
             @block="handleBlock(detailFile?.name)"
@@ -383,7 +385,13 @@
         <el-dialog :title="$t('dashboard.linkFormat')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog settings-dialog-scope">
             <div class="dialog-section">
                 <div class="section-header">
-                    <span class="section-title">{{ $t('settings.defaultCopyLink') }}</span>
+                    <span class="section-title">{{ $t('settings.copyFormatPreference') }}</span>
+                    <el-tooltip placement="top" effect="light">
+                        <template #content>
+                            <div class="link-preference-tooltip" v-html="$t('settings.copyFormatTooltip')"></div>
+                        </template>
+                        <font-awesome-icon icon="question-circle" class="section-help-icon"/>
+                    </el-tooltip>
                 </div>
                 <div class="section-content">
                     <el-radio-group v-model="defaultUrlFormat" class="radio-card-group grid-2x2">
@@ -403,33 +411,47 @@
                             <font-awesome-icon icon="quote-right" class="radio-icon"/>
                             <span>BBCode</span>
                         </el-radio>
-                        <el-radio label="tgId" class="radio-card">
-                            <font-awesome-icon icon="paper-plane" class="radio-icon"/>
-                            <span>TG File ID</span>
-                        </el-radio>
-                        <el-radio label="s3Location" class="radio-card">
-                            <font-awesome-icon icon="cloud" class="radio-icon"/>
-                            <span>{{ $t('settings.s3Link') }}</span>
-                        </el-radio>
                     </el-radio-group>
                 </div>
             </div>
 
             <div class="dialog-section">
                 <div class="section-header">
-                    <span class="section-title">{{ $t('settings.customLink') }}</span>
-                    <el-tooltip :content="$t('settings.customLinkTooltip')" placement="top" raw-content>
+                    <span class="section-title">{{ $t('settings.contentPreference') }}</span>
+                    <el-tooltip placement="top" effect="light">
+                        <template #content>
+                            <div class="link-preference-tooltip" v-html="$t('settings.contentPreferenceTooltip')"></div>
+                        </template>
                         <font-awesome-icon icon="question-circle" class="section-help-icon"/>
                     </el-tooltip>
                 </div>
                 <div class="section-content">
-                    <div class="setting-item">
-                        <span class="setting-label">{{ $t('settings.enableCustom') }}</span>
-                        <el-switch v-model="useCustomUrl" active-value="true" inactive-value="false" />
+                    <div v-for="group in linkContentGroups" :key="group.key" class="link-content-setting">
+                        <span class="setting-label">{{ group.label }}</span>
+                        <el-radio-group v-model="defaultUrlContents[group.key]" class="link-content-options">
+                            <el-radio v-for="content in group.contents" :key="content" :label="content">
+                                {{ $t(linkContentLabels[content]) }}
+                            </el-radio>
+                        </el-radio-group>
                     </div>
-                    <div class="setting-item" v-if="useCustomUrl === 'true'">
-                        <span class="setting-label">{{ $t('settings.customPrefix') }}</span>
-                        <el-input v-model="customUrlPrefix" :placeholder="$t('settings.customPrefixPlaceholder')" class="setting-input"/>
+                    <div class="link-custom-setting">
+                        <div class="link-setting-header">
+                            <span class="setting-label">{{ $t('settings.customLink') }}</span>
+                            <el-tooltip placement="top" effect="light">
+                                <template #content>
+                                    <div class="link-preference-tooltip" v-html="$t('settings.customContentTooltip')"></div>
+                                </template>
+                                <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+                            </el-tooltip>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-label">{{ $t('settings.enableCustom') }}</span>
+                            <el-switch v-model="useCustomUrl" active-value="true" inactive-value="false" />
+                        </div>
+                        <div class="setting-item" v-if="useCustomUrl === 'true'">
+                            <span class="setting-label">{{ $t('settings.customPrefix') }}</span>
+                            <el-input v-model="customUrlPrefix" :placeholder="$t('settings.customPrefixPlaceholder')" class="setting-input"/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -501,8 +523,10 @@ import fetchWithAuth from '@/utils/fetchWithAuth';
 import { validateFolderPath } from '@/utils/pathValidator';
 import backgroundManager from '@/mixins/backgroundManager';
 import { ref } from 'vue';
+import { useWindowSize } from '@vueuse/core';
 import { useDragSelect } from '@/utils/dashboard/useDragSelect.js';
 import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
+import { LINK_CONTENT_GROUPS, LINK_CONTENT_LABELS, loadLinkPreferences, getManagementCopyLink } from '@/utils/dashboard/fileLinks';
 
 const SORT_FIELDS = ['time', 'size', 'rawName', 'fileName'];
 const SORT_ORDERS = ['asc', 'desc'];
@@ -521,6 +545,7 @@ export default {
 name: 'AdminDashBoard',
 mixins: [backgroundManager],
 data() {
+    const linkPreferences = loadLinkPreferences(localStorage);
     return {
         Number: 0,
         directFileCount: 0, // 当前目录直接子文件数量
@@ -546,8 +571,10 @@ data() {
         isUploading: false,
         showdetailDialog: false,
         detailFile: null,
-        activeUrlTab: 'originUrl',
-        defaultUrlFormat: 'originUrl',
+        defaultUrlFormat: linkPreferences.format,
+        defaultUrlContents: linkPreferences.contents,
+        linkContentGroups: LINK_CONTENT_GROUPS,
+        linkContentLabels: LINK_CONTENT_LABELS,
         showUrlDialog: false,
         useCustomUrl: 'false', // 是否启用自定义链接
         customUrlPrefix: '', // 自定义链接前缀
@@ -604,6 +631,7 @@ components: {
     LanguageSwitcher
 },
 setup() {
+    const { width: viewportWidth } = useWindowSize();
     const cardContainerRef = ref(null);
     const listContainerRef = ref(null);
     const viewModeRef = ref('card');
@@ -619,6 +647,7 @@ setup() {
     });
 
     return {
+        viewportWidth,
         cardContainerRef,
         listContainerRef,
         viewModeRef,
@@ -699,7 +728,7 @@ computed: {
         return `${fieldLabel} · ${orderLabel}`;
     },
     dialogWidth() {
-        return window.innerWidth > 768 ? '50%' : '90%';
+        return this.viewportWidth > 768 ? '50%' : '90%';
     },
     detailDialogWidth() {
         return window.innerWidth > 768 ? '70%' : '90%';
@@ -711,30 +740,6 @@ computed: {
             return this.$t('filter.blocked');
         } else {
             return this.$t('filter.normal');
-        }
-    },
-    allUrl() {
-        // 外链图片均采用外链
-        if (this.detailFile?.metadata?.Channel === 'External') {
-            return {
-                'originUrl': `${this.detailFile?.metadata?.ExternalLink}`,
-                'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.detailFile?.metadata?.ExternalLink})`,
-                'htmlUrl': `<img src="${this.detailFile?.metadata?.ExternalLink}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
-                'bbUrl': `[img]${this.detailFile?.metadata?.ExternalLink}[/img]`,
-                'tgId': this.detailFile?.metadata?.TgFileId || this.$t('fileDetail.unknown'),
-                'S3Location': this.detailFile?.metadata?.S3Location || this.$t('fileDetail.unknown'),
-                'S3CdnFileUrl': this.detailFile?.metadata?.S3CdnFileUrl || this.$t('fileDetail.unknown')
-            }
-        } else {
-            return {
-                'originUrl': `${this.rootUrl}${this.detailFile?.name}`,
-                'mdUrl': `![${this.detailFile?.metadata?.FileName || this.detailFile?.name}](${this.rootUrl}${this.detailFile?.name})`,
-                'htmlUrl': `<img src="${this.rootUrl}${this.detailFile?.name}" alt="${this.detailFile?.metadata?.FileName || this.detailFile?.name}" width=100%>`,
-                'bbUrl': `[img]${this.rootUrl}${this.detailFile?.name}[/img]`,
-                'tgId': this.detailFile?.metadata?.TgFileId || this.$t('fileDetail.unknown'),
-                'S3Location': this.detailFile?.metadata?.S3Location || this.$t('fileDetail.unknown'),
-                'S3CdnFileUrl': this.detailFile?.metadata?.S3CdnFileUrl || this.$t('fileDetail.unknown')
-            }
         }
     },
     tableColumnNum() {
@@ -803,10 +808,11 @@ watch: {
     defaultUrlFormat(newFormat) {
         localStorage.setItem('defaultUrlFormat', newFormat);
     },
-    showdetailDialog(newVal) {
-        if (newVal) {
-            this.activeUrlTab = this.defaultUrlFormat || 'originUrl';
-        }
+    defaultUrlContents: {
+        handler(contents) {
+            localStorage.setItem('defaultUrlContents', JSON.stringify(contents));
+        },
+        deep: true
     },
     customUrlPrefix(val) {
         this.$store.commit('setAdminUrlSettings', { key: 'customUrlPrefix', value: val })
@@ -1108,9 +1114,6 @@ methods: {
         this.detailFile = this.paginatedTableData[index];
         this.showdetailDialog = true;
     },
-    handleTabClick(tab) {
-        this.activeUrlTab = tab.props.name;
-    },
     handleUrlClick(event) {
         // 复制到剪贴板
         navigator.clipboard.writeText(event.target.value)
@@ -1339,49 +1342,10 @@ methods: {
         this.$message.success(this.$t('dashboard.batchCopyLinksSuccess'));
     },
     handleCopy(index, key) {
-        let text = '';
-        if (this.paginatedTableData[index].metadata?.Channel === 'External') {
-            switch (this.defaultUrlFormat) {
-                case 'originUrl':
-                    text = this.paginatedTableData[index].metadata?.ExternalLink;
-                    break;
-                case 'mdUrl':
-                    text = `![${this.paginatedTableData[index].metadata?.FileName || key}](${this.paginatedTableData[index].metadata?.ExternalLink})`;
-                    break;
-                case 'htmlUrl':
-                    text = `<img src="${this.paginatedTableData[index].metadata?.ExternalLink}" alt="${this.paginatedTableData[index].metadata?.FileName || key}" width=100%>`;
-                    break;
-                case 'bbUrl':
-                    text = `[img]${this.paginatedTableData[index].metadata?.ExternalLink}[/img]`;
-                    break;
-                case 'tgId':
-                    text = this.paginatedTableData[index].metadata?.TgFileId || 'none';
-                    break;
-                case 's3Location':
-                    text = this.paginatedTableData[index].metadata?.S3Location || 'none';
-                    break;
-            }
-        } else {
-            switch (this.defaultUrlFormat) {
-                case 'originUrl':
-                    text = `${this.rootUrl}${key}`;
-                    break;
-                case 'mdUrl':
-                    text = `![${this.paginatedTableData[index].metadata?.FileName || key}](${this.rootUrl}${key})`;
-                    break;
-                case 'htmlUrl':
-                    text = `<img src="${this.rootUrl}${key}" alt="${this.paginatedTableData[index].metadata?.FileName || key}" width=100%>`;
-                    break;
-                case 'bbUrl':
-                    text = `[img]${this.rootUrl}${key}[/img]`;
-                    break;
-                case 'tgId':
-                    text = this.paginatedTableData[index].metadata?.TgFileId || 'none';
-                    break;
-                case 's3Location':
-                    text = this.paginatedTableData[index].metadata?.S3Location || 'none';
-                    break;
-            }
+        const text = this.generateFileLink(key, this.paginatedTableData[index]?.metadata);
+        if (!text) {
+            this.$message.warning(this.$t('dashboard.noLinksAvailable'));
+            return;
         }
         navigator.clipboard ? navigator.clipboard.writeText(text).then(() => this.$message.success(this.$t('dashboard.copyFileLinkSuccess'))) :
         this.copyToClipboardFallback(text);
@@ -2146,26 +2110,7 @@ methods: {
     },
     // 生成单个文件链接
     generateFileLink(key, metadata) {
-        const isExternal = metadata?.Channel === 'External';
-        const baseUrl = isExternal ? metadata?.ExternalLink : `${this.rootUrl}${key}`;
-        const fileName = metadata?.FileName || key;
-        
-        switch (this.defaultUrlFormat) {
-            case 'originUrl':
-                return baseUrl;
-            case 'mdUrl':
-                return `![${fileName}](${baseUrl})`;
-            case 'htmlUrl':
-                return `<img src="${baseUrl}" alt="${fileName}" width=100%>`;
-            case 'bbUrl':
-                return `[img]${baseUrl}[/img]`;
-            case 'tgId':
-                return metadata?.TgFileId || '';
-            case 's3Location':
-                return metadata?.S3Location || '';
-            default:
-                return baseUrl;
-        }
+        return getManagementCopyLink({ name: key, metadata }, this.rootUrl, this.defaultUrlFormat, this.defaultUrlContents);
     },
     // 复制文件夹中所有文件的链接
     async handleFolderCopy(folderName) {
@@ -2262,6 +2207,57 @@ beforeUnmount() {
 <style scoped src="@/styles/admin-common.css"></style>
 
 <style scoped>
+.link-content-setting {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+.link-content-setting > .setting-label {
+    align-self: flex-start;
+    text-align: left;
+}
+.link-custom-setting {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.link-setting-header {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.link-preference-tooltip {
+    --link-example-prefix: #b45309;
+    --link-example-file-id: #15803d;
+    max-width: min(320px, calc(100vw - 48px));
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+:global(html.dark .link-preference-tooltip) {
+    --link-example-prefix: #ffb74d;
+    --link-example-file-id: #81c784;
+}
+.link-preference-tooltip :deep(.custom-prefix-example) {
+    color: var(--link-example-prefix);
+    font-weight: 600;
+}
+.link-preference-tooltip :deep(.file-id-example) {
+    color: var(--link-example-file-id);
+    font-weight: 600;
+}
+.link-content-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+}
+.link-content-options :deep(.el-radio) {
+    margin-right: 0;
+    white-space: normal;
+    height: auto;
+    min-height: 32px;
+}
 .container {
     background: var(--admin-container-bg-color);
     min-height: 100vh;
