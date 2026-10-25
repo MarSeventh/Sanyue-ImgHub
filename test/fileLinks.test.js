@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp, h, nextTick, reactive } from 'vue';
+import * as Vue from 'vue';
+import { readFileSync } from 'node:fs';
+import { parse } from 'vue/compiler-sfc';
+import { compile } from '@vue/compiler-dom';
+import { ElDescriptions, ElDescriptionsItem, ElTag } from 'element-plus';
 import FileDetailDialog from '@/components/dashboard/FileDetailDialog.vue';
 import {
     buildManagementFileLinks, getAvailableLinkContents, getManagementCopyLink, loadLinkPreferences
@@ -69,12 +74,21 @@ describe('file detail content changes', () => {
     let host;
     afterEach(() => { app?.unmount(); host?.remove(); });
 
-    function mount(file = s3, preferences = { s3: 's3CdnFileUrl', telegram: 'tgId', webdav: 'webdavPublicUrl' }, render = () => null) {
+    function mount(file = s3, preferences = { s3: 's3CdnFileUrl', telegram: 'tgId', webdav: 'webdavPublicUrl' }, render = () => null, renderMetadata = false) {
         const props = reactive({ file: { ...file, metadata: { ...file.metadata } }, modelValue: true, rootUrl: root, defaultFormat: 'mdUrl', contentPreferences: preferences });
-        // Use the real component state, computed values and watchers without UI stubs.
+        // Exercise real component state; render metadata widgets when checking DOM reuse.
         const component = { ...FileDetailDialog, render };
         app = createApp({ render: () => h(component, { ...props, ref: 'detail' }) });
         app.config.globalProperties.$t = key => key;
+        if (renderMetadata) {
+            // Render the actual metadata widgets; unrelated dialog controls only supply slots.
+            for (const name of ['ElDialog', 'ElButton', 'ElTabs', 'ElTabPane', 'ElInput', 'ElRadioGroup', 'ElRadio', 'ElImage', 'ElForm', 'ElFormItem', 'FontAwesomeIcon']) {
+                app.component(name, { render() { return h('div', this.$slots.default?.()); } });
+            }
+            app.component('ElDescriptions', ElDescriptions);
+            app.component('ElDescriptionsItem', ElDescriptionsItem);
+            app.component('ElTag', ElTag);
+        }
         host = document.createElement('div');
         document.body.appendChild(host);
         const vm = app.mount(host).$refs.detail;
@@ -297,5 +311,39 @@ describe('file detail content changes', () => {
         vm.handleMediaError({ target: image });
         expect(vm.previewFailed).toBe(true);
         expect(vm.previewLoading).toBe(false);
+    });
+
+    it.each([true, false])('does not leave the old access badge in the dimensions cell after switching columns (dimensions: %s)', async dimensions => {
+        const originalWidth = window.innerWidth;
+        window.innerWidth = 1440;
+        const source = readFileSync('src/components/dashboard/FileDetailDialog.vue', 'utf8');
+        const { descriptor } = parse(source);
+        const render = new Function('Vue', compile(descriptor.template.content, { prefixIdentifiers: true }).code)(Vue);
+        try {
+            const { vm, props } = mount({ name: 'landscape.jpg', metadata: { FileType: 'image/jpeg', Width: 1200, Height: 700 } }, {}, render, true);
+            await nextTick();
+            props.modelValue = false;
+            await nextTick();
+            props.file = { name: 'portrait.jpg', metadata: { FileType: 'image/jpeg', ...(dimensions ? { Width: 600, Height: 1200 } : {}) } };
+            props.modelValue = true;
+            await nextTick();
+            // The no-dimensions case discovers portrait orientation from the loaded image.
+            if (!dimensions) {
+                const media = document.createElement('img');
+                host.querySelector('.preview-content').append(media);
+                Object.defineProperties(media, { naturalWidth: { value: 600 }, naturalHeight: { value: 1200 } });
+                vm.handleMediaLoad({ target: media });
+                await nextTick();
+            }
+            const table = host.querySelector('.file-detail-metadata');
+            const label = [...table.querySelectorAll('.el-descriptions__label')].find(cell => cell.textContent === 'fileDetail.imageDimensions');
+            const cell = label.nextElementSibling;
+            expect(cell.textContent).toBe(dimensions ? '600 × 1200fileDetail.orientationPortrait' : 'fileDetail.noDimensions');
+            expect(cell.querySelector('.el-tag--success')).toBeNull();
+            expect(table.querySelector('.el-zoom-in-center-leave-active')).toBeNull();
+        } finally {
+            window.innerWidth = originalWidth;
+            window.dispatchEvent(new Event('resize'));
+        }
     });
 });

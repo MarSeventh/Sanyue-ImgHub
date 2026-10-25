@@ -101,7 +101,7 @@
                     </template>
                 </div>
             </div>
-            <!-- 详细信息 -->
+            <!-- 列数切换会复用单元格；禁用标签的独立进出动画，避免旧标签残留占位。 -->
             <el-descriptions border :column="descColumn" class="file-detail-metadata">
                 <el-descriptions-item :label="$t('fileDetail.fileNameLabel')">
                     <el-input v-if="isEditing" v-model="editForm.FileName" size="small" :placeholder="$t('fileDetail.fileNamePlaceholder')"></el-input>
@@ -115,24 +115,24 @@
                 <el-descriptions-item :label="$t('fileDetail.imageDimensions')">
                     <div v-if="imageDimensions" class="image-dimensions">
                         <span>{{ file?.metadata?.Width }} × {{ file?.metadata?.Height }}</span>
-                        <el-tag size="small" type="info" style="display: inline-flex; align-items: center; justify-content: center;">{{ orientationIcon }}</el-tag>
+                        <el-tag disable-transitions size="small" type="info" style="display: inline-flex; align-items: center; justify-content: center;">{{ orientationIcon }}</el-tag>
                     </div>
                     <span v-else style="color: var(--el-text-color-secondary);">{{ $t('fileDetail.noDimensions') }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.uploadTimeLabel')">{{ uploadTime }}</el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.channelTypeAndName')">
-                    <el-tag size="small" type="info" style="margin-right: 6px;">{{ file?.metadata?.Channel || $t('fileDetail.unknown') }}</el-tag>
+                    <el-tag disable-transitions size="small" type="info" style="margin-right: 6px;">{{ file?.metadata?.Channel || $t('fileDetail.unknown') }}</el-tag>
                     <span>{{ file?.metadata?.ChannelName || '-' }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.accessStatusAndReview')">
-                    <el-tag size="small" :type="accessTagType" style="margin-right: 6px;">{{ accessType }}</el-tag>
+                    <el-tag disable-transitions size="small" :type="accessTagType" style="margin-right: 6px;">{{ accessType }}</el-tag>
                     <span>{{ file?.metadata?.Label || $t('fileDetail.noTags') }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.uploadIP')">{{ file?.metadata?.UploadIP || $t('fileDetail.unknown') }}</el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.uploadAddressLabel')">{{ file?.metadata?.UploadAddress || $t('fileDetail.unknown') }}</el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.fileTags')">
                     <div v-if="file?.metadata?.Tags && file?.metadata?.Tags.length > 0" style="display: flex; flex-wrap: wrap; gap: 5px;">
-                        <el-tag v-for="tag in file?.metadata?.Tags" :key="tag" size="small">{{ tag }}</el-tag>
+                        <el-tag v-for="tag in file?.metadata?.Tags" :key="tag" disable-transitions size="small">{{ tag }}</el-tag>
                     </div>
                     <span v-else style="color: var(--el-text-color-secondary);">{{ $t('fileDetail.noTags') }}</span>
                 </el-descriptions-item>
