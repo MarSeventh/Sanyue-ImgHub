@@ -48,6 +48,7 @@ Extend the existing suite for a related behavior. Add a separate file for a subs
 
 ## Helpers and isolation
 
+- [helpers/setupWebStorage.js](helpers/setupWebStorage.js) runs before every suite and installs an in-memory `localStorage`/`sessionStorage` when the runtime's built-in web storage cannot round-trip a key. Node 22+ ships an experimental web-storage global whose accessor resolves to undefined without `--localstorage-file`; because Vitest populates the happy-dom window into `globalThis`, that placeholder shadows the happy-dom storage on newer Node runtimes. The polyfill keeps the storage contract identical across Node versions and command-line flags.
 - [helpers/fileManager.js](helpers/fileManager.js) resets the real file-manager singleton and local storage before each cache test. It replaces authenticated requests, warning notifications and translation text at their boundaries; assertions still exercise the real cache/query implementation.
 - Authentication tests use the real request wrapper with a mocked browser `fetch`, router and store. Other request-oriented suites replace `fetchWithAuth` to test their own request construction and response handling.
 - Selection tests mount a small Vue component around the real composable, dispatch DOM mouse events and supply explicit element rectangles. They unmount the component and clean the document after each test.
