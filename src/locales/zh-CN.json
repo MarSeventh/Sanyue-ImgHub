@@ -532,6 +532,8 @@
     "dupScanScopeTip": "本扫描只读，不会删除文件；处理请自行判断。仅 Docker / Node.js 服务端部署支持，当前可直读渠道仅 Cloudflare R2，其余渠道计入读取失败。",
     "dupScanKeepUnknownTime": "保留项时间未知",
     "dupScanNone": "未发现重复内容",
+    "dupScanNonePartial": "已扫描文件中未发现重复内容",
+    "dupScanIndexChanged": "索引有待处理更新或在扫描期间发生变化，请刷新文件列表后重试。",
     "dupScanRole": "角色",
     "dupScanKeep": "建议保留",
     "dupScanDuplicate": "重复",
@@ -541,7 +543,10 @@
     "dupScanCount": "（{count} 份）",
     "dupScanFailed": "重复内容扫描失败",
     "dupScanUnsupported": "重复内容扫描仅支持 Docker / Node.js 服务端部署，Workers / Pages 暂不支持",
-    "dupScanIncomplete": "扫描不完整：{chunks} 个分片读取失败，{records} 条记录读取失败，{skipped} 个文件因超过大小上限或尺寸未知跳过。以下结果仅覆盖已扫描部分",
+    "dupScanIncomplete": "扫描未完成，结果仅覆盖已扫描文件。",
+    "dupScanChunkErrors": "{count} 个索引读取异常。",
+    "dupScanRecordErrors": "{count} 条记录读取失败。",
+    "dupScanSkipped": "{count} 个文件因大小未知或超过上限而跳过。",
     "dupScanTimedOut": "（已超时间预算，提前停止）"
   }
 ,

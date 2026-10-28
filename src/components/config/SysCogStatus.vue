@@ -287,7 +287,7 @@
                   @click="scanDuplicates"
                   class="action-btn dedup-scan-btn"
                 >
-                  <font-awesome-icon icon="clone" />
+                  <font-awesome-icon icon="copy" />
                   {{ dupScanLoading ? $t('sysStatus.dupScanScanning') : $t('sysStatus.dupScan') }}
                 </el-button>
               </span>
@@ -297,7 +297,7 @@
               <el-button 
                 type="primary" 
                 :loading="rebuilding"
-                :disabled="isProcessing"
+                :disabled="isProcessing || dupScanLoading"
                 @click="rebuildIndex"
                 class="action-btn rebuild-btn"
               >
@@ -310,7 +310,7 @@
               <el-button 
                 type="success" 
                 :loading="backing"
-                :disabled="isProcessing"
+                :disabled="isProcessing || dupScanLoading"
                 @click="backupData"
                 class="action-btn backup-btn"
               >
@@ -331,7 +331,7 @@
                 <el-button 
                   type="warning" 
                   :loading="restoring"
-                  :disabled="isProcessing"
+                  :disabled="isProcessing || dupScanLoading"
                   @click="selectRestoreFile"
                   class="action-btn restore-btn"
                 >
@@ -428,36 +428,38 @@
     <el-dialog
       v-model="dupScanVisible"
       :title="$t('sysStatus.dupScanReportTitle')"
-      :width="dupScanDialogWidth"
+      class="dup-scan-dialog"
+      width="min(1100px, 94vw)"
       align-center
       append-to-body
     >
-      <div v-if="dupScanReport">
-        <p style="margin: 0 0 12px;">
+      <div v-if="dupScanReport" class="dup-scan-report">
+        <p class="dup-scan-summary">
           {{ $t('sysStatus.dupScanSummary', { scanned: dupScanReport.scanned, groups: dupScanReport.duplicateGroups.length, redundant: dupScanReport.redundantCopies }) }}<span v-if="dupScanReport.readErrors.length">{{ $t('sysStatus.dupScanReadErrors', { count: dupScanReport.readErrors.length }) }}</span>
           <el-tooltip :content="$t('sysStatus.dupScanScopeTip')" placement="top">
             <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
           </el-tooltip>
         </p>
-        <p v-if="dupScanReport.complete === false || dupScanReport.recordErrors.length || dupScanReport.skippedOversized.length" style="margin: 0 0 12px; color: var(--el-color-warning);">
-          {{ $t('sysStatus.dupScanIncomplete', {
-            chunks: dupScanReport.chunkErrors.length,
-            records: dupScanReport.recordErrors.length,
-            skipped: dupScanReport.skippedOversized.length
-          }) }}<span v-if="dupScanReport.timedOut">{{ $t('sysStatus.dupScanTimedOut') }}</span>
+        <p v-if="dupScanReport.complete === false || dupScanReport.recordErrors.length || dupScanReport.skippedOversized.length" class="dup-scan-incomplete">
+          {{ $t('sysStatus.dupScanIncomplete') }}
+          <span v-if="dupScanReport.chunkErrors.length"> {{ $t('sysStatus.dupScanChunkErrors', { count: dupScanReport.chunkErrors.length }) }}</span>
+          <span v-if="dupScanReport.recordErrors.length"> {{ $t('sysStatus.dupScanRecordErrors', { count: dupScanReport.recordErrors.length }) }}</span>
+          <span v-if="dupScanReport.skippedOversized.length"> {{ $t('sysStatus.dupScanSkipped', { count: dupScanReport.skippedOversized.length }) }}</span>
+          <span v-if="dupScanReport.timedOut">{{ $t('sysStatus.dupScanTimedOut') }}</span>
+          <span v-if="dupScanReport.indexChanged"> {{ $t('sysStatus.dupScanIndexChanged') }}</span>
         </p>
-        <el-empty v-if="dupScanReport.duplicateGroups.length === 0" :description="$t('sysStatus.dupScanNone')"/>
-        <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" style="margin-bottom: 16px;">
-          <div style="font-size: 12px; color: var(--el-text-color-secondary); margin-bottom: 4px;">sha256: {{ group.sha256 }} {{ $t('sysStatus.dupScanCount', { count: group.count }) }}<el-tag v-if="group.keepTimestampUnknown" type="info" size="small" style="margin-left: 6px;">{{ $t('sysStatus.dupScanKeepUnknownTime') }}</el-tag></div>
+        <el-empty v-if="dupScanReport.duplicateGroups.length === 0" :description="$t(dupScanReport.complete ? 'sysStatus.dupScanNone' : 'sysStatus.dupScanNonePartial')"/>
+        <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" class="dup-scan-group">
+          <div class="dup-scan-hash">SHA-256: {{ group.sha256 }} {{ $t('sysStatus.dupScanCount', { count: group.count }) }}<el-tag v-if="group.keepTimestampUnknown" type="info" size="small" style="margin-left: 6px;">{{ $t('sysStatus.dupScanKeepUnknownTime') }}</el-tag></div>
           <el-table :data="[group.keep, ...(group.duplicates || [])]" size="small" border>
-            <el-table-column :label="$t('sysStatus.dupScanRole')" width="80">
+            <el-table-column :label="$t('sysStatus.dupScanRole')" width="110">
               <template #default="scope">
                 <el-tag v-if="scope.$index === 0" type="success" size="small">{{ $t('sysStatus.dupScanKeep') }}</el-tag>
                 <el-tag v-else type="danger" size="small">{{ $t('sysStatus.dupScanDuplicate') }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="id" :label="$t('sysStatus.dupScanFileId')"/>
-            <el-table-column prop="name" :label="$t('sysStatus.dupScanFileName')" width="220"/>
+            <el-table-column prop="id" :label="$t('sysStatus.dupScanFileId')" min-width="240" show-overflow-tooltip/>
+            <el-table-column prop="name" :label="$t('sysStatus.dupScanFileName')" min-width="220" show-overflow-tooltip/>
             <el-table-column prop="channel" :label="$t('sysStatus.dupScanChannel')" width="120"/>
           </el-table>
         </div>
@@ -691,10 +693,6 @@ export default {
     trendDateDialogWidth() {
       return window.innerWidth > 768 ? '420px' : '90%'
     },
-    // 扫描报告表格列较多:宽屏限宽避免行过长,窄屏占满并交给表格横向滚动
-    dupScanDialogWidth() {
-      return window.innerWidth > 768 ? 'min(1100px, 86%)' : '94%'
-    },
     // 上传趋势折线图数据
     uploadTrendChartData() {
       const trend = this.indexInfo.uploadTrend || {}
@@ -903,13 +901,15 @@ export default {
             if (resp.status === 501) {
                 this.dupScanSupported = false;
             } else if (resp.ok) {
-                this.dupScanSupported = true;
+                const body = await resp.json();
+                this.dupScanSupported = body.supported === true;
             }
         } catch (e) {
             // 探测失败不改状态,保留默认可用;真实扫描失败另有错误链
         }
     },
     async scanDuplicates() {
+        if (this.dupScanLoading || this.isProcessing || !this.dupScanSupported) return;
         this.dupScanLoading = true;
         try {
             const response = await fetchWithAuth('/api/manage/dedup/scan', { method: 'POST' });
@@ -921,7 +921,12 @@ export default {
             }
             if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
             // 归一化:缺字段的响应(版本错配/代理兜底)不至渲染崩溃
-            if (!Array.isArray(body.duplicateGroups)) throw new Error('unexpected scan response shape');
+            if (!Array.isArray(body.duplicateGroups) || !Number.isFinite(body.scanned)
+                || !Number.isFinite(body.redundantCopies) || typeof body.complete !== 'boolean'
+                || body.duplicateGroups.some(group => !group?.keep?.id || !Array.isArray(group.duplicates)
+                    || group.duplicates.some(item => !item?.id))) {
+                throw new Error('unexpected scan response shape');
+            }
             body.readErrors = Array.isArray(body.readErrors) ? body.readErrors : [];
             body.recordErrors = Array.isArray(body.recordErrors) ? body.recordErrors : [];
             body.chunkErrors = Array.isArray(body.chunkErrors) ? body.chunkErrors : [];
@@ -2133,6 +2138,32 @@ html.dark .legend-item:hover {
 }
 
 /* 禁用按钮不派发鼠标事件,tooltip 需挂在外层 span 上才能在禁用态说明原因 */
+.dup-scan-summary,
+.dup-scan-incomplete {
+  margin: 0 0 12px;
+}
+
+.dup-scan-incomplete {
+  color: var(--el-color-warning);
+}
+
+.dup-scan-group {
+  margin-bottom: 16px;
+}
+
+.dup-scan-hash {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+.dup-scan-report .inline-help-icon {
+  margin-left: 6px;
+  color: var(--el-text-color-secondary);
+  cursor: help;
+}
+
 .dup-scan-trigger {
   display: inline-flex;
 }

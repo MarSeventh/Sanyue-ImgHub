@@ -527,6 +527,8 @@
     "dupScanScopeTip": "This scan is read-only and deletes nothing; handle duplicates at your own discretion. Docker / Node.js server deployments only; the directly readable channel is Cloudflare R2, other channels count as read failures.",
     "dupScanKeepUnknownTime": "keep timestamp unknown",
     "dupScanNone": "No duplicate content found",
+    "dupScanNonePartial": "No duplicate content found in the scanned files",
+    "dupScanIndexChanged": "The index has pending updates or changed during the scan. Refresh the file list and try again.",
     "dupScanRole": "Role",
     "dupScanKeep": "Keep",
     "dupScanDuplicate": "Duplicate",
@@ -536,7 +538,10 @@
     "dupScanCount": "({count} copies)",
     "dupScanFailed": "Duplicate content scan failed",
     "dupScanUnsupported": "Duplicate scan is only available on Docker / Node.js server deployments; Workers / Pages are not supported yet",
-    "dupScanIncomplete": "Scan incomplete: {chunks} chunk read failures, {records} record read failures, {skipped} files skipped over the size cap or with an unknown size. Results below cover only the scanned part",
+    "dupScanIncomplete": "Scan incomplete. Results cover only the scanned files.",
+    "dupScanChunkErrors": "{count} index read failures.",
+    "dupScanRecordErrors": "{count} record read failures.",
+    "dupScanSkipped": "{count} files skipped because their size is unknown or exceeds the limit.",
     "dupScanTimedOut": " (stopped early after exceeding the time budget)"
   },
   "sysUpload": {

@@ -6,9 +6,7 @@ vi.mock('@/utils/fetchWithAuth', () => ({ default: vi.fn() }));
 import SysCogStatus from '@/components/config/SysCogStatus.vue';
 import fetchWithAuth from '@/utils/fetchWithAuth';
 
-// 复审确认过的模板接线,固化为可重复断言:弹窗独立于进度分支且用 Element Plus
-// v-model;入口禁用由 disabled||loading 保证连点防护;双态 tooltip 挂在
-// dup-scan-trigger 上;汇总行的说明性文字走问号 icon tooltip;未知时间戳组可见标注。
+// Compile the real template and exercise scan state transitions with mocked HTTP.
 const source = readFileSync(resolve(process.cwd(), 'src/components/config/SysCogStatus.vue'), 'utf8');
 const { descriptor, errors } = parse(source, { filename: 'SysCogStatus.vue' });
 const compiled = compileTemplate({ source: descriptor.template.content, filename: 'SysCogStatus.vue', id: 'dup-scan-ui' });
@@ -108,6 +106,7 @@ describe('duplicate scan interactions', () => {
             ...baseReport,
             complete: false,
             timedOut: true,
+            indexChanged: true,
             duplicateGroups: [],
             redundantCopies: 0,
             readErrors: [{ id: 'tg.png', error: 'content not readable via storage binding' }],
@@ -116,6 +115,7 @@ describe('duplicate scan interactions', () => {
         expect(partial.dupScanVisible).toBe(true);
         expect(partial.dupScanReport.complete).toBe(false);
         expect(partial.dupScanReport.timedOut).toBe(true);
+        expect(partial.dupScanReport.indexChanged).toBe(true);
         // 模板的不完整警告条件同时覆盖 complete:false 与 skipped/record 失败
         expect(templateCode).toContain('complete === false');
     });
@@ -130,6 +130,10 @@ describe('duplicate scan interactions', () => {
         fetchWithAuth.mockResolvedValue(jsonResponse({ supported: true }, 200));
         await supported.checkScanCapability();
         expect(supported.dupScanSupported).toBe(true);
+
+        fetchWithAuth.mockResolvedValue(jsonResponse({ supported: false }, 200));
+        await supported.checkScanCapability();
+        expect(supported.dupScanSupported).toBe(false);
 
         // 其它失败(旧后端 404)不误判为不支持
         const unknownBackend = context();
@@ -165,7 +169,7 @@ describe('duplicate scan interactions', () => {
 
     it('rejects an unexpected response shape instead of rendering a broken report', async () => {
         const vm = context();
-        fetchWithAuth.mockResolvedValue(jsonResponse({ error: 'proxy fallback page' }, 200));
+        fetchWithAuth.mockResolvedValue(jsonResponse({ ...baseReport, duplicateGroups: [{ keep: null, duplicates: [] }] }, 200));
         await vm.scanDuplicates();
         expect(vm.$message.error).toHaveBeenCalled();
         expect(vm.dupScanVisible).toBe(false);
@@ -178,7 +182,8 @@ describe('duplicate scan interactions', () => {
         fetchWithAuth.mockImplementation(() => new Promise(resolve => { resolveFetch = resolve; }));
         const first = vm.scanDuplicates();
         expect(vm.dupScanLoading).toBe(true);
-        // 模板接线 disabled||loading 使第二次点击不可达;方法层状态保持 loading 直到落定
+        await vm.scanDuplicates();
+        expect(fetchWithAuth).toHaveBeenCalledTimes(1);
         resolveFetch(jsonResponse(baseReport));
         await first;
         expect(vm.dupScanLoading).toBe(false);
