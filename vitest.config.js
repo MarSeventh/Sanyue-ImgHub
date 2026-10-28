@@ -10,6 +10,7 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     include: ['test/**/*.test.js'],
+    setupFiles: ['test/helpers/setupWebStorage.js'],
     restoreMocks: true,
     unstubGlobals: true,
     unstubEnvs: true,
