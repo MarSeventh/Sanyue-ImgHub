@@ -428,15 +428,18 @@
     <el-dialog
       v-model="dupScanVisible"
       :title="$t('sysStatus.dupScanReportTitle')"
-      width="70%"
+      :width="dupScanDialogWidth"
+      align-center
       append-to-body
     >
       <div v-if="dupScanReport">
         <p style="margin: 0 0 12px;">
-          {{ $t('sysStatus.dupScanSummary', { scanned: dupScanReport.scanned, groups: dupScanReport.duplicateGroups.length, redundant: dupScanReport.redundantCopies }) }}<span v-if="dupScanReport.readErrors.length">{{ $t('sysStatus.dupScanReadErrors', { count: dupScanReport.readErrors.length }) }}</span>{{ $t('sysStatus.dupScanNotice') }}
-          <em style="color:#909399;">{{ $t('sysStatus.dupScanServerOnly') }}</em>
+          {{ $t('sysStatus.dupScanSummary', { scanned: dupScanReport.scanned, groups: dupScanReport.duplicateGroups.length, redundant: dupScanReport.redundantCopies }) }}<span v-if="dupScanReport.readErrors.length">{{ $t('sysStatus.dupScanReadErrors', { count: dupScanReport.readErrors.length }) }}</span>
+          <el-tooltip :content="$t('sysStatus.dupScanScopeTip')" placement="top">
+            <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+          </el-tooltip>
         </p>
-        <p v-if="dupScanReport.complete === false || dupScanReport.recordErrors.length || dupScanReport.skippedOversized.length" style="margin: 0 0 12px; color:#e6a23c;">
+        <p v-if="dupScanReport.complete === false || dupScanReport.recordErrors.length || dupScanReport.skippedOversized.length" style="margin: 0 0 12px; color: var(--el-color-warning);">
           {{ $t('sysStatus.dupScanIncomplete', {
             chunks: dupScanReport.chunkErrors.length,
             records: dupScanReport.recordErrors.length,
@@ -445,7 +448,7 @@
         </p>
         <el-empty v-if="dupScanReport.duplicateGroups.length === 0" :description="$t('sysStatus.dupScanNone')"/>
         <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" style="margin-bottom: 16px;">
-          <div style="font-size: 12px; color: #909399; margin-bottom: 4px;">sha256: {{ group.sha256 }} {{ $t('sysStatus.dupScanCount', { count: group.count }) }}</div>
+          <div style="font-size: 12px; color: var(--el-text-color-secondary); margin-bottom: 4px;">sha256: {{ group.sha256 }} {{ $t('sysStatus.dupScanCount', { count: group.count }) }}<el-tag v-if="group.keepTimestampUnknown" type="info" size="small" style="margin-left: 6px;">{{ $t('sysStatus.dupScanKeepUnknownTime') }}</el-tag></div>
           <el-table :data="[group.keep, ...(group.duplicates || [])]" size="small" border>
             <el-table-column :label="$t('sysStatus.dupScanRole')" width="80">
               <template #default="scope">
@@ -687,6 +690,10 @@ export default {
     // 日期选择弹窗宽度保持与项目内其他弹窗一致
     trendDateDialogWidth() {
       return window.innerWidth > 768 ? '420px' : '90%'
+    },
+    // 扫描报告表格列较多:宽屏限宽避免行过长,窄屏占满并交给表格横向滚动
+    dupScanDialogWidth() {
+      return window.innerWidth > 768 ? 'min(1100px, 86%)' : '94%'
     },
     // 上传趋势折线图数据
     uploadTrendChartData() {
