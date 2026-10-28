@@ -1,17 +1,19 @@
-// Node >= 22 exposes an experimental `localStorage` global whose accessor
-// resolves to undefined unless the process runs with --localstorage-file.
-// Because vitest populates the happy-dom window INTO globalThis
-// (globalThis === window), that non-functional Node accessor shadows the
-// happy-dom storage implementation, leaving every test without a working
-// localStorage/sessionStorage. Install a plain in-memory web storage when
-// the active value cannot round-trip a key.
+// Some Node versions/flags expose unavailable Web Storage globals that can
+// shadow happy-dom storage. Preserve working storage and install an in-memory
+// fallback when property access or a read/write probe fails.
 for (const name of ['localStorage', 'sessionStorage']) {
-    const existing = globalThis[name];
     let functional = false;
     try {
-        existing.setItem('__probe__', '1');
-        functional = existing.getItem('__probe__') === '1';
-        existing.removeItem('__probe__');
+        const existing = globalThis[name];
+        const probeKey = '__imgbed_storage_probe__';
+        const previous = existing.getItem(probeKey);
+        try {
+            existing.setItem(probeKey, '1');
+            functional = existing.getItem(probeKey) === '1';
+        } finally {
+            if (previous === null) existing.removeItem(probeKey);
+            else existing.setItem(probeKey, previous);
+        }
     } catch {
         functional = false;
     }
