@@ -3,8 +3,10 @@ import { resolve } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { parse, compileTemplate } from '@vue/compiler-sfc';
 vi.mock('@/utils/fetchWithAuth', () => ({ default: vi.fn() }));
+vi.mock('@/utils/fileManager', () => ({ fileManager: { removeFile: vi.fn() } }));
 import SysCogStatus from '@/components/config/SysCogStatus.vue';
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import { fileManager } from '@/utils/fileManager';
 
 // Compile the real template and exercise scan state transitions with mocked HTTP.
 const source = readFileSync(resolve(process.cwd(), 'src/components/config/SysCogStatus.vue'), 'utf8');
@@ -22,11 +24,15 @@ function context(extra = {}) {
         dupScanSupported: true,
         dupScanVisible: false,
         dupScanReport: null,
+        dupScanDeletingId: null,
+        $confirm: vi.fn().mockResolvedValue('confirm'),
+        fetchIndexInfo: vi.fn().mockResolvedValue(undefined),
         isProcessing: false,
         $t: key => key,
         $message: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },
         ...extra,
     };
+    vm.deleteDuplicateFile = SysCogStatus.methods.deleteDuplicateFile.bind(vm);
     vm.scanDuplicates = SysCogStatus.methods.scanDuplicates.bind(vm);
     vm.checkScanCapability = SysCogStatus.methods.checkScanCapability.bind(vm);
     return vm;
@@ -47,6 +53,7 @@ const baseReport = {
 
 beforeEach(() => {
     fetchWithAuth.mockReset();
+    fileManager.removeFile.mockReset();
 });
 
 describe('duplicate scan template wiring', () => {
@@ -187,5 +194,138 @@ describe('duplicate scan interactions', () => {
         resolveFetch(jsonResponse(baseReport));
         await first;
         expect(vm.dupScanLoading).toBe(false);
+    });
+});
+
+
+describe('duplicate report file deletion', () => {
+    function reportContext() {
+        const report = structuredClone(baseReport);
+        const group = report.duplicateGroups[0];
+        group.keep.timestamp = 100;
+        group.duplicates[0] = { id: 'folder/副本,50%?#.png', name: 'copy.png', timestamp: 200 };
+        return { vm: context({ dupScanReport: report }), group, file: group.duplicates[0] };
+    }
+
+    function deletedResponse(id, missing = false) {
+        return jsonResponse({ success: true, deleted: [id], missing: missing ? [id] : [], failed: [] });
+    }
+
+    it('confirms deletion and sends the exact ID through the existing JSON deletion API', async () => {
+        const { vm, group, file } = reportContext();
+        fetchWithAuth.mockResolvedValue(deletedResponse(file.id));
+        await vm.deleteDuplicateFile(group, file);
+        expect(vm.$confirm).toHaveBeenCalledOnce();
+        expect(fetchWithAuth).toHaveBeenCalledWith('/api/manage/delete/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileIds: [file.id] }),
+        });
+        expect(vm.dupScanReport.duplicateGroups).toEqual([]);
+        expect(vm.dupScanReport.redundantCopies).toBe(0);
+        expect(vm.dupScanReport.scanned).toBe(3);
+        expect(fileManager.removeFile).toHaveBeenCalledWith(file.id);
+        expect(vm.fetchIndexInfo).toHaveBeenCalledOnce();
+        expect(vm.dupScanDeletingId).toBe(null);
+    });
+
+    it.each(['cancel', 'close'])('leaves files untouched when confirmation is %s', async reason => {
+        const { vm, group, file } = reportContext();
+        const before = structuredClone(vm.dupScanReport);
+        vm.$confirm.mockRejectedValue(reason);
+        await vm.deleteDuplicateFile(group, file);
+        expect(fetchWithAuth).not.toHaveBeenCalled();
+        expect(vm.dupScanReport).toEqual(before);
+        expect(fileManager.removeFile).not.toHaveBeenCalled();
+        expect(vm.$message.error).not.toHaveBeenCalled();
+        expect(vm.dupScanDeletingId).toBe(null);
+    });
+
+    it.each([
+        jsonResponse({ error: 'Forbidden' }, 403),
+        jsonResponse({ success: false, deleted: [], failed: [{ error: 'storage failure' }] }),
+        jsonResponse({ success: true, deleted: ['different-file'], failed: [] }),
+        jsonResponse({ success: true, deleted: 'folder/副本,50%?#.png', failed: [] }),
+    ])('retains the report and cache when deletion is not confirmed by the response', async response => {
+        const { vm, group, file } = reportContext();
+        const before = structuredClone(vm.dupScanReport);
+        fetchWithAuth.mockResolvedValue(response);
+        await vm.deleteDuplicateFile(group, file);
+        expect(vm.dupScanReport).toEqual(before);
+        expect(fileManager.removeFile).not.toHaveBeenCalled();
+        expect(vm.fetchIndexInfo).not.toHaveBeenCalled();
+        expect(vm.$message.error).toHaveBeenCalledOnce();
+        expect(vm.dupScanDeletingId).toBe(null);
+    });
+
+    it('retains rows and releases the busy state after a network failure', async () => {
+        const { vm, group, file } = reportContext();
+        fetchWithAuth.mockRejectedValue(new TypeError('network down'));
+        await vm.deleteDuplicateFile(group, file);
+        expect(group.duplicates).toContain(file);
+        expect(fileManager.removeFile).not.toHaveBeenCalled();
+        expect(vm.$message.error).toHaveBeenCalled();
+        expect(vm.dupScanDeletingId).toBe(null);
+    });
+
+    it('removes an already missing file from the report and cache', async () => {
+        const { vm, group, file } = reportContext();
+        fetchWithAuth.mockResolvedValue(deletedResponse(file.id, true));
+        await vm.deleteDuplicateFile(group, file);
+        expect(vm.dupScanReport.duplicateGroups).toEqual([]);
+        expect(fileManager.removeFile).toHaveBeenCalledWith(file.id);
+        expect(vm.$message.success).toHaveBeenCalledWith('sysStatus.dupScanFileMissing');
+    });
+
+    it.each([200, null])('reselects the remaining keep record and updates counts for timestamp %s', async timestamp => {
+        const { vm, group, file } = reportContext();
+        file.timestamp = timestamp;
+        group.duplicates.push({ id: 'third.png', timestamp: null });
+        group.count = 3;
+        vm.dupScanReport.redundantCopies = 2;
+        const keep = group.keep;
+        fetchWithAuth.mockResolvedValue(deletedResponse(keep.id));
+        await vm.deleteDuplicateFile(group, keep);
+        expect(group.keep).toBe(file);
+        expect(group.keepTimestampUnknown).toBe(timestamp === null);
+        expect(group.count).toBe(2);
+        expect(group.duplicates.map(item => item.id)).toEqual(['third.png']);
+        expect(vm.dupScanReport.redundantCopies).toBe(1);
+    });
+
+    it('blocks repeated deletion and scanning while confirmation is open', async () => {
+        const { vm, group, file } = reportContext();
+        let confirm;
+        vm.$confirm.mockImplementation(() => new Promise(resolve => { confirm = resolve; }));
+        fetchWithAuth.mockResolvedValue(deletedResponse(file.id));
+        const pending = vm.deleteDuplicateFile(group, file);
+        await vm.deleteDuplicateFile(group, file);
+        await vm.scanDuplicates();
+        expect(vm.$confirm).toHaveBeenCalledOnce();
+        expect(fetchWithAuth).not.toHaveBeenCalled();
+        confirm();
+        await pending;
+        expect(fetchWithAuth).toHaveBeenCalledTimes(2);
+        expect(fetchWithAuth).toHaveBeenLastCalledWith('/api/manage/list?count=1');
+    });
+
+    it('keeps a successful deletion when statistics refresh fails', async () => {
+        const { vm, group, file } = reportContext();
+        fetchWithAuth.mockResolvedValueOnce(deletedResponse(file.id))
+            .mockRejectedValueOnce(new TypeError('network down'));
+        await vm.deleteDuplicateFile(group, file);
+        expect(vm.dupScanReport.duplicateGroups).toEqual([]);
+        expect(fileManager.removeFile).toHaveBeenCalledWith(file.id);
+        expect(vm.$message.success).toHaveBeenCalledWith('dashboard.deleteSuccess');
+        expect(vm.$message.error).not.toHaveBeenCalled();
+        expect(vm.$message.warning).toHaveBeenCalledWith('sysStatus.dupScanStatsRefreshFailed');
+    });
+
+    it('ignores stale report rows', async () => {
+        const { vm, group, file } = reportContext();
+        vm.dupScanReport = structuredClone(baseReport);
+        await vm.deleteDuplicateFile(group, file);
+        expect(vm.$confirm).not.toHaveBeenCalled();
+        expect(fetchWithAuth).not.toHaveBeenCalled();
     });
 });
