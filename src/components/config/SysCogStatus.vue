@@ -277,6 +277,22 @@
           
           <!-- 操作按钮 -->
           <div v-else class="action-buttons">
+            <el-tooltip :content="dupScanSupported ? $t('sysStatus.dupScanTooltip') : $t('sysStatus.dupScanUnsupportedTooltip')" placement="top">
+              <span class="dup-scan-trigger">
+                <el-button
+                  type="warning"
+                  plain
+                  :loading="dupScanLoading"
+                  :disabled="isProcessing || !dupScanSupported"
+                  @click="scanDuplicates"
+                  class="action-btn dedup-scan-btn"
+                >
+                  <font-awesome-icon icon="clone" />
+                  {{ dupScanLoading ? $t('sysStatus.dupScanScanning') : $t('sysStatus.dupScan') }}
+                </el-button>
+              </span>
+            </el-tooltip>
+
             <el-tooltip :content="$t('sysStatus.rebuildTooltip')" placement="top">
               <el-button 
                 type="primary" 
@@ -407,6 +423,46 @@
         </div>
       </div>
     </div>
+
+    <!-- 重复内容扫描报告(只读) -->
+    <el-dialog
+      v-model="dupScanVisible"
+      :title="$t('sysStatus.dupScanReportTitle')"
+      :width="dupScanDialogWidth"
+      align-center
+      append-to-body
+    >
+      <div v-if="dupScanReport">
+        <p style="margin: 0 0 12px;">
+          {{ $t('sysStatus.dupScanSummary', { scanned: dupScanReport.scanned, groups: dupScanReport.duplicateGroups.length, redundant: dupScanReport.redundantCopies }) }}<span v-if="dupScanReport.readErrors.length">{{ $t('sysStatus.dupScanReadErrors', { count: dupScanReport.readErrors.length }) }}</span>
+          <el-tooltip :content="$t('sysStatus.dupScanScopeTip')" placement="top">
+            <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+          </el-tooltip>
+        </p>
+        <p v-if="dupScanReport.complete === false || dupScanReport.recordErrors.length || dupScanReport.skippedOversized.length" style="margin: 0 0 12px; color: var(--el-color-warning);">
+          {{ $t('sysStatus.dupScanIncomplete', {
+            chunks: dupScanReport.chunkErrors.length,
+            records: dupScanReport.recordErrors.length,
+            skipped: dupScanReport.skippedOversized.length
+          }) }}<span v-if="dupScanReport.timedOut">{{ $t('sysStatus.dupScanTimedOut') }}</span>
+        </p>
+        <el-empty v-if="dupScanReport.duplicateGroups.length === 0" :description="$t('sysStatus.dupScanNone')"/>
+        <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" style="margin-bottom: 16px;">
+          <div style="font-size: 12px; color: var(--el-text-color-secondary); margin-bottom: 4px;">sha256: {{ group.sha256 }} {{ $t('sysStatus.dupScanCount', { count: group.count }) }}<el-tag v-if="group.keepTimestampUnknown" type="info" size="small" style="margin-left: 6px;">{{ $t('sysStatus.dupScanKeepUnknownTime') }}</el-tag></div>
+          <el-table :data="[group.keep, ...(group.duplicates || [])]" size="small" border>
+            <el-table-column :label="$t('sysStatus.dupScanRole')" width="80">
+              <template #default="scope">
+                <el-tag v-if="scope.$index === 0" type="success" size="small">{{ $t('sysStatus.dupScanKeep') }}</el-tag>
+                <el-tag v-else type="danger" size="small">{{ $t('sysStatus.dupScanDuplicate') }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="id" :label="$t('sysStatus.dupScanFileId')"/>
+            <el-table-column prop="name" :label="$t('sysStatus.dupScanFileName')" width="220"/>
+            <el-table-column prop="channel" :label="$t('sysStatus.dupScanChannel')" width="120"/>
+          </el-table>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -451,6 +507,10 @@ export default {
     return {
       loading: false,
       rebuilding: false,
+      dupScanLoading: false,
+      dupScanSupported: true,
+      dupScanVisible: false,
+      dupScanReport: null,
       backing: false,
       restoring: false,
       indexInfo: {},
@@ -630,6 +690,10 @@ export default {
     // 日期选择弹窗宽度保持与项目内其他弹窗一致
     trendDateDialogWidth() {
       return window.innerWidth > 768 ? '420px' : '90%'
+    },
+    // 扫描报告表格列较多:宽屏限宽避免行过长,窄屏占满并交给表格横向滚动
+    dupScanDialogWidth() {
+      return window.innerWidth > 768 ? 'min(1100px, 86%)' : '94%'
     },
     // 上传趋势折线图数据
     uploadTrendChartData() {
@@ -817,6 +881,7 @@ export default {
   },
   mounted() {
     this.fetchIndexInfo()
+    this.checkScanCapability()
     this.prepareClockFont()
     this.clockTimer = window.setInterval(() => {
       this.currentTime = new Date()
@@ -830,6 +895,46 @@ export default {
     }
   },
   methods: {
+    async checkScanCapability() {
+        // 与后端统一部署判定:仅 501(或 supported:false)判定为不支持;
+        // 网络错/401/旧后端 404 等其余失败不锁定入口(POST 的 501 分支仍会兜底)
+        try {
+            const resp = await fetchWithAuth('/api/manage/dedup/scan', { method: 'GET' });
+            if (resp.status === 501) {
+                this.dupScanSupported = false;
+            } else if (resp.ok) {
+                this.dupScanSupported = true;
+            }
+        } catch (e) {
+            // 探测失败不改状态,保留默认可用;真实扫描失败另有错误链
+        }
+    },
+    async scanDuplicates() {
+        this.dupScanLoading = true;
+        try {
+            const response = await fetchWithAuth('/api/manage/dedup/scan', { method: 'POST' });
+            const body = await response.json().catch(() => ({}));
+            if (response.status === 501) {
+                this.dupScanSupported = false;
+                this.$message.warning(this.$t('sysStatus.dupScanUnsupported'));
+                return;
+            }
+            if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+            // 归一化:缺字段的响应(版本错配/代理兜底)不至渲染崩溃
+            if (!Array.isArray(body.duplicateGroups)) throw new Error('unexpected scan response shape');
+            body.readErrors = Array.isArray(body.readErrors) ? body.readErrors : [];
+            body.recordErrors = Array.isArray(body.recordErrors) ? body.recordErrors : [];
+            body.chunkErrors = Array.isArray(body.chunkErrors) ? body.chunkErrors : [];
+            body.skippedOversized = Array.isArray(body.skippedOversized) ? body.skippedOversized : [];
+            this.dupScanReport = body;
+            this.dupScanVisible = true;
+        } catch (e) {
+            this.$message.error(this.$t('sysStatus.dupScanFailed') + ': ' + (e.message || e));
+        } finally {
+            this.dupScanLoading = false;
+        }
+    },
+
     prepareClockFont() {
       if (!document.fonts?.load) {
         this.clockVisible = true
@@ -2027,8 +2132,14 @@ html.dark .legend-item:hover {
   box-shadow: none;
 }
 
+/* 禁用按钮不派发鼠标事件,tooltip 需挂在外层 span 上才能在禁用态说明原因 */
+.dup-scan-trigger {
+  display: inline-flex;
+}
+
 @media (max-width: 768px) {
-  .action-btn {
+  .action-btn,
+  .action-buttons > .dup-scan-trigger {
     flex: 1;
     width: auto;
     min-width: 0;
@@ -2124,6 +2235,7 @@ html.dark .legend-item:hover {
 
 @media (max-width: 768px) {
   .action-buttons > .el-tooltip,
+  .action-buttons > .dup-scan-trigger,
   .action-buttons > .restore-section,
   .restore-section {
     flex: 1;
