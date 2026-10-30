@@ -281,7 +281,7 @@
               <el-button 
                 type="primary" 
                 :loading="rebuilding"
-                :disabled="isProcessing"
+                :disabled="isProcessing || dupScanLoading || dupScanDeletingId !== null"
                 @click="rebuildIndex"
                 class="action-btn rebuild-btn"
               >
@@ -294,7 +294,7 @@
               <el-button 
                 type="success" 
                 :loading="backing"
-                :disabled="isProcessing"
+                :disabled="isProcessing || dupScanLoading || dupScanDeletingId !== null"
                 @click="backupData"
                 class="action-btn backup-btn"
               >
@@ -315,7 +315,7 @@
                 <el-button 
                   type="warning" 
                   :loading="restoring"
-                  :disabled="isProcessing"
+                  :disabled="isProcessing || dupScanLoading || dupScanDeletingId !== null"
                   @click="selectRestoreFile"
                   class="action-btn restore-btn"
                 >
@@ -323,6 +323,21 @@
                   {{ restoring ? $t('sysStatus.restoring') : $t('sysStatus.restoreData') }}
                 </el-button>
               </div>
+            </el-tooltip>
+
+            <el-tooltip :content="dupScanSupported ? $t('sysStatus.dupScanTooltip') : $t('sysStatus.dupScanUnsupportedTooltip')" placement="top">
+              <span class="dup-scan-trigger">
+                <el-button
+                  type="primary"
+                  :loading="dupScanLoading"
+                  :disabled="isProcessing || !dupScanSupported || dupScanDeletingId !== null"
+                  @click="scanDuplicates"
+                  class="action-btn dedup-scan-btn"
+                >
+                  <font-awesome-icon icon="copy" />
+                  {{ dupScanLoading ? $t('sysStatus.dupScanScanning') : $t('sysStatus.dupScan') }}
+                </el-button>
+              </span>
             </el-tooltip>
           </div>
         </div>
@@ -407,11 +422,77 @@
         </div>
       </div>
     </div>
+
+    <!-- 重复文件扫描报告 -->
+    <el-dialog
+      v-model="dupScanVisible"
+      :title="$t('sysStatus.dupScanReportTitle')"
+      class="dup-scan-dialog"
+      :close-on-click-modal="dupScanDeletingId === null"
+      :close-on-press-escape="dupScanDeletingId === null"
+      :show-close="dupScanDeletingId === null"
+      width="min(1100px, 94vw)"
+      align-center
+      append-to-body
+    >
+      <div v-if="dupScanReport" class="dup-scan-report">
+        <p class="dup-scan-summary">
+          {{ $t('sysStatus.dupScanSummary', { scanned: dupScanReport.scanned, groups: dupScanReport.duplicateGroups.length, redundant: dupScanReport.redundantCopies }) }}<span v-if="dupScanReport.readErrors.length">{{ $t('sysStatus.dupScanReadErrors', { count: dupScanReport.readErrors.length }) }}</span>
+          <el-tooltip placement="top">
+            <template #content>
+              <ul class="dup-scan-help-list">
+                <li>{{ $t('sysStatus.dupScanScopeTip') }}</li>
+                <li>{{ $t('sysStatus.dupScanKeepTip') }}</li>
+                <li>{{ $t('sysStatus.dupScanDeleteTip') }}</li>
+                <li>{{ $t('sysStatus.dupScanPlatformTip') }}</li>
+                <li>{{ $t('sysStatus.dupScanSkippedTip') }}</li>
+              </ul>
+            </template>
+            <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
+          </el-tooltip>
+        </p>
+        <p v-if="dupScanReport.complete === false || dupScanReport.recordErrors.length || dupScanReport.skippedOversized.length" class="dup-scan-incomplete">
+          {{ $t('sysStatus.dupScanIncomplete') }}
+          <span v-if="dupScanReport.chunkErrors.length"> {{ $t('sysStatus.dupScanChunkErrors', { count: dupScanReport.chunkErrors.length }) }}</span>
+          <span v-if="dupScanReport.recordErrors.length"> {{ $t('sysStatus.dupScanRecordErrors', { count: dupScanReport.recordErrors.length }) }}</span>
+          <span v-if="dupScanReport.skippedOversized.length"> {{ $t('sysStatus.dupScanSkipped', { count: dupScanReport.skippedOversized.length }) }}</span>
+          <span v-if="dupScanReport.timedOut">{{ $t('sysStatus.dupScanTimedOut') }}</span>
+          <span v-if="dupScanReport.indexChanged"> {{ $t('sysStatus.dupScanIndexChanged') }}</span>
+        </p>
+        <el-empty v-if="dupScanReport.duplicateGroups.length === 0" :description="$t(dupScanReport.complete ? 'sysStatus.dupScanNone' : 'sysStatus.dupScanNonePartial')"/>
+        <div v-for="group in dupScanReport.duplicateGroups" :key="group.sha256" class="dup-scan-group">
+          <div class="dup-scan-hash">SHA-256: {{ group.sha256 }} {{ $t('sysStatus.dupScanCount', { count: group.count }) }}<el-tag v-if="group.keepTimestampUnknown" type="info" size="small" style="margin-left: 6px;">{{ $t('sysStatus.dupScanKeepUnknownTime') }}</el-tag></div>
+          <el-table :data="[group.keep, ...group.duplicates]" row-key="id" class="dup-scan-table">
+            <el-table-column :label="$t('sysStatus.dupScanRole')" width="110" align="center">
+              <template #default="scope">
+                <el-tag v-if="scope.$index === 0" type="success" size="small">{{ $t('sysStatus.dupScanKeep') }}</el-tag>
+                <el-tag v-else type="danger" size="small">{{ $t('sysStatus.dupScanDuplicate') }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="id" :label="$t('sysStatus.dupScanFileId')" min-width="240" header-align="center" show-overflow-tooltip/>
+            <el-table-column prop="name" :label="$t('sysStatus.dupScanFileName')" min-width="180" header-align="center" show-overflow-tooltip/>
+            <el-table-column prop="channel" :label="$t('sysStatus.dupScanChannel')" width="140" align="center" show-overflow-tooltip/>
+            <el-table-column :label="$t('sysSecurity.operation')" width="110" fixed="right" align="center">
+              <template #default="scope">
+                <el-button
+                  type="danger"
+                  size="small"
+                  :loading="dupScanDeletingId === scope.row.id"
+                  :disabled="dupScanDeletingId !== null || dupScanLoading || isProcessing"
+                  @click="deleteDuplicateFile(group, scope.row)"
+                >{{ $t('dashboard.delete') }}</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import fetchWithAuth from '@/utils/fetchWithAuth'
+import { fileManager } from '@/utils/fileManager'
 import packageInfo from '../../../package.json'
 import { Doughnut, Line } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js'
@@ -451,6 +532,11 @@ export default {
     return {
       loading: false,
       rebuilding: false,
+      dupScanLoading: false,
+      dupScanSupported: true,
+      dupScanVisible: false,
+      dupScanReport: null,
+      dupScanDeletingId: null,
       backing: false,
       restoring: false,
       indexInfo: {},
@@ -817,6 +903,7 @@ export default {
   },
   mounted() {
     this.fetchIndexInfo()
+    this.checkScanCapability()
     this.prepareClockFont()
     this.clockTimer = window.setInterval(() => {
       this.currentTime = new Date()
@@ -830,6 +917,113 @@ export default {
     }
   },
   methods: {
+    async checkScanCapability() {
+        // 与后端统一部署判定:仅 501(或 supported:false)判定为不支持;
+        // 网络错/401/旧后端 404 等其余失败不锁定入口(POST 的 501 分支仍会兜底)
+        try {
+            const resp = await fetchWithAuth('/api/manage/dedup/scan', { method: 'GET' });
+            if (resp.status === 501) {
+                this.dupScanSupported = false;
+            } else if (resp.ok) {
+                const body = await resp.json();
+                this.dupScanSupported = body.supported === true;
+            }
+        } catch (e) {
+            // 探测失败不改状态,保留默认可用;真实扫描失败另有错误链
+        }
+    },
+    async scanDuplicates() {
+        if (this.dupScanLoading || this.isProcessing || !this.dupScanSupported || this.dupScanDeletingId !== null) return;
+        this.dupScanLoading = true;
+        try {
+            const response = await fetchWithAuth('/api/manage/dedup/scan', { method: 'POST' });
+            const body = await response.json().catch(() => ({}));
+            if (response.status === 501) {
+                this.dupScanSupported = false;
+                this.$message.warning(this.$t('sysStatus.dupScanUnsupported'));
+                return;
+            }
+            if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+            // 归一化:缺字段的响应(版本错配/代理兜底)不至渲染崩溃
+            if (!Array.isArray(body.duplicateGroups) || !Number.isFinite(body.scanned)
+                || !Number.isFinite(body.redundantCopies) || typeof body.complete !== 'boolean'
+                || body.duplicateGroups.some(group => !group?.keep?.id || !Array.isArray(group.duplicates)
+                    || group.duplicates.some(item => !item?.id))) {
+                throw new Error('unexpected scan response shape');
+            }
+            body.readErrors = Array.isArray(body.readErrors) ? body.readErrors : [];
+            body.recordErrors = Array.isArray(body.recordErrors) ? body.recordErrors : [];
+            body.chunkErrors = Array.isArray(body.chunkErrors) ? body.chunkErrors : [];
+            body.skippedOversized = Array.isArray(body.skippedOversized) ? body.skippedOversized : [];
+            this.dupScanReport = body;
+            this.dupScanVisible = true;
+        } catch (e) {
+            this.$message.error(this.$t('sysStatus.dupScanFailed') + ': ' + (e.message || e));
+        } finally {
+            this.dupScanLoading = false;
+        }
+    },
+
+    async deleteDuplicateFile(group, file) {
+      const report = this.dupScanReport
+      if (this.dupScanDeletingId !== null || this.dupScanLoading || this.isProcessing
+        || !report?.duplicateGroups.includes(group)
+        || ![group.keep, ...group.duplicates].some(item => item.id === file.id)) return
+
+      this.dupScanDeletingId = file.id
+      try {
+        await this.$confirm(
+          this.$t('sysStatus.dupScanDeleteConfirm', { id: file.id }),
+          this.$t('dashboard.deleteConfirmTitle'),
+          {
+            confirmButtonText: this.$t('dashboard.deleteConfirmOk'),
+            cancelButtonText: this.$t('dashboard.deleteConfirmCancel'),
+            type: 'warning'
+          }
+        )
+        // 使用 JSON 传递原始 ID，避免路径中的逗号、百分号等字符被路由重新解释。
+        const response = await fetchWithAuth('/api/manage/delete/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileIds: [file.id] })
+        })
+        const body = await response.json()
+        if (!response.ok || body.success !== true || !Array.isArray(body.deleted)
+          || !body.deleted.includes(file.id) || !Array.isArray(body.failed) || body.failed.length) {
+          throw new Error(body.error || body.failed?.[0]?.error || this.$t('dashboard.deleteFailed'))
+        }
+
+        const remaining = [group.keep, ...group.duplicates].filter(item => item.id !== file.id)
+        if (remaining.length < 2) {
+          report.duplicateGroups = report.duplicateGroups.filter(item => item !== group)
+        } else {
+          group.keep = remaining[0]
+          group.duplicates = remaining.slice(1)
+          group.count = remaining.length
+          group.keepTimestampUnknown = !Number.isFinite(group.keep.timestamp) || group.keep.timestamp <= 0
+        }
+        report.redundantCopies = report.duplicateGroups.reduce((count, item) => count + item.duplicates.length, 0)
+        fileManager.removeFile(file.id)
+        this.$message.success(this.$t(body.missing?.includes(file.id)
+          ? 'sysStatus.dupScanFileMissing' : 'dashboard.deleteSuccess'))
+        try {
+          // 常规列表读取会合并待处理的索引更新，再刷新系统统计。
+          const refreshed = await fetchWithAuth('/api/manage/list?count=1')
+          if (!refreshed.ok) throw new Error('index refresh failed')
+          await refreshed.json()
+          await this.fetchIndexInfo()
+        } catch {
+          this.$message.warning(this.$t('sysStatus.dupScanStatsRefreshFailed'))
+        }
+      } catch (error) {
+        if (error !== 'cancel' && error !== 'close') {
+          this.$message.error(error?.message || this.$t('dashboard.deleteFailed'))
+        }
+      } finally {
+        this.dupScanDeletingId = null
+      }
+    },
+
     prepareClockFont() {
       if (!document.fonts?.load) {
         this.clockVisible = true
@@ -2022,13 +2216,91 @@ html.dark .legend-item:hover {
   font-size: 14px;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   min-width: 150px;
-  width: 150px;
-  height: 48px;
+  width: auto;
+  max-width: 100%;
+  min-height: 48px;
+  height: auto;
   box-shadow: none;
 }
 
+.dup-scan-summary,
+.dup-scan-incomplete {
+  margin: 0 0 12px;
+}
+
+.dup-scan-incomplete {
+  color: var(--el-color-warning);
+}
+
+.dup-scan-group {
+  margin-bottom: 16px;
+}
+
+.dup-scan-hash {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+.dup-scan-table {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  --el-table-border-color: var(--glass-border);
+  --el-table-header-bg-color: color-mix(in srgb, var(--el-text-color-primary) 4%, var(--el-fill-color-blank));
+  --el-table-tr-bg-color: var(--el-fill-color-blank);
+  --el-table-row-hover-bg-color: color-mix(in srgb, var(--el-text-color-primary) 3%, var(--el-fill-color-blank));
+}
+
+.dup-scan-table :deep(.el-table__cell) {
+  padding: 12px 0;
+}
+
+.dup-scan-table :deep(.el-table__inner-wrapper::before) {
+  display: none;
+}
+
+.dup-scan-table :deep(.el-table__row:last-child td) {
+  border-bottom: none;
+}
+
+.dark .dup-scan-table {
+  --el-table-header-bg-color: color-mix(in srgb, var(--el-text-color-primary) 5%, var(--el-fill-color-blank));
+  --el-table-row-hover-bg-color: color-mix(in srgb, var(--el-text-color-primary) 5%, var(--el-fill-color-blank));
+}
+
+.dup-scan-help-list {
+  max-width: min(320px, calc(100vw - 64px));
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.6;
+}
+
+.dup-scan-help-list li + li {
+  margin-top: 4px;
+}
+
+.dup-scan-report .inline-help-icon {
+  margin-left: 6px;
+  color: var(--el-text-color-secondary);
+  cursor: help;
+}
+
+/* 将提示挂在外层，使禁用按钮也能显示不可用的原因。 */
+.dup-scan-trigger {
+  display: inline-flex;
+  max-width: 100%;
+}
+
 @media (max-width: 768px) {
-  .action-btn {
+  .action-btn,
+  .action-buttons > .dup-scan-trigger {
     flex: 1;
     width: auto;
     min-width: 0;
@@ -2036,20 +2308,27 @@ html.dark .legend-item:hover {
   }
 }
 
+.action-btn :deep(> span) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
 .action-btn .fa-icon {
   margin-right: 8px;
   font-size: 14px;
 }
 
-/* 重建索引：描边按钮(与备份统一) */
-/* 重建索引：蓝色语义(主操作) */
-.rebuild-btn {
+/* 索引重建和重复扫描共用蓝色维护按钮样式。 */
+.rebuild-btn,
+.dedup-scan-btn {
   background: var(--el-fill-color-blank);
   border-color: var(--el-border-color-lighter);
   color: #2563EB;
 }
 
-.rebuild-btn:hover {
+.rebuild-btn:hover,
+.dedup-scan-btn:hover {
   background: #EFF6FF;
   border-color: #93C5FD;
   color: #1D4ED8;
@@ -2082,13 +2361,15 @@ html.dark .legend-item:hover {
 }
 
 /* 深色模式 */
-.dark .rebuild-btn {
+.dark .rebuild-btn,
+.dark .dedup-scan-btn {
   background: var(--el-fill-color-light);
   border-color: var(--el-border-color-lighter);
   color: #60A5FA;
 }
 
-.dark .rebuild-btn:hover {
+.dark .rebuild-btn:hover,
+.dark .dedup-scan-btn:hover {
   background: rgba(59, 130, 246, 0.12);
   border-color: rgba(96, 165, 250, 0.4);
   color: #93C5FD;
@@ -2124,6 +2405,7 @@ html.dark .legend-item:hover {
 
 @media (max-width: 768px) {
   .action-buttons > .el-tooltip,
+  .action-buttons > .dup-scan-trigger,
   .action-buttons > .restore-section,
   .restore-section {
     flex: 1;

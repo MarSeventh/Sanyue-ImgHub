@@ -27,10 +27,11 @@ Vitest discovers `test/**/*.test.js` and runs in `happy-dom`. The `@` alias reso
 
 ## Module overview
 
-Production paths below are relative to `src/`.
+Production paths below are relative to `src/`; test helper links are relative to this directory.
 
-| Module | Test file | Production entry points | Covered behavior |
+| Module | Test file | Entry points | Covered behavior |
 | --- | --- | --- | --- |
+| Test Web Storage | [webStorage.test.js](webStorage.test.js) | [helpers/setupWebStorage.js](helpers/setupWebStorage.js) | Missing/undefined globals, throwing accessors, unavailable storage methods, independent storage areas, and preservation of working storage and existing values |
 | Shared file types | [fileTypes.test.js](fileTypes.test.js) | `utils/mimeTypes.js` | MIME normalization and parameter preservation, explicit-type precedence, generic/empty MIME inference, strict media categories, consistent Ogg handling, record/legacy-history inputs, basename suffixes and legacy preview categories without inventing MIME for ambiguous extensions; upload MIME completion preserves bytes, names, timestamps, queue IDs and directory paths |
 | Upload preparation and file information | [upload.test.js](upload.test.js) | `components/upload/UploadForm.vue`, `components/upload/UploadFileItem.vue`, `utils/upload/directoryTraversal.js`, `utils/upload/urlBuilder.js`, `utils/upload/animatedImage.js` | Real upload preprocessing and history methods: MIME completion before compression, directory/queue preservation, RAW passthrough, explicit-type precedence and animated originals bypassing local and Telegram compression; original/final size tracking including WebP conversion, conversion-success tracking through compression with native/skipped/failed conversions excluded, normalized MIME labels, size formatting, actual size reductions with compact percentage labels beside the down-arrow icon and horizontal wheel scrolling at overflow boundaries; directory traversal/fallbacks, result link formats, GIF frame parsing, bounded reads, WebP animation chunks and APNG frame counts |
 | Reading and querying | [read.test.js](read.test.js) | `utils/fileManager.js` | Local cache round trips and isolation, corrupt-cache recovery, encoded query parameters, server counts, pagination, unindexed warnings and failed requests preserving the cache |
@@ -44,11 +45,13 @@ Production paths below are relative to `src/`.
 | AI tags | [ai.test.js](ai.test.js) | `utils/aiTags.js` | Authentication and structured errors, malformed responses, preview input guards with shared MIME inference and AI-specific format restrictions, fetching extensionless historical records, failed-preview isolation, multipart requests, response/file matching, apply batches and per-file save results |
 | File expiry | [fileExpiry.test.js](fileExpiry.test.js) | `utils/fileExpiry.js`, `components/config/SysCogOthers.vue`, `components/dashboard/FileDetailDialog.vue`, `views/AdminDashBoard.vue` | Option format matching the backend, sorting and display; which `expire` value uploads send (none when uploaders may not choose, default for stale choices) and the effective-expiry hint; settings option edits keeping the default valid and rejecting invalid/empty/oversized lists; detail-dialog expiry saves and clears through the metadata API, past-time rejection; clearing a cached expiry from list and detail records |
 | Locales | [locales.test.js](locales.test.js) | `locales/index.js` | Stored preference, unsupported-language fallback, document language initialization and persisted language changes |
+| Duplicate scan | [dupScanUi.test.js](dupScanUi.test.js) | `components/config/SysCogStatus.vue` | Report dialog binding and help tooltips; complete/partial results and index changes; capability probes; HTTP and malformed-response errors; repeated-trigger protection; confirmed deletion through the existing API, exact file IDs, cancellation/failure preservation, missing files, report regrouping, cache updates and statistics-refresh failure handling |
 
 Extend the existing suite for a related behavior. Add a separate file for a substantial independent feature and document its production entry points, assertions and remaining limits here. Test counts come from the runner; this document describes scope rather than maintaining a fixed count.
 
 ## Helpers and isolation
 
+- [helpers/setupWebStorage.js](helpers/setupWebStorage.js) runs before each suite. It checks `localStorage` and `sessionStorage` and supplies independent in-memory fallbacks when access or the read/write probe fails, preserving working storage and existing values.
 - [helpers/fileManager.js](helpers/fileManager.js) resets the real file-manager singleton and local storage before each cache test. It replaces authenticated requests, warning notifications and translation text at their boundaries; assertions still exercise the real cache/query implementation.
 - Authentication tests use the real request wrapper with a mocked browser `fetch`, router and store. Other request-oriented suites replace `fetchWithAuth` to test their own request construction and response handling.
 - Selection tests mount a small Vue component around the real composable, dispatch DOM mouse events and supply explicit element rectangles. They unmount the component and clean the document after each test.
@@ -61,6 +64,7 @@ Extend the existing suite for a related behavior. Add a separate file for a subs
 
 ## Current coverage limits
 
+- Web Storage tests simulate unavailable globals in isolated Node VM contexts. They do not run a Node version/flag matrix or test browser storage events, quotas or property access such as `storage.keyName`.
 - Upload tests exercise preprocessing/history methods, file-information values, wheel-event handling, preparation, animation detection and link generation, not complete component rendering, multipart transport, provider failover or interrupted-upload recovery. Savings labels describe local size reductions; tests do not infer provider compression results. Animation fixtures exercise container structure without decoding pixels or checking playback; encoder and Telegram behavior are not tested against real services. Shared file-type tests do not mount each preview component or verify browser codec support. MIME mappings follow the main repository with frontend APNG support; legacy preview hints remain separate from MIME inference. Tests do not require a sibling checkout.
 - Delete/update tests cover frontend cache behavior and validation. They do not verify that UI actions send correct backend deletion, rename or move requests, or that remote files are changed. Backend API regressions are maintained in the main repository.
 - Reading tests cover the file-manager utility, not full dashboard rendering, all filters or every store/component integration.
