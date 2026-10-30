@@ -325,6 +325,34 @@ describe('file expiry', () => {
             expect(view.vm.metadataSaving).toBe(false);
         });
 
+        it('keeps the name and type editing state of another file when an earlier save returns', async () => {
+            const pending = {};
+            fetchWithAuth.mockImplementation(url => new Promise(r => { pending[url.split('/').pop()] = r; }));
+            const view = mountDialog(file('a.png'));
+            view.vm.startEdit();
+            const saveA = view.vm.saveMetadata();
+            expect(view.vm.editSaving).toBe(true);
+
+            // Switch to B and start saving its name while A is still saving
+            view.props.file = file('b.png');
+            await nextTick();
+            expect(view.vm.editSaving).toBe(false);
+            view.vm.startEdit();
+            const saveB = view.vm.saveMetadata();
+
+            pending['a.png'](jsonResponse({ success: true, metadata: { FileName: 'a.png' } }));
+            await saveA;
+            expect(view.vm.isEditing).toBe(true);
+            expect(view.vm.editSaving).toBe(true);
+            expect(ElMessage.success).toHaveBeenCalledWith('a.png: fileDetail.metadataSaved');
+            expect(view.events).toEqual([['a.png', { FileName: 'a.png' }]]);
+
+            pending['b.png'](jsonResponse({ success: true, metadata: { FileName: 'b.png' } }));
+            await saveB;
+            expect(view.vm.isEditing).toBe(false);
+            expect(view.vm.editSaving).toBe(false);
+        });
+
         it('explains a refused edit of a file that expired meanwhile', async () => {
             fetchWithAuth.mockResolvedValue(jsonResponse({ success: false, message: 'File has expired and is waiting for cleanup.' }, 409));
             const view = mountDialog(file('a.png', { ExpiresAt: Date.now() + 1000 }));

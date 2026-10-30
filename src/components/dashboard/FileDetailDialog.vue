@@ -233,7 +233,6 @@ export default {
             if (!val) {
                 // 关闭弹窗时退出编辑状态
                 this.isEditing = false;
-                this.editSaving = false;
                 this.resetExpiryEdit();
             }
         },
@@ -275,11 +274,11 @@ export default {
                 FileName: '',
                 FileType: ''
             },
-            editSaving: false,
             expiryEditing: false,
             expiryDraft: null,
             // 正在保存 metadata（名称/类型或有效期）的文件 ID。两种保存都由后端整体写回 metadata，
-            // 同一文件并发时后写的会覆盖先写的，所以按文件共用一把锁；取消编辑或切换文件不会释放
+            // 同一文件并发时后写的会覆盖先写的，所以按文件共用一把锁；取消编辑或切换文件不会释放。
+            // 值为保存类型（'fields' 名称/类型，'expiry' 有效期）
             metadataSavingIds: {},
             expiryRequestId: 0, // 每次保存、切换文件或关闭弹窗递增，用于判断返回时弹窗是否仍在编辑同一次保存
             showRenameDialog: false,
@@ -366,6 +365,10 @@ export default {
         // 当前文件是否有进行中的 metadata 保存
         metadataSaving() {
             return Boolean(this.file && this.metadataSavingIds[this.file.name]);
+        },
+        // 当前文件是否正在保存名称/类型
+        editSaving() {
+            return Boolean(this.file && this.metadataSavingIds[this.file.name] === 'fields');
         },
         // 后端不支持有效期时不显示该行，避免向不支持 ExpiresAt 的接口提交修改
         expirySupported() {
@@ -517,13 +520,11 @@ export default {
             this.isEditing = false;
             this.editForm.FileName = this.file?.metadata?.FileName || '';
             this.editForm.FileType = this.file?.metadata?.FileType || '';
-            this.editSaving = false;
         },
         async saveMetadata() {
             const fileId = this.file.name;
             if (this.metadataSavingIds[fileId]) return;
-            this.metadataSavingIds[fileId] = true;
-            this.editSaving = true;
+            this.metadataSavingIds[fileId] = 'fields';
             try {
                 const response = await fetchWithAuth(`/api/manage/metadata/${fileId}`, {
                     method: 'PATCH',
@@ -535,8 +536,10 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
-                    ElMessage.success(this.$t('fileDetail.metadataSaved'));
-                    this.isEditing = false;
+                    // 返回时如果已切换到其他文件，只同步列表数据并在提示中注明文件，不改动当前文件的编辑状态
+                    const isCurrent = this.file?.name === fileId;
+                    ElMessage.success(isCurrent ? this.$t('fileDetail.metadataSaved') : `${fileId}: ${this.$t('fileDetail.metadataSaved')}`);
+                    if (isCurrent) this.isEditing = false;
                     this.$emit('metadataUpdated', fileId, data.metadata);
                 } else {
                     const error = await response.json().catch(() => ({}));
@@ -546,7 +549,6 @@ export default {
                 console.error('Error saving metadata:', error);
                 ElMessage.error(error.message || this.$t('fileDetail.metadataSaveFailed'));
             } finally {
-                this.editSaving = false;
                 delete this.metadataSavingIds[fileId];
             }
         },
@@ -577,7 +579,7 @@ export default {
             if (this.metadataSavingIds[fileId]) return;
             const requestId = ++this.expiryRequestId;
             const isCurrent = () => requestId === this.expiryRequestId && this.file?.name === fileId;
-            this.metadataSavingIds[fileId] = true;
+            this.metadataSavingIds[fileId] = 'expiry';
             try {
                 const response = await fetchWithAuth(`/api/manage/metadata/${fileId}`, {
                     method: 'PATCH',

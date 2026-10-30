@@ -1039,7 +1039,7 @@
     "cleanupPages": "Pages: no scheduler; cleanup runs when file management is opened (at most every 10 minutes per instance, and not while the feature is off). You can also click \"Clean up now\"",
     "cleanupGrace": "Expired files return 404 at once and their expiry can no longer be changed; they are deleted by the first cleanup run at least {minutes} minutes after expiry. Failed deletions are retried about an hour later. Only files that can be cleaned up now are counted",
     "pending": "Expired, awaiting cleanup: {count}",
-    "pendingCapped": "Expired, awaiting cleanup: over 1000",
+    "pendingCapped": "Expired, awaiting cleanup: about 1000 or more",
     "pendingStuck": "If this number never goes down, cleanup is not running or deletions keep failing",
     "cleanNow": "Clean up now",
     "cleaned": "Files cleaned up: {count}",
