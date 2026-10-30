@@ -113,7 +113,7 @@
 
 <script>
 import { isImageFile, isVideoFile } from '@/utils/mimeTypes';
-import { formatExpiresAt, getExpiresAt } from '@/utils/fileExpiry';
+import { formatExpiresAt, getExpiresAt, isExpired } from '@/utils/fileExpiry';
 
 export default {
     name: 'FileListItem',
@@ -134,7 +134,9 @@ export default {
             return getExpiresAt(this.item?.metadata);
         },
         expiryTitle() {
-            return this.expiresAt === null ? '' : this.$t('fileExpiry.badge', { time: formatExpiresAt(this.expiresAt, this.$i18n?.locale) });
+            if (this.expiresAt === null) return '';
+            const time = formatExpiresAt(this.expiresAt, this.$i18n?.locale);
+            return isExpired(this.expiresAt) ? `${time} · ${this.$t('fileExpiry.expiredWaiting')}` : this.$t('fileExpiry.badge', { time });
         },
         isFolder() {
             // 检查 isFolder 属性或名称以 / 结尾

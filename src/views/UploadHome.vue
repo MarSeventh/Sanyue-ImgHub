@@ -261,7 +261,7 @@ import Logo from '@/components/Logo.vue'
 import { setLocale } from '@/locales'
 import UploadHistory from '@/components/upload/UploadHistory.vue'
 import UploadSettingsDialog from '@/components/upload/UploadSettingsDialog.vue'
-import { EXPIRE_FOREVER, effectiveUploadExpire, formatExpireOption, resolveUploadExpire } from '@/utils/fileExpiry'
+import { EXPIRE_FOREVER, effectiveUploadExpire, formatExpireOption, getUploadFileExpiry, resolveUploadExpire } from '@/utils/fileExpiry'
 import DirectoryTreePicker from '@/components/DirectoryTreePicker.vue'
 import DirectorySuggestionInput from '@/components/DirectorySuggestionInput.vue'
 import backgroundManager from '@/mixins/backgroundManager'
@@ -379,9 +379,9 @@ export default {
     },
     computed: {
         ...mapGetters(['userConfig', 'uploadCopyUrlForm', 'compressConfig', 'storeUploadChannel', 'storeChannelName', 'storeUploadNameType', 'customUrlSettings', 'storeAutoRetry', 'storeUploadMethod', 'storeUploadFolder', 'storeExpire']),
-        // 文件有效期（未开启时为 undefined）
+        // 文件有效期（未开启或后端不支持时为 undefined）
         fileExpiry() {
-            return this.userConfig?.fileExpiry
+            return getUploadFileExpiry(this.userConfig)
         },
         // 实际发送的 expire 参数：不允许自选时不发送，选择失效时退回默认值
         uploadExpire() {

@@ -156,17 +156,22 @@
                     <el-form-item>
                         <template #label>
                             <span>{{ $t('fileExpiry.cleanup') }}</span>
-                            <el-tooltip :content="$t('fileExpiry.cleanupTooltip')" placement="right">
-                                <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                            <!-- 内容较长，向上弹出，避免窄屏时超出右侧 -->
+                            <el-tooltip placement="top">
+                                <template #content>
+                                    <ul class="expiry-help-list">
+                                        <li v-for="key in cleanupMethodKeys" :key="key">{{ $t(key) }}</li>
+                                        <li>{{ $t('fileExpiry.cleanupGrace', { minutes: cleanupGraceMinutes }) }}</li>
+                                        <li>{{ $t('fileExpiry.pendingStuck') }}</li>
+                                        <li>{{ $t('fileExpiry.kvNotice') }}</li>
+                                    </ul>
+                                </template>
+                                <font-awesome-icon icon="question-circle" class="expiry-cleanup-help" style="margin-left: 5px; cursor: pointer;"/>
                             </el-tooltip>
                         </template>
-                        <div class="expiry-cleanup">
-                            <div class="expiry-cleanup-row">
-                                <span v-if="expiryPending">{{ expiryPending.capped ? $t('fileExpiry.pendingCapped') : $t('fileExpiry.pending', { count: expiryPending.count }) }}</span>
-                                <el-button size="small" :loading="cleaningExpired" @click="cleanExpiredFiles">{{ $t('fileExpiry.cleanNow') }}</el-button>
-                            </div>
-                            <div class="expiry-note">{{ $t('fileExpiry.pendingStuck') }}</div>
-                            <div class="expiry-note">{{ $t('fileExpiry.kvNotice') }}</div>
+                        <div class="expiry-cleanup-row">
+                            <span v-if="expiryPending" class="expiry-pending">{{ expiryPending.capped ? $t('fileExpiry.pendingCapped') : $t('fileExpiry.pending', { count: expiryPending.count }) }}</span>
+                            <el-button size="small" :loading="cleaningExpired" @click="cleanExpiredFiles">{{ $t('fileExpiry.cleanNow') }}</el-button>
                         </div>
                     </el-form-item>
                 </el-form>
@@ -183,7 +188,10 @@
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import FloatingSaveButton from '@/components/FloatingSaveButton.vue';
 import unsavedSettings from '@/mixins/unsavedSettings';
-import { formatExpireOption, isValidExpireOption, sortExpireOptions, MAX_EXPIRE_OPTIONS } from '@/utils/fileExpiry';
+import {
+    CLEANUP_GRACE_MINUTES, MAX_EXPIRE_OPTIONS, cleanupMethodKeys, describeCleanupResult, formatExpireOption,
+    isValidExpireOption, sortExpireOptions
+} from '@/utils/fileExpiry';
 
 // 可选有效期的候选项，管理员也可以输入其他值
 const SUGGESTED_EXPIRE_OPTIONS = ['1h', '12h', '1d', '3d', '7d', '30d', '90d', '365d', 'forever'];
@@ -219,6 +227,13 @@ computed: {
     },
     expireOptionChoices() {
         return sortExpireOptions([...SUGGESTED_EXPIRE_OPTIONS, ...(this.settings.fileExpiry?.options || [])]);
+    },
+    // 按部署平台说明清理方式；serverRuntime 只用于提示，不作为功能是否可用的判断
+    cleanupMethodKeys() {
+        return cleanupMethodKeys(this.$store?.getters?.userConfig?.serverRuntime);
+    },
+    cleanupGraceMinutes() {
+        return CLEANUP_GRACE_MINUTES;
     }
 },
 watch: {
@@ -265,7 +280,8 @@ methods: {
         this.cleaningExpired = true;
         try {
             const data = await this.fetchExpiryPending('POST');
-            this.$message.success(this.$t('fileExpiry.cleaned', { count: data.cleanup?.deleted || 0 }));
+            const { type, message } = describeCleanupResult(data.cleanup, this.$t);
+            this.$message[type](message);
         } catch {
             this.$message.error(this.$t('fileExpiry.cleanFailed'));
         } finally {
@@ -404,22 +420,18 @@ mounted() {
     --el-switch-on-color: var(--el-color-primary);
 }
 
-.expiry-cleanup {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
 .expiry-cleanup-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
 }
 
-.expiry-note {
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--el-text-color-secondary);
+.expiry-help-list {
+    max-width: min(320px, calc(100vw - 64px));
+    margin: 0;
+    padding-left: 16px;
+    line-height: 1.6;
 }
 
 /* 移动端适配 */

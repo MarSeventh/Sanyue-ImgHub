@@ -1847,13 +1847,18 @@ beforeDestroy() {
     min-width: 0;
 }
 
+/* 图标随文字排版：窄屏换行时仍紧贴第一行文字，整体居中 */
 .upload-expiry-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
     margin-top: 6px;
+    padding: 0 12px;
     font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
     color: var(--el-text-color-secondary);
+}
+
+.upload-expiry-hint svg {
+    margin-right: 6px;
 }
 
 .upload-expiry-hint.upload-list-busy {
