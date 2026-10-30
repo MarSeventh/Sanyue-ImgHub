@@ -132,6 +132,7 @@
                             :placeholder="$t('fileExpiry.pickTime')"
                             :disabled-date="isPastDate"
                             :clearable="false"
+                            :disabled="expirySaving"
                             class="expiry-picker"
                             @change="saveExpiry"
                         />
@@ -278,7 +279,7 @@ export default {
             expiryEditing: false,
             expiryDraft: null,
             expirySaving: false,
-            expiryRequestId: 0, // 每次切换文件或关闭弹窗递增，用于识别过期的保存结果
+            expiryRequestId: 0, // 每次保存、切换文件或关闭弹窗递增，用于识别过期的保存结果
             showRenameDialog: false,
             renameForm: {
                 newFileId: ''
@@ -562,9 +563,11 @@ export default {
                 ElMessage.error(this.$t('fileExpiry.mustBeFuture'));
                 return;
             }
+            // 同一时间只保存一次，保存期间日期选择器也被禁用
+            if (this.expirySaving) return;
             // 请求发出时固定文件 ID；返回时如果已切换到其他文件，只同步列表数据并在提示中注明文件，不改动当前弹窗
             const fileId = this.file.name;
-            const requestId = this.expiryRequestId;
+            const requestId = ++this.expiryRequestId;
             const isCurrent = () => requestId === this.expiryRequestId && this.file?.name === fileId;
             this.expirySaving = true;
             try {

@@ -130,7 +130,7 @@ describe('file expiry', () => {
         function detailContext() {
             const vm = {
                 file: { name: 'album/photo.png', metadata: { ExpiresAt: Date.now() + 1000 } },
-                expiryEditing: true, expirySaving: false, $t: t, $emit: vi.fn(),
+                expiryEditing: true, expirySaving: false, expiryRequestId: 0, $t: t, $emit: vi.fn(),
             };
             vm.saveExpiry = FileDetailDialog.methods.saveExpiry.bind(vm);
             return vm;
@@ -257,6 +257,25 @@ describe('file expiry', () => {
             expect(view.vm.expiryEditing).toBe(true);
             expect(view.vm.expirySaving).toBe(false);
             expect(ElMessage.success).toHaveBeenCalledWith('a.png: fileExpiry.updated');
+        });
+
+        it('saves one change at a time and disables the picker meanwhile', async () => {
+            let resolve;
+            fetchWithAuth.mockReturnValue(new Promise(r => { resolve = r; }));
+            const view = mountDialog(file('a.png', { ExpiresAt: Date.now() + DAY }));
+            view.find('.expiry-change').click();
+            await nextTick();
+            const first = view.vm.saveExpiry(Date.now() + 2 * DAY);
+            await nextTick();
+            expect(view.find('[data-stub="el-date-picker"]').getAttribute('disabled')).not.toBe(null);
+
+            await view.vm.saveExpiry(Date.now() + 3 * DAY);
+            expect(fetchWithAuth).toHaveBeenCalledTimes(1);
+
+            resolve(jsonResponse({ success: true, metadata: { FileName: 'a.png' } }));
+            await first;
+            expect(view.vm.expirySaving).toBe(false);
+            expect(ElMessage.success).toHaveBeenCalledWith('fileExpiry.updated');
         });
 
         it('explains a refused edit of a file that expired meanwhile', async () => {
