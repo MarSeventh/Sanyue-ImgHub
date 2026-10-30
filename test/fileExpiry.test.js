@@ -130,7 +130,7 @@ describe('file expiry', () => {
         function detailContext() {
             const vm = {
                 file: { name: 'album/photo.png', metadata: { ExpiresAt: Date.now() + 1000 } },
-                expiryEditing: true, expirySaving: false, expiryRequestId: 0, $t: t, $emit: vi.fn(),
+                expiryEditing: true, expirySavingIds: {}, expiryRequestId: 0, $t: t, $emit: vi.fn(),
             };
             vm.saveExpiry = FileDetailDialog.methods.saveExpiry.bind(vm);
             return vm;
@@ -243,6 +243,7 @@ describe('file expiry', () => {
 
             view.props.file = file('b.png');
             await nextTick();
+            // The lock belongs to a.png, so b.png can still be edited
             expect(view.vm.expirySaving).toBe(false);
             view.find('.expiry-change').click();
             await nextTick();
@@ -276,6 +277,35 @@ describe('file expiry', () => {
             await first;
             expect(view.vm.expirySaving).toBe(false);
             expect(ElMessage.success).toHaveBeenCalledWith('fileExpiry.updated');
+        });
+
+        it('keeps the save lock of a file through cancel and switching away and back', async () => {
+            let resolve;
+            fetchWithAuth.mockReturnValue(new Promise(r => { resolve = r; }));
+            const view = mountDialog(file('a.png', { ExpiresAt: Date.now() + DAY }));
+            view.find('.expiry-change').click();
+            await nextTick();
+            const first = view.vm.saveExpiry(Date.now() + 2 * DAY);
+
+            // Cancel while saving, then try again
+            view.find('.expiry-cancel').click();
+            await nextTick();
+            expect(view.vm.expirySaving).toBe(true);
+            await view.vm.saveExpiry(Date.now() + 3 * DAY);
+
+            // Switch to another file and back, then try again
+            view.props.file = file('b.png');
+            await nextTick();
+            view.props.file = file('a.png', { ExpiresAt: Date.now() + DAY });
+            await nextTick();
+            expect(view.vm.expirySaving).toBe(true);
+            expect(view.find('.expiry-change').getAttribute('disabled')).not.toBe(null);
+            await view.vm.saveExpiry(Date.now() + 4 * DAY);
+            expect(fetchWithAuth).toHaveBeenCalledTimes(1);
+
+            resolve(jsonResponse({ success: true, metadata: { FileName: 'a.png' } }));
+            await first;
+            expect(view.vm.expirySaving).toBe(false);
         });
 
         it('explains a refused edit of a file that expired meanwhile', async () => {

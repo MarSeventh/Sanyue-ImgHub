@@ -278,8 +278,8 @@ export default {
             editSaving: false,
             expiryEditing: false,
             expiryDraft: null,
-            expirySaving: false,
-            expiryRequestId: 0, // 每次保存、切换文件或关闭弹窗递增，用于识别过期的保存结果
+            expirySavingIds: {}, // 正在保存有效期的文件 ID；按文件加锁，取消编辑或切换文件不会释放
+            expiryRequestId: 0, // 每次保存、切换文件或关闭弹窗递增，用于判断返回时弹窗是否仍在编辑同一次保存
             showRenameDialog: false,
             renameForm: {
                 newFileId: ''
@@ -360,6 +360,10 @@ export default {
         },
         isImage() {
             return isImageFile(this.file);
+        },
+        // 当前文件是否有进行中的有效期保存
+        expirySaving() {
+            return Boolean(this.file && this.expirySavingIds[this.file.name]);
         },
         // 后端不支持有效期时不显示该行，避免向不支持 ExpiresAt 的接口提交修改
         expirySupported() {
@@ -553,7 +557,6 @@ export default {
         resetExpiryEdit() {
             this.expiryEditing = false;
             this.expiryDraft = null;
-            this.expirySaving = false;
             this.expiryRequestId++;
         },
         // value 为毫秒时间戳，null 表示改为永久
@@ -563,13 +566,13 @@ export default {
                 ElMessage.error(this.$t('fileExpiry.mustBeFuture'));
                 return;
             }
-            // 同一时间只保存一次，保存期间日期选择器也被禁用
-            if (this.expirySaving) return;
             // 请求发出时固定文件 ID；返回时如果已切换到其他文件，只同步列表数据并在提示中注明文件，不改动当前弹窗
             const fileId = this.file.name;
+            // 同一文件同一时间只保存一次，结果按顺序生效；保存期间日期选择器和按钮被禁用
+            if (this.expirySavingIds[fileId]) return;
             const requestId = ++this.expiryRequestId;
             const isCurrent = () => requestId === this.expiryRequestId && this.file?.name === fileId;
-            this.expirySaving = true;
+            this.expirySavingIds[fileId] = true;
             try {
                 const response = await fetchWithAuth(`/api/manage/metadata/${fileId}`, {
                     method: 'PATCH',
@@ -592,9 +595,7 @@ export default {
                 const message = error.message || this.$t('fileExpiry.updateFailed');
                 ElMessage.error(isCurrent() ? message : `${fileId}: ${message}`);
             } finally {
-                if (isCurrent()) {
-                    this.expirySaving = false;
-                }
+                delete this.expirySavingIds[fileId];
             }
         },
         openRenameDialog() {
