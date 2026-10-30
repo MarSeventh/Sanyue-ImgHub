@@ -47,7 +47,7 @@
                     <font-awesome-icon icon="trash-alt" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.deleteBtn') }}
                 </el-button>
             </div>
-            <el-button type="success" @click="saveMetadata()" round size="small" class="detail-action" v-if="isEditing" :loading="editSaving">
+            <el-button type="success" @click="saveMetadata()" round size="small" class="detail-action" v-if="isEditing" :loading="editSaving" :disabled="metadataSaving && !editSaving">
                 <font-awesome-icon icon="save" style="margin-right: 3px;" v-if="!editSaving"></font-awesome-icon> {{ $t('fileDetail.save') }}
             </el-button>
             <el-button @click="cancelEdit()" round size="small" class="detail-action" v-if="isEditing">
@@ -132,15 +132,15 @@
                             :placeholder="$t('fileExpiry.pickTime')"
                             :disabled-date="isPastDate"
                             :clearable="false"
-                            :disabled="expirySaving"
+                            :disabled="metadataSaving"
                             class="expiry-picker"
                             @change="saveExpiry"
                         />
                         <span v-else :class="{ 'expiry-never': !fileExpiresAt }">{{ expiresAtDisplay }}</span>
                         <template v-if="!fileExpired">
-                            <el-button v-if="!expiryEditing" link type="primary" size="small" class="expiry-change" :disabled="expirySaving" @click="startExpiryEdit">{{ $t('fileExpiry.change') }}</el-button>
+                            <el-button v-if="!expiryEditing" link type="primary" size="small" class="expiry-change" :disabled="metadataSaving" @click="startExpiryEdit">{{ $t('fileExpiry.change') }}</el-button>
                             <el-button v-else link size="small" class="expiry-cancel" @click="resetExpiryEdit">{{ $t('fileDetail.cancel') }}</el-button>
-                            <el-button v-if="fileExpiresAt && !expiryEditing" link type="primary" size="small" class="expiry-forever" :disabled="expirySaving" @click="saveExpiry(null)">{{ $t('fileExpiry.setForever') }}</el-button>
+                            <el-button v-if="fileExpiresAt && !expiryEditing" link type="primary" size="small" class="expiry-forever" :disabled="metadataSaving" @click="saveExpiry(null)">{{ $t('fileExpiry.setForever') }}</el-button>
                         </template>
                     </div>
                 </el-descriptions-item>
@@ -278,7 +278,9 @@ export default {
             editSaving: false,
             expiryEditing: false,
             expiryDraft: null,
-            expirySavingIds: {}, // 正在保存有效期的文件 ID；按文件加锁，取消编辑或切换文件不会释放
+            // 正在保存 metadata（名称/类型或有效期）的文件 ID。两种保存都由后端整体写回 metadata，
+            // 同一文件并发时后写的会覆盖先写的，所以按文件共用一把锁；取消编辑或切换文件不会释放
+            metadataSavingIds: {},
             expiryRequestId: 0, // 每次保存、切换文件或关闭弹窗递增，用于判断返回时弹窗是否仍在编辑同一次保存
             showRenameDialog: false,
             renameForm: {
@@ -361,9 +363,9 @@ export default {
         isImage() {
             return isImageFile(this.file);
         },
-        // 当前文件是否有进行中的有效期保存
-        expirySaving() {
-            return Boolean(this.file && this.expirySavingIds[this.file.name]);
+        // 当前文件是否有进行中的 metadata 保存
+        metadataSaving() {
+            return Boolean(this.file && this.metadataSavingIds[this.file.name]);
         },
         // 后端不支持有效期时不显示该行，避免向不支持 ExpiresAt 的接口提交修改
         expirySupported() {
@@ -518,9 +520,11 @@ export default {
             this.editSaving = false;
         },
         async saveMetadata() {
+            const fileId = this.file.name;
+            if (this.metadataSavingIds[fileId]) return;
+            this.metadataSavingIds[fileId] = true;
             this.editSaving = true;
             try {
-                const fileId = this.file.name;
                 const response = await fetchWithAuth(`/api/manage/metadata/${fileId}`, {
                     method: 'PATCH',
                     headers: {
@@ -543,6 +547,7 @@ export default {
                 ElMessage.error(error.message || this.$t('fileDetail.metadataSaveFailed'));
             } finally {
                 this.editSaving = false;
+                delete this.metadataSavingIds[fileId];
             }
         },
         isPastDate(date) {
@@ -569,10 +574,10 @@ export default {
             // 请求发出时固定文件 ID；返回时如果已切换到其他文件，只同步列表数据并在提示中注明文件，不改动当前弹窗
             const fileId = this.file.name;
             // 同一文件同一时间只保存一次，结果按顺序生效；保存期间日期选择器和按钮被禁用
-            if (this.expirySavingIds[fileId]) return;
+            if (this.metadataSavingIds[fileId]) return;
             const requestId = ++this.expiryRequestId;
             const isCurrent = () => requestId === this.expiryRequestId && this.file?.name === fileId;
-            this.expirySavingIds[fileId] = true;
+            this.metadataSavingIds[fileId] = true;
             try {
                 const response = await fetchWithAuth(`/api/manage/metadata/${fileId}`, {
                     method: 'PATCH',
@@ -595,7 +600,7 @@ export default {
                 const message = error.message || this.$t('fileExpiry.updateFailed');
                 ElMessage.error(isCurrent() ? message : `${fileId}: ${message}`);
             } finally {
-                delete this.expirySavingIds[fileId];
+                delete this.metadataSavingIds[fileId];
             }
         },
         openRenameDialog() {
