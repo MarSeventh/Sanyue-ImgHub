@@ -47,7 +47,7 @@
                     <font-awesome-icon icon="trash-alt" style="margin-right: 3px;"></font-awesome-icon> {{ $t('fileDetail.deleteBtn') }}
                 </el-button>
             </div>
-            <el-button type="success" @click="saveMetadata()" round size="small" class="detail-action" v-if="isEditing" :loading="editSaving">
+            <el-button type="success" @click="saveMetadata()" round size="small" class="detail-action" v-if="isEditing" :loading="editSaving" :disabled="metadataSaving && !editSaving">
                 <font-awesome-icon icon="save" style="margin-right: 3px;" v-if="!editSaving"></font-awesome-icon> {{ $t('fileDetail.save') }}
             </el-button>
             <el-button @click="cancelEdit()" round size="small" class="detail-action" v-if="isEditing">
@@ -120,6 +120,30 @@
                     <span v-else style="color: var(--el-text-color-secondary);">{{ $t('fileDetail.noDimensions') }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.uploadTimeLabel')">{{ uploadTime }}</el-descriptions-item>
+                <el-descriptions-item v-if="expirySupported" :label="$t('fileExpiry.expiresAt')">
+                    <div class="expiry-field">
+                        <span v-if="fileExpired" class="expiry-expired">{{ expiresAtDisplay }} · {{ $t('fileExpiry.expiredWaiting') }}</span>
+                        <el-date-picker
+                            v-else-if="expiryEditing"
+                            v-model="expiryDraft"
+                            type="datetime"
+                            size="small"
+                            value-format="x"
+                            :placeholder="$t('fileExpiry.pickTime')"
+                            :disabled-date="isPastDate"
+                            :clearable="false"
+                            :disabled="metadataSaving"
+                            class="expiry-picker"
+                            @change="saveExpiry"
+                        />
+                        <span v-else :class="{ 'expiry-never': !fileExpiresAt }">{{ expiresAtDisplay }}</span>
+                        <template v-if="!fileExpired">
+                            <el-button v-if="!expiryEditing" link type="primary" size="small" class="expiry-change" :disabled="metadataSaving" @click="startExpiryEdit">{{ $t('fileExpiry.change') }}</el-button>
+                            <el-button v-else link size="small" class="expiry-cancel" @click="resetExpiryEdit">{{ $t('fileDetail.cancel') }}</el-button>
+                            <el-button v-if="fileExpiresAt && !expiryEditing" link type="primary" size="small" class="expiry-forever" :disabled="metadataSaving" @click="saveExpiry(null)">{{ $t('fileExpiry.setForever') }}</el-button>
+                        </template>
+                    </div>
+                </el-descriptions-item>
                 <el-descriptions-item :label="$t('fileDetail.channelTypeAndName')">
                     <el-tag disable-transitions size="small" type="info" style="margin-right: 6px;">{{ file?.metadata?.Channel || $t('fileDetail.unknown') }}</el-tag>
                     <span>{{ file?.metadata?.ChannelName || '-' }}</span>
@@ -172,6 +196,7 @@ import { validateFileId } from '@/utils/fileIdValidator';
 import { isImageFile, isVideoFile, isAudioFile } from '@/utils/mimeTypes';
 import { LINK_FORMATS, LINK_CONTENT_LABELS, getAvailableLinkContents, getLinkContentGroup, getPreferredLinkContent, buildManagementFileLinks } from '@/utils/dashboard/fileLinks';
 import { createDetailPreviewMotion } from '@/utils/dashboard/detailPreviewMotion';
+import { formatExpiresAt, getExpiresAt, isExpired, isFileExpirySupported } from '@/utils/fileExpiry';
 
 export default {
     name: 'FileDetailDialog',
@@ -208,10 +233,12 @@ export default {
             if (!val) {
                 // 关闭弹窗时退出编辑状态
                 this.isEditing = false;
-                this.editSaving = false;
+                this.resetExpiryEdit();
             }
         },
         'file.name'() {
+            // 切换文件时放弃上一个文件的有效期编辑，进行中的保存结果不再影响当前文件
+            this.resetExpiryEdit();
             this.resetPreview();
             this.contentOverride = null;
             this.actionsHovered = false;
@@ -247,7 +274,13 @@ export default {
                 FileName: '',
                 FileType: ''
             },
-            editSaving: false,
+            expiryEditing: false,
+            expiryDraft: null,
+            // 正在保存 metadata（名称/类型或有效期）的文件 ID。两种保存都由后端整体写回 metadata，
+            // 同一文件并发时后写的会覆盖先写的，所以按文件共用一把锁；取消编辑或切换文件不会释放。
+            // 值为保存类型（'fields' 名称/类型，'expiry' 有效期）
+            metadataSavingIds: {},
+            expiryRequestId: 0, // 每次保存、切换文件或关闭弹窗递增，用于判断返回时弹窗是否仍在编辑同一次保存
             showRenameDialog: false,
             renameForm: {
                 newFileId: ''
@@ -328,6 +361,30 @@ export default {
         },
         isImage() {
             return isImageFile(this.file);
+        },
+        // 当前文件是否有进行中的 metadata 保存
+        metadataSaving() {
+            return Boolean(this.file && this.metadataSavingIds[this.file.name]);
+        },
+        // 当前文件是否正在保存名称/类型
+        editSaving() {
+            return Boolean(this.file && this.metadataSavingIds[this.file.name] === 'fields');
+        },
+        // 后端不支持有效期时不显示该行，避免向不支持 ExpiresAt 的接口提交修改
+        expirySupported() {
+            return isFileExpirySupported(this.$store?.getters?.userConfig);
+        },
+        fileExpiresAt() {
+            return getExpiresAt(this.file?.metadata);
+        },
+        // 已到期的文件访问即返回 404，后端也不再允许修改，等待清理
+        fileExpired() {
+            return isExpired(this.fileExpiresAt);
+        },
+        expiresAtDisplay() {
+            return this.fileExpiresAt === null
+                ? this.$t('fileExpiry.never')
+                : formatExpiresAt(this.fileExpiresAt, this.$i18n?.locale);
         },
         uploadTime() {
             if (this.file?.metadata?.TimeStamp) {
@@ -463,12 +520,12 @@ export default {
             this.isEditing = false;
             this.editForm.FileName = this.file?.metadata?.FileName || '';
             this.editForm.FileType = this.file?.metadata?.FileType || '';
-            this.editSaving = false;
         },
         async saveMetadata() {
-            this.editSaving = true;
+            const fileId = this.file.name;
+            if (this.metadataSavingIds[fileId]) return;
+            this.metadataSavingIds[fileId] = 'fields';
             try {
-                const fileId = this.file.name;
                 const response = await fetchWithAuth(`/api/manage/metadata/${fileId}`, {
                     method: 'PATCH',
                     headers: {
@@ -479,8 +536,10 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
-                    ElMessage.success(this.$t('fileDetail.metadataSaved'));
-                    this.isEditing = false;
+                    // 返回时如果已切换到其他文件，只同步列表数据并在提示中注明文件，不改动当前文件的编辑状态
+                    const isCurrent = this.file?.name === fileId;
+                    ElMessage.success(isCurrent ? this.$t('fileDetail.metadataSaved') : `${fileId}: ${this.$t('fileDetail.metadataSaved')}`);
+                    if (isCurrent) this.isEditing = false;
                     this.$emit('metadataUpdated', fileId, data.metadata);
                 } else {
                     const error = await response.json().catch(() => ({}));
@@ -490,7 +549,60 @@ export default {
                 console.error('Error saving metadata:', error);
                 ElMessage.error(error.message || this.$t('fileDetail.metadataSaveFailed'));
             } finally {
-                this.editSaving = false;
+                delete this.metadataSavingIds[fileId];
+            }
+        },
+        isPastDate(date) {
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+            return date.getTime() < startOfToday.getTime();
+        },
+        startExpiryEdit() {
+            this.expiryDraft = this.fileExpiresAt;
+            this.expiryEditing = true;
+        },
+        resetExpiryEdit() {
+            this.expiryEditing = false;
+            this.expiryDraft = null;
+            this.expiryRequestId++;
+        },
+        // value 为毫秒时间戳，null 表示改为永久
+        async saveExpiry(value) {
+            const expiresAt = value === null ? null : Number(value);
+            if (expiresAt !== null && !(expiresAt > Date.now())) {
+                ElMessage.error(this.$t('fileExpiry.mustBeFuture'));
+                return;
+            }
+            // 请求发出时固定文件 ID；返回时如果已切换到其他文件，只同步列表数据并在提示中注明文件，不改动当前弹窗
+            const fileId = this.file.name;
+            // 同一文件同一时间只保存一次，结果按顺序生效；保存期间日期选择器和按钮被禁用
+            if (this.metadataSavingIds[fileId]) return;
+            const requestId = ++this.expiryRequestId;
+            const isCurrent = () => requestId === this.expiryRequestId && this.file?.name === fileId;
+            this.metadataSavingIds[fileId] = 'expiry';
+            try {
+                const response = await fetchWithAuth(`/api/manage/metadata/${fileId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ExpiresAt: expiresAt })
+                });
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(response.status === 409
+                        ? this.$t('fileExpiry.expiredWaiting')
+                        : (error.message || this.$t('fileExpiry.updateFailed')));
+                }
+                const data = await response.json();
+                this.$emit('metadataUpdated', fileId, data.metadata);
+                ElMessage.success(isCurrent() ? this.$t('fileExpiry.updated') : `${fileId}: ${this.$t('fileExpiry.updated')}`);
+                if (isCurrent()) {
+                    this.expiryEditing = false;
+                }
+            } catch (error) {
+                const message = error.message || this.$t('fileExpiry.updateFailed');
+                ElMessage.error(isCurrent() ? message : `${fileId}: ${message}`);
+            } finally {
+                delete this.metadataSavingIds[fileId];
             }
         },
         openRenameDialog() {
@@ -860,6 +972,23 @@ export default {
 .file-detail-metadata :deep(.el-tag__content) {
     white-space: normal;
     overflow-wrap: anywhere;
+}
+.expiry-field {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.expiry-field .expiry-never,
+.expiry-field .expiry-expired {
+    color: var(--el-text-color-secondary);
+}
+.expiry-field .expiry-picker {
+    width: 200px;
+}
+/* 间距由 gap 控制，去掉 Element Plus 相邻按钮的左边距，窄屏换行时才能对齐 */
+.expiry-field .el-button + .el-button {
+    margin-left: 0;
 }
 .image-dimensions {
     display: flex;

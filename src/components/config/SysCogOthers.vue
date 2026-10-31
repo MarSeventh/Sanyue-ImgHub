@@ -106,6 +106,76 @@
                     </el-select>
                 </el-form-item>
             </el-form>
+            <template v-if="settings.fileExpiry">
+                <h3 class="first-title">{{ $t('fileExpiry.title') }}
+                    <el-tooltip :content="$t('fileExpiry.settingsTooltip')" placement="right">
+                        <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                    </el-tooltip>
+                </h3>
+                <el-form :model="settings.fileExpiry" label-width="120px">
+                    <el-form-item :label="$t('sysOthers.enable')">
+                        <el-switch v-model="settings.fileExpiry.enabled" :disabled="settings.fileExpiry.fixed"></el-switch>
+                    </el-form-item>
+                    <el-form-item>
+                        <template #label>
+                            <span>{{ $t('fileExpiry.options') }}</span>
+                            <el-tooltip :content="$t('fileExpiry.optionsTooltip')" placement="right">
+                                <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                            </el-tooltip>
+                        </template>
+                        <el-select
+                            :model-value="settings.fileExpiry.options"
+                            @update:model-value="handleExpireOptionsChange"
+                            :disabled="settings.fileExpiry.fixed"
+                            :placeholder="$t('fileExpiry.optionsPlaceholder')"
+                            multiple filterable allow-create default-first-option :reserve-keyword="false"
+                        >
+                            <el-option v-for="option in expireOptionChoices" :key="option" :label="expireLabel(option)" :value="option"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <template #label>
+                            <span>{{ $t('fileExpiry.defaultExpire') }}</span>
+                            <el-tooltip :content="$t('fileExpiry.defaultExpireTooltip')" placement="right">
+                                <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                            </el-tooltip>
+                        </template>
+                        <el-select v-model="settings.fileExpiry.defaultExpire" :disabled="settings.fileExpiry.fixed">
+                            <el-option v-for="option in settings.fileExpiry.options" :key="option" :label="expireLabel(option)" :value="option"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <template #label>
+                            <span>{{ $t('fileExpiry.allowCustom') }}</span>
+                            <el-tooltip :content="$t('fileExpiry.allowCustomTooltip')" placement="right">
+                                <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
+                            </el-tooltip>
+                        </template>
+                        <el-switch v-model="settings.fileExpiry.allowCustom" :disabled="settings.fileExpiry.fixed"></el-switch>
+                    </el-form-item>
+                    <el-form-item>
+                        <template #label>
+                            <span>{{ $t('fileExpiry.cleanup') }}</span>
+                            <!-- 内容较长，向上弹出，避免窄屏时超出右侧 -->
+                            <el-tooltip placement="top">
+                                <template #content>
+                                    <ul class="expiry-help-list">
+                                        <li v-for="key in cleanupMethodKeys" :key="key">{{ $t(key) }}</li>
+                                        <li>{{ $t('fileExpiry.cleanupGrace', { minutes: cleanupGraceMinutes }) }}</li>
+                                        <li>{{ $t('fileExpiry.pendingStuck') }}</li>
+                                        <li>{{ $t('fileExpiry.kvNotice') }}</li>
+                                    </ul>
+                                </template>
+                                <font-awesome-icon icon="question-circle" class="expiry-cleanup-help" style="margin-left: 5px; cursor: pointer;"/>
+                            </el-tooltip>
+                        </template>
+                        <div class="expiry-cleanup-row">
+                            <span v-if="expiryPending" class="expiry-pending">{{ expiryPending.capped ? $t('fileExpiry.pendingCapped') : $t('fileExpiry.pending', { count: expiryPending.count }) }}</span>
+                            <el-button size="small" :loading="cleaningExpired" @click="cleanExpiredFiles">{{ $t('fileExpiry.cleanNow') }}</el-button>
+                        </div>
+                    </el-form-item>
+                </el-form>
+            </template>
         </div>
 
     
@@ -118,6 +188,13 @@
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import FloatingSaveButton from '@/components/FloatingSaveButton.vue';
 import unsavedSettings from '@/mixins/unsavedSettings';
+import {
+    CLEANUP_GRACE_MINUTES, MAX_EXPIRE_OPTIONS, cleanupMethodKeys, describeCleanupResult, formatExpireOption,
+    isValidExpireOption, sortExpireOptions
+} from '@/utils/fileExpiry';
+
+// 可选有效期的候选项，管理员也可以输入其他值
+const SUGGESTED_EXPIRE_OPTIONS = ['1h', '12h', '1d', '3d', '7d', '30d', '90d', '365d', 'forever'];
 
 export default {
 mixins: [unsavedSettings],
@@ -134,6 +211,8 @@ data() {
             publicBrowse: {}
         },
         availableChannels: {}, // 可用渠道列表
+        expiryPending: null, // 已到期待清理的文件数
+        cleaningExpired: false,
         // 加载状态
         loading: true,
         saving: false
@@ -145,6 +224,16 @@ computed: {
     webdavChannelList() {
         const channelType = this.settings.webDAV?.uploadChannel;
         return channelType ? (this.availableChannels[channelType] || []) : [];
+    },
+    expireOptionChoices() {
+        return sortExpireOptions([...SUGGESTED_EXPIRE_OPTIONS, ...(this.settings.fileExpiry?.options || [])]);
+    },
+    // 按部署平台说明清理方式；serverRuntime 只用于提示，不作为功能是否可用的判断
+    cleanupMethodKeys() {
+        return cleanupMethodKeys(this.$store?.getters?.userConfig?.serverRuntime);
+    },
+    cleanupGraceMinutes() {
+        return CLEANUP_GRACE_MINUTES;
     }
 },
 watch: {
@@ -156,6 +245,49 @@ watch: {
     }
 },
 methods: {
+    expireLabel(option) {
+        return formatExpireOption(option, this.$t);
+    },
+    handleExpireOptionsChange(values) {
+        const invalid = values.find(option => !isValidExpireOption(option));
+        if (invalid !== undefined) {
+            this.$message.error(this.$t('fileExpiry.invalidOption', { option: invalid }));
+            return;
+        }
+        if (values.length > MAX_EXPIRE_OPTIONS) {
+            this.$message.error(this.$t('fileExpiry.tooManyOptions'));
+            return;
+        }
+        if (values.length === 0) {
+            this.$message.error(this.$t('fileExpiry.optionsRequired'));
+            return;
+        }
+        const fileExpiry = this.settings.fileExpiry;
+        fileExpiry.options = sortExpireOptions(values);
+        if (!fileExpiry.options.includes(fileExpiry.defaultExpire)) {
+            fileExpiry.defaultExpire = fileExpiry.options[0];
+        }
+    },
+    async fetchExpiryPending(method = 'GET') {
+        const response = await fetchWithAuth('/api/manage/expiry', { method });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        this.expiryPending = { count: data.pending, capped: data.pendingCapped };
+        return data;
+    },
+    async cleanExpiredFiles() {
+        if (this.cleaningExpired) return;
+        this.cleaningExpired = true;
+        try {
+            const data = await this.fetchExpiryPending('POST');
+            const { type, message } = describeCleanupResult(data.cleanup, this.$t);
+            this.$message[type](message);
+        } catch {
+            this.$message.error(this.$t('fileExpiry.cleanFailed'));
+        } finally {
+            this.cleaningExpired = false;
+        }
+    },
     async saveSettings() {
         if (this.saving) return;
         const submitted = JSON.parse(JSON.stringify(this.settings));
@@ -197,6 +329,10 @@ mounted() {
         this.settings = data;
         await this.$nextTick();
         this.markSettingsSaved();
+        // 后端支持文件有效期时读取待清理数量
+        if (data.fileExpiry) {
+            this.fetchExpiryPending().catch(() => {});
+        }
     })
     .finally(() => {
         this.loading = false;
@@ -282,6 +418,20 @@ mounted() {
 
 .first-settings :deep(.el-switch) {
     --el-switch-on-color: var(--el-color-primary);
+}
+
+.expiry-cleanup-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+}
+
+.expiry-help-list {
+    max-width: min(320px, calc(100vw - 64px));
+    margin: 0;
+    padding-left: 16px;
+    line-height: 1.6;
 }
 
 /* 移动端适配 */

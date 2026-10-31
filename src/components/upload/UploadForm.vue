@@ -47,6 +47,10 @@
                         </button>
                     </el-tooltip>
                 </div>
+                <div v-if="expiryHint" class="upload-expiry-hint" :class="{'upload-list-busy': fileList.length}">
+                    <font-awesome-icon icon="clock" />
+                    <span>{{ expiryHint }}</span>
+                </div>
             </el-upload>
             <input
                 ref="folderInput"
@@ -196,6 +200,7 @@ import * as imageConversion from 'image-conversion'
 import { mapGetters } from 'vuex'
 import { buildFileUrls, updateFileListUrls, getUrlByFormat } from '@/utils/upload/urlBuilder'
 import { computeSha256 } from '@/utils/upload/sha256'
+import { expireQuery } from '@/utils/fileExpiry'
 import { isAnimatedImage } from '@/utils/upload/animatedImage'
 import { ensureFileType, getFileExtension, getFileTypeCategory, normalizeMimeType, resolveFileType } from '@/utils/mimeTypes'
 import {
@@ -292,6 +297,17 @@ props: {
     convertToWebp: {
         type: Boolean,
         default: false,
+        required: false
+    },
+    // 文件有效期选项，为空时不发送（由后端使用默认值）
+    expire: {
+        type: String,
+        default: '',
+        required: false
+    },
+    expiryHint: {
+        type: String,
+        default: '',
         required: false
     }
 },
@@ -620,7 +636,8 @@ methods: {
                 (this.channelName ? '&channelName=' + encodeURIComponent(this.channelName) : '') +
                 '&uploadNameType=' + uploadNameType + 
                 '&autoRetry=' + autoRetry + 
-                '&uploadFolder=' + encodeURIComponent(targetUploadFolder),
+                '&uploadFolder=' + encodeURIComponent(targetUploadFolder) +
+                expireQuery(this.expire),
             method: 'post',
             data: formData,
             withAuthCode: true,
@@ -706,6 +723,7 @@ methods: {
                     '&uploadNameType=' + uploadNameType + 
                     '&autoRetry=' + autoRetry + 
                     '&uploadFolder=' + encodeURIComponent(targetUploadFolder) +
+                    expireQuery(this.expire) +
                     '&initChunked=true',
                 method: 'post',
                 data: initFormData,
@@ -853,6 +871,7 @@ methods: {
                     '&uploadNameType=' + uploadNameType + 
                     '&autoRetry=' + autoRetry + 
                     '&uploadFolder=' + encodeURIComponent(targetUploadFolder) +
+                    expireQuery(this.expire) +
                     '&chunked=true&merge=true',
                 method: 'post',
                 data: mergeFormData,
@@ -1471,7 +1490,7 @@ methods: {
             file.onProgress({ percent: 10, file: file.file });
             console.log('Getting LFS upload URL...');
             const uploadInfoRes = await axios({
-                url: '/upload/huggingface/getUploadUrl',
+                url: '/upload/huggingface/getUploadUrl' + expireQuery(this.expire, '?'),
                 method: 'post',
                 data: {
                     fileSize: file.file.size,
@@ -1533,7 +1552,7 @@ methods: {
             file.onProgress({ percent: 95, file: file.file });
             console.log('Committing file...');
             const commitRes = await axios({
-                url: '/upload/huggingface/commitUpload',
+                url: '/upload/huggingface/commitUpload' + expireQuery(this.expire, '?'),
                 method: 'post',
                 data: {
                     fullId: uploadInfo.fullId,
@@ -1826,6 +1845,24 @@ beforeDestroy() {
     gap: 6px;
     max-width: calc(100% - 24px);
     min-width: 0;
+}
+
+/* 图标随文字排版：窄屏换行时仍紧贴第一行文字，整体居中 */
+.upload-expiry-hint {
+    margin-top: 6px;
+    padding: 0 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--el-text-color-secondary);
+}
+
+.upload-expiry-hint svg {
+    margin-right: 6px;
+}
+
+.upload-expiry-hint.upload-list-busy {
+    display: none;
 }
 
 .folder-upload-icon-button {

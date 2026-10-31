@@ -24,6 +24,7 @@ export default createStore({
     storeChannelName: null, // 指定的渠道名称，null表示从未选择，''表示用户主动清空
     storeAutoRetry: true,
     storeUploadNameType: '',
+    storeExpire: '', // 上次选择的文件有效期选项
     uploadFolder: '',
     customUrlSettings: {
       useCustomUrl: 'false',
@@ -51,6 +52,7 @@ export default createStore({
     storeUploadNameType: state => state.storeUploadNameType,
     customUrlSettings: state => state.customUrlSettings,
     storeAutoRetry: state => state.storeAutoRetry,
+    storeExpire: state => state.storeExpire,
     adminUrlSettings: state => state.adminUrlSettings,
     storeUploadFolder: (state) => {
       return state.uploadFolder || localStorage.getItem('uploadFolder') || ''
@@ -106,6 +108,9 @@ export default createStore({
     },
     setStoreAutoRetry(state, storeAutoRetry) {
       state.storeAutoRetry = storeAutoRetry;
+    },
+    setStoreExpire(state, storeExpire) {
+      state.storeExpire = storeExpire;
     },
     setAdminUrlSettings(state, { key, value }) {
       state.adminUrlSettings[key] = value;
@@ -177,6 +182,7 @@ export default createStore({
       'storeChannelName',
       'storeAutoRetry',
       'storeUploadNameType',
+      'storeExpire',
       'uploadFolder',
       'customUrlSettings',
       'adminUrlSettings',
