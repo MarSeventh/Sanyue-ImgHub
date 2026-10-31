@@ -950,6 +950,8 @@
     "prompts": "Prompt 管理",
     "tagging": "图片标签识别",
     "enableTagging": "开启识别功能",
+    "autoTagOnUpload": "上传自动打标签",
+    "autoTagOnUploadHint": "仅对大小不超过 20 MB 的图片文件生效\n对外链渠道不生效",
     "name": "名称",
     "protocol": "调用协议",
     "keyUnchanged": "已配置，留空保持原密钥",

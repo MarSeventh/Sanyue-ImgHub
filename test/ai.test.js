@@ -3,12 +3,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/utils/fetchWithAuth', () => ({ default: vi.fn() }));
 import fetchWithAuth from '@/utils/fetchWithAuth';
 import { apiJSON, applyTagSuggestions, generateTagSuggestions, makeImagePreview } from '@/utils/aiTags';
+import SysCogAI from '@/components/config/SysCogAI.vue';
 
 beforeEach(() => {
     fetchWithAuth.mockReset();
 });
 
 describe('AI requests and suggestions', () => {
+    it('loads and serializes the automatic upload-tagging setting', () => {
+        const config = {
+            canStoreCredentials: true, defaults: { tagPrompt: 'default' }, promptOverrides: {}, providers: [], models: [],
+            capabilities: { 'image.tags': { enabled: true, autoTagOnUpload: true, preferredTags: ['cat'] } },
+        };
+        const vm = { ...SysCogAI.methods, markSettingsSaved: vi.fn() };
+        SysCogAI.methods.setConfig.call(vm, structuredClone(config));
+        expect(vm.settings.capabilities['image.tags'].autoTagOnUpload).toBe(true);
+        expect(SysCogAI.methods.payload.call(vm).capabilities['image.tags'].autoTagOnUpload).toBe(true);
+        delete config.capabilities['image.tags'].autoTagOnUpload;
+        SysCogAI.methods.setConfig.call(vm, structuredClone(config));
+        expect(vm.settings.capabilities['image.tags'].autoTagOnUpload).toBe(false);
+    });
     it('maps a non-JSON login response to an authentication error', async () => {
         fetchWithAuth.mockResolvedValue(new Response('login', { status: 401 }));
         await expect(apiJSON('/api/manage/ai/tags')).rejects.toMatchObject({ code: 'AUTH_REQUIRED', details: { status: 401 } });

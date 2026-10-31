@@ -942,6 +942,8 @@
     "prompts": "Prompt Management",
     "tagging": "Image Tag Recognition",
     "enableTagging": "Enable recognition",
+    "autoTagOnUpload": "Automatically tag uploads",
+    "autoTagOnUploadHint": "Applies only to image files up to 20 MB\nDoes not apply to the External channel",
     "name": "Name",
     "protocol": "Protocol",
     "keyUnchanged": "Configured; leave blank to keep the Key",
