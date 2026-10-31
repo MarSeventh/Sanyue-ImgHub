@@ -440,7 +440,7 @@
           {{ $t('sysStatus.dupScanSummary', { scanned: dupScanReport.scanned, groups: dupScanReport.duplicateGroups.length, redundant: dupScanReport.redundantCopies }) }}<span v-if="dupScanReport.readErrors.length">{{ $t('sysStatus.dupScanReadErrors', { count: dupScanReport.readErrors.length }) }}</span>
           <el-tooltip placement="top">
             <template #content>
-              <ul class="dup-scan-help-list">
+              <ul class="tooltip-help-list">
                 <li>{{ $t('sysStatus.dupScanScopeTip') }}</li>
                 <li>{{ $t('sysStatus.dupScanKeepTip') }}</li>
                 <li>{{ $t('sysStatus.dupScanDeleteTip') }}</li>
@@ -2275,16 +2275,7 @@ html.dark .legend-item:hover {
   --el-table-row-hover-bg-color: color-mix(in srgb, var(--el-text-color-primary) 5%, var(--el-fill-color-blank));
 }
 
-.dup-scan-help-list {
-  max-width: min(320px, calc(100vw - 64px));
-  margin: 0;
-  padding-left: 18px;
-  line-height: 1.6;
-}
 
-.dup-scan-help-list li + li {
-  margin-top: 4px;
-}
 
 .dup-scan-report .inline-help-icon {
   margin-left: 6px;

@@ -143,7 +143,9 @@
             </div>
         </div>
 
-        <FileExpirySettings />
+        <FileFormatSettings ref="fileFormatSettings" @state-change="uploadRuleStates.fileFormat = $event" />
+        <FileExpirySettings ref="fileExpirySettings" embedded @state-change="uploadRuleStates.fileExpiry = $event" />
+        <FloatingSaveButton :show="uploadRulesReady" :loading="savingUploadRules" :dirty="uploadRulesDirty" @click="saveUploadRules" />
 
         <!-- 添加渠道弹窗 -->
         <el-dialog v-model="showAddDialog" :title="$t('sysUpload.addDialogTitle')" class="channel-dialog" destroy-on-close @closed="resetAddForm">
@@ -617,15 +619,21 @@ import fetchWithAuth from '@/utils/fetchWithAuth';
 import ChannelIcon from '@/components/icons/ChannelIcon.vue';
 import CustomSelect from './CustomSelect.vue';
 import FileExpirySettings from './FileExpirySettings.vue';
+import FileFormatSettings from './FileFormatSettings.vue';
+import FloatingSaveButton from '@/components/FloatingSaveButton.vue';
 
 export default {
 components: {
     ChannelIcon,
     CustomSelect,
-    FileExpirySettings
+    FileExpirySettings,
+    FileFormatSettings,
+    FloatingSaveButton
 },
 data() {
     return {
+    uploadRuleStates: { fileFormat: {}, fileExpiry: {} },
+    savingUploadRules: false,
     // 渠道类型筛选
     channelFilter: '',
     // 渠道类型列表
@@ -710,6 +718,8 @@ data() {
     };
 },
 computed: {
+    uploadRulesReady() { return Object.values(this.uploadRuleStates).some(state => state.available && !state.loading); },
+    uploadRulesDirty() { return Object.values(this.uploadRuleStates).some(state => state.dirty); },
     // 筛选下拉框选项
     filterOptions() {
         return [
@@ -769,6 +779,23 @@ computed: {
     }
 },
 methods: {
+    async saveUploadRules() {
+        if (this.savingUploadRules) return;
+        this.savingUploadRules = true;
+        let saved = false;
+        try {
+            for (const ref of ['fileFormatSettings', 'fileExpirySettings']) {
+                const section = this.$refs[ref];
+                if (section?.hasUnsavedChanges) {
+                    if (!await section.saveSettings(false)) return;
+                    saved = true;
+                }
+            }
+            if (saved) this.$message.success(this.$t('sysOthers.settingsSaved'));
+        } finally {
+            this.savingUploadRules = false;
+        }
+    },
     // 卡片光斑跟随鼠标
     handleCardMouseMove(event, channelType, index) {
         const card = event.currentTarget;

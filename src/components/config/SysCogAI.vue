@@ -119,7 +119,7 @@
                 <el-form-item :label="$t('sysAI.modelName')" prop="model"><el-input v-model="modelDraft.model" maxlength="200" /></el-form-item>
                 <el-form-item :label="$t('sysAI.vision')"><el-switch v-model="modelDraft.vision" /></el-form-item>
                 <el-form-item>
-                    <template #label>{{ $t('sysAI.jsonMode') }}<el-tooltip placement="top"><template #content><span class="json-mode-hint">{{ $t('sysAI.jsonModeHint') }}</span></template><font-awesome-icon icon="question-circle" class="help-icon" /></el-tooltip></template>
+                    <template #label>{{ $t('sysAI.jsonMode') }}<el-tooltip placement="top"><template #content><ul class="tooltip-help-list"><li v-for="point in $t('sysAI.jsonModeHint').split('\n')" :key="point">{{ point }}</li></ul></template><font-awesome-icon icon="question-circle" class="help-icon" /></el-tooltip></template>
                     <el-select v-model="modelDraft.structuredOutput"><el-option :label="$t('sysAI.promptOnly')" value="none" /><el-option :label="$t('sysAI.nativeJsonObject')" value="json" /></el-select>
                 </el-form-item>
                 <el-form-item :label="$t('sysAI.outputTokens')"><el-input-number v-model="modelDraft.maxOutputTokens" :min="64" :max="2048" /></el-form-item>
@@ -278,7 +278,6 @@ export default {
     padding-bottom: 12px; border-bottom: 2px solid var(--el-color-primary-light-7);
 }
 .help-icon { margin-left: 5px; cursor: pointer; }
-.json-mode-hint { display: block; white-space: pre-line; max-width: min(420px, calc(100vw - 32px)); }
 
 .first-settings :deep(.el-form) {
     padding: 20px 24px; background-color: var(--glass-bg) !important;

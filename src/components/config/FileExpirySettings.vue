@@ -4,7 +4,7 @@
             <h3 class="first-title">{{ $t('fileExpiry.title') }}
                 <el-tooltip placement="top">
                     <template #content>
-                        <ul class="expiry-help-list">
+                        <ul class="tooltip-help-list">
                             <li>{{ $t('fileExpiry.settingsTooltip') }}</li>
                             <li>{{ $t('fileExpiry.expiryAccess') }}</li>
                             <li>{{ $t('fileExpiry.disableTooltip') }}</li>
@@ -60,7 +60,7 @@
                         <!-- 内容较长，向上弹出，避免窄屏时超出右侧 -->
                         <el-tooltip placement="top">
                             <template #content>
-                                <ul class="expiry-help-list">
+                                <ul class="tooltip-help-list">
                                     <li v-for="key in cleanupMethodKeys" :key="key">{{ $t(key) }}</li>
                                     <li>{{ $t('fileExpiry.cleanupGrace', { minutes: cleanupGraceMinutes }) }}</li>
                                     <li>{{ $t('fileExpiry.pendingTooltip') }}</li>
@@ -77,7 +77,7 @@
                 </el-form-item>
             </el-form>
         </template>
-        <FloatingSaveButton :show="!loading && !!settings.fileExpiry" :loading="saving" :dirty="hasUnsavedChanges" @click="saveSettings" />
+        <FloatingSaveButton v-if="!embedded" :show="!loading && !!settings.fileExpiry" :loading="saving" :dirty="hasUnsavedChanges" @click="saveSettings" />
     </div>
 </template>
 
@@ -94,6 +94,8 @@ import {
 const SUGGESTED_EXPIRE_OPTIONS = ['1h', '12h', '1d', '3d', '7d', '30d', '90d', '365d', 'forever'];
 
 export default {
+    props: { embedded: Boolean },
+    emits: ['state-change'],
     components: { FloatingSaveButton },
     mixins: [unsavedSettings],
     data() {
@@ -107,6 +109,7 @@ export default {
     },
     computed: {
         editableSettings() { return this.settings.fileExpiry; },
+        saveState() { return { available: !!this.settings.fileExpiry, loading: this.loading, dirty: this.hasUnsavedChanges }; },
         expireOptionChoices() {
             return sortExpireOptions([...SUGGESTED_EXPIRE_OPTIONS, ...(this.settings.fileExpiry?.options || [])]);
         },
@@ -117,6 +120,9 @@ export default {
         cleanupGraceMinutes() {
             return CLEANUP_GRACE_MINUTES;
         }
+    },
+    watch: {
+        saveState: { immediate: true, handler(state) { this.$emit('state-change', state); } },
     },
     methods: {
         expireLabel(option) {
@@ -162,8 +168,8 @@ export default {
                 this.cleaningExpired = false;
             }
         },
-        async saveSettings() {
-            if (this.saving || !this.settings.fileExpiry) return;
+        async saveSettings(notify = true) {
+            if (this.saving || !this.settings.fileExpiry) return false;
             const submitted = JSON.parse(JSON.stringify(this.settings.fileExpiry));
             this.saving = true;
             try {
@@ -178,9 +184,11 @@ export default {
                 });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 this.markSettingsSaved(submitted);
-                this.$message.success(this.$t('sysOthers.settingsSaved'));
+                if (notify) this.$message.success(this.$t('sysOthers.settingsSaved'));
+                return true;
             } catch {
                 this.$message.error(this.$t('floatingSave.failed'));
+                return false;
             } finally {
                 this.saving = false;
             }
@@ -272,12 +280,6 @@ export default {
     gap: 8px 12px;
 }
 
-.expiry-help-list {
-    max-width: min(320px, calc(100vw - 64px));
-    margin: 0;
-    padding-left: 16px;
-    line-height: 1.6;
-}
 
 /* 移动端适配 */
 @media (max-width: 768px) {

@@ -489,7 +489,8 @@ describe('file expiry', () => {
             await flush();
             const groups = mounted.findAll('.channel-group');
             expect(groups).toHaveLength(6);
-            expect(groups.at(-1).nextElementSibling.dataset.stub).toBe('FileExpirySettings');
+            expect(groups.at(-1).nextElementSibling.dataset.stub).toBe('FileFormatSettings');
+            expect(groups.at(-1).nextElementSibling.nextElementSibling.dataset.stub).toBe('FileExpirySettings');
         });
 
         function tooltipTexts(view) {

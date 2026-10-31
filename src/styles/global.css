@@ -1103,3 +1103,17 @@ html.dark .os-theme-dark,
     -webkit-backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.4);
 }
 
+/* 分点提示使用统一的圆点、缩进和换行样式 */
+.tooltip-help-list {
+    max-width: min(320px, calc(100vw - 64px));
+    margin: 0;
+    padding-left: 16px;
+    list-style: disc outside;
+    line-height: 1.6;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.tooltip-help-list > li + li {
+    margin-top: 4px;
+}

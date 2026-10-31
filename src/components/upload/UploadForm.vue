@@ -199,6 +199,7 @@ import axios from '@/utils/axios'
 import * as imageConversion from 'image-conversion'
 import { mapGetters } from 'vuex'
 import { buildFileUrls, updateFileListUrls, getUrlByFormat } from '@/utils/upload/urlBuilder'
+import { isUploadFormatError } from '@/utils/upload/fileFormat'
 import { computeSha256 } from '@/utils/upload/sha256'
 import { expireQuery } from '@/utils/fileExpiry'
 import { isAnimatedImage } from '@/utils/upload/animatedImage'
@@ -750,6 +751,7 @@ methods: {
             let nextChunkIndex = 0
             let hasError = false
             let errorMsg = ''
+            let uploadError = null
             let isCancelled = false // 标记是否被取消
 
             const uploadChunk = async (chunkIndex) => {
@@ -796,6 +798,10 @@ methods: {
                         })
                         return // Success
                     } catch (err) {
+                        if (isUploadFormatError(err)) {
+                            hasError = true
+                            throw err
+                        }
                         // 如果是取消操作，直接返回
                         if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
                             isCancelled = true
@@ -827,6 +833,7 @@ methods: {
                             if (!isCancelled) {
                                 hasError = true
                                 errorMsg = e.message
+                                if (isUploadFormatError(e) || !uploadError) uploadError = e
                             }
                             break
                         }
@@ -843,7 +850,7 @@ methods: {
             }
 
             if (hasError) {
-                throw new Error(errorMsg || this.$t('uploadForm.uploadError'))
+                throw uploadError || new Error(errorMsg || this.$t('uploadForm.uploadError'))
             }
 
             // 第三步：所有分块上传完成，发送合并请求
@@ -1003,11 +1010,13 @@ methods: {
         const fileItem = this.fileList.find(item => item.uid === file.uid)
         if (!fileItem) return // 文件已被删除
         
-        this.$message.error(this.$t('uploadForm.uploadFailed', { name: this.truncateFilename(file.name) }))
+        const formatBlocked = isUploadFormatError(err)
+        this.$message.error(this.$t(formatBlocked ? 'uploadForm.formatNotAllowed' : 'uploadForm.uploadFailed', { name: this.truncateFilename(file.name) }))
         fileItem.status = 'exception'
+        fileItem.formatBlocked = formatBlocked
         
         // 如果开启了自动重试，安排自动重试
-        if (this.autoReUpload) {
+        if (this.autoReUpload && !formatBlocked) {
             this.scheduleAutoRetry();
         }
         // 注意：并发控制的 onUploadComplete 已在各上传方法的 finally 中调用
@@ -1419,7 +1428,13 @@ methods: {
             if (!fileItem) return
 
             // 手动重试开启一轮新的尝试，不受上一轮自动重试次数限制
-            if (isManualRetry) fileItem.retryCount = 0
+            if (isManualRetry) {
+                fileItem.retryCount = 0
+                fileItem.formatBlocked = false
+            } else if (fileItem.formatBlocked) {
+                this.exceptionList.push(file)
+                return
+            }
 
             const retryCount = fileItem.retryCount || 0;
             if (isManualRetry || retryCount < this.maxRetryCount) {
