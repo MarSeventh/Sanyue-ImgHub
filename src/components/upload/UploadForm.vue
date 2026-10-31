@@ -957,8 +957,8 @@ methods: {
             // 对上传渠道为外链的，不修改链接
             const uploadChannel = fileItem.uploadChannel || this.uploadChannel
             if (uploadChannel !== 'external') {
-                // 从response.data[0].src中去除/file/前缀
-                const srcID = response.data[0].src.replace('/file/', '')
+                const result = Array.isArray(response.data) ? response.data[0] : response.data
+                const srcID = result.src.replace('/file/', '')
                 fileItem.url = `${window.location.protocol}//${window.location.host}/file/` + srcID
                 const urls = buildFileUrls(srcID, file.name, this.rootUrl)
                 Object.assign(fileItem, urls)
@@ -1572,11 +1572,7 @@ methods: {
             }
 
             console.log('Upload complete:', commitRes.data);
-            // 转换响应格式以匹配 handleSuccess 期望的格式
-            const formattedResponse = {
-                data: [{ src: commitRes.data.src }]
-            };
-            file.onSuccess(formattedResponse, file.file);
+            file.onSuccess(commitRes, file.file);
 
         } catch (err) {
             // 如果是取消操作，不加入异常列表

@@ -107,6 +107,48 @@ describe('upload component preprocessing', () => {
     });
 });
 
+describe('upload result handling', () => {
+    function context() {
+        const item = { uid: 'upload-1', name: 'photo.png', uploadChannel: 'cfr2' };
+        return {
+            fileList: [item], rootUrl: 'https://cdn.test/',
+            saveToHistory: vi.fn(), truncateFilename: name => name,
+            $message: Object.assign(vi.fn(), { error: vi.fn() }), $t: key => key,
+        };
+    }
+
+    it.each([
+        { shape: 'array', data: [{ src: '/file/album/photo.png' }] },
+        { shape: 'object', data: { src: '/file/album/photo.png' } },
+        { shape: 'HuggingFace', data: { success: true, src: '/file/album/photo.png' } },
+    ])('uses $shape results for links and history', ({ data }) => {
+        vi.useFakeTimers();
+        try {
+            const vm = context();
+            UploadForm.methods.handleSuccess.call(vm, { data }, vm.fileList[0]);
+            expect(vm.fileList[0]).toMatchObject({
+                status: 'success', srcID: 'album/photo.png',
+                finalURL: 'https://cdn.test/album/photo.png',
+                mdURL: '![photo.png](https://cdn.test/album/photo.png)',
+            });
+            expect(vm.saveToHistory).toHaveBeenCalledWith(vm.fileList[0]);
+            expect(vm.$message.error).not.toHaveBeenCalled();
+            vi.runAllTimers();
+            expect(vm.fileList[0].status).toBe('done');
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it.each([{ data: [] }, { data: {} }, { data: null }])('does not record malformed upload responses as successful: %j', ({ data }) => {
+        const vm = context();
+        UploadForm.methods.handleSuccess.call(vm, { data }, vm.fileList[0]);
+        expect(vm.fileList[0].status).toBe('exception');
+        expect(vm.saveToHistory).not.toHaveBeenCalled();
+        expect(vm.$message.error).toHaveBeenCalledOnce();
+    });
+});
+
 describe('upload file information', () => {
     const display = file => {
         const vm = { file, ...UploadFileItem.methods, $t: (key, params = {}) => `${key}:${JSON.stringify(params)}` };
