@@ -138,9 +138,9 @@
                         />
                         <span v-else :class="{ 'expiry-never': !fileExpiresAt }">{{ expiresAtDisplay }}</span>
                         <template v-if="!fileExpired">
-                            <el-button v-if="!expiryEditing" link type="primary" size="small" class="expiry-change" :disabled="metadataSaving" @click="startExpiryEdit">{{ $t('fileExpiry.change') }}</el-button>
-                            <el-button v-else link size="small" class="expiry-cancel" @click="resetExpiryEdit">{{ $t('fileDetail.cancel') }}</el-button>
-                            <el-button v-if="fileExpiresAt && !expiryEditing" link type="primary" size="small" class="expiry-forever" :disabled="metadataSaving" @click="saveExpiry(null)">{{ $t('fileExpiry.setForever') }}</el-button>
+                            <el-button v-if="!expiryEditing" size="small" class="expiry-change" :disabled="metadataSaving" @click="startExpiryEdit">{{ $t('fileExpiry.change') }}</el-button>
+                            <el-button v-else size="small" class="expiry-cancel" @click="resetExpiryEdit">{{ $t('fileDetail.cancel') }}</el-button>
+                            <el-button v-if="fileExpiresAt && !expiryEditing" size="small" class="expiry-forever" :disabled="metadataSaving" @click="saveExpiry(null)">{{ $t('fileExpiry.setForever') }}</el-button>
                         </template>
                     </div>
                 </el-descriptions-item>
@@ -188,6 +188,7 @@
 </template>
 
 <script>
+import { useExpiryClock } from '@/utils/dashboard/useExpiryClock';
 import { ElMessage } from 'element-plus';
 import { ref } from 'vue';
 import { useElementSize, useWindowSize } from '@vueuse/core';
@@ -205,7 +206,7 @@ export default {
         const secondaryContent = ref(null);
         const { width: secondaryWidth } = useElementSize(secondaryContent);
         const detailMotion = createDetailPreviewMotion();
-        return { viewportWidth, secondaryContent, secondaryWidth, detailMotion };
+        return { viewportWidth, secondaryContent, secondaryWidth, detailMotion, expiryNow: useExpiryClock() };
     },
     props: {
         modelValue: { type: Boolean, default: false },
@@ -379,7 +380,7 @@ export default {
         },
         // 已到期的文件访问即返回 404，后端也不再允许修改，等待清理
         fileExpired() {
-            return isExpired(this.fileExpiresAt);
+            return isExpired(this.fileExpiresAt, this.expiryNow);
         },
         expiresAtDisplay() {
             return this.fileExpiresAt === null

@@ -7,6 +7,10 @@ vi.mock('element-plus', async (importOriginal) => ({
 }));
 import { ElMessage } from 'element-plus';
 import fetchWithAuth from '@/utils/fetchWithAuth';
+import FileExpirySettings from '@/components/config/FileExpirySettings.vue';
+import FileCard from '@/components/dashboard/FileCard.vue';
+import FileListItem from '@/components/dashboard/FileListItem.vue';
+import SysCogUpload from '@/components/config/SysCogUpload.vue';
 import SysCogOthers from '@/components/config/SysCogOthers.vue';
 import FileDetailDialog from '@/components/dashboard/FileDetailDialog.vue';
 import Dashboard from '@/views/AdminDashBoard.vue';
@@ -14,7 +18,7 @@ import UploadHome from '@/views/UploadHome.vue';
 import UploadSettingsDialog from '@/components/upload/UploadSettingsDialog.vue';
 import {
     EXPIRE_FOREVER, cleanupMethodKeys, describeCleanupResult, effectiveUploadExpire, expireQuery, formatExpireOption,
-    getExpiresAt, getUploadFileExpiry, isFileExpirySupported, isValidExpireOption, resolveUploadExpire, sortExpireOptions,
+    getExpiresAt, getExpiryState, getUploadFileExpiry, isFileExpirySupported, isValidExpireOption, resolveUploadExpire, sortExpireOptions,
 } from '@/utils/fileExpiry';
 import { mountTemplate } from './helpers/renderTemplate';
 
@@ -106,18 +110,54 @@ describe('file expiry', () => {
 
         it('sorts edited options and keeps the default within them', () => {
             const vm = context({ defaultExpire: '7d', options: ['7d', 'forever'] });
-            SysCogOthers.methods.handleExpireOptionsChange.call(vm, ['forever', '3d', '12h']);
+            FileExpirySettings.methods.handleExpireOptionsChange.call(vm, ['forever', '3d', '12h']);
             expect(vm.settings.fileExpiry).toEqual({ defaultExpire: '12h', options: ['12h', '3d', 'forever'] });
         });
 
         it('rejects invalid, empty or oversized option lists without changing settings', () => {
             const vm = context({ defaultExpire: '7d', options: ['7d'] });
             for (const values of [['7d', '2w'], [], Array.from({ length: 21 }, (_, i) => `${i + 1}h`)]) {
-                SysCogOthers.methods.handleExpireOptionsChange.call(vm, values);
+                FileExpirySettings.methods.handleExpireOptionsChange.call(vm, values);
             }
             expect(vm.$message.error).toHaveBeenCalledTimes(3);
             expect(vm.settings.fileExpiry).toEqual({ defaultExpire: '7d', options: ['7d'] });
         });
+    });
+
+    describe('expiry indicators', () => {
+        it('distinguishes permanent, valid, due within 24 hours and expired files', () => {
+            const now = Date.now();
+            expect(getExpiryState(null, now)).toBe(null);
+            expect(getExpiryState(now + DAY + 1, now)).toBe('valid');
+            expect(getExpiryState(now + DAY, now)).toBe('soon');
+            expect(getExpiryState(now + 1, now)).toBe('soon');
+            expect(getExpiryState(now, now)).toBe('expired');
+        });
+
+        for (const [component, name, selector] of [[FileCard, 'FileCard', '.expiry-tag'], [FileListItem, 'FileListItem', '.list-expiry-icon']]) {
+            it(`updates ${name} while the page stays open and hides permanent-file indicators`, async () => {
+                vi.useFakeTimers();
+                const now = Date.now();
+                const item = { name: 'photo.png', metadata: { ExpiresAt: now + DAY + 1000 } };
+                const view = mountTemplate(component, `src/components/dashboard/${name}.vue`, { props: { item, fileLink: '/file/photo.png' }, t });
+                try {
+                    expect(view.find(selector).classList.contains('expiry-valid')).toBe(true);
+                    await vi.advanceTimersByTimeAsync(1000);
+                    expect(view.find(selector).classList.contains('expiry-soon')).toBe(true);
+                    expect(view.find(selector).getAttribute('title')).toContain('fileExpiry.expiresSoon');
+                    view.props.item = { ...item, metadata: { ExpiresAt: Date.now() + 1000 } };
+                    await vi.advanceTimersByTimeAsync(1000);
+                    expect(view.find(selector).classList.contains('expiry-expired')).toBe(true);
+                    expect(view.find(selector).getAttribute('title')).toContain('fileExpiry.expiredWaiting');
+                    view.props.item = { ...item, metadata: {} };
+                    await nextTick();
+                    expect(view.find(selector)).toBeNull();
+                } finally {
+                    view.unmount();
+                    vi.useRealTimers();
+                }
+            });
+        }
     });
 
     describe('file management', () => {
@@ -376,17 +416,81 @@ describe('file expiry', () => {
                 if (url === '/api/manage/expiry') {
                     return jsonResponse(options.method === 'POST' ? cleanupResponse : { success: true, pending: 4, pendingCapped: false });
                 }
-                if (url.startsWith('/api/manage/sysConfig/others')) return jsonResponse(settings());
+                if (url.startsWith('/api/manage/sysConfig/upload')) return jsonResponse(settings());
                 return jsonResponse({});
             });
             const message = { success: vi.fn(), warning: vi.fn(), error: vi.fn() };
-            mounted = mountTemplate(SysCogOthers, 'src/components/config/SysCogOthers.vue', {
+            mounted = mountTemplate(FileExpirySettings, 'src/components/config/FileExpirySettings.vue', {
                 globals: { $store: { getters: { userConfig: { serverRuntime } } }, $message: message },
                 t,
             });
             await flush();
             return { ...mounted, message };
         }
+
+        it('saves expiry with the latest channel settings and leaves later edits dirty', async () => {
+            const view = await mountSettings('node');
+            expect(view.vm.hasUnsavedChanges).toBe(false);
+            view.vm.settings.fileExpiry.defaultExpire = 'forever';
+            const latest = { fileExpiry: settings().fileExpiry, s3: { channels: [{ name: 'new-channel', bucketName: 'photos', secretAccessKey: 'existing-secret' }] } };
+            fetchWithAuth.mockClear();
+            fetchWithAuth.mockResolvedValueOnce(jsonResponse(latest));
+            let finishSave;
+            fetchWithAuth.mockImplementationOnce(() => new Promise(resolve => { finishSave = resolve; }));
+            const saving = view.vm.saveSettings();
+            await flush();
+            expect(fetchWithAuth.mock.calls[0][0]).toBe('/api/manage/sysConfig/upload');
+            expect(JSON.parse(fetchWithAuth.mock.calls[1][1].body)).toEqual({
+                ...latest, fileExpiry: { ...settings().fileExpiry, defaultExpire: 'forever' },
+            });
+            view.vm.settings.fileExpiry.allowCustom = false;
+            finishSave(jsonResponse({}));
+            await saving;
+            expect(view.vm.hasUnsavedChanges).toBe(true);
+            expect(view.message.success).toHaveBeenCalled();
+        });
+
+        it('preserves the expiry draft when fetching current settings or saving fails', async () => {
+            const view = await mountSettings('node');
+            view.vm.settings.fileExpiry.defaultExpire = 'forever';
+            for (const failRead of [true, false]) {
+                fetchWithAuth.mockReset();
+                fetchWithAuth.mockResolvedValueOnce(jsonResponse(failRead ? {} : settings(), failRead ? 500 : 200));
+                if (!failRead) fetchWithAuth.mockResolvedValueOnce(jsonResponse({}, 500));
+                await view.vm.saveSettings();
+                expect(fetchWithAuth).toHaveBeenCalledTimes(failRead ? 1 : 2);
+                expect(view.vm.hasUnsavedChanges).toBe(true);
+                expect(view.vm.settings.fileExpiry.defaultExpire).toBe('forever');
+                expect(view.vm.saving).toBe(false);
+            }
+            expect(view.message.error).toHaveBeenCalledTimes(2);
+        });
+
+        it('keeps expiry out of the other settings form and its save payload', async () => {
+            const { fileExpiry, ...others } = settings();
+            fetchWithAuth.mockImplementation(async url => jsonResponse(url.includes('sysConfig/others') ? others : {}));
+            mounted = mountTemplate(SysCogOthers, 'src/components/config/SysCogOthers.vue', {
+                globals: { $message: { success: vi.fn(), error: vi.fn() } }, t,
+            });
+            await flush();
+            expect(mounted.text()).not.toContain('fileExpiry.title');
+            mounted.vm.settings.publicBrowse.enabled = true;
+            await mounted.vm.saveSettings();
+            const [, request] = fetchWithAuth.mock.calls.find(([, options]) => options?.method === 'POST');
+            const saved = JSON.parse(request.body);
+            expect(saved).not.toHaveProperty('fileExpiry');
+            expect(saved.publicBrowse.enabled).toBe(true);
+        });
+
+        it('places expiry settings after the upload channels', async () => {
+            const channels = Object.fromEntries(['telegram', 'cfr2', 's3', 'discord', 'huggingface', 'webdav'].map(type => [type, { channels: [], loadBalance: {} }]));
+            fetchWithAuth.mockImplementation(async () => jsonResponse(channels));
+            mounted = mountTemplate(SysCogUpload, 'src/components/config/SysCogUpload.vue', { t });
+            await flush();
+            const groups = mounted.findAll('.channel-group');
+            expect(groups).toHaveLength(6);
+            expect(groups.at(-1).nextElementSibling.dataset.stub).toBe('FileExpirySettings');
+        });
 
         function tooltipTexts(view) {
             return view.findAll('[data-stub="el-tooltip"] [data-slot="content"]').map(node => node.textContent).join('\n');
@@ -401,11 +505,18 @@ describe('file expiry', () => {
         it('keeps cleanup explanations in the question-mark tooltip and the pending count visible', async () => {
             const view = await mountSettings('worker');
             const help = tooltipTexts(view);
-            for (const key of ['fileExpiry.cleanupWorker', 'fileExpiry.cleanupGrace', 'fileExpiry.pendingStuck', 'fileExpiry.kvNotice']) {
+            for (const key of ['fileExpiry.cleanupWorker', 'fileExpiry.cleanupGrace', 'fileExpiry.pendingTooltip', 'fileExpiry.manualCleanup']) {
                 expect(help).toContain(key);
                 expect(textOutsideTooltips(view)).not.toContain(key);
             }
             expect(help).not.toContain('fileExpiry.cleanupPages');
+            const tooltips = view.findAll('[data-stub="el-tooltip"] [data-slot="content"]');
+            const cleanupHelp = tooltips.find(node => node.textContent.includes('fileExpiry.cleanupWorker'));
+            const expiryHelp = tooltips.find(node => node.textContent.includes('fileExpiry.settingsTooltip'));
+            expect(expiryHelp.textContent).toContain('fileExpiry.expiryAccess');
+            expect(expiryHelp.textContent).toContain('fileExpiry.disableTooltip');
+            expect(cleanupHelp.textContent).not.toContain('fileExpiry.expiryAccess');
+            expect(cleanupHelp.textContent).not.toContain('fileExpiry.disableTooltip');
             expect(view.find('.expiry-pending').textContent).toBe('fileExpiry.pending:{"count":4}');
         });
 
@@ -463,6 +574,8 @@ describe('file expiry', () => {
             }
             mounted = render({ enabled: true, allowCustom: true, defaultExpire: '7d', options: ['12h', '7d'] });
             expect(mounted.text()).toContain('fileExpiry.label');
+            const headings = mounted.findAll('.section-title').map(node => node.textContent);
+            expect(headings.indexOf('fileExpiry.title')).toBe(headings.indexOf('uploadSettings.fileNaming') + 1);
         });
     });
 });

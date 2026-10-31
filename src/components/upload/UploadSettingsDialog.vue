@@ -56,29 +56,6 @@
             </div>
         </div>
         
-        <!-- 文件有效期：仅在管理员允许自选时显示 -->
-        <div class="dialog-section" v-if="fileExpiry && fileExpiry.allowCustom">
-            <div class="section-header">
-                <span class="section-title">{{ $t('fileExpiry.title') }}</span>
-                <el-tooltip :content="$t('fileExpiry.uploadTooltip')" placement="top">
-                    <font-awesome-icon icon="question-circle" class="section-help-icon"/>
-                </el-tooltip>
-            </div>
-            <div class="section-content">
-                <div class="setting-item">
-                    <span class="setting-label">{{ $t('fileExpiry.label') }}</span>
-                    <el-select :model-value="selectedExpire" @update:model-value="$emit('update:expire', $event)" class="setting-input">
-                        <el-option
-                            v-for="option in fileExpiry.options"
-                            :key="option"
-                            :label="formatExpire(option)"
-                            :value="option"
-                        />
-                    </el-select>
-                </div>
-            </div>
-        </div>
-
         <!-- 文件命名方式 -->
         <div class="dialog-section">
             <div class="section-header">
@@ -106,6 +83,29 @@
             </div>
         </div>
         
+        <!-- 文件有效期：仅在管理员允许自选时显示 -->
+        <div class="dialog-section" v-if="fileExpiry && fileExpiry.allowCustom">
+            <div class="section-header">
+                <span class="section-title">{{ $t('fileExpiry.title') }}</span>
+                <el-tooltip :content="$t('fileExpiry.uploadTooltip')" placement="top">
+                    <font-awesome-icon icon="question-circle" class="section-help-icon"/>
+                </el-tooltip>
+            </div>
+            <div class="section-content">
+                <div class="setting-item">
+                    <span class="setting-label">{{ $t('fileExpiry.label') }}</span>
+                    <el-select :model-value="selectedExpire" @update:model-value="$emit('update:expire', $event)" class="setting-input">
+                        <el-option
+                            v-for="option in fileExpiry.options"
+                            :key="option"
+                            :label="formatExpire(option)"
+                            :value="option"
+                        />
+                    </el-select>
+                </div>
+            </div>
+        </div>
+
         <!-- 客户端预处理 -->
         <div class="dialog-section">
             <div class="section-header">

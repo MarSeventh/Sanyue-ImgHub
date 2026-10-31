@@ -113,6 +113,15 @@ export function isExpired(expiresAt, now = Date.now()) {
 }
 
 /**
+ * 剩余 24 小时内提醒即将到期，永久文件不显示状态图标
+ */
+export function getExpiryState(expiresAt, now = Date.now()) {
+    if (expiresAt === null || expiresAt === undefined) return null
+    if (isExpired(expiresAt, now)) return 'expired'
+    return expiresAt - now <= DAY_MS ? 'soon' : 'valid'
+}
+
+/**
  * 到期时间的本地化显示
  */
 export function formatExpiresAt(expiresAt, locale) {
