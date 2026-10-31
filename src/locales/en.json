@@ -1057,6 +1057,7 @@
     "settingsTooltip": "Enable expiry for new uploads so cleanup can delete them after they expire",
     "defaultExpire": "Default expiry",
     "defaultExpireTooltip": "Used when the uploader makes no choice or may not choose",
+    "defaultExpireCustomTooltip": "Type a duration and press Enter, e.g. 6h or 15d, up to 3650 days; new durations are also added to the available options",
     "allowCustom": "Let uploaders choose",
     "allowCustomTooltip": "When on, the upload page and API may only pick from the options below; when off, the default always applies",
     "options": "Available options",

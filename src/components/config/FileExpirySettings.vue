@@ -37,12 +37,24 @@
                 <el-form-item>
                     <template #label>
                         <span>{{ $t('fileExpiry.defaultExpire') }}</span>
-                        <el-tooltip :content="$t('fileExpiry.defaultExpireTooltip')" placement="right">
+                        <el-tooltip placement="top">
+                            <template #content>
+                                <ul class="tooltip-help-list">
+                                    <li>{{ $t('fileExpiry.defaultExpireTooltip') }}</li>
+                                    <li>{{ $t('fileExpiry.defaultExpireCustomTooltip') }}</li>
+                                </ul>
+                            </template>
                             <font-awesome-icon icon="question-circle" style="margin-left: 5px; cursor: pointer;"/>
                         </el-tooltip>
                     </template>
-                    <el-select v-model="settings.fileExpiry.defaultExpire" :disabled="settings.fileExpiry.fixed">
-                        <el-option v-for="option in settings.fileExpiry.options" :key="option" :label="expireLabel(option)" :value="option"></el-option>
+                    <el-select
+                        :model-value="settings.fileExpiry.defaultExpire"
+                        @update:model-value="handleDefaultExpireChange"
+                        :disabled="settings.fileExpiry.fixed"
+                        :placeholder="$t('fileExpiry.optionsPlaceholder')"
+                        filterable allow-create default-first-option :reserve-keyword="false"
+                    >
+                        <el-option v-for="option in expireOptionChoices" :key="option" :label="expireLabel(option)" :value="option"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item>
@@ -127,6 +139,15 @@ export default {
     methods: {
         expireLabel(option) {
             return formatExpireOption(option, this.$t);
+        },
+        handleDefaultExpireChange(value) {
+            const fileExpiry = this.settings.fileExpiry;
+            if (!fileExpiry.options.includes(value)) {
+                this.handleExpireOptionsChange([...fileExpiry.options, value]);
+            }
+            if (fileExpiry.options.includes(value)) {
+                fileExpiry.defaultExpire = value;
+            }
         },
         handleExpireOptionsChange(values) {
             const invalid = values.find(option => !isValidExpireOption(option));

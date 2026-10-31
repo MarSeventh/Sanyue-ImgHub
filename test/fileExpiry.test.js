@@ -428,6 +428,43 @@ describe('file expiry', () => {
             return { ...mounted, message };
         }
 
+        it('adds a custom default to the choices and saves it for use by uploads', async () => {
+            const view = await mountSettings('node');
+            const picker = view.findAll('[data-stub="el-select"]')[1];
+            expect(picker.hasAttribute('filterable')).toBe(true);
+            expect(picker.hasAttribute('allow-create')).toBe(true);
+            expect(view.vm.expireOptionChoices).toContain('12h');
+            view.vm.handleDefaultExpireChange('15d');
+            expect(view.vm.settings.fileExpiry.defaultExpire).toBe('15d');
+            expect(view.vm.settings.fileExpiry.options).toEqual(['7d', '15d', 'forever']);
+            expect(view.vm.hasUnsavedChanges).toBe(true);
+            fetchWithAuth.mockClear();
+            await view.vm.saveSettings();
+            const saved = JSON.parse(fetchWithAuth.mock.calls.find(([, options]) => options?.method === 'POST')[1].body).fileExpiry;
+            expect(saved.defaultExpire).toBe('15d');
+            expect(saved.options).toEqual(['7d', '15d', 'forever']);
+            expect(resolveUploadExpire(saved, '')).toBe('15d');
+            expect(effectiveUploadExpire({ ...saved, allowCustom: false }, '')).toBe('15d');
+            expect(view.vm.hasUnsavedChanges).toBe(false);
+        });
+
+        it('rejects invalid custom defaults and extra options at the limit while allowing existing choices', async () => {
+            const view = await mountSettings('node');
+            for (const value of ['0h', '3651d', '1w', '']) view.vm.handleDefaultExpireChange(value);
+            expect(view.vm.settings.fileExpiry).toEqual(settings().fileExpiry);
+            expect(view.message.error).toHaveBeenCalledTimes(4);
+            const options = Array.from({ length: 20 }, (_, index) => `${index + 1}h`);
+            view.vm.settings.fileExpiry.options = options;
+            view.vm.settings.fileExpiry.defaultExpire = '1h';
+            view.vm.handleDefaultExpireChange('21h');
+            expect(view.message.error).toHaveBeenLastCalledWith('fileExpiry.tooManyOptions');
+            expect(view.vm.settings.fileExpiry.defaultExpire).toBe('1h');
+            expect(view.vm.settings.fileExpiry.options).toEqual(options);
+            view.vm.handleDefaultExpireChange('12h');
+            expect(view.vm.settings.fileExpiry.defaultExpire).toBe('12h');
+            expect(view.vm.settings.fileExpiry.options).toHaveLength(20);
+        });
+
         it('saves expiry with the latest channel settings and leaves later edits dirty', async () => {
             const view = await mountSettings('node');
             expect(view.vm.hasUnsavedChanges).toBe(false);

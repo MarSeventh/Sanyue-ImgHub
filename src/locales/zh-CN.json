@@ -1065,6 +1065,7 @@
     "settingsTooltip": "开启后，可为新上传的文件设置有效期，到期后由清理任务删除",
     "defaultExpire": "默认有效期",
     "defaultExpireTooltip": "上传者没有选择、或不允许自选时使用",
+    "defaultExpireCustomTooltip": "可直接输入时长后回车，如 6h、15d，最长 3650 天；新时长会同时加入可选有效期",
     "allowCustom": "允许上传者自选",
     "allowCustomTooltip": "开启后，上传页和 API 只能从“可选有效期”中选择；关闭时一律使用默认有效期",
     "options": "可选有效期",
