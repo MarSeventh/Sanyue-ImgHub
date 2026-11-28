@@ -174,6 +174,7 @@
     "customLinkTooltip": "<ul class=\"tooltip-help-list\"><li>Default link is https://your.domain/file/xxx.jpg</li><li>If custom link format is enabled, only the xxx.jpg part is kept, please enter the rest manually</li></ul>",
     "enableCustom": "Enable Custom",
     "customPrefix": "Custom Prefix",
+    "currentDefaultUrlPrefix": "Current default URL prefix:",
     "customPrefixPlaceholder": "Enter custom link prefix",
     "confirm": "OK",
     "s3Link": "S3 Link"

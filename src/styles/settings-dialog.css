@@ -118,6 +118,23 @@ html.dark .settings-dialog-scope .radio-card-group .radio-card.is-checked .radio
     max-width: 250px;
 }
 
+.settings-dialog-scope .default-url-prefix {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.settings-dialog-scope .default-url-prefix .el-input {
+    width: 220px;
+    max-width: 60%;
+    flex-shrink: 0;
+}
+
 .settings-dialog-scope .dialog-action {
     display: flex;
     justify-content: flex-end;

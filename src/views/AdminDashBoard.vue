@@ -444,6 +444,16 @@
                                 <font-awesome-icon icon="question-circle" class="inline-help-icon"/>
                             </el-tooltip>
                         </div>
+                        <div v-if="userConfig?.urlPrefix" class="default-url-prefix">
+                            <span>{{ $t('settings.currentDefaultUrlPrefix') }}</span>
+                            <el-input
+                                :model-value="userConfig.urlPrefix"
+                                :title="userConfig.urlPrefix"
+                                :aria-label="$t('settings.currentDefaultUrlPrefix')"
+                                readonly
+                                size="small"
+                            />
+                        </div>
                         <div class="setting-item">
                             <span class="setting-label">{{ $t('settings.enableCustom') }}</span>
                             <el-switch v-model="useCustomUrl" active-value="true" inactive-value="false" />

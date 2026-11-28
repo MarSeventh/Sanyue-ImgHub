@@ -176,6 +176,7 @@
     "customLinkTooltip": "<ul class=\"tooltip-help-list\"><li>默认链接为https://your.domain/file/xxx.jpg</li><li>如果启用自定义链接格式，只保留xxx.jpg部分，其他部分请自行输入</li></ul>",
     "enableCustom": "启用自定义",
     "customPrefix": "自定义前缀",
+    "currentDefaultUrlPrefix": "当前默认 URL 前缀：",
     "customPrefixPlaceholder": "请输入自定义链接前缀",
     "confirm": "确定",
     "s3Link": "S3链接"
