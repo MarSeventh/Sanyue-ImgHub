@@ -129,11 +129,19 @@
     const fadeLayers = element => glassAncestors.has(element)
       ? Array.from(element.children).flatMap(fadeLayers)
       : [{ element, opacity: getComputedStyle(element).opacity }];
-    const targets = elements.map(target => ({
-      ...target,
-      layers: fadeLayers(target.element).filter(layer => layer.element === target.element
-        || (Number(layer.opacity) > 0 && layer.element.getClientRects().length > 0))
-    }));
+    const targets = elements.map(target => {
+      // 嵌套毛玻璃卡片可整体渐显，避免只渐显内部内容而提前露出外壳。
+      const fadeSelf = target.element.dataset.entryFade === 'self' || !glassAncestors.has(target.element);
+      const layers = fadeSelf
+        ? [{ element: target.element, opacity: getComputedStyle(target.element).opacity }]
+        : fadeLayers(target.element);
+      return {
+        ...target,
+        fadeSelf,
+        layers: layers.filter(layer => layer.element === target.element
+          || (Number(layer.opacity) > 0 && layer.element.getClientRects().length > 0))
+      };
+    });
     const track = animation => {
       animations.add(animation);
       animation.finished.catch(() => {}).finally(() => {
@@ -144,18 +152,28 @@
 
     // 相邻元素同步进入；其他内容的位移也限制在邻居间距内，防止交错。
     const groupDelays = new Map();
-    targets.forEach(({ element, rect, offset, group, layers }, index) => {
+    targets.forEach(({ element, rect, offset, group, layers, fadeSelf }, index) => {
       if (typeof element.animate !== 'function') return;
       let [x, y] = offset;
+      const movingElements = group ? elements.filter(other => other.group === group
+        && other.offset[0] === offset[0] && other.offset[1] === offset[1]) : [];
+      // 同组统一计算外部间距，避免其中一张卡片被限位后与组内其他卡片交错。
+      const movementBounds = movingElements.length ? {
+        left: Math.min(...movingElements.map(other => other.rect.left)),
+        right: Math.max(...movingElements.map(other => other.rect.right)),
+        top: Math.min(...movingElements.map(other => other.rect.top)),
+        bottom: Math.max(...movingElements.map(other => other.rect.bottom))
+      } : rect;
       elements.forEach(other => {
-        if (other.element === element) return;
+        // 同组同向元素保持相对间距，无需相互压缩入场位移。
+        if (other.element === element || movingElements.includes(other)) return;
         const bounds = other.rect;
-        const overlapsY = rect.top < bounds.bottom + Math.max(0, other.offset[1]) && rect.bottom > bounds.top + Math.min(0, other.offset[1]);
-        const overlapsX = rect.left < bounds.right + Math.max(0, other.offset[0]) && rect.right > bounds.left + Math.min(0, other.offset[0]);
-        if (overlapsY && x > 0 && rect.right <= bounds.left) x = Math.min(x, Math.max(0, (bounds.left - rect.right) / 2 - 1));
-        if (overlapsY && x < 0 && rect.left >= bounds.right) x = Math.max(x, -Math.max(0, (rect.left - bounds.right) / 2 - 1));
-        if (overlapsX && y > 0 && rect.bottom <= bounds.top) y = Math.min(y, Math.max(0, (bounds.top - rect.bottom) / 2 - 1));
-        if (overlapsX && y < 0 && rect.top >= bounds.bottom) y = Math.max(y, -Math.max(0, (rect.top - bounds.bottom) / 2 - 1));
+        const overlapsY = movementBounds.top < bounds.bottom + Math.max(0, other.offset[1]) && movementBounds.bottom > bounds.top + Math.min(0, other.offset[1]);
+        const overlapsX = movementBounds.left < bounds.right + Math.max(0, other.offset[0]) && movementBounds.right > bounds.left + Math.min(0, other.offset[0]);
+        if (overlapsY && x > 0 && movementBounds.right <= bounds.left) x = Math.min(x, Math.max(0, (bounds.left - movementBounds.right) / 2 - 1));
+        if (overlapsY && x < 0 && movementBounds.left >= bounds.right) x = Math.max(x, -Math.max(0, (movementBounds.left - bounds.right) / 2 - 1));
+        if (overlapsX && y > 0 && movementBounds.bottom <= bounds.top) y = Math.min(y, Math.max(0, (bounds.top - movementBounds.bottom) / 2 - 1));
+        if (overlapsX && y < 0 && movementBounds.top >= bounds.bottom) y = Math.max(y, -Math.max(0, (movementBounds.top - bounds.bottom) / 2 - 1));
       });
       const delay = 100 + Math.min(index * 45, 270);
       if (group && !groupDelays.has(group)) groupDelays.set(group, delay);
@@ -170,7 +188,7 @@
         { translate: `${x}px ${y}px`, scale: '0.97' },
         { translate: '0px 0px', scale: '1' }
       ];
-      if (!glassAncestors.has(element)) {
+      if (fadeSelf) {
         frames[0].opacity = 0;
         frames[1].opacity = layers[0].opacity;
       }
@@ -183,7 +201,7 @@
       movement.finished.catch(() => {}).finally(() => {
         idleElements.forEach(idle => { idle.style.removeProperty('animation-play-state'); });
       });
-      if (glassAncestors.has(element)) {
+      if (!fadeSelf) {
         layers.forEach(layer => {
           if (typeof layer.element.animate !== 'function') return;
           const fade = layer.element.animate([{ opacity: 0 }, { opacity: layer.opacity }], timing);

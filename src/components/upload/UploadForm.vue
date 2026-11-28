@@ -8,6 +8,8 @@
         ></textarea>
         <div 
             class="upload-card-wrapper"
+            data-entry="up"
+            data-entry-group="upload-content"
             @mousemove="handleUploadCardMouseMove"
             @mouseleave="handleUploadCardMouseLeave"
             @drop.capture.stop.prevent="handleDrop"
@@ -62,7 +64,12 @@
                 @change="handleFolderSelection"
             />
         </div>
-        <div v-if="uploadMethod === 'paste'" class="upload-card">
+        <div
+            v-if="uploadMethod === 'paste'"
+            class="upload-card"
+            data-entry="up"
+            data-entry-group="upload-content"
+        >
             <el-card 
                 class="paste-card"
                 :class="{'is-uploading': uploading, 'upload-card-busy': fileList.length}"
@@ -111,7 +118,13 @@
                 </div>
             </el-card>
         </div>
-        <el-card class="upload-list-card" :class="{'upload-list-busy': fileList.length}">
+        <el-card
+            class="upload-list-card"
+            :class="{'upload-list-busy': fileList.length}"
+            data-entry="up"
+            data-entry-group="upload-content"
+            data-entry-fade="self"
+        >
             <div class="upload-list-container">
                 <el-scrollbar @scroll="handleScroll" ref="scrollContainer">
                     <div class="upload-list-dashboard" :class="{ 'list-scrolled': listScrolled }">

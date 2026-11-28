@@ -170,7 +170,6 @@
             :expire="uploadExpire"
             :expiryHint="expiryHint"
             class="upload"
-            data-entry="up"
         />
         <el-dialog :title="$t('settings.linkFormatTitle')" v-model="showUrlDialog" :width="dialogWidth" :show-close="false" class="settings-dialog settings-dialog-scope">
             <div class="dialog-section">
