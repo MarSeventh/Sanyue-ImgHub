@@ -274,7 +274,7 @@ export default {
     height: 44px;
     padding: 0 8px;
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: background-color var(--highlight-transition), color var(--highlight-transition);
 }
 
 .directory-tree :deep(.el-tree-node__content:hover) {

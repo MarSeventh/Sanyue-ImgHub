@@ -769,6 +769,9 @@ computed: {
         // 如果当前页有文件被选中，则返回 true，否则返回 false
         return this.paginatedTableData.some(file => file.selected);
     },
+    selectedTableFiles() {
+        return this.tableData.filter(file => file.selected);
+    },
     rootUrl() {
         // 链接前缀，优先级：用户自定义 > urlPrefix > 默认
         return this.useCustomUrl === 'true' ? this.customUrlPrefix : this.userConfig?.urlPrefix || `${document.location.origin}/file/`
@@ -804,16 +807,14 @@ watch: {
         },
         immediate: true
     },
-    tableData: {
-        handler(newData) {
-            // selectedFiles 增加 newData中新选中，不包含在 selectedFiles 中的文件
-            this.selectedFiles = this.selectedFiles.concat(newData.filter(file => file.selected && !this.selectedFiles.includes(file)));
-            // selectedFiles 删掉 newData 中已取消选中的文件
-            this.selectedFiles = this.selectedFiles.filter(file => file.selected);
-            // selectedFiles 删掉 tableData 中已删除的文件
-            this.selectedFiles = this.selectedFiles.filter(file => newData.includes(file));
-        },
-        deep: true
+    selectedTableFiles(newSelection) {
+        // 只跟踪选择和列表成员变化，避免每次勾选都遍历元数据与预览数组。
+        // 保留已有选择的顺序，让跨页批量操作仍按原来的选择顺序执行。
+        const selectedSet = new Set(newSelection);
+        const previousSelection = new Set(this.selectedFiles);
+        const retainedSelection = this.selectedFiles.filter(file => selectedSet.has(file));
+        const addedSelection = newSelection.filter(file => !previousSelection.has(file));
+        this.selectedFiles = retainedSelection.concat(addedSelection);
     },
     defaultUrlFormat(newFormat) {
         localStorage.setItem('defaultUrlFormat', newFormat);
@@ -2348,7 +2349,7 @@ beforeUnmount() {
     border-radius: 5px;
     background: color-mix(in srgb, var(--primary-color) 12%, transparent);
     transform: translateX(0);
-    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform var(--highlight-transition);
     pointer-events: none;
 }
 
@@ -2370,7 +2371,7 @@ beforeUnmount() {
     color: var(--el-text-color-secondary);
     background: transparent;
     cursor: pointer;
-    transition: color 0.16s ease;
+    transition: color var(--highlight-transition);
 }
 
 .breadcrumb-view-button:hover {
@@ -2755,8 +2756,8 @@ beforeUnmount() {
     background: rgba(255, 255, 255, 0.15);
 }
 
-.list-view.is-drag-selecting :deep(.list-item:hover) {
-    background: transparent;
+.list-view.is-drag-selecting :deep(.list-item:hover::before) {
+    opacity: 0;
 }
 
 .list-view.is-drag-selecting :deep(.list-action-btn:hover) {

@@ -152,7 +152,7 @@ beforeUnmount() {
     box-sizing: border-box;
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: background-color var(--highlight-transition), color var(--highlight-transition);
     color: var(--admin-container-color, #333);
     gap: 0;
     overflow: hidden;

@@ -204,7 +204,7 @@ export default {
     border-radius: 6px;
     margin: 2px 6px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color var(--highlight-transition);
     text-align: left;
     color: var(--el-text-color-primary);
     overflow: hidden;

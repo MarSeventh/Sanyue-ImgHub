@@ -229,6 +229,7 @@ export default {
 
 <style scoped>
 .list-item {
+    position: relative;
     display: grid;
     grid-template-columns: 50px 60px minmax(180px, 1fr) 130px 100px 110px 130px 80px 100px 120px;
     content-visibility: auto;
@@ -236,15 +237,24 @@ export default {
     contain-intrinsic-size: 65px;
     padding: 12px 20px;
     align-items: center;
-    transition: background 0.2s ease;
     border-bottom: 1px solid var(--el-border-color-lighter);
     min-width: fit-content;
 }
 .list-item:last-child {
     border-bottom: none;
 }
-.list-item:hover {
+.list-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
     background: var(--el-fill-color-light);
+    opacity: 0;
+    transition: opacity var(--highlight-transition);
+    pointer-events: none;
+}
+.list-item:hover::before {
+    opacity: 1;
 }
 .list-col {
     display: flex;

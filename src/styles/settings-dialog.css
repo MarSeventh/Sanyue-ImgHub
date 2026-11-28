@@ -62,7 +62,7 @@
     border-radius: 8px;
     background: var(--dialog-control-bg-color, var(--el-bg-color));
     border: 1px solid var(--el-border-color-lighter);
-    transition: all 0.2s ease;
+    transition: background-color var(--highlight-transition), border-color var(--highlight-transition), color var(--highlight-transition);
 }
 
 .settings-dialog-scope .radio-card-group .radio-card:hover {

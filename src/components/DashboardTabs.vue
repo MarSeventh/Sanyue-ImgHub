@@ -283,7 +283,7 @@ export default {
     opacity: 0;
     pointer-events: none;
     transform: translateY(calc(var(--hovered-option-index) * var(--page-option-height)));
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity var(--highlight-transition), transform var(--highlight-transition);
 }
 
 .page-option-highlight.is-visible {

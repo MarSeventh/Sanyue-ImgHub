@@ -33,6 +33,8 @@ body {
 }
 
 :root {
+    /* 列表、菜单和选项切换共用的高亮反馈节奏。 */
+    --highlight-transition: 120ms ease-out;
     /* 浅色主题：中性灰页面、蓝色交互强调、无阴影 */
     --bg-color: #F5F5F7;
     /* body 与页面外层容器的统一底色 */
@@ -704,14 +706,36 @@ html.dark .ai-settings .el-button--primary.is-link:not(.is-disabled) {
     -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur)) saturate(1.2);
 }
 
-/* 遮罩以背景色渐变，定位容器保持不透明，玻璃表面单独位移和渐显。 */
+/* 遮罩单独渐显，避免逐帧重绘整屏背景；容器保持不透明以保留玻璃采样。 */
+.el-overlay.el-modal-dialog,
+.el-overlay.is-message-box {
+    background-color: transparent;
+}
+
+.el-overlay.el-modal-dialog::before,
+.el-overlay.is-message-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--el-overlay-color-lighter);
+    pointer-events: none;
+}
+
 .el-modal-dialog.dialog-fade-enter-active,
 .el-modal-dialog.dialog-fade-leave-active,
 .is-message-box.fade-in-linear-enter-active,
 .is-message-box.fade-in-linear-leave-active {
     opacity: 1;
     animation: none;
-    transition: background-color var(--el-transition-duration, 0.3s) ease;
+    /* 保留根节点时长，让 Vue 等待遮罩和弹窗的退出动画后再隐藏。 */
+    transition: opacity var(--el-transition-duration, 0.3s) ease;
+}
+
+.el-modal-dialog.dialog-fade-enter-active::before,
+.el-modal-dialog.dialog-fade-leave-active::before,
+.is-message-box.fade-in-linear-enter-active::before,
+.is-message-box.fade-in-linear-leave-active::before {
+    transition: opacity var(--el-transition-duration, 0.3s) ease;
 }
 
 .el-modal-dialog.dialog-fade-enter-from,
@@ -720,6 +744,13 @@ html.dark .ai-settings .el-button--primary.is-link:not(.is-disabled) {
 .is-message-box.fade-in-linear-leave-to {
     opacity: 1;
     background-color: transparent;
+}
+
+.el-modal-dialog.dialog-fade-enter-from::before,
+.el-modal-dialog.dialog-fade-leave-to::before,
+.is-message-box.fade-in-linear-enter-from::before,
+.is-message-box.fade-in-linear-leave-to::before {
+    opacity: 0;
 }
 
 .el-modal-dialog.dialog-fade-enter-active > .el-overlay-dialog,
@@ -748,7 +779,11 @@ html.dark .ai-settings .el-button--primary.is-link:not(.is-disabled) {
     .el-modal-dialog.dialog-fade-enter-active,
     .el-modal-dialog.dialog-fade-leave-active,
     .is-message-box.fade-in-linear-enter-active,
-    .is-message-box.fade-in-linear-leave-active {
+    .is-message-box.fade-in-linear-leave-active,
+    .el-modal-dialog.dialog-fade-enter-active::before,
+    .el-modal-dialog.dialog-fade-leave-active::before,
+    .is-message-box.fade-in-linear-enter-active::before,
+    .is-message-box.fade-in-linear-leave-active::before {
         transition-duration: 0.12s;
     }
 
@@ -915,7 +950,7 @@ html.dark .el-button--primary.is-plain:focus {
     border-radius: 6px;
     background: transparent;
     color: var(--el-text-color-regular);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color var(--highlight-transition), color var(--highlight-transition);
 }
 
 .el-select__popper .el-select-dropdown__item.is-selected {
@@ -1009,30 +1044,58 @@ html.dark .el-switch__label:not(.is-active) {
 }
 
 .el-dropdown__popper.el-popper .el-dropdown-menu__item {
+    position: relative;
+    isolation: isolate;
     min-height: 34px;
     padding: 0 12px;
     border-radius: 6px;
     border: none;
     background: transparent;
     color: var(--el-text-color-regular);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: none;
+}
+
+/* 高亮只改变背景层透明度，文字即时响应，避免快速移过菜单时反复重绘文字。 */
+.el-dropdown__popper.el-popper .el-dropdown-menu__item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background-color: color-mix(in srgb, var(--el-text-color-primary) 10%, transparent);
+    opacity: 0;
+    transition: opacity var(--highlight-transition);
+    pointer-events: none;
 }
 
 .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover,
 .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus {
-    background-color: color-mix(in srgb, var(--el-text-color-primary) 10%, transparent);
+    background-color: transparent;
     color: var(--el-text-color-primary);
 }
 
-html.dark .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover,
-html.dark .el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus {
+.el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):hover::before,
+.el-dropdown__popper.el-popper .el-dropdown-menu__item:not(.is-disabled):focus::before {
+    opacity: 1;
+}
+
+html.dark .el-dropdown__popper.el-popper .el-dropdown-menu__item::before {
     background-color: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent);
-    color: var(--el-text-color-primary);
 }
 
 .el-popper.is-light>.el-popper__arrow::before {
     background: none !important;
     border: none !important;
+}
+
+.el-tree-node__content {
+    transition: background-color var(--highlight-transition);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --highlight-transition: 0ms linear;
+    }
 }
 
 /* ==============================

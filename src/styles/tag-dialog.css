@@ -58,7 +58,7 @@
 .tag-chip { max-width: 100%; height: auto; min-height: 28px; padding: 4px 10px; font-size: 13px; line-height: 1.5; }
 .tag-chip :deep(.el-tag__content) { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
 .tag-chip :deep(.el-tag__close) { flex-shrink: 0; margin-left: 7px; }
-.tag-choice { cursor: pointer; transition: color .2s, border-color .2s, background-color .2s; }
+.tag-choice { cursor: pointer; transition: color var(--highlight-transition), border-color var(--highlight-transition), background-color var(--highlight-transition); }
 .tag-choice:hover, .tag-choice:focus-visible { background: var(--el-color-primary-light-9); border-color: var(--el-color-primary-light-5); color: var(--el-color-primary); }
 html.dark .tag-choice:hover, html.dark .tag-choice:focus-visible { color: var(--primary-color-accent); }
 .tag-choice[aria-disabled="true"] { opacity: .6; cursor: default; pointer-events: none; }
@@ -87,7 +87,7 @@ html.dark .suggestion-item:hover, html.dark .suggestion-item:focus-visible { col
 .tag-operation-tabs :deep(.el-tabs__header) { margin-bottom: 16px; }
 .tag-operation-tabs :deep(.el-tabs__nav-wrap::after), .tag-operation-tabs :deep(.el-tabs__active-bar) { display: none; }
 .tag-operation-tabs :deep(.el-tabs__nav) { display: flex; float: none; width: 100%; box-sizing: border-box; padding: 4px; gap: 4px; border: 1px solid var(--el-border-color-lighter); border-radius: 12px; background: var(--dialog-section-bg-color, var(--el-fill-color-lighter)); }
-.tag-operation-tabs :deep(.el-tabs__item) { flex: 1; min-width: 0; height: 38px; padding: 0 10px !important; border-radius: 8px; color: var(--el-text-color-secondary); font-size: 13px; transition: color .2s, background-color .2s; }
+.tag-operation-tabs :deep(.el-tabs__item) { flex: 1; min-width: 0; height: 38px; padding: 0 10px !important; border-radius: 8px; color: var(--el-text-color-secondary); font-size: 13px; transition: color var(--highlight-transition), background-color var(--highlight-transition); }
 .tag-operation-tabs :deep(.el-tabs__item:last-child) { flex: 1.8; }
 .tag-operation-tabs :deep(.el-tabs__item.is-active) { background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
 .tag-operation-tabs :deep(.el-tabs__item:hover) { color: var(--el-color-primary); }

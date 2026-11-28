@@ -34,7 +34,7 @@
     box-shadow: none;
     font-weight: 500;
     line-height: 36px;
-    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    transition: background-color var(--highlight-transition), border-color var(--highlight-transition), color var(--highlight-transition);
 }
 
 .pagination-container :deep(.el-pager li:hover),

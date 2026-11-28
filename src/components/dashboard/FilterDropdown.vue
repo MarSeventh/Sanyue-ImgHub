@@ -312,7 +312,7 @@ export default {
     height: 26px;
     padding: 0 6px;
     border-radius: 6px;
-    transition: all 0.2s ease;
+    transition: background-color var(--highlight-transition), color var(--highlight-transition);
 }
 
 .filter-options :deep(.el-checkbox:hover) {
