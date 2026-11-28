@@ -1841,6 +1841,7 @@ export default {
 }
 
 .chart-card {
+  min-width: 0;
   background: var(--glass-bg);
   border-radius: 16px;
   padding: 24px;
@@ -2574,7 +2575,7 @@ html.dark .legend-item:hover {
   }
   
   .charts-section {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .trend-chart-header {

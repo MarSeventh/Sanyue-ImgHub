@@ -321,7 +321,12 @@ export default {
 .resource-title-text { display: inline-flex; align-items: center; min-height: 20px; }
 .resource-group .empty-card { margin: 0; border: 0; box-shadow: none; border-radius: 0; background: transparent; }
 .resource-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 16px; padding: 20px; }
-.resource-card { display: flex; flex-direction: column; border: 1px solid var(--glass-border); border-radius: 10px; background: var(--glass-bg); overflow: hidden; min-width: 0; }
+.resource-card { display: flex; flex-direction: column; border: 1px solid var(--glass-border); border-radius: 10px; background: var(--glass-bg); overflow: hidden; min-width: 0; box-shadow: var(--glass-shadow); }
+.resource-group,
+.resource-card {
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
 .resource-card.disabled { opacity: .65; }
 .card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; background: var(--glass-header-bg); border-bottom: 1px solid var(--glass-header-border); }
 .card-title { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; min-width: 0; }
