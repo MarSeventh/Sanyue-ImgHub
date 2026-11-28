@@ -160,7 +160,11 @@ export default {
     .floating-save-btn {
         right: 12px;
         bottom: 12px;
-        padding: 12px;
+        width: 44px;
+        height: 44px;
+        box-sizing: border-box;
+        justify-content: center;
+        padding: 0;
         border-radius: 50%;
     }
     
