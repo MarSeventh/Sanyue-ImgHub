@@ -8,6 +8,7 @@ import '@/styles/background.css'
 
 const WALLPAPER_ACTIVE_CLASS = 'wallpaper-active'
 const WALLPAPER_CONTAINER_ACTIVE_CLASS = 'wallpaper-background-active'
+const BACKGROUND_FADE_DURATION = 500
 
 export default {
   data() {
@@ -49,7 +50,7 @@ export default {
           z-index: -1;
           pointer-events: none;
           opacity: 0;
-          transition: opacity 1.2s ease-in-out, filter 0.3s ease, transform 4.2s ease-out;
+          transition: opacity ${BACKGROUND_FADE_DURATION}ms ease-in-out, filter 0.3s ease, transform 4.2s ease-out;
           transform: scale(1);
           transform-origin: center center;
           will-change: opacity, transform;
@@ -65,7 +66,7 @@ export default {
           z-index: -1;
           pointer-events: none;
           opacity: 0;
-          transition: opacity 1.2s ease-in-out, filter 0.3s ease, transform 4.2s ease-out;
+          transition: opacity ${BACKGROUND_FADE_DURATION}ms ease-in-out, filter 0.3s ease, transform 4.2s ease-out;
           transform: scale(1);
           transform-origin: center center;
           will-change: opacity, transform;
@@ -308,7 +309,7 @@ export default {
 
             imgElement.style.opacity = this.bkOpacity
             if (enableZoom) {
-              imgElement.style.transform = 'scale(1.045)'
+              imgElement.style.transform = 'scale(1.02)'
             }
             this.setWallpaperActive(true, container)
           })
@@ -344,8 +345,8 @@ export default {
 
       const zoomDuration = Math.max(this.bkInterval + 1200, 4200)
       imgElement.style.transition = enableZoom
-        ? `opacity 1.2s ease-in-out, filter 0.3s ease, transform ${zoomDuration}ms ease-out`
-        : 'opacity 1.2s ease-in-out, filter 0.3s ease, transform 0.3s ease'
+        ? `opacity ${BACKGROUND_FADE_DURATION}ms ease-in-out, filter 0.3s ease, transform ${zoomDuration}ms ease-out`
+        : `opacity ${BACKGROUND_FADE_DURATION}ms ease-in-out, filter 0.3s ease, transform 0.3s ease`
       imgElement.style.transformOrigin = 'center center'
       imgElement.style.transform = 'scale(1)'
     },
@@ -395,15 +396,15 @@ export default {
           if (!this.isBackgroundLoadCurrent(loadGeneration)) return
 
           nextBg.style.opacity = this.bkOpacity // 新图直接在顶层优雅淡入
-          nextBg.style.transform = 'scale(1.045)'
+          nextBg.style.transform = 'scale(1.02)'
           this.setWallpaperActive(true, document.querySelector(containerSelector))
           
-          // 等新图 1.2s 完全覆盖后，在底下默默把旧图透明度归零，毫无视觉断层
+          // 等新图淡入完成后再隐藏旧图，避免过渡中露出底色
           setTimeout(() => { 
             if (!this.isBackgroundLoadCurrent(loadGeneration)) return
             curBg.style.opacity = 0 
             this.prepareBackgroundMotion(curBg, true)
-          }, 1200)
+          }, BACKGROUND_FADE_DURATION)
         }, 50)
       }
       preload.onerror = () => {
@@ -441,14 +442,14 @@ export default {
           if (!this.isBackgroundLoadCurrent(loadGeneration)) return
 
           nextBg.style.opacity = this.bkOpacity
-          nextBg.style.transform = 'scale(1.045)'
+          nextBg.style.transform = 'scale(1.02)'
           this.setWallpaperActive(true, document.querySelector(containerSelector))
           
           setTimeout(() => { 
             if (!this.isBackgroundLoadCurrent(loadGeneration)) return
             curBg.style.opacity = 0 
             this.prepareBackgroundMotion(curBg, true)
-          }, 1200)
+          }, BACKGROUND_FADE_DURATION)
         }, 50)
       }
       preload.onerror = () => {
@@ -493,7 +494,7 @@ export default {
           bg1.removeAttribute('src')
           // 恢复过渡效果
           setTimeout(() => {
-            if (bg1) bg1.style.transition = 'opacity 1.2s ease-in-out, filter 0.3s ease, transform 0.3s ease'
+            if (bg1) bg1.style.transition = `opacity ${BACKGROUND_FADE_DURATION}ms ease-in-out, filter 0.3s ease, transform 0.3s ease`
           }, 50)
         }
         if (bg2) {
@@ -502,7 +503,7 @@ export default {
           bg2.removeAttribute('src')
           // 恢复过渡效果
           setTimeout(() => {
-            if (bg2) bg2.style.transition = 'opacity 1.2s ease-in-out, filter 0.3s ease, transform 0.3s ease'
+            if (bg2) bg2.style.transition = `opacity ${BACKGROUND_FADE_DURATION}ms ease-in-out, filter 0.3s ease, transform 0.3s ease`
           }, 50)
         }
       } else {
@@ -518,7 +519,7 @@ export default {
           if (bg2) bg2.removeAttribute('src')
           this.setWallpaperActive(false)
           this.backgroundCleanupTimer = null
-        }, 1200)
+        }, BACKGROUND_FADE_DURATION)
       }
     },
 
