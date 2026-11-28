@@ -148,8 +148,10 @@
               >
                 <span class="legend-color" :style="{ background: getChartColor(index) }"></span>
                 <span class="legend-label">{{ channel }}</span>
-                <span class="legend-value">{{ count.toLocaleString() }}</span>
-                <span class="legend-percent">{{ getPercentage(count, indexInfo.totalFiles) }}%</span>
+                <span class="legend-metrics">
+                  <span class="legend-value">{{ count.toLocaleString() }}</span>
+                  <span class="legend-percent">{{ getPercentage(count, indexInfo.totalFiles) }}%</span>
+                </span>
               </div>
             </div>
           </div>
@@ -183,8 +185,10 @@
               >
                 <span class="legend-color" :style="{ background: getTypeChartColor(index) }"></span>
                 <span class="legend-label">{{ status }}</span>
-                <span class="legend-value">{{ count.toLocaleString() }}</span>
-                <span class="legend-percent">{{ getPercentage(count, indexInfo.totalFiles) }}%</span>
+                <span class="legend-metrics">
+                  <span class="legend-value">{{ count.toLocaleString() }}</span>
+                  <span class="legend-percent">{{ getPercentage(count, indexInfo.totalFiles) }}%</span>
+                </span>
               </div>
             </div>
           </div>
@@ -2094,8 +2098,9 @@ html.dark .trend-calendar-btn:hover {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  flex: 1;
-  min-width: 180px;
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .legend-item {
@@ -2144,9 +2149,20 @@ html.dark .legend-item:hover {
 
 .legend-label {
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: 13px;
+  text-align: left;
   color: var(--admin-container-color);
   font-weight: 500;
+}
+
+.legend-metrics {
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .legend-value {
@@ -2647,6 +2663,25 @@ html.dark .legend-item:hover {
 
   .status-hero-title {
     font-size: 27px;
+  }
+
+  .legend-item {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .legend-label {
+    flex-basis: 80px;
+  }
+
+  .legend-metrics {
+    gap: 6px;
+  }
+
+  .legend-value,
+  .legend-percent {
+    min-width: 0;
   }
 
 }
